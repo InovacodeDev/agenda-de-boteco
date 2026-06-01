@@ -1,0 +1,45 @@
+{
+    // Dev servers must be running before the browser (chrome) configs work:
+    //   pnpm dev          -> turbo runs every app
+    //   or per app:        expo start (apps/mobile)  |  vite (apps/admin)
+    //
+    // Native debugging uses the "React Native Tools" extension (msjsdiag.vscode-react-native).
+    // Zero-config alternative for native: run `expo start` and press `j` to open
+    // React Native DevTools (the flow Expo officially recommends today).
+    "version": "0.2.0",
+    "configurations": [
+        {
+            // Launch Expo for a native target via Hermes direct debugging.
+            // Starts Metro and shows the QR / dev menu for Expo Go or a dev client.
+            "name": "Mobile: Expo (Hermes)",
+            "request": "launch",
+            "type": "reactnativedirect",
+            "cwd": "${workspaceFolder}/apps/mobile",
+            "platform": "exponent",
+            "expoHostType": "local"
+        },
+        {
+            // Attach to an already-running Hermes app (when `expo start` is already up).
+            "name": "Mobile: Attach to Hermes",
+            "request": "attach",
+            "type": "reactnativedirect",
+            "cwd": "${workspaceFolder}/apps/mobile"
+        },
+        {
+            // Expo Web target. Metro's web dev server defaults to :8081.
+            "name": "Mobile Web: Chrome",
+            "request": "launch",
+            "type": "chrome",
+            "url": "http://localhost:8081",
+            "webRoot": "${workspaceFolder}/apps/mobile"
+        },
+        {
+            // Admin (Vite + React). Vite dev server defaults to :5173.
+            "name": "Admin: Chrome (Vite)",
+            "request": "launch",
+            "type": "chrome",
+            "url": "http://localhost:5173",
+            "webRoot": "${workspaceFolder}/apps/admin"
+        }
+    ]
+}

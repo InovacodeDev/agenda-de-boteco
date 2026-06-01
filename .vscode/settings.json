@@ -1,0 +1,58 @@
+{
+    // ---- Package manager ----
+    "npm.packageManager": "pnpm",
+
+    // ---- TypeScript ----
+    // Use the workspace TypeScript (root devDependency), not VS Code's bundled one,
+    // so the editor matches what `turbo typecheck` runs.
+    "typescript.tsdk": "node_modules/typescript/lib",
+    "typescript.enablePromptUseWorkspaceTsdk": true,
+    // cmd/ctrl-click jumps to the real source in packages/core instead of the built .d.ts
+    "typescript.preferGoToSourceDefinition": true,
+
+    // ---- Format on save (Prettier) ----
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+
+    // ---- ESLint ----
+    // "auto" makes ESLint resolve the correct config per workspace in the monorepo.
+    "eslint.workingDirectories": [{ "mode": "auto" }],
+    "eslint.validate": ["javascript", "javascriptreact", "typescript", "typescriptreact"],
+    "editor.codeActionsOnSave": {
+        // new value form; boolean true/false is deprecated
+        "source.fixAll.eslint": "explicit"
+    },
+
+    // ---- Tailwind IntelliSense tuned for Nativewind ----
+    // RN uses `className`, and we surface autocomplete inside tv()/cva() variants too.
+    "tailwindCSS.classAttributes": ["className", "class", "tw"],
+    "tailwindCSS.experimental.classRegex": [
+        ["tv\\(([^)]*)\\)", "[\"'`]([^\"'`]*)[\"'`]"],
+        ["cva\\(([^)]*)\\)", "[\"'`]([^\"'`]*)[\"'`]"]
+    ],
+
+    // ---- Per-language formatters ----
+    "[json]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+    "[jsonc]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+
+    // ---- Keep the file watcher fast in a large monorepo (avoids CPU spikes) ----
+    "files.watcherExclude": {
+        "**/node_modules/**": true,
+        "**/.turbo/**": true,
+        "**/.expo/**": true,
+        "**/dist/**": true,
+        "**/ios/Pods/**": true,
+        "**/android/build/**": true
+    },
+
+    // ---- Keep search/quick-open clean ----
+    "search.exclude": {
+        "**/node_modules": true,
+        "**/.turbo": true,
+        "**/.expo": true,
+        "**/dist": true,
+        "**/ios/Pods": true,
+        "**/android/build": true,
+        "**/pnpm-lock.yaml": true
+    }
+}

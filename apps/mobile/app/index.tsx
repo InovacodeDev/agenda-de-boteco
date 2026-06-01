@@ -19,7 +19,6 @@ export default function Home() {
               <Text style={styles.itemText}>{item.title}</Text>
             </View>
           )}
-          estimatedItemSize={50}
         />
       </View>
     </View>

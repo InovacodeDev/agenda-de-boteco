@@ -1,0 +1,20 @@
+# Dependencies & build output
+node_modules
+dist
+build
+coverage
+.turbo
+.expo
+web-build
+
+# Native (generated / not ours to format)
+android
+ios
+
+# Lockfiles & generated files — don't reformat these
+pnpm-lock.yaml
+expo-env.d.ts
+*.tsbuildinfo
+
+# Supabase generated types are machine-written — uncomment to skip formatting:
+# packages/core/src/database.types.ts

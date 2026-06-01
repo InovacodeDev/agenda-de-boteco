@@ -1,0 +1,25 @@
+{
+    "recommendations": [
+        // Linting & formatting (wired up in settings.json)
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+
+        // Tailwind / Nativewind className IntelliSense
+        "bradlc.vscode-tailwindcss",
+
+        // Expo: app config (app.json/app.config) schema, plugin & scheme helpers
+        "expo.vscode-expo-tools",
+
+        // React Native debugging — powers the "reactnativedirect" configs in launch.json
+        "msjsdiag.vscode-react-native",
+
+        // Turborepo: turbo.json schema + task awareness
+        "Vercel.turbo-vsc",
+
+        // .env syntax highlighting (Supabase keys / env vars)
+        "mikestead.dotenv",
+
+        // Shared editor config across the team
+        "editorconfig.editorconfig"
+    ]
+}

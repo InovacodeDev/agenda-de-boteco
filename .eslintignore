@@ -1,0 +1,14 @@
+# ⚠️ Only used by ESLint 8 / legacy .eslintrc setups.
+# ESLint 9 flat config IGNORES this file — put ignores in eslint.config.mjs instead.
+
+node_modules
+dist
+build
+coverage
+.turbo
+.expo
+android
+ios
+*.config.js
+*.config.cjs
+expo-env.d.ts
