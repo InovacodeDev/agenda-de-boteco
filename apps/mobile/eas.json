@@ -19,17 +19,20 @@
     "alfa": {
       "android": {
         "track": "internal"
-      }
+      },
+      "ios": {}
     },
     "beta": {
       "android": {
         "track": "beta"
-      }
+      },
+      "ios": {}
     },
     "production": {
       "android": {
         "track": "production"
-      }
+      },
+      "ios": {}
     }
   }
 }
