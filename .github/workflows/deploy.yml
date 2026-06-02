@@ -1,0 +1,52 @@
+name: CD - Deploy to App Stores
+
+on:
+  push:
+    branches:
+      - alfa
+      - beta
+      - release
+
+jobs:
+  deploy:
+    name: Build & Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.20.0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Set up Expo
+        uses: expo/expo-github-action@v8
+        with:
+          expo-version: latest
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Determine EAS Submission Profile
+        run: |
+          if [ "${{ github.ref_name }}" = "alfa" ]; then
+            echo "SUBMIT_PROFILE=alfa" >> $GITHUB_ENV
+          elif [ "${{ github.ref_name }}" = "beta" ]; then
+            echo "SUBMIT_PROFILE=beta" >> $GITHUB_ENV
+          else
+            echo "SUBMIT_PROFILE=production" >> $GITHUB_ENV
+          fi
+
+      - name: Build and Auto-Submit to App Stores
+        run: |
+          pnpm --filter mobile exec eas build --platform all --profile production --auto-submit --auto-submit-profile ${{ env.SUBMIT_PROFILE }} --non-interactive

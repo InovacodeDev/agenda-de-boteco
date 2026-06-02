@@ -16,6 +16,20 @@
     }
   },
   "submit": {
-    "production": {}
+    "alfa": {
+      "android": {
+        "track": "internal"
+      }
+    },
+    "beta": {
+      "android": {
+        "track": "beta"
+      }
+    },
+    "production": {
+      "android": {
+        "track": "production"
+      }
+    }
   }
 }
