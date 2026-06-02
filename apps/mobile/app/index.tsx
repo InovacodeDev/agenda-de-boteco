@@ -1,5 +1,6 @@
-import { StyleSheet, Text, View } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
+
+import { Text, View } from '../src/tw';
 
 const DATA = [
   { id: '1', title: 'Bar do Zé' },
@@ -9,14 +10,16 @@ const DATA = [
 
 export default function Home() {
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Bem-vindo à Agenda de Boteco!</Text>
-      <View style={styles.listContainer}>
+    <View className="flex-1 bg-white p-5">
+      <Text className="mb-5 text-center text-2xl font-bold">
+        Bem-vindo à Agenda de Boteco!
+      </Text>
+      <View className="w-full flex-1">
         <FlashList
           data={DATA}
           renderItem={({ item }) => (
-            <View style={styles.item}>
-              <Text style={styles.itemText}>{item.title}</Text>
+            <View className="border-b border-gray-200 p-4">
+              <Text className="text-base">{item.title}</Text>
             </View>
           )}
         />
@@ -24,29 +27,3 @@ export default function Home() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    padding: 20,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
-    textAlign: 'center',
-  },
-  listContainer: {
-    flex: 1,
-    width: '100%',
-  },
-  item: {
-    padding: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
-  },
-  itemText: {
-    fontSize: 16,
-  },
-});

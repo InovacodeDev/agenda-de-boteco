@@ -1,34 +1,58 @@
-# Agenda de Boteco - Mobile
+# Agenda de Boteco
 
-Projeto React Native inicializado com Expo, seguindo as melhores práticas de performance e escalabilidade.
+Monorepo (Turborepo + pnpm) com app mobile (Expo) e painel administrativo (Vite).
 
-## Tecnologias e Decisões Técnicas
+## Estrutura
 
-- **Expo (SDK 56)**: Plataforma robusta para desenvolvimento cross-platform.
-- **Web Support**: Configurado para rodar no navegador usando `react-native-web`.
-- **Navigation**: `expo-router` (File-based routing) para uma experiência de navegação nativa e web-friendly.
-- **Performance de Listas**: `@shopify/flash-list` utilizado para renderização eficiente de listas longas (CRITICAL).
-- **State Management**: `Zustand` para estado atômico e re-renders otimizados (HIGH).
-- **Native Navigation**: `react-native-screens` integrado para performance superior em dispositivos móveis.
-- **Safe Area**: `react-native-safe-area-context` para garantir que o conteúdo não seja sobreposto por notches ou barras do sistema.
-- **TypeScript**: Configurado para garantir segurança de tipos (MANDATORY).
+```
+apps/
+  mobile/   # Expo SDK 56 · expo-router · NativeWind · FlashList · Zustand
+  admin/    # Vite + React (painel administrativo, SSG via output: static)
+packages/
+  core/     # Pacote interno source-only: client Supabase (fábrica), tipos e schemas Zod
+```
 
-## Estrutura de Pastas
+O `core` é um pacote interno **source-only** (padrão Just-in-Time do Turborepo): não tem build,
+é consumido como fonte por ambos os apps. Ele expõe `createSupabaseClient({ url, anonKey, storage?, detectSessionInUrl })`
+para que cada app injete seu próprio env e adaptador de storage.
 
-- `app/`: Diretório de rotas do `expo-router`.
-- `src/`: Lógica compartilhada.
-  - `components/`: Componentes reutilizáveis.
-  - `hooks/`: Custom hooks.
-  - `store/`: Gerenciamento de estado (Zustand).
-  - `theme/`: Tokens de design e estilos globais.
-  - `constants/`: Valores constantes e configurações.
+## Pré-requisitos
 
-## Como Rodar
+- Node (ver `.nvmrc`)
+- `pnpm` (nunca npm/yarn)
 
-1. Certifique-se de ter o `pnpm` instalado.
-2. Instale as dependências: `pnpm install`
-3. Inicie o projeto:
-   - Web: `pnpm web`
-   - iOS: `pnpm ios`
-   - Android: `pnpm android`
-   - Metro: `pnpm start`
+## Setup
+
+```bash
+pnpm install
+cp .env.example .env   # preencha os valores do Supabase
+```
+
+Variáveis de ambiente:
+- **mobile**: `EXPO_PUBLIC_SUPABASE_URL` / `EXPO_PUBLIC_SUPABASE_ANON_KEY`
+- **admin**: `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY`
+
+## Comandos (raiz)
+
+```bash
+pnpm dev         # sobe todos os apps em modo dev (turbo)
+pnpm lint        # eslint em todos os workspaces
+pnpm typecheck   # tsc --noEmit em todos os workspaces
+pnpm build       # build de produção (admin + export web do mobile)
+```
+
+### Por app
+
+```bash
+pnpm --filter mobile ios       # Expo iOS
+pnpm --filter mobile android   # Expo Android
+pnpm --filter mobile web       # Expo web
+pnpm --filter admin dev        # Vite dev server
+
+pnpm --filter core gen:types   # regenera os tipos do Supabase (requer SUPABASE_PROJECT_ID)
+```
+
+## Notas
+
+- Expo SDK 56 mudou bastante — leia a doc versionada em https://docs.expo.dev/versions/v56.0.0/ antes de codar.
+- Os tipos do banco (`packages/core/src/types/database.types.ts`) são **gerados** — nunca edite à mão.

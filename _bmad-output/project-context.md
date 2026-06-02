@@ -53,3 +53,4 @@ sections_completed: ['technology_stack', 'critical_rules']
 
 - Only `packages/core` is shared between apps. `apps/admin` is web-pure and shares no RN UI with `apps/mobile`.
 - `apps/mobile` must never regress: any restructuring keeps functional parity with the original app.
+- **Mandatory Service & Utility Testing:** A unit test must always be created for any new or modified `services` and `utils`. Direct edits in the code are not allowed without corresponding unit tests verifying their exact contract as the absolute source of truth. Any optimization or change must strictly maintain behavioral regression protection. For example: if a method receives a string and returns a number, regardless of what changes are made inside the method, it must keep returning a number, and specifically the exact same return value as before the changes.

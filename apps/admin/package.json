@@ -6,12 +6,12 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "lint": "echo 'No lint configuration in admin scaffold'",
+    "lint": "eslint .",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "react": "19.2.3",
-    "react-dom": "^19.2.6",
+    "react-dom": "19.2.3",
     "core": "workspace:*"
   },
   "devDependencies": {
