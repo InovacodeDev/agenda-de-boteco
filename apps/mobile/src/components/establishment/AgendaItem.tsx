@@ -1,9 +1,10 @@
 import { useRouter } from 'expo-router';
 
 import type { Event, MusicStyle } from '../../data/schemas';
-import { Image, Pressable, Text, View } from '../../tw';
+import { Image, Text, View } from '../../tw';
 import { formatRelativeDay, formatTime } from '../../utils/dates';
 import { formatPrice } from '../../utils/format';
+import { GuardedPressable } from '../ui/GuardedPressable';
 
 export interface AgendaItemProps {
   event: Event;
@@ -14,7 +15,7 @@ export interface AgendaItemProps {
 export function AgendaItem({ event, styles }: AgendaItemProps) {
   const router = useRouter();
   return (
-    <Pressable
+    <GuardedPressable
       accessibilityRole="button"
       accessibilityLabel={`Evento ${event.name}`}
       onPress={() => router.push(`/event/${event.id}`)}
@@ -39,6 +40,6 @@ export function AgendaItem({ event, styles }: AgendaItemProps) {
           {formatPrice(event.cover_charge)}
         </Text>
       </View>
-    </Pressable>
+    </GuardedPressable>
   );
 }

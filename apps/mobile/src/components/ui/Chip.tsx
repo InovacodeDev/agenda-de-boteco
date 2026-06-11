@@ -1,3 +1,4 @@
+import { useGuardedPress } from '../../hooks/useGuardedPress';
 import { Pressable, Text } from '../../tw';
 import { cn } from '../../utils/cn';
 
@@ -10,11 +11,13 @@ export interface ChipProps {
 
 /** Pill base dos filtros rápidos, sheet de filtros e estilos musicais */
 export function Chip({ label, selected = false, onPress, className }: ChipProps) {
+  const guardedPress = useGuardedPress(onPress);
+
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityState={{ selected }}
-      onPress={onPress}
+      onPress={guardedPress}
       className={cn(
         'h-9 items-center justify-center rounded-full px-4 active:opacity-80',
         selected ? 'bg-primary' : 'bg-surface-elevated',

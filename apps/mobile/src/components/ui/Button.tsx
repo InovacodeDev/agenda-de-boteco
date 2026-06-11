@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 
+import { useGuardedPress } from '../../hooks/useGuardedPress';
 import { Pressable, Text } from '../../tw';
 import { cn } from '../../utils/cn';
 
@@ -40,13 +41,15 @@ export function Button({
   className,
   style,
 }: ButtonProps) {
+  const guardedPress = useGuardedPress(onPress);
+
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={label}
       accessibilityState={{ disabled }}
       disabled={disabled}
-      onPress={onPress}
+      onPress={guardedPress}
       style={style}
       className={cn(
         'h-12 flex-row items-center justify-center gap-2 rounded-xl px-4 active:opacity-80',

@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import brandLogo from '../assets/logo.png';
 import { Button } from '../src/components/ui/Button';
+import { GuardedPressable } from '../src/components/ui/GuardedPressable';
 import { CITIES } from '../src/data';
 import { useUserLocation } from '../src/hooks/useUserLocation';
 import { usePreferencesStore } from '../src/store/usePreferencesStore';
@@ -13,7 +14,7 @@ import { colors } from '../src/theme/colors';
 import { gradientNight } from '../src/theme/gradients';
 import { shadows } from '../src/theme/shadows';
 import { headingLetterSpacing } from '../src/theme/typography';
-import { Image, Pressable, ScrollView, Text, View } from '../src/tw';
+import { Image, ScrollView, Text, View } from '../src/tw';
 import { nearestCity } from '../src/utils/geo';
 
 interface FeatureCardProps {
@@ -112,7 +113,7 @@ export default function OnboardingScreen() {
           </Text>
           <View className="flex-row flex-wrap gap-3">
             {CITIES.map((city) => (
-              <Pressable
+              <GuardedPressable
                 key={city.id}
                 accessibilityRole="button"
                 accessibilityLabel={`${city.name}, ${city.uf}`}
@@ -123,7 +124,7 @@ export default function OnboardingScreen() {
                   {city.name}
                 </Text>
                 <Text className="font-body text-[12px] text-muted-foreground">{city.uf}</Text>
-              </Pressable>
+              </GuardedPressable>
             ))}
           </View>
         </View>

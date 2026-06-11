@@ -1,7 +1,8 @@
 import { useRouter } from 'expo-router';
 
 import type { Establishment } from '../../data/schemas';
-import { Image, Pressable, Text, View } from '../../tw';
+import { Image, Text, View } from '../../tw';
+import { GuardedPressable } from '../ui/GuardedPressable';
 import { RatingStars } from '../ui/RatingStars';
 
 export interface EstablishmentCardProps {
@@ -12,7 +13,7 @@ export interface EstablishmentCardProps {
 export function EstablishmentCard({ establishment }: EstablishmentCardProps) {
   const router = useRouter();
   return (
-    <Pressable
+    <GuardedPressable
       accessibilityRole="button"
       accessibilityLabel={`Estabelecimento ${establishment.name}`}
       onPress={() => router.push(`/establishment/${establishment.id}`)}
@@ -39,6 +40,6 @@ export function EstablishmentCard({ establishment }: EstablishmentCardProps) {
           </Text>
         </View>
       </View>
-    </Pressable>
+    </GuardedPressable>
   );
 }

@@ -4,9 +4,10 @@ import type { ReactNode } from 'react';
 
 import type { AppNotification, NotificationType } from '../../data/schemas';
 import { colors } from '../../theme/colors';
-import { Pressable, Text, View } from '../../tw';
+import { Text, View } from '../../tw';
 import { cn } from '../../utils/cn';
 import { relativeTime } from '../../utils/dates';
+import { GuardedPressable } from '../ui/GuardedPressable';
 
 function iconFor(type: NotificationType, unread: boolean): ReactNode {
   const color = unread ? colors.primary : colors.mutedForeground;
@@ -42,7 +43,7 @@ export function NotificationCard({ notification, unread, onPress }: Notification
   };
 
   return (
-    <Pressable
+    <GuardedPressable
       accessibilityRole="button"
       accessibilityLabel={notification.title}
       onPress={open}
@@ -73,6 +74,6 @@ export function NotificationCard({ notification, unread, onPress }: Notification
         </Text>
         {unread ? <View className="h-2 w-2 rounded-full bg-primary" /> : null}
       </View>
-    </Pressable>
+    </GuardedPressable>
   );
 }

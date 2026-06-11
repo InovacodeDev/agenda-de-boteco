@@ -1,5 +1,6 @@
-import { Pressable, Text, View } from '../../tw';
+import { Text, View } from '../../tw';
 import { cn } from '../../utils/cn';
+import { GuardedPressable } from './GuardedPressable';
 
 export interface SegmentedTabsProps {
   tabs: string[];
@@ -15,7 +16,7 @@ export function SegmentedTabs({ tabs, activeIndex, onChange, className }: Segmen
       {tabs.map((tab, index) => {
         const active = index === activeIndex;
         return (
-          <Pressable
+          <GuardedPressable
             key={tab}
             accessibilityRole="tab"
             accessibilityState={{ selected: active }}
@@ -33,7 +34,7 @@ export function SegmentedTabs({ tabs, activeIndex, onChange, className }: Segmen
             >
               {tab}
             </Text>
-          </Pressable>
+          </GuardedPressable>
         );
       })}
     </View>

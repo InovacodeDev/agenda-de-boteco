@@ -10,10 +10,11 @@ import { useFavoritesStore } from '../../store/useFavoritesStore';
 import { colors } from '../../theme/colors';
 import { gradientCardOverlay } from '../../theme/gradients';
 import { headingLetterSpacing } from '../../theme/typography';
-import { Image, Pressable, Text, View } from '../../tw';
+import { Image, Text, View } from '../../tw';
 import { formatRelativeDay, formatTime } from '../../utils/dates';
 import { formatPrice } from '../../utils/format';
 import { GradientBadge } from '../ui/GradientBadge';
+import { GuardedPressable } from '../ui/GuardedPressable';
 
 interface FooterItemProps {
   icon: ReactNode;
@@ -46,7 +47,7 @@ export function EventCard({ event, establishment, styles }: EventCardProps) {
   const price = formatPrice(event.cover_charge);
 
   return (
-    <Pressable
+    <GuardedPressable
       accessibilityRole="button"
       accessibilityLabel={`Evento ${event.name} no ${establishment.name}`}
       onPress={() => router.push(`/event/${event.id}`)}
@@ -79,7 +80,7 @@ export function EventCard({ event, establishment, styles }: EventCardProps) {
                 </View>
               ))}
             </View>
-            <Pressable
+            <GuardedPressable
               accessibilityRole="button"
               accessibilityLabel={isFavorite ? 'Remover dos favoritos' : 'Favoritar evento'}
               onPress={() => requireAuth(() => toggleEvent(event.id))}
@@ -91,7 +92,7 @@ export function EventCard({ event, establishment, styles }: EventCardProps) {
                 fill={isFavorite ? colors.primary : 'transparent'}
                 size={18}
               />
-            </Pressable>
+            </GuardedPressable>
           </View>
 
           <View className="gap-1.5">
@@ -133,6 +134,6 @@ export function EventCard({ event, establishment, styles }: EventCardProps) {
           </FooterItem>
         </View>
       </View>
-    </Pressable>
+    </GuardedPressable>
   );
 }

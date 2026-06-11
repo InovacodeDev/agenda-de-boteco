@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 
-import { Pressable, Text, View } from '../../tw';
+import { Text, View } from '../../tw';
+import { GuardedPressable } from './GuardedPressable';
 
 export interface EmptyStateProps {
   icon: ReactNode;
@@ -18,9 +19,13 @@ export function EmptyState({ icon, message, actionLabel, onAction }: EmptyStateP
         {message}
       </Text>
       {actionLabel ? (
-        <Pressable accessibilityRole="button" onPress={onAction} className="active:opacity-80">
+        <GuardedPressable
+          accessibilityRole="button"
+          onPress={onAction}
+          className="active:opacity-80"
+        >
           <Text className="font-body-semibold text-[14px] text-primary">{actionLabel}</Text>
-        </Pressable>
+        </GuardedPressable>
       ) : null}
     </View>
   );

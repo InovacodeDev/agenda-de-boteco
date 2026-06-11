@@ -4,11 +4,12 @@ import { Check, MapPin } from 'lucide-react-native';
 import { Screen } from '../src/components/layout/Screen';
 import { ScreenHeader } from '../src/components/layout/ScreenHeader';
 import { Button } from '../src/components/ui/Button';
+import { GuardedPressable } from '../src/components/ui/GuardedPressable';
 import { CITIES } from '../src/data';
 import { useUserLocation } from '../src/hooks/useUserLocation';
 import { usePreferencesStore } from '../src/store/usePreferencesStore';
 import { colors } from '../src/theme/colors';
-import { Pressable, ScrollView, Text, View } from '../src/tw';
+import { ScrollView, Text, View } from '../src/tw';
 import { nearestCity } from '../src/utils/geo';
 
 export default function CityScreen() {
@@ -49,7 +50,7 @@ export default function CityScreen() {
           {CITIES.map((city) => {
             const selected = city.id === cityId;
             return (
-              <Pressable
+              <GuardedPressable
                 key={city.id}
                 accessibilityRole="button"
                 accessibilityState={{ selected }}
@@ -63,7 +64,7 @@ export default function CityScreen() {
                   <Text className="font-body text-[12px] text-muted-foreground">{city.uf}</Text>
                 </View>
                 {selected ? <Check color={colors.primary} size={18} /> : null}
-              </Pressable>
+              </GuardedPressable>
             );
           })}
         </View>

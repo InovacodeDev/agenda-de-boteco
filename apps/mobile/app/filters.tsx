@@ -8,12 +8,13 @@ import { FilterSlider } from '../src/components/filters/FilterSlider';
 import { SwitchRow } from '../src/components/filters/SwitchRow';
 import { Button } from '../src/components/ui/Button';
 import { Chip } from '../src/components/ui/Chip';
+import { GuardedPressable } from '../src/components/ui/GuardedPressable';
 import { CITIES, MUSIC_STYLES } from '../src/data';
 import { useFiltersStore } from '../src/store/useFiltersStore';
 import { usePreferencesStore } from '../src/store/usePreferencesStore';
 import { colors } from '../src/theme/colors';
 import { headingLetterSpacing } from '../src/theme/typography';
-import { Pressable, ScrollView, Text, View } from '../src/tw';
+import { ScrollView, Text, View } from '../src/tw';
 import type { DateBucket, EventFilters } from '../src/utils/filters';
 import { DEFAULT_EVENT_FILTERS } from '../src/utils/filters';
 
@@ -72,7 +73,7 @@ export default function FiltersSheet() {
           >
             Filtros
           </Text>
-          <Pressable
+          <GuardedPressable
             accessibilityRole="button"
             accessibilityLabel="Fechar filtros"
             onPress={() => router.back()}
@@ -80,7 +81,7 @@ export default function FiltersSheet() {
             className="active:opacity-80"
           >
             <X color={colors.mutedForeground} size={20} />
-          </Pressable>
+          </GuardedPressable>
         </View>
 
         <FilterSection title="Data">

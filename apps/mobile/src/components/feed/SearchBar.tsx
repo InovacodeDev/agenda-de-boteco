@@ -2,7 +2,8 @@ import { useRouter } from 'expo-router';
 import { Search, SlidersHorizontal } from 'lucide-react-native';
 
 import { colors } from '../../theme/colors';
-import { Pressable, TextInput, View } from '../../tw';
+import { TextInput, View } from '../../tw';
+import { GuardedPressable } from '../ui/GuardedPressable';
 
 export interface SearchBarProps {
   value: string;
@@ -25,14 +26,14 @@ export function SearchBar({ value, onChangeText }: SearchBarProps) {
           accessibilityLabel="Buscar evento, banda ou bar"
         />
       </View>
-      <Pressable
+      <GuardedPressable
         accessibilityRole="button"
         accessibilityLabel="Abrir filtros"
         onPress={() => router.push('/filters')}
         className="h-12 w-12 items-center justify-center rounded-2xl bg-surface-elevated active:opacity-80"
       >
         <SlidersHorizontal color={colors.foreground} size={18} />
-      </Pressable>
+      </GuardedPressable>
     </View>
   );
 }

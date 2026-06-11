@@ -4,7 +4,8 @@ import { MapPin } from 'lucide-react-native';
 import brandLogo from '../../../assets/logo.png';
 import type { City } from '../../data/schemas';
 import { colors } from '../../theme/colors';
-import { Image, Pressable, Text, View } from '../../tw';
+import { Image, Text, View } from '../../tw';
+import { GuardedPressable } from '../ui/GuardedPressable';
 
 export interface FeedHeaderProps {
   city: City;
@@ -21,7 +22,7 @@ export function FeedHeader({ city }: FeedHeaderProps) {
         contentFit="cover"
         accessibilityLabel="Agenda de Boteco"
       />
-      <Pressable
+      <GuardedPressable
         accessibilityRole="button"
         accessibilityLabel={`Cidade selecionada: ${city.name}, ${city.uf}`}
         onPress={() => router.push('/city')}
@@ -30,7 +31,7 @@ export function FeedHeader({ city }: FeedHeaderProps) {
         <MapPin color={colors.primary} size={14} />
         <Text className="font-body-semibold text-[13px] text-foreground">{city.name}</Text>
         <Text className="font-body text-[13px] text-muted-foreground">/{city.uf}</Text>
-      </Pressable>
+      </GuardedPressable>
     </View>
   );
 }

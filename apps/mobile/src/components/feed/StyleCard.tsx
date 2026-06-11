@@ -1,6 +1,7 @@
 import type { MusicStyle } from '../../data/schemas';
-import { Pressable, Text } from '../../tw';
+import { Text } from '../../tw';
 import { cn } from '../../utils/cn';
+import { GuardedPressable } from '../ui/GuardedPressable';
 
 export interface StyleCardProps {
   style: MusicStyle;
@@ -11,7 +12,7 @@ export interface StyleCardProps {
 /** Card do carrossel "Estilos em alta" (emoji grande + nome) */
 export function StyleCard({ style, selected = false, onPress }: StyleCardProps) {
   return (
-    <Pressable
+    <GuardedPressable
       accessibilityRole="button"
       accessibilityState={{ selected }}
       accessibilityLabel={`Estilo ${style.name}`}
@@ -31,6 +32,6 @@ export function StyleCard({ style, selected = false, onPress }: StyleCardProps) 
       >
         {style.name}
       </Text>
-    </Pressable>
+    </GuardedPressable>
   );
 }
