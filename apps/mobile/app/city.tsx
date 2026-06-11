@@ -38,6 +38,8 @@ export default function CityScreen() {
           label={status === 'loading' ? 'Localizando…' : 'Usar minha localização'}
           variant="outline"
           fullWidth
+          className="border-foreground/50"
+          style={{ flex: 1, backgroundColor: colors.background, borderWidth: 0.5 }}
           icon={<MapPin color={colors.foreground} size={16} />}
           onPress={useMyLocation}
         />

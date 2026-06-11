@@ -31,7 +31,7 @@ export default function FavoritesScreen() {
 
   return (
     <Screen>
-      <ScreenHeader title="Favoritos" />
+      <ScreenHeader title="Favoritos" showLogo />
       <ScrollView showsVerticalScrollIndicator={false} contentContainerClassName="gap-4 p-4">
         <SegmentedTabs
           tabs={[`Eventos (${favoriteEvents.length})`, `Bares (${favoriteEstablishments.length})`]}

@@ -15,7 +15,7 @@ export function MapScreen() {
 
   return (
     <Screen>
-      <ScreenHeader title="Mapa" />
+      <ScreenHeader title="Mapa" showLogo />
       <ScrollView showsVerticalScrollIndicator={false} contentContainerClassName="gap-3 p-4">
         <Text className="font-body text-[13px] text-muted-foreground">
           O mapa interativo está disponível no app. Bares em {city.name}:

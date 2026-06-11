@@ -80,26 +80,7 @@ export default function EstablishmentDetailScreen() {
       .filter((style) => style !== undefined);
 
   return (
-    <Screen>
-      <ScreenHeader
-        showBack
-        right={
-          <CircleIconButton
-            accessibilityLabel={
-              isFavorite ? 'Remover dos favoritos' : 'Favoritar estabelecimento'
-            }
-            icon={
-              <Heart
-                color={isFavorite ? colors.primary : colors.foreground}
-                fill={isFavorite ? colors.primary : 'transparent'}
-                size={18}
-              />
-            }
-            onPress={() => requireAuth(() => toggleEstablishment(establishment.id))}
-            className="bg-surface"
-          />
-        }
-      />
+    <Screen noTopInset>
       <ScrollView
         showsVerticalScrollIndicator={false}
         style={{ flex: 1 }}
@@ -247,6 +228,25 @@ export default function EstablishmentDetailScreen() {
           }
         />
       </View>
+      <ScreenHeader
+        overlay
+        showBack
+        right={
+          <CircleIconButton
+            accessibilityLabel={
+              isFavorite ? 'Remover dos favoritos' : 'Favoritar estabelecimento'
+            }
+            icon={
+              <Heart
+                color={isFavorite ? colors.primary : colors.foreground}
+                fill={isFavorite ? colors.primary : 'transparent'}
+                size={18}
+              />
+            }
+            onPress={() => requireAuth(() => toggleEstablishment(establishment.id))}
+          />
+        }
+      />
     </Screen>
   );
 }

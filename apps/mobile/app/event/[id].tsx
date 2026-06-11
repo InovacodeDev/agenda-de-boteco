@@ -73,32 +73,7 @@ export default function EventDetailScreen() {
   };
 
   return (
-    <Screen>
-      <ScreenHeader
-        showBack
-        right={
-          <>
-            <CircleIconButton
-              accessibilityLabel="Compartilhar evento"
-              icon={<Share2 color={colors.foreground} size={18} />}
-              onPress={share}
-              className="bg-surface"
-            />
-            <CircleIconButton
-              accessibilityLabel={isFavorite ? 'Remover dos favoritos' : 'Favoritar evento'}
-              icon={
-                <Heart
-                  color={isFavorite ? colors.primary : colors.foreground}
-                  fill={isFavorite ? colors.primary : 'transparent'}
-                  size={18}
-                />
-              }
-              onPress={() => requireAuth(() => toggleEvent(event.id))}
-              className="bg-surface"
-            />
-          </>
-        }
-      />
+    <Screen noTopInset>
       <ScrollView
         showsVerticalScrollIndicator={false}
         style={{ flex: 1 }}
@@ -206,6 +181,30 @@ export default function EventDetailScreen() {
           onPress={() => router.push(`/establishment/${establishment.id}`)}
         />
       </View>
+      <ScreenHeader
+        overlay
+        showBack
+        right={
+          <>
+            <CircleIconButton
+              accessibilityLabel="Compartilhar evento"
+              icon={<Share2 color={colors.foreground} size={18} />}
+              onPress={share}
+            />
+            <CircleIconButton
+              accessibilityLabel={isFavorite ? 'Remover dos favoritos' : 'Favoritar evento'}
+              icon={
+                <Heart
+                  color={isFavorite ? colors.primary : colors.foreground}
+                  fill={isFavorite ? colors.primary : 'transparent'}
+                  size={18}
+                />
+              }
+              onPress={() => requireAuth(() => toggleEvent(event.id))}
+            />
+          </>
+        }
+      />
     </Screen>
   );
 }

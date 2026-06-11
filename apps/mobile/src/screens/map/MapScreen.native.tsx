@@ -107,7 +107,7 @@ export function MapScreen() {
   if (Platform.OS === 'android' && !hasAndroidMapsKey()) {
     return (
       <Screen noBottomInset>
-        <ScreenHeader title="Mapa" />
+        <ScreenHeader title="Mapa" showLogo />
         <MissingKeyFallback establishments={establishments} />
       </Screen>
     );
@@ -123,7 +123,7 @@ export function MapScreen() {
 
   return (
     <Screen noBottomInset>
-      <ScreenHeader title="Mapa" />
+      <ScreenHeader title="Mapa" showLogo />
       <View className="flex-1">
         <MapView
           ref={mapRef}

@@ -11,7 +11,7 @@ export default function NotificationsScreen() {
 
   return (
     <Screen>
-      <ScreenHeader title="Avisos" />
+      <ScreenHeader title="Avisos" showLogo />
       <ScrollView showsVerticalScrollIndicator={false} contentContainerClassName="gap-3 p-4">
         <View className="gap-3">
           {NOTIFICATIONS.map((notification) => (
