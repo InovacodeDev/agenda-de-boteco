@@ -23,7 +23,7 @@ export function getSupabase(): SupabaseClient | null {
     return client;
   }
   const url = process.env.EXPO_PUBLIC_SUPABASE_URL;
-  const anonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+  const anonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || process.env.EXPO_PUBLIC_SUPABASE_KEY;
   client =
     url && anonKey
       ? createSupabaseClient({

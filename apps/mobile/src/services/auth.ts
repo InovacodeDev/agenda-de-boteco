@@ -49,7 +49,7 @@ function mapUser(user: SupabaseUserLike): AuthUser {
 }
 
 function buildRedirectUrl(): string {
-  return Linking.createURL('login');
+  return Linking.createURL('/');
 }
 
 /**
@@ -84,12 +84,23 @@ export async function signInWithProvider(provider: AuthProvider): Promise<void> 
   }
 }
 
-/** Envia link mágico de acesso por e-mail */
 export async function signInWithEmailOtp(email: string): Promise<void> {
   const client = requireClient();
   const { error } = await client.auth.signInWithOtp({
     email,
     options: { emailRedirectTo: buildRedirectUrl() },
+  });
+  if (error) {
+    throw error;
+  }
+}
+
+export async function verifyEmailOtp(email: string, token: string): Promise<void> {
+  const client = requireClient();
+  const { error } = await client.auth.verifyOtp({
+    email,
+    token,
+    type: 'email',
   });
   if (error) {
     throw error;
@@ -129,4 +140,19 @@ export function onAuthUserChange(
     callback(session?.user ? mapUser(session.user) : null);
   });
   return () => data.subscription.unsubscribe();
+}
+
+export async function handleDeepLink(url: string): Promise<boolean> {
+  const client = getSupabase();
+  if (!client) {
+    return false;
+  }
+  const tokens = parseAuthTokensFromUrl(url);
+  if (tokens) {
+    const { error } = await client.auth.setSession(tokens);
+    if (!error) {
+      return true;
+    }
+  }
+  return false;
 }

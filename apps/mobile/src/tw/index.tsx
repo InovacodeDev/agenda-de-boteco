@@ -1,5 +1,6 @@
 import type React from 'react';
 import {
+  KeyboardAvoidingView as RNKeyboardAvoidingView,
   Pressable as RNPressable,
   ScrollView as RNScrollView,
   Text as RNText,
@@ -69,3 +70,12 @@ export const TextInput = (props: TextInputProps): React.ReactElement => {
   return useCssElement(RNTextInput, props, { className: 'style' });
 };
 TextInput.displayName = 'CSS(TextInput)';
+
+export type KeyboardAvoidingViewProps = React.ComponentProps<typeof RNKeyboardAvoidingView> & {
+  className?: string;
+};
+
+export const KeyboardAvoidingView = (props: KeyboardAvoidingViewProps): React.ReactElement => {
+  return useCssElement(RNKeyboardAvoidingView, props, { className: 'style' });
+};
+KeyboardAvoidingView.displayName = 'CSS(KeyboardAvoidingView)';

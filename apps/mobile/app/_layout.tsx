@@ -11,12 +11,14 @@ import {
   SpaceGrotesk_700Bold,
 } from '@expo-google-fonts/space-grotesk';
 import { useFonts } from 'expo-font';
+import * as Linking from 'expo-linking';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { handleDeepLink } from '../src/services/auth';
 import { useAuthStore } from '../src/store/useAuthStore';
 import { usePreferencesStore } from '../src/store/usePreferencesStore';
 import { colors } from '../src/theme/colors';
@@ -28,9 +30,17 @@ export default function RootLayout() {
   const hasHydrated = usePreferencesStore((state) => state.hasHydrated);
   const initializeAuth = useAuthStore((state) => state.initialize);
 
+  const url = Linking.useURL();
+
   useEffect(() => {
     initializeAuth();
   }, [initializeAuth]);
+
+  useEffect(() => {
+    if (url) {
+      handleDeepLink(url);
+    }
+  }, [url]);
 
   const [fontsLoaded] = useFonts({
     SpaceGrotesk_500Medium,

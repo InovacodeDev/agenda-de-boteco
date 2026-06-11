@@ -1,0 +1,101 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="pt-BR">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="dark light" />
+  <meta name="supported-color-schemes" content="dark light" />
+  <title>Código de Verificação - Agenda de Boteco</title>
+  <style type="text/css">
+    body {
+      margin: 0;
+      padding: 0;
+      width: 100% !important;
+      background-color: #0F0F0F;
+      -webkit-text-size-adjust: 100%;
+      -ms-text-size-adjust: 100%;
+    }
+    img {
+      border: 0;
+      height: auto;
+      line-height: 100%;
+      outline: none;
+      text-decoration: none;
+    }
+    table {
+      border-collapse: collapse !important;
+    }
+    @media (prefers-color-scheme: dark) {
+      .email-bg {
+        background-color: #0F0F0F !important;
+      }
+      .card-bg {
+        background-color: #171717 !important;
+        border-color: #292929 !important;
+      }
+      .text-title {
+        color: #FAFAFA !important;
+      }
+      .text-body {
+        color: #A6A6A6 !important;
+      }
+      .otp-box {
+        background-color: #1C1C1C !important;
+        border-color: #292929 !important;
+      }
+    }
+  </style>
+</head>
+<body style="margin: 0; padding: 0; width: 100% !important; background-color: #0F0F0F; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <table border="0" cellpadding="0" cellspacing="0" width="100%" class="email-bg" style="background-color: #0F0F0F;">
+    <tr>
+      <td align="center" style="padding: 40px 10px 40px 10px;">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px;">
+          <tr>
+            <td align="center" style="padding-bottom: 30px;">
+              <table border="0" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td align="center" style="background-color: #1A122B; padding: 12px 24px; border-radius: 16px; border: 1px solid #292929;">
+                    <span style="font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: 20px; font-weight: bold; letter-spacing: 1px; color: #FAFAFA; text-transform: uppercase;">
+                      Agenda de Boteco
+                    </span>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td class="card-bg" style="background-color: #171717; border: 1px solid #292929; border-radius: 24px; padding: 40px 30px; text-align: center;">
+              <h1 class="text-title" style="margin: 0 0 16px 0; font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: 24px; font-weight: bold; line-height: 32px; color: #FAFAFA;">
+                Código de confirmação
+              </h1>
+              <p class="text-body" style="margin: 0 0 24px 0; font-size: 15px; line-height: 24px; color: #A6A6A6;">
+                Olá! Para realizar a operação segura solicitada no aplicativo, insira o código temporário de verificação de 6 dígitos abaixo para confirmar sua identidade:
+              </p>
+              <table border="0" cellpadding="0" cellspacing="0" style="margin: 0 auto;">
+                <tr>
+                  <td align="center" class="otp-box" style="background-color: #1C1C1C; border: 1px solid #292929; border-radius: 16px; padding: 16px 36px;">
+                    <span style="font-family: monospace; font-size: 32px; font-weight: bold; letter-spacing: 4px; color: #1DD75E;">
+                      {{ .Token }}
+                    </span>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td align="center" style="padding-top: 30px;">
+              <p style="margin: 0 0 8px 0; font-size: 12px; line-height: 18px; color: #525252;">
+                Este é um e-mail automático enviado pelo Agenda de Boteco.
+              </p>
+              <p style="margin: 0; font-size: 12px; line-height: 18px; color: #525252;">
+                Se você não solicitou este e-mail, por favor desconsidere-o.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

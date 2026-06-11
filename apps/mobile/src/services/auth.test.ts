@@ -5,14 +5,17 @@ import {
   onAuthUserChange,
   signInWithEmailOtp,
   signOut,
+  handleDeepLink,
+  signInWithProvider,
+  verifyEmailOtp,
 } from './auth';
 
 jest.mock('expo-linking', () => ({
-  createURL: jest.fn(() => 'agenda-de-boteco://login'),
+  createURL: jest.fn(() => 'agenda-de-boteco://'),
 }));
 
 jest.mock('expo-web-browser', () => ({
-  openAuthSessionAsync: jest.fn(),
+  openAuthSessionAsync: jest.fn().mockResolvedValue({ type: 'dismissed' }),
 }));
 
 const mockGetSupabase = jest.fn();
@@ -26,6 +29,9 @@ interface MockAuth {
   signOut: jest.Mock;
   getSession: jest.Mock;
   onAuthStateChange: jest.Mock;
+  signInWithOAuth: jest.Mock;
+  setSession: jest.Mock;
+  verifyOtp: jest.Mock;
 }
 
 function makeClient(overrides: Partial<MockAuth> = {}) {
@@ -36,6 +42,9 @@ function makeClient(overrides: Partial<MockAuth> = {}) {
     onAuthStateChange: jest.fn().mockReturnValue({
       data: { subscription: { unsubscribe: jest.fn() } },
     }),
+    signInWithOAuth: jest.fn().mockResolvedValue({ data: { url: 'https://oauth.url' }, error: null }),
+    setSession: jest.fn().mockResolvedValue({ error: null }),
+    verifyOtp: jest.fn().mockResolvedValue({ error: null }),
     ...overrides,
   };
   return { auth };
@@ -68,7 +77,7 @@ describe('signInWithEmailOtp', () => {
     await signInWithEmailOtp('tito@exemplo.com');
     expect(client.auth.signInWithOtp).toHaveBeenCalledWith({
       email: 'tito@exemplo.com',
-      options: { emailRedirectTo: 'agenda-de-boteco://login' },
+      options: { emailRedirectTo: 'agenda-de-boteco://' },
     });
   });
 
@@ -163,3 +172,85 @@ describe('onAuthUserChange', () => {
     expect(unsubscribeFn).toHaveBeenCalled();
   });
 });
+
+describe('handleDeepLink', () => {
+  it('retorna false sem Supabase configurado', async () => {
+    mockGetSupabase.mockReturnValue(null);
+    const result = await handleDeepLink('agenda-de-boteco://login#access_token=1&refresh_token=2');
+    expect(result).toBe(false);
+  });
+
+  it('retorna false para URLs sem tokens', async () => {
+    const client = makeClient();
+    mockGetSupabase.mockReturnValue(client);
+    const result = await handleDeepLink('agenda-de-boteco://login');
+    expect(result).toBe(false);
+  });
+
+  it('chama setSession e retorna true com tokens validos', async () => {
+    const setSession = jest.fn().mockResolvedValue({ error: null });
+    const client = makeClient({ setSession });
+    mockGetSupabase.mockReturnValue(client);
+    const result = await handleDeepLink('agenda-de-boteco://login#access_token=abc&refresh_token=def');
+    expect(setSession).toHaveBeenCalledWith({ access_token: 'abc', refresh_token: 'def' });
+    expect(result).toBe(true);
+  });
+
+  it('retorna false se setSession falhar', async () => {
+    const setSession = jest.fn().mockResolvedValue({ error: new Error('session error') });
+    const client = makeClient({ setSession });
+    mockGetSupabase.mockReturnValue(client);
+    const result = await handleDeepLink('agenda-de-boteco://login#access_token=abc&refresh_token=def');
+    expect(result).toBe(false);
+  });
+});
+
+describe('signInWithProvider', () => {
+  it('lança AuthUnavailableError sem Supabase', async () => {
+    mockGetSupabase.mockReturnValue(null);
+    await expect(signInWithProvider('google')).rejects.toBeInstanceOf(
+      AuthUnavailableError,
+    );
+  });
+
+  it('chama signInWithOAuth com provider e redirect', async () => {
+    const signInWithOAuth = jest.fn().mockResolvedValue({ data: { url: 'https://oauth.url' }, error: null });
+    const client = makeClient({ signInWithOAuth });
+    mockGetSupabase.mockReturnValue(client);
+    await signInWithProvider('google');
+    expect(signInWithOAuth).toHaveBeenCalledWith({
+      provider: 'google',
+      options: {
+        redirectTo: 'agenda-de-boteco://',
+        skipBrowserRedirect: true,
+      },
+    });
+  });
+});
+
+describe('verifyEmailOtp', () => {
+  it('lança AuthUnavailableError sem Supabase', async () => {
+    mockGetSupabase.mockReturnValue(null);
+    await expect(verifyEmailOtp('tito@exemplo.com', '123456')).rejects.toBeInstanceOf(
+      AuthUnavailableError,
+    );
+  });
+
+  it('chama verifyOtp com email, token e type: email', async () => {
+    const verifyOtp = jest.fn().mockResolvedValue({ error: null });
+    const client = makeClient({ verifyOtp });
+    mockGetSupabase.mockReturnValue(client);
+    await verifyEmailOtp('tito@exemplo.com', '123456');
+    expect(verifyOtp).toHaveBeenCalledWith({
+      email: 'tito@exemplo.com',
+      token: '123456',
+      type: 'email',
+    });
+  });
+
+  it('propaga erro do Supabase', async () => {
+    const verifyOtp = jest.fn().mockResolvedValue({ error: new Error('invalid token') });
+    const client = makeClient({ verifyOtp });
+    mockGetSupabase.mockReturnValue(client);
+    await expect(verifyEmailOtp('tito@exemplo.com', '123456')).rejects.toThrow('invalid token');
+  });
