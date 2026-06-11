@@ -1,7 +1,7 @@
 import { useRouter } from 'expo-router';
 import { MapPin } from 'lucide-react-native';
 
-import appIcon from '../../../assets/icon.png';
+import brandLogo from '../../../assets/logo.png';
 import type { City } from '../../data/schemas';
 import { colors } from '../../theme/colors';
 import { Image, Pressable, Text, View } from '../../tw';
@@ -16,7 +16,7 @@ export function FeedHeader({ city }: FeedHeaderProps) {
   return (
     <View className="flex-row items-center justify-between">
       <Image
-        source={appIcon}
+        source={brandLogo}
         className="h-10 w-10 rounded-lg"
         contentFit="cover"
         accessibilityLabel="Agenda de Boteco"

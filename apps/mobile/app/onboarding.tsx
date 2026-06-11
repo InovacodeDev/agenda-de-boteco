@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 import { StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import appIcon from '../assets/icon.png';
+import brandLogo from '../assets/logo.png';
 import { Button } from '../src/components/ui/Button';
 import { CITIES } from '../src/data';
 import { useUserLocation } from '../src/hooks/useUserLocation';
@@ -60,7 +60,7 @@ export default function OnboardingScreen() {
         }}
       >
         <Image
-          source={appIcon}
+          source={brandLogo}
           className="h-20 w-20 rounded-xl"
           contentFit="cover"
           accessibilityLabel="Agenda de Boteco"

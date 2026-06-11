@@ -4,7 +4,7 @@ import { Apple, ArrowLeft, Mail } from 'lucide-react-native';
 import { StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import appIcon from '../assets/icon.png';
+import brandLogo from '../assets/logo.png';
 import { Button } from '../src/components/ui/Button';
 import { CircleIconButton } from '../src/components/ui/CircleIconButton';
 import { colors } from '../src/theme/colors';
@@ -32,7 +32,7 @@ export default function LoginScreen() {
 
         <View className="gap-5">
           <Image
-            source={appIcon}
+            source={brandLogo}
             className="h-16 w-16 rounded-xl"
             contentFit="cover"
             accessibilityLabel="Agenda de Boteco"
