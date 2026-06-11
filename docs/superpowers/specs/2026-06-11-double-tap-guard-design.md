@@ -28,7 +28,7 @@ O guard é por instância: botões diferentes nunca se bloqueiam entre si.
 ## Componentes
 
 | Unidade | Caminho | Responsabilidade |
-|---|---|---|
+| ------- | ------- | ---------------- |
 | `createPressGuard` | `apps/mobile/src/utils/pressGuard.ts` | Lógica pura do lock (cooldown + promise em andamento). Sem React. |
 | Testes do util | `apps/mobile/src/utils/pressGuard.test.ts` | Contrato completo (obrigatório por AGENTS.md). |
 | `useGuardedPress` | `apps/mobile/src/hooks/useGuardedPress.ts` | Hook que instancia o guard por componente e mantém referência estável. |
