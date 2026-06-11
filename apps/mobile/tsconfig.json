@@ -5,6 +5,8 @@
     "baseUrl": ".",
     "ignoreDeprecations": "6.0",
     "skipLibCheck": true,
+    "types": ["jest"],
+    "moduleSuffixes": [".ios", ".android", ".native", ""],
     "paths": {
       "@/*": ["./*"]
     }
