@@ -1,13 +1,13 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import { Apple, ArrowLeft, Info, Mail } from 'lucide-react-native';
+import { Apple, Info, Mail } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
 import { StyleSheet } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import brandLogo from '../assets/logo.png';
+import { Screen } from '../src/components/layout/Screen';
+import { ScreenHeader } from '../src/components/layout/ScreenHeader';
 import { Button } from '../src/components/ui/Button';
-import { CircleIconButton } from '../src/components/ui/CircleIconButton';
 import {
   type AuthProvider,
   signInWithEmailOtp,
@@ -23,7 +23,6 @@ type EmailStep = 'hidden' | 'editing' | 'sent';
 
 export default function LoginScreen() {
   const router = useRouter();
-  const insets = useSafeAreaInsets();
   const status = useAuthStore((state) => state.status);
 
   const [emailStep, setEmailStep] = useState<EmailStep>('hidden');
@@ -72,19 +71,9 @@ export default function LoginScreen() {
   };
 
   return (
-    <View className="flex-1 bg-background">
-      <LinearGradient {...gradientNight} style={StyleSheet.absoluteFill} />
-      <View
-        className="flex-1 justify-between p-6"
-        style={{ paddingTop: insets.top + 12, paddingBottom: insets.bottom + 24 }}
-      >
-        <CircleIconButton
-          accessibilityLabel="Voltar"
-          icon={<ArrowLeft color={colors.foreground} size={20} />}
-          onPress={() => router.back()}
-          className="bg-surface"
-        />
-
+    <Screen background={<LinearGradient {...gradientNight} style={StyleSheet.absoluteFill} />}>
+      <ScreenHeader showBack />
+      <View className="flex-1 justify-end p-6">
         <View className="gap-5">
           <Image
             source={brandLogo}
@@ -188,6 +177,6 @@ export default function LoginScreen() {
           </Text>
         </View>
       </View>
-    </View>
+    </Screen>
   );
 }

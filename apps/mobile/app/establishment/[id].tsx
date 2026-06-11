@@ -1,6 +1,5 @@
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import {
-  ArrowLeft,
   AtSign,
   Clock,
   Heart,
@@ -10,11 +9,11 @@ import {
 } from 'lucide-react-native';
 import { useState } from 'react';
 import { Linking, StyleSheet } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AgendaItem } from '@/src/components/establishment/AgendaItem';
 import { MenuItemRow } from '@/src/components/establishment/MenuItemRow';
 import { Screen } from '@/src/components/layout/Screen';
+import { ScreenHeader } from '@/src/components/layout/ScreenHeader';
 import { Button } from '@/src/components/ui/Button';
 import { CircleIconButton } from '@/src/components/ui/CircleIconButton';
 import { RatingStars } from '@/src/components/ui/RatingStars';
@@ -49,9 +48,7 @@ function AboutCard({ label, value, icon }: AboutCardProps) {
 
 export default function EstablishmentDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const router = useRouter();
   const requireAuth = useRequireAuth();
-  const insets = useSafeAreaInsets();
   const [activeTab, setActiveTab] = useState(0);
 
   const establishment = ESTABLISHMENTS.find((item) => item.id === id);
@@ -62,11 +59,14 @@ export default function EstablishmentDetailScreen() {
 
   if (!establishment) {
     return (
-      <View className="flex-1 items-center justify-center bg-background">
-        <Text className="font-body text-[14px] text-muted-foreground">
-          Estabelecimento não encontrado.
-        </Text>
-      </View>
+      <Screen>
+        <ScreenHeader showBack />
+        <View className="flex-1 items-center justify-center">
+          <Text className="font-body text-[14px] text-muted-foreground">
+            Estabelecimento não encontrado.
+          </Text>
+        </View>
+      </Screen>
     );
   }
 
@@ -81,9 +81,28 @@ export default function EstablishmentDetailScreen() {
 
   return (
     <Screen>
+      <ScreenHeader
+        showBack
+        right={
+          <CircleIconButton
+            accessibilityLabel={
+              isFavorite ? 'Remover dos favoritos' : 'Favoritar estabelecimento'
+            }
+            icon={
+              <Heart
+                color={isFavorite ? colors.primary : colors.foreground}
+                fill={isFavorite ? colors.primary : 'transparent'}
+                size={18}
+              />
+            }
+            onPress={() => requireAuth(() => toggleEstablishment(establishment.id))}
+            className="bg-surface"
+          />
+        }
+      />
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: insets.bottom + 96 }}
+        style={{ flex: 1 }}
       >
         <View className="h-65">
           <Image
@@ -92,29 +111,6 @@ export default function EstablishmentDetailScreen() {
             style={StyleSheet.absoluteFill}
             accessibilityLabel={establishment.name}
           />
-          <View
-            className="flex-row items-center justify-between p-4"
-            style={{ paddingTop: 8 }}
-          >
-            <CircleIconButton
-              accessibilityLabel="Voltar"
-              icon={<ArrowLeft color={colors.foreground} size={20} />}
-              onPress={() => router.back()}
-            />
-            <CircleIconButton
-              accessibilityLabel={
-                isFavorite ? 'Remover dos favoritos' : 'Favoritar estabelecimento'
-              }
-              icon={
-                <Heart
-                  color={isFavorite ? colors.primary : colors.foreground}
-                  fill={isFavorite ? colors.primary : 'transparent'}
-                  size={18}
-                />
-              }
-              onPress={() => requireAuth(() => toggleEstablishment(establishment.id))}
-            />
-          </View>
         </View>
 
         <View className="gap-4 p-4">
@@ -241,7 +237,7 @@ export default function EstablishmentDetailScreen() {
         />
         <Button
           variant="outline"
-          className="border-foreground/50 border[0.5px]"
+          className="border-foreground/50 border-[0.5px]"
           style={{ backgroundColor: colors.background }}
           icon={<Navigation color={colors.foreground} size={16} />}
           onPress={() =>

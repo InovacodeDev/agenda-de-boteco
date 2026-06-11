@@ -7,6 +7,7 @@ import { QuickFilterChips } from '../../src/components/feed/QuickFilterChips';
 import { SearchBar } from '../../src/components/feed/SearchBar';
 import { StyleCard } from '../../src/components/feed/StyleCard';
 import { Screen } from '../../src/components/layout/Screen';
+import { ScreenHeader } from '../../src/components/layout/ScreenHeader';
 import { SectionLabel } from '../../src/components/ui/SectionLabel';
 import { CITIES, ESTABLISHMENTS, EVENTS, MUSIC_STYLES } from '../../src/data';
 import type { Establishment } from '../../src/data/schemas';
@@ -51,6 +52,9 @@ export default function FeedScreen() {
 
   return (
     <Screen>
+      <ScreenHeader>
+        <FeedHeader city={city} />
+      </ScreenHeader>
       <FlashList
         data={events}
         keyExtractor={(event) => event.id}
@@ -59,7 +63,6 @@ export default function FeedScreen() {
         ItemSeparatorComponent={() => <View className="h-4" />}
         ListHeaderComponent={
           <View className="gap-4 pb-4 pt-2">
-            <FeedHeader city={city} />
             <View className="gap-1">
               <Text
                 className="font-heading text-[28px] text-foreground"

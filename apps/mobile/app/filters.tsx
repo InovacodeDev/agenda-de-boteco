@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { FilterSection } from '../src/components/filters/FilterSection';
 import { FilterSlider } from '../src/components/filters/FilterSlider';
 import { SwitchRow } from '../src/components/filters/SwitchRow';
+import { ScreenHeader } from '../src/components/layout/ScreenHeader';
 import { Button } from '../src/components/ui/Button';
 import { Chip } from '../src/components/ui/Chip';
 import { GuardedPressable } from '../src/components/ui/GuardedPressable';
@@ -13,8 +14,7 @@ import { CITIES, MUSIC_STYLES } from '../src/data';
 import { useFiltersStore } from '../src/store/useFiltersStore';
 import { usePreferencesStore } from '../src/store/usePreferencesStore';
 import { colors } from '../src/theme/colors';
-import { headingLetterSpacing } from '../src/theme/typography';
-import { ScrollView, Text, View } from '../src/tw';
+import { ScrollView, View } from '../src/tw';
 import type { DateBucket, EventFilters } from '../src/utils/filters';
 import { DEFAULT_EVENT_FILTERS } from '../src/utils/filters';
 
@@ -62,17 +62,9 @@ export default function FiltersSheet() {
 
   return (
     <View className="flex-1 bg-popover">
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerClassName="gap-6 p-5"
-      >
-        <View className="flex-row items-center justify-between">
-          <Text
-            className="font-heading text-[20px] text-foreground"
-            style={{ letterSpacing: headingLetterSpacing(20) }}
-          >
-            Filtros
-          </Text>
+      <ScreenHeader
+        title="Filtros"
+        right={
           <GuardedPressable
             accessibilityRole="button"
             accessibilityLabel="Fechar filtros"
@@ -82,8 +74,12 @@ export default function FiltersSheet() {
           >
             <X color={colors.mutedForeground} size={20} />
           </GuardedPressable>
-        </View>
-
+        }
+      />
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerClassName="gap-6 px-5 pb-5"
+      >
         <FilterSection title="Data">
           <View className="flex-row flex-wrap gap-2">
             {DATE_OPTIONS.map(({ label, bucket }) => (

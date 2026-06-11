@@ -1,6 +1,5 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import {
-  ArrowLeft,
   Calendar,
   Clock,
   Heart,
@@ -13,6 +12,7 @@ import {
 import { Linking, Share, StyleSheet } from 'react-native';
 
 import { Screen } from '@/src/components/layout/Screen';
+import { ScreenHeader } from '@/src/components/layout/ScreenHeader';
 import { Button } from '@/src/components/ui/Button';
 import { CircleIconButton } from '@/src/components/ui/CircleIconButton';
 import { GradientBadge } from '@/src/components/ui/GradientBadge';
@@ -45,11 +45,14 @@ export default function EventDetailScreen() {
 
   if (!event || !establishment) {
     return (
-      <View className="flex-1 items-center justify-center bg-background">
-        <Text className="font-body text-[14px] text-muted-foreground">
-          Evento não encontrado.
-        </Text>
-      </View>
+      <Screen>
+        <ScreenHeader showBack />
+        <View className="flex-1 items-center justify-center">
+          <Text className="font-body text-[14px] text-muted-foreground">
+            Evento não encontrado.
+          </Text>
+        </View>
+      </Screen>
     );
   }
 
@@ -71,6 +74,31 @@ export default function EventDetailScreen() {
 
   return (
     <Screen>
+      <ScreenHeader
+        showBack
+        right={
+          <>
+            <CircleIconButton
+              accessibilityLabel="Compartilhar evento"
+              icon={<Share2 color={colors.foreground} size={18} />}
+              onPress={share}
+              className="bg-surface"
+            />
+            <CircleIconButton
+              accessibilityLabel={isFavorite ? 'Remover dos favoritos' : 'Favoritar evento'}
+              icon={
+                <Heart
+                  color={isFavorite ? colors.primary : colors.foreground}
+                  fill={isFavorite ? colors.primary : 'transparent'}
+                  size={18}
+                />
+              }
+              onPress={() => requireAuth(() => toggleEvent(event.id))}
+              className="bg-surface"
+            />
+          </>
+        }
+      />
       <ScrollView
         showsVerticalScrollIndicator={false}
         style={{ flex: 1 }}
@@ -82,35 +110,7 @@ export default function EventDetailScreen() {
             style={StyleSheet.absoluteFill}
             accessibilityLabel={event.name}
           />
-          <View
-            className="flex-1 justify-between p-4"
-            style={{ paddingTop: 8 }}
-          >
-            <View className="flex-row items-center justify-between">
-              <CircleIconButton
-                accessibilityLabel="Voltar"
-                icon={<ArrowLeft color={colors.foreground} size={20} />}
-                onPress={() => router.back()}
-              />
-              <View className="flex-row gap-2">
-                <CircleIconButton
-                  accessibilityLabel="Compartilhar evento"
-                  icon={<Share2 color={colors.foreground} size={18} />}
-                  onPress={share}
-                />
-                <CircleIconButton
-                  accessibilityLabel={isFavorite ? 'Remover dos favoritos' : 'Favoritar evento'}
-                  icon={
-                    <Heart
-                      color={isFavorite ? colors.primary : colors.foreground}
-                      fill={isFavorite ? colors.primary : 'transparent'}
-                      size={18}
-                    />
-                  }
-                  onPress={() => requireAuth(() => toggleEvent(event.id))}
-                />
-              </View>
-            </View>
+          <View className="flex-1 justify-end p-4">
             <View className="flex-row gap-1.5">
               {styles.map((style) => (
                 <View key={style.id} className="rounded-full bg-background/70 px-2.5 py-1">
@@ -189,7 +189,7 @@ export default function EventDetailScreen() {
         <Button
           label="Como chegar"
           variant="outline"
-          className="flex-1 border-foreground/50 border[0.5px]"
+          className="flex-1 border-foreground/50 border-[0.5px]"
           style={{ backgroundColor: colors.background }}
           icon={<Navigation color={colors.foreground} size={16} />}
           onPress={() =>

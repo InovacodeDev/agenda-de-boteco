@@ -2,9 +2,10 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { MapPin, Music, Sparkles } from 'lucide-react-native';
 import type { ReactNode } from 'react';
 import { StyleSheet } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import brandLogo from '../assets/logo.png';
+import { Screen } from '../src/components/layout/Screen';
+import { ScreenHeader } from '../src/components/layout/ScreenHeader';
 import { Button } from '../src/components/ui/Button';
 import { GuardedPressable } from '../src/components/ui/GuardedPressable';
 import { CITIES } from '../src/data';
@@ -32,7 +33,6 @@ function FeatureCard({ icon, label }: FeatureCardProps) {
 }
 
 export default function OnboardingScreen() {
-  const insets = useSafeAreaInsets();
   const setCity = usePreferencesStore((state) => state.setCity);
   const completeOnboarding = usePreferencesStore((state) => state.completeOnboarding);
   const { request, status } = useUserLocation();
@@ -50,23 +50,19 @@ export default function OnboardingScreen() {
   };
 
   return (
-    <View className="flex-1 bg-background">
-      <LinearGradient {...gradientNight} style={StyleSheet.absoluteFill} />
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerClassName="gap-6 p-6"
-        contentContainerStyle={{
-          paddingTop: insets.top + 32,
-          paddingBottom: insets.bottom + 24,
-        }}
-      >
+    <Screen background={<LinearGradient {...gradientNight} style={StyleSheet.absoluteFill} />}>
+      <ScreenHeader>
         <Image
           source={brandLogo}
-          className="h-20 w-20 rounded-xl"
+          className="h-10 w-10 rounded-lg"
           contentFit="cover"
           accessibilityLabel="Agenda de Boteco"
         />
-
+      </ScreenHeader>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerClassName="gap-6 p-6"
+      >
         <View className="gap-3">
           <Text
             className="font-heading text-[32px] text-foreground"
@@ -129,6 +125,6 @@ export default function OnboardingScreen() {
           </View>
         </View>
       </ScrollView>
-    </View>
+    </Screen>
   );
 }

@@ -72,18 +72,10 @@ function SignedInProfile() {
 export default function ProfileScreen() {
   const status = useAuthStore((state) => state.status);
 
-  if (status === 'signedIn') {
-    return (
-      <Screen>
-        <ScreenHeader title="Perfil" />
-        <SignedInProfile />
-      </Screen>
-    );
-  }
-
   return (
     <Screen>
-      <SignedOutProfile />
+      <ScreenHeader title="Perfil" />
+      {status === 'signedIn' ? <SignedInProfile /> : <SignedOutProfile />}
     </Screen>
   );
 }
