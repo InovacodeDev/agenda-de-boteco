@@ -10,30 +10,28 @@ import {
   Store,
   Ticket,
 } from 'lucide-react-native';
-import { Linking, Share, StyleSheet, useWindowDimensions } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Linking, Share, StyleSheet } from 'react-native';
 
-import { Button } from '../../src/components/ui/Button';
-import { CircleIconButton } from '../../src/components/ui/CircleIconButton';
-import { GradientBadge } from '../../src/components/ui/GradientBadge';
-import { InfoCard } from '../../src/components/ui/InfoCard';
-import { SectionLabel } from '../../src/components/ui/SectionLabel';
-import { ESTABLISHMENTS, EVENTS, MUSIC_STYLES } from '../../src/data';
-import { useRequireAuth } from '../../src/hooks/useRequireAuth';
-import { useFavoritesStore } from '../../src/store/useFavoritesStore';
-import { colors } from '../../src/theme/colors';
-import { headingLetterSpacing } from '../../src/theme/typography';
-import { Image, ScrollView, Text, View } from '../../src/tw';
-import { formatRelativeDay, formatTime } from '../../src/utils/dates';
-import { formatPrice } from '../../src/utils/format';
-import { buildDirectionsUrl } from '../../src/utils/links';
+import { Screen } from '@/src/components/layout/Screen';
+import { Button } from '@/src/components/ui/Button';
+import { CircleIconButton } from '@/src/components/ui/CircleIconButton';
+import { GradientBadge } from '@/src/components/ui/GradientBadge';
+import { InfoCard } from '@/src/components/ui/InfoCard';
+import { SectionLabel } from '@/src/components/ui/SectionLabel';
+import { ESTABLISHMENTS, EVENTS, MUSIC_STYLES } from '@/src/data';
+import { useRequireAuth } from '@/src/hooks/useRequireAuth';
+import { useFavoritesStore } from '@/src/store/useFavoritesStore';
+import { colors } from '@/src/theme/colors';
+import { headingLetterSpacing } from '@/src/theme/typography';
+import { Image, ScrollView, Text, View } from '@/src/tw';
+import { formatRelativeDay, formatTime } from '@/src/utils/dates';
+import { formatPrice } from '@/src/utils/format';
+import { buildDirectionsUrl } from '@/src/utils/links';
 
 export default function EventDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const requireAuth = useRequireAuth();
-  const insets = useSafeAreaInsets();
-  const { height } = useWindowDimensions();
 
   const event = EVENTS.find((item) => item.id === id);
   const establishment = event
@@ -72,12 +70,12 @@ export default function EventDetailScreen() {
   };
 
   return (
-    <View className="flex-1 bg-background">
+    <Screen>
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}
+        style={{ flex: 1 }}
       >
-        <View style={{ height: height * 0.4 }}>
+        <View className="h-65">
           <Image
             source={{ uri: event.banner_url }}
             contentFit="cover"
@@ -86,7 +84,7 @@ export default function EventDetailScreen() {
           />
           <View
             className="flex-1 justify-between p-4"
-            style={{ paddingTop: insets.top + 8 }}
+            style={{ paddingTop: 8 }}
           >
             <View className="flex-row items-center justify-between">
               <CircleIconButton
@@ -181,27 +179,33 @@ export default function EventDetailScreen() {
             </Text>
           </View>
 
-          <View className="flex-row gap-3 pt-2">
-            <Button
-              label="Como chegar"
-              variant="outline"
-              className="flex-1"
-              icon={<Navigation color={colors.foreground} size={16} />}
-              onPress={() =>
-                Linking.openURL(
-                  buildDirectionsUrl({ lat: establishment.lat, lng: establishment.lng }),
-                )
-              }
-            />
-            <Button
-              label="Ver estabelecimento"
-              className="flex-1"
-              icon={<Store color={colors.primaryForeground} size={16} />}
-              onPress={() => router.push(`/establishment/${establishment.id}`)}
-            />
-          </View>
         </View>
       </ScrollView>
-    </View>
+
+      <View
+        className="gap-3 bg-background/95 px-4 pt-2 pb-2"
+        style={{ flexDirection: 'row', flexWrap: 'wrap' }}
+      >
+        <Button
+          label="Como chegar"
+          variant="outline"
+          className="flex-1 border-foreground/50 border[0.5px]"
+          style={{ backgroundColor: colors.background }}
+          icon={<Navigation color={colors.foreground} size={16} />}
+          onPress={() =>
+            Linking.openURL(
+              buildDirectionsUrl({ lat: establishment.lat, lng: establishment.lng }),
+            )
+          }
+        />
+        <Button
+          label="Ver estabelecimento"
+          className="flex-1"
+          icon={<Store color={colors.primaryForeground} size={16} />}
+          style={{ backgroundColor: colors.primary }}
+          onPress={() => router.push(`/establishment/${establishment.id}`)}
+        />
+      </View>
+    </Screen>
   );
 }

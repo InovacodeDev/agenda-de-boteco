@@ -20,7 +20,7 @@ const labelByVariant: Record<ButtonVariant, string> = {
 };
 
 export interface ButtonProps {
-  label: string;
+  label?: string;
   onPress?: () => void;
   variant?: ButtonVariant;
   fullWidth?: boolean;
@@ -49,7 +49,7 @@ export function Button({
       onPress={onPress}
       style={style}
       className={cn(
-        'h-12 flex-row items-center justify-center gap-2 rounded-full px-6 active:opacity-80',
+        'h-12 flex-row items-center justify-center gap-2 rounded-xl px-4 active:opacity-80',
         containerByVariant[variant],
         fullWidth && 'w-full',
         disabled && 'opacity-40',
@@ -57,9 +57,14 @@ export function Button({
       )}
     >
       {icon}
-      <Text className={cn('font-body-semibold text-[15px]', labelByVariant[variant])}>
-        {label}
-      </Text>
+      {!label ? null : (
+        <Text
+          numberOfLines={1}
+          className={cn('shrink font-body-semibold text-[15px]', labelByVariant[variant])}
+        >
+          {label}
+        </Text>
+      )}
     </Pressable>
   );
 }

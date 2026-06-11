@@ -17,7 +17,7 @@ export function Screen({ children, edgeless = false, className }: ScreenProps) {
   return (
     <View
       className={cn('flex-1 bg-background', className)}
-      style={edgeless ? undefined : { paddingTop: insets.top }}
+      style={{ paddingTop: edgeless ? undefined : insets.top, paddingBottom: insets.bottom }}
     >
       {children}
     </View>

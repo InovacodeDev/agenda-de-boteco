@@ -12,19 +12,20 @@ import { useState } from 'react';
 import { Linking, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { AgendaItem } from '../../src/components/establishment/AgendaItem';
-import { MenuItemRow } from '../../src/components/establishment/MenuItemRow';
-import { Button } from '../../src/components/ui/Button';
-import { CircleIconButton } from '../../src/components/ui/CircleIconButton';
-import { RatingStars } from '../../src/components/ui/RatingStars';
-import { SegmentedTabs } from '../../src/components/ui/SegmentedTabs';
-import { ESTABLISHMENTS, EVENTS, MUSIC_STYLES } from '../../src/data';
-import { useRequireAuth } from '../../src/hooks/useRequireAuth';
-import { useFavoritesStore } from '../../src/store/useFavoritesStore';
-import { colors } from '../../src/theme/colors';
-import { headingLetterSpacing } from '../../src/theme/typography';
-import { Image, Pressable, ScrollView, Text, View } from '../../src/tw';
-import { buildDirectionsUrl, buildWhatsAppUrl } from '../../src/utils/links';
+import { AgendaItem } from '@/src/components/establishment/AgendaItem';
+import { MenuItemRow } from '@/src/components/establishment/MenuItemRow';
+import { Screen } from '@/src/components/layout/Screen';
+import { Button } from '@/src/components/ui/Button';
+import { CircleIconButton } from '@/src/components/ui/CircleIconButton';
+import { RatingStars } from '@/src/components/ui/RatingStars';
+import { SegmentedTabs } from '@/src/components/ui/SegmentedTabs';
+import { ESTABLISHMENTS, EVENTS, MUSIC_STYLES } from '@/src/data';
+import { useRequireAuth } from '@/src/hooks/useRequireAuth';
+import { useFavoritesStore } from '@/src/store/useFavoritesStore';
+import { colors } from '@/src/theme/colors';
+import { headingLetterSpacing } from '@/src/theme/typography';
+import { Image, ScrollView, Text, View } from '@/src/tw';
+import { buildDirectionsUrl, buildWhatsAppUrl } from '@/src/utils/links';
 
 const TABS = ['Sobre', 'Agenda', 'Cardápio', 'Reviews'];
 
@@ -79,12 +80,12 @@ export default function EstablishmentDetailScreen() {
       .filter((style) => style !== undefined);
 
   return (
-    <View className="flex-1 bg-background">
+    <Screen>
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: insets.bottom + 96 }}
       >
-        <View className="h-[260px]">
+        <View className="h-65">
           <Image
             source={{ uri: establishment.cover_url }}
             contentFit="cover"
@@ -93,7 +94,7 @@ export default function EstablishmentDetailScreen() {
           />
           <View
             className="flex-row items-center justify-between p-4"
-            style={{ paddingTop: insets.top + 8 }}
+            style={{ paddingTop: 8 }}
           >
             <CircleIconButton
               accessibilityLabel="Voltar"
@@ -228,28 +229,28 @@ export default function EstablishmentDetailScreen() {
       </ScrollView>
 
       <View
-        className="absolute inset-x-0 bottom-0 flex-row gap-3 bg-background/95 px-4 pt-3"
-        style={{ paddingBottom: Math.max(insets.bottom, 16) }}
+        className="gap-3 bg-background/95 px-4 pt-2 pb-2"
+        style={{ flexDirection: 'row', flexWrap: 'wrap' }}
       >
         <Button
           label="WhatsApp"
           className="flex-1"
+          style={{ backgroundColor: colors.primary }}
           icon={<MessageCircle color={colors.primaryForeground} size={16} />}
           onPress={() => Linking.openURL(buildWhatsAppUrl(establishment.whatsapp))}
         />
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Como chegar"
+        <Button
+          variant="outline"
+          className="border-foreground/50 border[0.5px]"
+          style={{ backgroundColor: colors.background }}
+          icon={<Navigation color={colors.foreground} size={16} />}
           onPress={() =>
             Linking.openURL(
               buildDirectionsUrl({ lat: establishment.lat, lng: establishment.lng }),
             )
           }
-          className="h-12 w-12 items-center justify-center rounded-full border border-border active:opacity-80"
-        >
-          <Navigation color={colors.foreground} size={18} />
-        </Pressable>
+        />
       </View>
-    </View>
+    </Screen>
   );
 }
