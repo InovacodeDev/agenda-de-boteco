@@ -1,7 +1,7 @@
 import type { FlashListRef } from '@shopify/flash-list';
 import Constants from 'expo-constants';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Platform } from 'react-native';
+import { Platform, StyleSheet } from 'react-native';
 import MapView, {
   Marker,
   PROVIDER_DEFAULT,
@@ -19,18 +19,12 @@ import { colors } from '../../theme/colors';
 import { ScrollView, Text, View } from '../../tw';
 import { haversineDistanceKm, type LatLng } from '../../utils/geo';
 import { EstablishmentCarousel } from './EstablishmentCarousel';
-import { darkMapStyle } from './mapStyle';
 
 const DELTA = { latitudeDelta: 0.08, longitudeDelta: 0.08 };
 
 function hasAndroidMapsKey(): boolean {
   const config = Constants.expoConfig?.android?.config?.googleMaps?.apiKey;
-  return typeof config === 'string' && config.length > 0;
-}
-
-function hasIosMapsKey(): boolean {
-  const config = Constants.expoConfig?.ios?.config?.googleMapsApiKey;
-  return typeof config === 'string' && config.length > 0;
+  return (typeof config === 'string' && config.length > 0) || __DEV__;
 }
 
 /** Fallback quando o Android está sem API key do Google Maps */
@@ -115,8 +109,7 @@ export function MapScreen() {
     );
   }
 
-  const provider =
-    Platform.OS === 'ios' && !hasIosMapsKey() ? PROVIDER_DEFAULT : PROVIDER_GOOGLE;
+  const provider = Platform.OS === 'ios' ? PROVIDER_DEFAULT : PROVIDER_GOOGLE;
 
   const initialRegion: Region = {
     latitude: center.lat,
@@ -129,12 +122,17 @@ export function MapScreen() {
       <MapView
         ref={mapRef}
         provider={provider}
-        customMapStyle={darkMapStyle}
         initialRegion={initialRegion}
         showsUserLocation
         showsMyLocationButton={false}
         toolbarEnabled={false}
-        style={{ flex: 1 }}
+        style={StyleSheet.absoluteFill}
+        mapPadding={{
+          top: insets.top,
+          bottom: insets.bottom,
+          left: 0,
+          right: 0,
+        }}
       >
         {establishments.map((establishment, index) => (
           <Marker
@@ -148,7 +146,10 @@ export function MapScreen() {
         ))}
       </MapView>
 
-      <View className="absolute inset-x-0 bottom-0 pb-4">
+      <View
+        className="absolute inset-x-0 bottom-0"
+        style={{ paddingBottom: Math.max(insets.bottom, 16) }}
+      >
         <EstablishmentCarousel
           ref={carouselRef}
           establishments={establishments}
