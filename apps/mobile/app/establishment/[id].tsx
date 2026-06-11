@@ -19,6 +19,7 @@ import { CircleIconButton } from '../../src/components/ui/CircleIconButton';
 import { RatingStars } from '../../src/components/ui/RatingStars';
 import { SegmentedTabs } from '../../src/components/ui/SegmentedTabs';
 import { ESTABLISHMENTS, EVENTS, MUSIC_STYLES } from '../../src/data';
+import { useRequireAuth } from '../../src/hooks/useRequireAuth';
 import { useFavoritesStore } from '../../src/store/useFavoritesStore';
 import { colors } from '../../src/theme/colors';
 import { headingLetterSpacing } from '../../src/theme/typography';
@@ -48,6 +49,7 @@ function AboutCard({ label, value, icon }: AboutCardProps) {
 export default function EstablishmentDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const requireAuth = useRequireAuth();
   const insets = useSafeAreaInsets();
   const [activeTab, setActiveTab] = useState(0);
 
@@ -109,7 +111,7 @@ export default function EstablishmentDetailScreen() {
                   size={18}
                 />
               }
-              onPress={() => toggleEstablishment(establishment.id)}
+              onPress={() => requireAuth(() => toggleEstablishment(establishment.id))}
             />
           </View>
         </View>

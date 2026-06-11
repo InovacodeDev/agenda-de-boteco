@@ -5,6 +5,7 @@ import type { ReactNode } from 'react';
 import { StyleSheet } from 'react-native';
 
 import type { Establishment, Event, MusicStyle } from '../../data/schemas';
+import { useRequireAuth } from '../../hooks/useRequireAuth';
 import { useFavoritesStore } from '../../store/useFavoritesStore';
 import { colors } from '../../theme/colors';
 import { gradientCardOverlay } from '../../theme/gradients';
@@ -37,6 +38,7 @@ export interface EventCardProps {
 /** Card de evento do feed, fiel ao protótipo */
 export function EventCard({ event, establishment, styles }: EventCardProps) {
   const router = useRouter();
+  const requireAuth = useRequireAuth();
   const isFavorite = useFavoritesStore((state) => state.eventIds.includes(event.id));
   const toggleEvent = useFavoritesStore((state) => state.toggleEvent);
 
@@ -80,7 +82,7 @@ export function EventCard({ event, establishment, styles }: EventCardProps) {
             <Pressable
               accessibilityRole="button"
               accessibilityLabel={isFavorite ? 'Remover dos favoritos' : 'Favoritar evento'}
-              onPress={() => toggleEvent(event.id)}
+              onPress={() => requireAuth(() => toggleEvent(event.id))}
               hitSlop={8}
               className="h-9 w-9 items-center justify-center rounded-full bg-background/40 active:opacity-80"
             >

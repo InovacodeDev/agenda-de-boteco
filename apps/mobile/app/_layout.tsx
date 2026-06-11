@@ -17,6 +17,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { useAuthStore } from '../src/store/useAuthStore';
 import { usePreferencesStore } from '../src/store/usePreferencesStore';
 import { colors } from '../src/theme/colors';
 
@@ -25,6 +26,11 @@ SplashScreen.preventAutoHideAsync();
 export default function RootLayout() {
   const hasOnboarded = usePreferencesStore((state) => state.hasOnboarded);
   const hasHydrated = usePreferencesStore((state) => state.hasHydrated);
+  const initializeAuth = useAuthStore((state) => state.initialize);
+
+  useEffect(() => {
+    initializeAuth();
+  }, [initializeAuth]);
 
   const [fontsLoaded] = useFonts({
     SpaceGrotesk_500Medium,

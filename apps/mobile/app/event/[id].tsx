@@ -19,6 +19,7 @@ import { GradientBadge } from '../../src/components/ui/GradientBadge';
 import { InfoCard } from '../../src/components/ui/InfoCard';
 import { SectionLabel } from '../../src/components/ui/SectionLabel';
 import { ESTABLISHMENTS, EVENTS, MUSIC_STYLES } from '../../src/data';
+import { useRequireAuth } from '../../src/hooks/useRequireAuth';
 import { useFavoritesStore } from '../../src/store/useFavoritesStore';
 import { colors } from '../../src/theme/colors';
 import { headingLetterSpacing } from '../../src/theme/typography';
@@ -30,6 +31,7 @@ import { buildDirectionsUrl } from '../../src/utils/links';
 export default function EventDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const requireAuth = useRequireAuth();
   const insets = useSafeAreaInsets();
   const { height } = useWindowDimensions();
 
@@ -107,7 +109,7 @@ export default function EventDetailScreen() {
                       size={18}
                     />
                   }
-                  onPress={() => toggleEvent(event.id)}
+                  onPress={() => requireAuth(() => toggleEvent(event.id))}
                 />
               </View>
             </View>

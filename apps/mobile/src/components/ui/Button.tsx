@@ -24,6 +24,7 @@ export interface ButtonProps {
   onPress?: () => void;
   variant?: ButtonVariant;
   fullWidth?: boolean;
+  disabled?: boolean;
   icon?: ReactNode;
   className?: string;
   style?: React.ComponentProps<typeof Pressable>['style'];
@@ -34,6 +35,7 @@ export function Button({
   onPress,
   variant = 'solid',
   fullWidth = false,
+  disabled = false,
   icon,
   className,
   style,
@@ -42,12 +44,15 @@ export function Button({
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={label}
+      accessibilityState={{ disabled }}
+      disabled={disabled}
       onPress={onPress}
       style={style}
       className={cn(
         'h-12 flex-row items-center justify-center gap-2 rounded-full px-6 active:opacity-80',
         containerByVariant[variant],
         fullWidth && 'w-full',
+        disabled && 'opacity-40',
         className,
       )}
     >
