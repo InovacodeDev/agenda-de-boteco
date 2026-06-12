@@ -19,3 +19,49 @@
     --font-rounded: ui-rounded;
   }
 }
+
+@layer theme {
+  @theme {
+    /*
+     * Design tokens espelhando o protótipo (vibe-noite.lovable.app).
+     * Hex em vez de hsl() — o runtime do react-native-css não parseia
+     * a sintaxe moderna de hsl com espaços.
+     * Espelho TS para props não-className em src/theme/colors.ts.
+     */
+    --color-background: #0f0f0f; /* hsl(0 0% 6%) */
+    --color-foreground: #fafafa; /* hsl(0 0% 98%) */
+    --color-card: #171717; /* hsl(0 0% 9%) */
+    --color-card-foreground: #fafafa;
+    --color-popover: #141414; /* hsl(0 0% 8%) */
+    --color-popover-foreground: #fafafa;
+    --color-surface: #1c1c1c; /* hsl(0 0% 11%) */
+    --color-surface-elevated: #242424; /* hsl(0 0% 14%) */
+    --color-muted: #242424;
+    --color-muted-foreground: #a6a6a6; /* hsl(0 0% 65%) */
+    --color-input: #242424;
+    --color-secondary: #242424;
+    --color-secondary-foreground: #fafafa;
+    --color-border: #292929; /* hsl(0 0% 16%) */
+    --color-primary: #1dd75e; /* hsl(141 76% 48%) */
+    --color-primary-foreground: #0f0f0f;
+    --color-primary-glow: #3df57d; /* hsl(141 90% 60%) */
+    --color-accent: #f9a91f; /* hsl(38 95% 55%) */
+    --color-accent-foreground: #0f0f0f;
+    --color-destructive: #f53d7a; /* hsl(340 90% 60%) */
+    --color-destructive-foreground: #fafafa;
+    --color-neon-cyan: #1fd5f9; /* hsl(190 95% 55%) */
+    --color-neon-pink: #ff4da6; /* hsl(330 100% 65%) */
+    --color-ring: #1dd75e;
+
+    /*
+     * Native não sintetiza peso de fonte: cada peso é uma família própria.
+     * Nunca combinar font-body com font-bold — usar a utility do peso certo.
+     */
+    --font-heading: 'SpaceGrotesk_700Bold';
+    --font-heading-medium: 'SpaceGrotesk_500Medium';
+    --font-body: 'Inter_400Regular';
+    --font-body-medium: 'Inter_500Medium';
+    --font-body-semibold: 'Inter_600SemiBold';
+    --font-body-bold: 'Inter_700Bold';
+  }
+}

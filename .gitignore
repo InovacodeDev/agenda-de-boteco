@@ -159,3 +159,8 @@ Desktop.ini
 !.vscode/extensions.json
 !.vscode/tasks.json
 !.vscode/*.code-snippets
+# -----------------------------------------------------------------------------
+#  Native — CNG (Continuous Native Generation): prebuild output is disposable
+# -----------------------------------------------------------------------------
+apps/mobile/ios/
+apps/mobile/android/
