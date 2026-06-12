@@ -158,10 +158,21 @@ export default function FiltersSheet() {
 
       <View
         className="border-border bg-popover flex-row gap-3 border-t px-5 pt-4"
-        style={{ paddingBottom: Math.max(insets.bottom, 16) }}
+        style={{ flex: 1, paddingBottom: insets.bottom + 32 }}
       >
-        <Button label="Limpar" variant="outline" onPress={clear} className="flex-1" />
-        <Button label="Aplicar filtros" onPress={apply} className="flex-1" />
+        <Button
+          label="Limpar"
+          variant="outline"
+          onPress={clear}
+          className="border-foreground/50 flex-1 border-[0.5px]"
+          style={{ backgroundColor: colors.background }}
+        />
+        <Button
+          label="Aplicar filtros"
+          onPress={apply}
+          className="flex-1"
+          style={{ backgroundColor: colors.primary }}
+        />
       </View>
     </View>
   );
