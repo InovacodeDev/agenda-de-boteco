@@ -1,6 +1,6 @@
 import Slider from '@react-native-community/slider';
 
-import { colors } from '../../theme/colors';
+import { colors } from '@/theme/colors';
 
 export interface FilterSliderProps {
   value: number;

@@ -1,16 +1,16 @@
 import { useRouter } from 'expo-router';
 import { Check, MapPin } from 'lucide-react-native';
 
-import { Screen } from '../src/components/layout/Screen';
-import { ScreenHeader } from '../src/components/layout/ScreenHeader';
-import { Button } from '../src/components/ui/Button';
-import { GuardedPressable } from '../src/components/ui/GuardedPressable';
-import { CITIES } from '../src/data';
-import { useUserLocation } from '../src/hooks/useUserLocation';
-import { usePreferencesStore } from '../src/store/usePreferencesStore';
-import { colors } from '../src/theme/colors';
-import { ScrollView, Text, View } from '../src/tw';
-import { nearestCity } from '../src/utils/geo';
+import { Screen } from '@/components/layout/Screen';
+import { ScreenHeader } from '@/components/layout/ScreenHeader';
+import { Button } from '@/components/ui/Button';
+import { GuardedPressable } from '@/components/ui/GuardedPressable';
+import { CITIES } from '@/data';
+import { useUserLocation } from '@/hooks/useUserLocation';
+import { usePreferencesStore } from '@/store/usePreferencesStore';
+import { colors } from '@/theme/colors';
+import { ScrollView, Text, View } from '@/tw';
+import { nearestCity } from '@/utils/geo';
 
 export default function CityScreen() {
   const router = useRouter();
@@ -44,7 +44,7 @@ export default function CityScreen() {
           onPress={useMyLocation}
         />
         {status === 'denied' ? (
-          <Text className="text-center font-body text-[12px] text-muted-foreground">
+          <Text className="font-body text-muted-foreground text-center text-[12px]">
             Permissão de localização negada — escolha sua cidade abaixo.
           </Text>
         ) : null}
@@ -57,13 +57,13 @@ export default function CityScreen() {
                 accessibilityRole="button"
                 accessibilityState={{ selected }}
                 onPress={() => selectCity(city.id)}
-                className="flex-row items-center justify-between rounded-2xl bg-card px-4 py-3.5 active:opacity-80"
+                className="bg-card flex-row items-center justify-between rounded-2xl px-4 py-3.5 active:opacity-80"
               >
                 <View>
-                  <Text className="font-body-semibold text-[15px] text-foreground">
+                  <Text className="font-body-semibold text-foreground text-[15px]">
                     {city.name}
                   </Text>
-                  <Text className="font-body text-[12px] text-muted-foreground">{city.uf}</Text>
+                  <Text className="font-body text-muted-foreground text-[12px]">{city.uf}</Text>
                 </View>
                 {selected ? <Check color={colors.primary} size={18} /> : null}
               </GuardedPressable>

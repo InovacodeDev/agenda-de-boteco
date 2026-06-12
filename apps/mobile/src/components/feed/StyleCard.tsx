@@ -1,7 +1,7 @@
-import type { MusicStyle } from '../../data/schemas';
-import { Text } from '../../tw';
-import { cn } from '../../utils/cn';
-import { GuardedPressable } from '../ui/GuardedPressable';
+import { GuardedPressable } from '@/components/ui/GuardedPressable';
+import type { MusicStyle } from '@/data/schemas';
+import { Text } from '@/tw';
+import { cn } from '@/utils/cn';
 
 export interface StyleCardProps {
   style: MusicStyle;
@@ -18,8 +18,8 @@ export function StyleCard({ style, selected = false, onPress }: StyleCardProps) 
       accessibilityLabel={`Estilo ${style.name}`}
       onPress={onPress}
       className={cn(
-        'w-[76px] items-center gap-1 rounded-2xl bg-card px-2 py-3 active:opacity-80',
-        selected ? 'border border-primary' : 'border border-transparent',
+        'bg-card w-[76px] items-center gap-1 rounded-2xl px-2 py-3 active:opacity-80',
+        selected ? 'border-primary border' : 'border border-transparent',
       )}
     >
       <Text className="text-[22px]">{style.emoji}</Text>

@@ -1,5 +1,6 @@
-import { Text, View } from '../../tw';
-import { cn } from '../../utils/cn';
+import { Text, View } from '@/tw';
+import { cn } from '@/utils/cn';
+
 import { GuardedPressable } from './GuardedPressable';
 
 export interface SegmentedTabsProps {
@@ -12,7 +13,7 @@ export interface SegmentedTabsProps {
 /** Tabs em pill (Sobre/Agenda/Cardápio/Reviews; Eventos/Bares) — ativa branca com texto escuro */
 export function SegmentedTabs({ tabs, activeIndex, onChange, className }: SegmentedTabsProps) {
   return (
-    <View className={cn('flex-row rounded-full bg-surface p-1', className)}>
+    <View className={cn('bg-surface flex-row rounded-full p-1', className)}>
       {tabs.map((tab, index) => {
         const active = index === activeIndex;
         return (

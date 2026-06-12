@@ -1,7 +1,7 @@
 import { useRouter } from 'expo-router';
 import { useCallback } from 'react';
 
-import { useAuthStore } from '../store/useAuthStore';
+import { useAuthStore } from '@/store/useAuthStore';
 
 /**
  * Gate de ações que exigem conta (favoritar, avaliar): executa a ação

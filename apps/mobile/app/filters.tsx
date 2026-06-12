@@ -3,20 +3,20 @@ import { X } from 'lucide-react-native';
 import { useState } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { FilterSection } from '../src/components/filters/FilterSection';
-import { FilterSlider } from '../src/components/filters/FilterSlider';
-import { SwitchRow } from '../src/components/filters/SwitchRow';
-import { ScreenHeader } from '../src/components/layout/ScreenHeader';
-import { Button } from '../src/components/ui/Button';
-import { Chip } from '../src/components/ui/Chip';
-import { GuardedPressable } from '../src/components/ui/GuardedPressable';
-import { CITIES, MUSIC_STYLES } from '../src/data';
-import { useFiltersStore } from '../src/store/useFiltersStore';
-import { usePreferencesStore } from '../src/store/usePreferencesStore';
-import { colors } from '../src/theme/colors';
-import { ScrollView, View } from '../src/tw';
-import type { DateBucket, EventFilters } from '../src/utils/filters';
-import { DEFAULT_EVENT_FILTERS } from '../src/utils/filters';
+import { FilterSection } from '@/components/filters/FilterSection';
+import { FilterSlider } from '@/components/filters/FilterSlider';
+import { SwitchRow } from '@/components/filters/SwitchRow';
+import { ScreenHeader } from '@/components/layout/ScreenHeader';
+import { Button } from '@/components/ui/Button';
+import { Chip } from '@/components/ui/Chip';
+import { GuardedPressable } from '@/components/ui/GuardedPressable';
+import { CITIES, MUSIC_STYLES } from '@/data';
+import { useFiltersStore } from '@/store/useFiltersStore';
+import { usePreferencesStore } from '@/store/usePreferencesStore';
+import { colors } from '@/theme/colors';
+import { ScrollView, View } from '@/tw';
+import type { DateBucket, EventFilters } from '@/utils/filters';
+import { DEFAULT_EVENT_FILTERS } from '@/utils/filters';
 
 const DATE_OPTIONS: Array<{ label: string; bucket: DateBucket }> = [
   { label: 'Qualquer dia', bucket: 'any' },
@@ -61,7 +61,7 @@ export default function FiltersSheet() {
   };
 
   return (
-    <View className="flex-1 bg-popover">
+    <View className="bg-popover flex-1">
       <ScreenHeader
         title="Filtros"
         right={
@@ -76,10 +76,7 @@ export default function FiltersSheet() {
           </GuardedPressable>
         }
       />
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerClassName="gap-6 px-5 pb-5"
-      >
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerClassName="gap-6 px-5 pb-5">
         <FilterSection title="Data">
           <View className="flex-row flex-wrap gap-2">
             {DATE_OPTIONS.map(({ label, bucket }) => (
@@ -147,9 +144,7 @@ export default function FiltersSheet() {
             minimumValue={0}
             maximumValue={MAX_PRICE_LIMIT}
             step={5}
-            onValueChange={(value) =>
-              patch({ maxPrice: value >= MAX_PRICE_LIMIT ? null : value })
-            }
+            onValueChange={(value) => patch({ maxPrice: value >= MAX_PRICE_LIMIT ? null : value })}
           />
         </FilterSection>
 
@@ -162,7 +157,7 @@ export default function FiltersSheet() {
       </ScrollView>
 
       <View
-        className="flex-row gap-3 border-t border-border bg-popover px-5 pt-4"
+        className="border-border bg-popover flex-row gap-3 border-t px-5 pt-4"
         style={{ paddingBottom: Math.max(insets.bottom, 16) }}
       >
         <Button label="Limpar" variant="outline" onPress={clear} className="flex-1" />

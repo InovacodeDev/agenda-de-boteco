@@ -1,6 +1,6 @@
-import { useGuardedPress } from '../../hooks/useGuardedPress';
-import { Pressable, Text } from '../../tw';
-import { cn } from '../../utils/cn';
+import { useGuardedPress } from '@/hooks/useGuardedPress';
+import { Pressable, Text } from '@/tw';
+import { cn } from '@/utils/cn';
 
 export interface ChipProps {
   label: string;

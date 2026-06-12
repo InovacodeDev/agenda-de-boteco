@@ -1,7 +1,7 @@
 import { useCallback, useInsertionEffect, useMemo, useRef } from 'react';
 
-import type { PressGuardOptions } from '../utils/pressGuard';
-import { createPressGuard } from '../utils/pressGuard';
+import type { PressGuardOptions } from '@/utils/pressGuard';
+import { createPressGuard } from '@/utils/pressGuard';
 
 /**
  * Versão protegida de um handler de pressão: bloqueia double-tap por instância

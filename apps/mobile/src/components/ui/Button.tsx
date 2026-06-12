@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react';
 
-import { useGuardedPress } from '../../hooks/useGuardedPress';
-import { Pressable, Text } from '../../tw';
-import { cn } from '../../utils/cn';
+import { useGuardedPress } from '@/hooks/useGuardedPress';
+import { Pressable, Text } from '@/tw';
+import { cn } from '@/utils/cn';
 
 type ButtonVariant = 'solid' | 'outline' | 'white' | 'ghost';
 
@@ -63,7 +63,7 @@ export function Button({
       {!label ? null : (
         <Text
           numberOfLines={1}
-          className={cn('shrink font-body-semibold text-[15px]', labelByVariant[variant])}
+          className={cn('font-body-semibold shrink text-[15px]', labelByVariant[variant])}
         >
           {label}
         </Text>

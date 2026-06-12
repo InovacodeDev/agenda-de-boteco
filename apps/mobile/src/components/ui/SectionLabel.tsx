@@ -1,5 +1,5 @@
-import { Text } from '../../tw';
-import { cn } from '../../utils/cn';
+import { Text } from '@/tw';
+import { cn } from '@/utils/cn';
 
 export interface SectionLabelProps {
   children: string;
@@ -11,7 +11,7 @@ export function SectionLabel({ children, className }: SectionLabelProps) {
   return (
     <Text
       className={cn(
-        'font-body-semibold text-[12px] uppercase tracking-widest text-muted-foreground',
+        'font-body-semibold text-muted-foreground text-[12px] tracking-widest uppercase',
         className,
       )}
     >

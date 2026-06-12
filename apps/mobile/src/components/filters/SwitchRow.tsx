@@ -1,7 +1,7 @@
 import { Switch } from 'react-native';
 
-import { colors } from '../../theme/colors';
-import { Text, View } from '../../tw';
+import { colors } from '@/theme/colors';
+import { Text, View } from '@/tw';
 
 export interface SwitchRowProps {
   title: string;
@@ -15,9 +15,9 @@ export function SwitchRow({ title, subtitle, value, onValueChange }: SwitchRowPr
   return (
     <View className="flex-row items-center justify-between">
       <View className="flex-1 gap-0.5 pr-4">
-        <Text className="font-body-semibold text-[14px] text-foreground">{title}</Text>
+        <Text className="font-body-semibold text-foreground text-[14px]">{title}</Text>
         {subtitle ? (
-          <Text className="font-body text-[12px] text-muted-foreground">{subtitle}</Text>
+          <Text className="font-body text-muted-foreground text-[12px]">{subtitle}</Text>
         ) : null}
       </View>
       <Switch

@@ -1,29 +1,39 @@
-import { Screen } from '../../src/components/layout/Screen';
-import { ScreenHeader } from '../../src/components/layout/ScreenHeader';
-import { NotificationCard } from '../../src/components/notification/NotificationCard';
-import { NOTIFICATIONS } from '../../src/data';
-import { useNotificationsStore } from '../../src/store/useNotificationsStore';
-import { ScrollView, View } from '../../src/tw';
+import { FlashList } from '@shopify/flash-list';
+
+import { Screen } from '@/components/layout/Screen';
+import { ScreenHeader } from '@/components/layout/ScreenHeader';
+import { NotificationCard } from '@/components/notification/NotificationCard';
+import { NOTIFICATIONS } from '@/data';
+import type { AppNotification } from '@/data/schemas';
+import { useNotificationsStore } from '@/store/useNotificationsStore';
+import { View } from '@/tw';
+
+const ItemSeparator = () => <View className="h-3" />;
 
 export default function NotificationsScreen() {
   const readIds = useNotificationsStore((state) => state.readIds);
   const markRead = useNotificationsStore((state) => state.markRead);
 
+  const renderNotification = ({ item }: { item: AppNotification }) => (
+    <NotificationCard
+      notification={item}
+      unread={!item.read && !readIds.includes(item.id)}
+      onPress={markRead}
+    />
+  );
+
   return (
     <Screen>
       <ScreenHeader title="Avisos" showLogo />
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerClassName="gap-3 p-4">
-        <View className="gap-3">
-          {NOTIFICATIONS.map((notification) => (
-            <NotificationCard
-              key={notification.id}
-              notification={notification}
-              unread={!notification.read && !readIds.includes(notification.id)}
-              onPress={() => markRead(notification.id)}
-            />
-          ))}
-        </View>
-      </ScrollView>
+      <FlashList
+        data={NOTIFICATIONS}
+        keyExtractor={(notification) => notification.id}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ padding: 16 }}
+        ItemSeparatorComponent={ItemSeparator}
+        renderItem={renderNotification}
+        extraData={readIds}
+      />
     </Screen>
   );
 }

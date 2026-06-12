@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 
-import { Text, View } from '../../tw';
-import { cn } from '../../utils/cn';
+import { Text, View } from '@/tw';
+import { cn } from '@/utils/cn';
 
 export interface InfoCardProps {
   label: string;
@@ -17,18 +17,18 @@ export function InfoCard({ label, value, icon, highlight = false, className }: I
   return (
     <View
       className={cn(
-        'flex-1 rounded-2xl bg-surface p-4',
-        highlight && 'border border-primary/40 bg-primary/10',
+        'bg-surface flex-1 rounded-2xl p-4',
+        highlight && 'border-primary/40 bg-primary/10 border',
         className,
       )}
     >
       <View className="flex-row items-center gap-1.5">
         {icon}
-        <Text className="font-body text-[12px] text-muted-foreground">{label}</Text>
+        <Text className="font-body text-muted-foreground text-[12px]">{label}</Text>
       </View>
       <Text
         className={cn(
-          'mt-1 font-body-semibold text-[15px]',
+          'font-body-semibold mt-1 text-[15px]',
           highlight ? 'text-primary' : 'text-foreground',
         )}
       >

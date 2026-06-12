@@ -49,4 +49,4 @@ jobs:
 
       - name: Build and Auto-Submit to App Stores
         run: |
-          pnpm --filter mobile exec eas build --platform all --profile production --auto-submit --auto-submit-profile ${{ env.SUBMIT_PROFILE }} --non-interactive
+          pnpm --filter @agenda/mobile exec eas build --platform all --profile production --auto-submit --auto-submit-profile ${{ env.SUBMIT_PROFILE }} --non-interactive

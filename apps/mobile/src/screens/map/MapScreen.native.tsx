@@ -2,23 +2,20 @@ import type { FlashListRef } from '@shopify/flash-list';
 import Constants from 'expo-constants';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Platform, StyleSheet } from 'react-native';
-import MapView, {
-  Marker,
-  PROVIDER_DEFAULT,
-  PROVIDER_GOOGLE,
-  type Region,
-} from 'react-native-maps';
+import MapView, { Marker, PROVIDER_DEFAULT, PROVIDER_GOOGLE, type Region } from 'react-native-maps';
 
-import { EstablishmentCard } from '../../components/establishment/EstablishmentCard';
-import { Screen } from '../../components/layout/Screen';
-import { ScreenHeader } from '../../components/layout/ScreenHeader';
-import { CITIES, ESTABLISHMENTS } from '../../data';
-import type { Establishment } from '../../data/schemas';
-import { useUserLocation } from '../../hooks/useUserLocation';
-import { usePreferencesStore } from '../../store/usePreferencesStore';
-import { colors } from '../../theme/colors';
-import { ScrollView, Text, View } from '../../tw';
-import { haversineDistanceKm, type LatLng } from '../../utils/geo';
+import { EstablishmentCard } from '@/components/establishment/EstablishmentCard';
+import { Screen } from '@/components/layout/Screen';
+import { ScreenHeader } from '@/components/layout/ScreenHeader';
+import { ESTABLISHMENTS } from '@/data';
+import { cityByIdOrDefault } from '@/data/lookup';
+import type { Establishment } from '@/data/schemas';
+import { useUserLocation } from '@/hooks/useUserLocation';
+import { usePreferencesStore } from '@/store/usePreferencesStore';
+import { colors } from '@/theme/colors';
+import { ScrollView, Text, View } from '@/tw';
+import { haversineDistanceKm, type LatLng } from '@/utils/geo';
+
 import { EstablishmentCarousel } from './EstablishmentCarousel';
 
 const DELTA = { latitudeDelta: 0.08, longitudeDelta: 0.08 };
@@ -34,17 +31,12 @@ function hasAndroidMapsKey(): boolean {
 /** Fallback quando o Android está sem API key do Google Maps */
 function MissingKeyFallback({ establishments }: { establishments: Establishment[] }) {
   return (
-    <ScrollView
-      showsVerticalScrollIndicator={false}
-      contentContainerClassName="gap-3 p-4"
-    >
-      <View className="rounded-2xl border border-primary/40 bg-primary/10 p-4">
-        <Text className="font-body-semibold text-[14px] text-foreground">
-          Mapa indisponível
-        </Text>
-        <Text className="mt-1 font-body text-[13px] text-muted-foreground">
-          Configure GOOGLE_MAPS_API_KEY_ANDROID no .env e gere um novo dev build para
-          ver o mapa. Enquanto isso, os bares da cidade:
+    <ScrollView showsVerticalScrollIndicator={false} contentContainerClassName="gap-3 p-4">
+      <View className="border-primary/40 bg-primary/10 rounded-2xl border p-4">
+        <Text className="font-body-semibold text-foreground text-[14px]">Mapa indisponível</Text>
+        <Text className="font-body text-muted-foreground mt-1 text-[13px]">
+          Configure GOOGLE_MAPS_API_KEY_ANDROID no .env e gere um novo dev build para ver o mapa.
+          Enquanto isso, os bares da cidade:
         </Text>
       </View>
       {establishments.map((establishment) => (
@@ -66,7 +58,7 @@ export function MapScreen() {
     request();
   }, [request]);
 
-  const city = CITIES.find((item) => item.id === cityId) ?? CITIES[0];
+  const city = cityByIdOrDefault(cityId);
   const centerLat = coords?.lat ?? city.lat;
   const centerLng = coords?.lng ?? city.lng;
   const center: LatLng = { lat: centerLat, lng: centerLng };
@@ -74,9 +66,7 @@ export function MapScreen() {
   // bares da cidade ordenados por distância de onde o usuário está
   const establishments = useMemo(() => {
     const reference: LatLng = { lat: centerLat, lng: centerLng };
-    const inCity = ESTABLISHMENTS.filter(
-      (establishment) => establishment.city_id === city.id,
-    );
+    const inCity = ESTABLISHMENTS.filter((establishment) => establishment.city_id === city.id);
     return [...inCity].sort(
       (a, b) =>
         haversineDistanceKm(reference, { lat: a.lat, lng: a.lng }) -

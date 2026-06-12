@@ -11,32 +11,30 @@ import {
 } from 'lucide-react-native';
 import { Linking, Share, StyleSheet } from 'react-native';
 
-import { Screen } from '@/src/components/layout/Screen';
-import { ScreenHeader } from '@/src/components/layout/ScreenHeader';
-import { Button } from '@/src/components/ui/Button';
-import { CircleIconButton } from '@/src/components/ui/CircleIconButton';
-import { GradientBadge } from '@/src/components/ui/GradientBadge';
-import { InfoCard } from '@/src/components/ui/InfoCard';
-import { SectionLabel } from '@/src/components/ui/SectionLabel';
-import { ESTABLISHMENTS, EVENTS, MUSIC_STYLES } from '@/src/data';
-import { useRequireAuth } from '@/src/hooks/useRequireAuth';
-import { useFavoritesStore } from '@/src/store/useFavoritesStore';
-import { colors } from '@/src/theme/colors';
-import { headingLetterSpacing } from '@/src/theme/typography';
-import { Image, ScrollView, Text, View } from '@/src/tw';
-import { formatRelativeDay, formatTime } from '@/src/utils/dates';
-import { formatPrice } from '@/src/utils/format';
-import { buildDirectionsUrl } from '@/src/utils/links';
+import { Screen } from '@/components/layout/Screen';
+import { ScreenHeader } from '@/components/layout/ScreenHeader';
+import { Button } from '@/components/ui/Button';
+import { CircleIconButton } from '@/components/ui/CircleIconButton';
+import { GradientBadge } from '@/components/ui/GradientBadge';
+import { InfoCard } from '@/components/ui/InfoCard';
+import { SectionLabel } from '@/components/ui/SectionLabel';
+import { ESTABLISHMENTS_BY_ID, EVENTS_BY_ID, musicStylesForEvent } from '@/data/lookup';
+import { useRequireAuth } from '@/hooks/useRequireAuth';
+import { useFavoritesStore } from '@/store/useFavoritesStore';
+import { colors } from '@/theme/colors';
+import { headingLetterSpacing } from '@/theme/typography';
+import { Image, ScrollView, Text, View } from '@/tw';
+import { formatRelativeDay, formatTime } from '@/utils/dates';
+import { formatPrice } from '@/utils/format';
+import { buildDirectionsUrl } from '@/utils/links';
 
 export default function EventDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const requireAuth = useRequireAuth();
 
-  const event = EVENTS.find((item) => item.id === id);
-  const establishment = event
-    ? ESTABLISHMENTS.find((item) => item.id === event.establishment_id)
-    : undefined;
+  const event = id ? EVENTS_BY_ID[id] : undefined;
+  const establishment = event ? ESTABLISHMENTS_BY_ID[event.establishment_id] : undefined;
 
   const isFavorite = useFavoritesStore((state) =>
     event ? state.eventIds.includes(event.id) : false,
@@ -48,7 +46,7 @@ export default function EventDetailScreen() {
       <Screen>
         <ScreenHeader showBack />
         <View className="flex-1 items-center justify-center">
-          <Text className="font-body text-[14px] text-muted-foreground">
+          <Text className="font-body text-muted-foreground text-[14px]">
             Evento não encontrado.
           </Text>
         </View>
@@ -56,9 +54,7 @@ export default function EventDetailScreen() {
     );
   }
 
-  const styles = event.music_style_ids
-    .map((styleId) => MUSIC_STYLES.find((style) => style.id === styleId))
-    .filter((style) => style !== undefined);
+  const styles = musicStylesForEvent(event);
 
   const badge = event.courtesy
     ? { label: 'Cortesia', text: event.courtesy }
@@ -74,10 +70,7 @@ export default function EventDetailScreen() {
 
   return (
     <Screen noTopInset>
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        style={{ flex: 1 }}
-      >
+      <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }}>
         <View className="h-65">
           <Image
             source={{ uri: event.banner_url }}
@@ -88,8 +81,8 @@ export default function EventDetailScreen() {
           <View className="flex-1 justify-end p-4">
             <View className="flex-row gap-1.5">
               {styles.map((style) => (
-                <View key={style.id} className="rounded-full bg-background/70 px-2.5 py-1">
-                  <Text className="font-body-medium text-[11px] text-foreground">
+                <View key={style.id} className="bg-background/70 rounded-full px-2.5 py-1">
+                  <Text className="font-body-medium text-foreground text-[11px]">
                     {style.emoji}
                     {style.name}
                   </Text>
@@ -102,14 +95,12 @@ export default function EventDetailScreen() {
         <View className="gap-4 p-4">
           <View className="gap-1">
             <Text
-              className="font-heading text-[24px] text-foreground"
+              className="font-heading text-foreground text-[24px]"
               style={{ letterSpacing: headingLetterSpacing(24) }}
             >
               {event.name}
             </Text>
-            <Text className="font-body text-[15px] text-muted-foreground">
-              {event.attraction}
-            </Text>
+            <Text className="font-body text-muted-foreground text-[15px]">{event.attraction}</Text>
           </View>
 
           <View className="gap-3">
@@ -141,36 +132,33 @@ export default function EventDetailScreen() {
           </View>
 
           {badge ? (
-            <View className="gap-1.5 rounded-2xl bg-card p-4">
+            <View className="bg-card gap-1.5 rounded-2xl p-4">
               <GradientBadge label={badge.label} />
-              <Text className="font-body text-[14px] text-foreground">{badge.text}</Text>
+              <Text className="font-body text-foreground text-[14px]">{badge.text}</Text>
             </View>
           ) : null}
 
           <View className="gap-2">
             <SectionLabel>Sobre o evento</SectionLabel>
-            <Text className="font-body text-[14px] leading-5 text-foreground">
+            <Text className="font-body text-foreground text-[14px] leading-5">
               {event.description}
             </Text>
           </View>
-
         </View>
       </ScrollView>
 
       <View
-        className="gap-3 bg-background/95 px-4 pt-2 pb-2"
+        className="bg-background/95 gap-3 px-4 pt-2 pb-2"
         style={{ flexDirection: 'row', flexWrap: 'wrap' }}
       >
         <Button
           label="Como chegar"
           variant="outline"
-          className="flex-1 border-foreground/50 border-[0.5px]"
+          className="border-foreground/50 flex-1 border-[0.5px]"
           style={{ backgroundColor: colors.background }}
           icon={<Navigation color={colors.foreground} size={16} />}
           onPress={() =>
-            Linking.openURL(
-              buildDirectionsUrl({ lat: establishment.lat, lng: establishment.lng }),
-            )
+            Linking.openURL(buildDirectionsUrl({ lat: establishment.lat, lng: establishment.lng }))
           }
         />
         <Button

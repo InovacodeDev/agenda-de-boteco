@@ -1,14 +1,14 @@
+import brandLogo from '@assets/logo.png';
 import { useRouter } from 'expo-router';
 import { ArrowLeft } from 'lucide-react-native';
 import type { ReactNode } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import brandLogo from '../../../assets/logo.png';
-import { colors } from '../../theme/colors';
-import { headingLetterSpacing } from '../../theme/typography';
-import { Image, Text, View } from '../../tw';
-import { cn } from '../../utils/cn';
-import { CircleIconButton } from '../ui/CircleIconButton';
+import { CircleIconButton } from '@/components/ui/CircleIconButton';
+import { colors } from '@/theme/colors';
+import { headingLetterSpacing } from '@/theme/typography';
+import { Image, Text, View } from '@/tw';
+import { cn } from '@/utils/cn';
 
 export interface ScreenHeaderProps {
   title?: string;
@@ -39,7 +39,7 @@ export function ScreenHeader({
     <View
       className={cn(
         'min-h-14 flex-row items-center gap-3 px-4 py-2',
-        overlay && 'absolute inset-x-0 top-0 z-10 bg-background/60',
+        overlay && 'bg-background/60 absolute inset-x-0 top-0 z-10',
       )}
       style={{ paddingTop: 8 + (overlay ? insets.top : 0), zIndex: overlay ? 10 : undefined }}
     >
@@ -63,7 +63,7 @@ export function ScreenHeader({
         {children ??
           (title ? (
             <Text
-              className="font-heading text-[24px] text-foreground"
+              className="font-heading text-foreground text-[24px]"
               numberOfLines={1}
               style={{ letterSpacing: headingLetterSpacing(24) }}
             >

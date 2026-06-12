@@ -1,0 +1,6 @@
+{
+  "name": "@agenda/typescript-config",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Configurações TypeScript compartilhadas do monorepo (Turborepo: tsconfig vive em um pacote, não na raiz)"
+}

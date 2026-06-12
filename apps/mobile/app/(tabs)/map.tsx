@@ -1,4 +1,4 @@
-import { MapScreen } from '../../src/screens/map/MapScreen';
+import { MapScreen } from '@/screens/map/MapScreen';
 
 export default function MapTab() {
   return <MapScreen />;

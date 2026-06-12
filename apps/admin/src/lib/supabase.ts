@@ -1,4 +1,4 @@
-import { createSupabaseClient } from 'core';
+import { createSupabaseClient } from '@agenda/core';
 
 export const supabase = createSupabaseClient({
   url: import.meta.env.VITE_SUPABASE_URL ?? '',

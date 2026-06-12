@@ -1,7 +1,7 @@
-import { useFiltersStore } from '../../store/useFiltersStore';
-import { ScrollView } from '../../tw';
-import type { DateBucket } from '../../utils/filters';
-import { Chip } from '../ui/Chip';
+import { Chip } from '@/components/ui/Chip';
+import { useFiltersStore } from '@/store/useFiltersStore';
+import { ScrollView } from '@/tw';
+import type { DateBucket } from '@/utils/filters';
 
 const DATE_CHIPS: Array<{ label: string; bucket: DateBucket }> = [
   { label: 'Hoje', bucket: 'today' },

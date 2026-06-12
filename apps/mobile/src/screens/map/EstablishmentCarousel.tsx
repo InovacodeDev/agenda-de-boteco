@@ -1,23 +1,26 @@
 import { FlashList, type FlashListRef } from '@shopify/flash-list';
-import { forwardRef } from 'react';
+import type { Ref } from 'react';
 import { useWindowDimensions } from 'react-native';
 
-import { EstablishmentCard } from '../../components/establishment/EstablishmentCard';
-import type { Establishment } from '../../data/schemas';
-import { View } from '../../tw';
+import { EstablishmentCard } from '@/components/establishment/EstablishmentCard';
+import type { Establishment } from '@/data/schemas';
+import { View } from '@/tw';
 
 const GAP = 12;
 
 export interface EstablishmentCarouselProps {
+  /** React 19: ref direto como prop, sem forwardRef */
+  ref?: Ref<FlashListRef<Establishment>>;
   establishments: Establishment[];
   onIndexChange: (index: number) => void;
 }
 
 /** Carrossel inferior do mapa, com snap por card e sync com os marcadores */
-export const EstablishmentCarousel = forwardRef<
-  FlashListRef<Establishment>,
-  EstablishmentCarouselProps
->(function EstablishmentCarousel({ establishments, onIndexChange }, ref) {
+export function EstablishmentCarousel({
+  ref,
+  establishments,
+  onIndexChange,
+}: EstablishmentCarouselProps) {
   const { width } = useWindowDimensions();
   const itemWidth = width - 64;
 
@@ -32,9 +35,7 @@ export const EstablishmentCarousel = forwardRef<
       decelerationRate="fast"
       contentContainerStyle={{ paddingHorizontal: 16 }}
       onMomentumScrollEnd={(event) => {
-        const index = Math.round(
-          event.nativeEvent.contentOffset.x / (itemWidth + GAP),
-        );
+        const index = Math.round(event.nativeEvent.contentOffset.x / (itemWidth + GAP));
         const clamped = Math.min(Math.max(index, 0), establishments.length - 1);
         onIndexChange(clamped);
       }}
@@ -45,4 +46,4 @@ export const EstablishmentCarousel = forwardRef<
       )}
     />
   );
-});
+}
