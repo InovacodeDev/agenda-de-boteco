@@ -1,12 +1,12 @@
 import {
   AuthUnavailableError,
   getCurrentUser,
+  handleDeepLink,
   isAuthAvailable,
   onAuthUserChange,
   signInWithEmailOtp,
-  signOut,
-  handleDeepLink,
   signInWithProvider,
+  signOut,
   verifyEmailOtp,
 } from './auth';
 
@@ -254,3 +254,4 @@ describe('verifyEmailOtp', () => {
     mockGetSupabase.mockReturnValue(client);
     await expect(verifyEmailOtp('tito@exemplo.com', '123456')).rejects.toThrow('invalid token');
   });
+});
