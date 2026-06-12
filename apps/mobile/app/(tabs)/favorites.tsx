@@ -1,17 +1,36 @@
+import { FlashList } from '@shopify/flash-list';
 import { useRouter } from 'expo-router';
 import { Heart } from 'lucide-react-native';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
-import { EstablishmentCard } from '../../src/components/establishment/EstablishmentCard';
-import { EventCard } from '../../src/components/event/EventCard';
-import { Screen } from '../../src/components/layout/Screen';
-import { ScreenHeader } from '../../src/components/layout/ScreenHeader';
-import { EmptyState } from '../../src/components/ui/EmptyState';
-import { SegmentedTabs } from '../../src/components/ui/SegmentedTabs';
-import { ESTABLISHMENTS, EVENTS, MUSIC_STYLES } from '../../src/data';
-import { useFavoritesStore } from '../../src/store/useFavoritesStore';
-import { colors } from '../../src/theme/colors';
-import { ScrollView, View } from '../../src/tw';
+import { EstablishmentCard } from '@/components/establishment/EstablishmentCard';
+import { EventCard } from '@/components/event/EventCard';
+import { Screen } from '@/components/layout/Screen';
+import { ScreenHeader } from '@/components/layout/ScreenHeader';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { SegmentedTabs } from '@/components/ui/SegmentedTabs';
+import { ESTABLISHMENTS, EVENTS } from '@/data';
+import { ESTABLISHMENTS_BY_ID, musicStylesForEvent } from '@/data/lookup';
+import type { Establishment, Event } from '@/data/schemas';
+import { useFavoritesStore } from '@/store/useFavoritesStore';
+import { colors } from '@/theme/colors';
+import { View } from '@/tw';
+
+// Espaçamentos do layout original: eventos gap-4, bares gap-3
+const EventSeparator = () => <View className="h-4" />;
+const EstablishmentSeparator = () => <View className="h-3" />;
+
+const renderFavoriteEvent = ({ item }: { item: Event }) => (
+  <EventCard
+    event={item}
+    establishment={ESTABLISHMENTS_BY_ID[item.establishment_id]}
+    styles={musicStylesForEvent(item)}
+  />
+);
+
+const renderFavoriteEstablishment = ({ item }: { item: Establishment }) => (
+  <EstablishmentCard establishment={item} />
+);
 
 export default function FavoritesScreen() {
   const router = useRouter();
@@ -19,67 +38,60 @@ export default function FavoritesScreen() {
   const eventIds = useFavoritesStore((state) => state.eventIds);
   const establishmentIds = useFavoritesStore((state) => state.establishmentIds);
 
-  const favoriteEvents = EVENTS.filter((event) => eventIds.includes(event.id));
-  const favoriteEstablishments = ESTABLISHMENTS.filter((establishment) =>
-    establishmentIds.includes(establishment.id),
+  const favoriteEvents = useMemo(
+    () => EVENTS.filter((event) => eventIds.includes(event.id)),
+    [eventIds],
+  );
+  const favoriteEstablishments = useMemo(
+    () => ESTABLISHMENTS.filter((establishment) => establishmentIds.includes(establishment.id)),
+    [establishmentIds],
   );
 
-  const stylesFor = (styleIds: string[]) =>
-    styleIds
-      .map((styleId) => MUSIC_STYLES.find((style) => style.id === styleId))
-      .filter((style) => style !== undefined);
+  const showingEvents = activeTab === 0;
+  const isEmpty = showingEvents ? favoriteEvents.length === 0 : favoriteEstablishments.length === 0;
 
   return (
     <Screen>
       <ScreenHeader title="Favoritos" showLogo />
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerClassName="gap-4 p-4">
+      <View className="px-4 pb-4">
         <SegmentedTabs
           tabs={[`Eventos (${favoriteEvents.length})`, `Bares (${favoriteEstablishments.length})`]}
           activeIndex={activeTab}
           onChange={setActiveTab}
         />
-
-        {activeTab === 0 ? (
-          favoriteEvents.length === 0 ? (
-            <EmptyState
-              icon={<Heart color={colors.mutedForeground} size={32} />}
-              message="Você ainda não favoritou nenhum evento."
-              actionLabel="Ver feed"
-              onAction={() => router.push('/')}
-            />
-          ) : (
-            <View className="gap-4">
-              {favoriteEvents.map((event) => {
-                const establishment = ESTABLISHMENTS.find(
-                  (item) => item.id === event.establishment_id,
-                );
-                if (!establishment) return null;
-                return (
-                  <EventCard
-                    key={event.id}
-                    event={event}
-                    establishment={establishment}
-                    styles={stylesFor(event.music_style_ids)}
-                  />
-                );
-              })}
-            </View>
-          )
-        ) : favoriteEstablishments.length === 0 ? (
+      </View>
+      {isEmpty ? (
+        <View className="px-4">
           <EmptyState
             icon={<Heart color={colors.mutedForeground} size={32} />}
-            message="Você ainda não favoritou nenhum bar."
+            message={
+              showingEvents
+                ? 'Você ainda não favoritou nenhum evento.'
+                : 'Você ainda não favoritou nenhum bar.'
+            }
             actionLabel="Ver feed"
             onAction={() => router.push('/')}
           />
-        ) : (
-          <View className="gap-3">
-            {favoriteEstablishments.map((establishment) => (
-              <EstablishmentCard key={establishment.id} establishment={establishment} />
-            ))}
-          </View>
-        )}
-      </ScrollView>
+        </View>
+      ) : showingEvents ? (
+        <FlashList
+          data={favoriteEvents}
+          keyExtractor={(event) => event.id}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 24 }}
+          ItemSeparatorComponent={EventSeparator}
+          renderItem={renderFavoriteEvent}
+        />
+      ) : (
+        <FlashList
+          data={favoriteEstablishments}
+          keyExtractor={(establishment) => establishment.id}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 24 }}
+          ItemSeparatorComponent={EstablishmentSeparator}
+          renderItem={renderFavoriteEstablishment}
+        />
+      )}
     </Screen>
   );
 }

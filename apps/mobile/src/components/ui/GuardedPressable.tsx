@@ -1,7 +1,7 @@
 import type { ComponentProps } from 'react';
 
-import { useGuardedPress } from '../../hooks/useGuardedPress';
-import { Pressable } from '../../tw';
+import { useGuardedPress } from '@/hooks/useGuardedPress';
+import { Pressable } from '@/tw';
 
 export interface GuardedPressableProps extends ComponentProps<typeof Pressable> {
   /** Janela mínima entre toques. Default: 600ms. */

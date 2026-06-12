@@ -1,6 +1,6 @@
 import 'react-native-url-polyfill/auto';
 
-import { createSupabaseClient, type SupabaseStorageAdapter } from 'core';
+import { createSupabaseClient, type SupabaseStorageAdapter } from '@agenda/core';
 import * as SecureStore from 'expo-secure-store';
 
 const expoSecureStoreAdapter: SupabaseStorageAdapter = {

@@ -1,20 +1,20 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { Calendar, Clock, Heart, MapPin, Ticket } from 'lucide-react-native';
-import type { ReactNode } from 'react';
+import { memo, type ReactNode } from 'react';
 import { StyleSheet } from 'react-native';
 
-import type { Establishment, Event, MusicStyle } from '../../data/schemas';
-import { useRequireAuth } from '../../hooks/useRequireAuth';
-import { useFavoritesStore } from '../../store/useFavoritesStore';
-import { colors } from '../../theme/colors';
-import { gradientCardOverlay } from '../../theme/gradients';
-import { headingLetterSpacing } from '../../theme/typography';
-import { Image, Text, View } from '../../tw';
-import { formatRelativeDay, formatTime } from '../../utils/dates';
-import { formatPrice } from '../../utils/format';
-import { GradientBadge } from '../ui/GradientBadge';
-import { GuardedPressable } from '../ui/GuardedPressable';
+import { GradientBadge } from '@/components/ui/GradientBadge';
+import { GuardedPressable } from '@/components/ui/GuardedPressable';
+import type { Establishment, Event, MusicStyle } from '@/data/schemas';
+import { useRequireAuth } from '@/hooks/useRequireAuth';
+import { useFavoritesStore } from '@/store/useFavoritesStore';
+import { colors } from '@/theme/colors';
+import { gradientCardOverlay } from '@/theme/gradients';
+import { headingLetterSpacing } from '@/theme/typography';
+import { Image, Text, View } from '@/tw';
+import { formatRelativeDay, formatTime } from '@/utils/dates';
+import { formatPrice } from '@/utils/format';
 
 interface FooterItemProps {
   icon: ReactNode;
@@ -36,8 +36,11 @@ export interface EventCardProps {
   styles: MusicStyle[];
 }
 
-/** Card de evento do feed, fiel ao protótipo */
-export function EventCard({ event, establishment, styles }: EventCardProps) {
+/**
+ * Card de evento do feed, fiel ao protótipo. Memoizado: nas listas, só
+ * re-renderiza quando event/establishment/styles mudam de referência.
+ */
+export const EventCard = memo(function EventCard({ event, establishment, styles }: EventCardProps) {
   const router = useRouter();
   const requireAuth = useRequireAuth();
   const isFavorite = useFavoritesStore((state) => state.eventIds.includes(event.id));
@@ -51,7 +54,7 @@ export function EventCard({ event, establishment, styles }: EventCardProps) {
       accessibilityRole="button"
       accessibilityLabel={`Evento ${event.name} no ${establishment.name}`}
       onPress={() => router.push(`/event/${event.id}`)}
-      className="overflow-hidden rounded-2xl bg-card active:opacity-90"
+      className="bg-card overflow-hidden rounded-2xl active:opacity-90"
     >
       <View className="h-[340px]">
         <Image
@@ -69,11 +72,8 @@ export function EventCard({ event, establishment, styles }: EventCardProps) {
           <View className="flex-row items-start justify-between">
             <View className="flex-row gap-1.5">
               {styles.map((style) => (
-                <View
-                  key={style.id}
-                  className="rounded-full bg-background/70 px-2.5 py-1"
-                >
-                  <Text className="font-body-medium text-[11px] text-foreground">
+                <View key={style.id} className="bg-background/70 rounded-full px-2.5 py-1">
+                  <Text className="font-body-medium text-foreground text-[11px]">
                     {style.emoji}
                     {style.name}
                   </Text>
@@ -85,7 +85,7 @@ export function EventCard({ event, establishment, styles }: EventCardProps) {
               accessibilityLabel={isFavorite ? 'Remover dos favoritos' : 'Favoritar evento'}
               onPress={() => requireAuth(() => toggleEvent(event.id))}
               hitSlop={8}
-              className="h-9 w-9 items-center justify-center rounded-full bg-background/40 active:opacity-80"
+              className="bg-background/40 h-9 w-9 items-center justify-center rounded-full active:opacity-80"
             >
               <Heart
                 color={isFavorite ? colors.primary : colors.foreground}
@@ -98,42 +98,42 @@ export function EventCard({ event, establishment, styles }: EventCardProps) {
           <View className="gap-1.5">
             {badge ? <GradientBadge label={badge} /> : null}
             <Text
-              className="font-heading text-[22px] text-foreground"
+              className="font-heading text-foreground text-[22px]"
               style={{ letterSpacing: headingLetterSpacing(22) }}
             >
               {event.name}
             </Text>
-            <Text className="font-body text-[13px] text-muted-foreground">
+            <Text className="font-body text-muted-foreground text-[13px]">
               {event.attraction} · {establishment.name}
             </Text>
           </View>
         </View>
       </View>
 
-      <View className="flex-row justify-between bg-popover px-4 py-3">
+      <View className="bg-popover flex-row justify-between px-4 py-3">
         <View className="gap-2">
           <FooterItem icon={<Calendar color={colors.primary} size={14} />}>
-            <Text className="font-body text-[13px] text-foreground">
+            <Text className="font-body text-foreground text-[13px]">
               {formatRelativeDay(event.starts_at)}
             </Text>
           </FooterItem>
           <FooterItem icon={<MapPin color={colors.primary} size={14} />}>
-            <Text className="font-body text-[13px] text-foreground">
+            <Text className="font-body text-foreground text-[13px]">
               {establishment.neighborhood}
             </Text>
           </FooterItem>
         </View>
         <View className="items-end gap-2">
           <FooterItem icon={<Clock color={colors.primary} size={14} />}>
-            <Text className="font-body text-[13px] text-foreground">
+            <Text className="font-body text-foreground text-[13px]">
               {formatTime(event.starts_at)}
             </Text>
           </FooterItem>
           <FooterItem icon={<Ticket color={colors.primary} size={14} />}>
-            <Text className="font-body-semibold text-[13px] text-primary">{price}</Text>
+            <Text className="font-body-semibold text-primary text-[13px]">{price}</Text>
           </FooterItem>
         </View>
       </View>
     </GuardedPressable>
   );
-}
+});

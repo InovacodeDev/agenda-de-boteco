@@ -1,10 +1,10 @@
 import { useRouter } from 'expo-router';
 
-import type { Event, MusicStyle } from '../../data/schemas';
-import { Image, Text, View } from '../../tw';
-import { formatRelativeDay, formatTime } from '../../utils/dates';
-import { formatPrice } from '../../utils/format';
-import { GuardedPressable } from '../ui/GuardedPressable';
+import { GuardedPressable } from '@/components/ui/GuardedPressable';
+import type { Event, MusicStyle } from '@/data/schemas';
+import { Image, Text, View } from '@/tw';
+import { formatRelativeDay, formatTime } from '@/utils/dates';
+import { formatPrice } from '@/utils/format';
 
 export interface AgendaItemProps {
   event: Event;
@@ -19,7 +19,7 @@ export function AgendaItem({ event, styles }: AgendaItemProps) {
       accessibilityRole="button"
       accessibilityLabel={`Evento ${event.name}`}
       onPress={() => router.push(`/event/${event.id}`)}
-      className="flex-row gap-3 rounded-2xl bg-card p-3 active:opacity-90"
+      className="bg-card flex-row gap-3 rounded-2xl p-3 active:opacity-90"
     >
       <Image
         source={{ uri: event.banner_url }}
@@ -29,13 +29,13 @@ export function AgendaItem({ event, styles }: AgendaItemProps) {
         accessibilityLabel={event.name}
       />
       <View className="flex-1 justify-center gap-0.5">
-        <Text className="font-body text-[11px] text-muted-foreground">
+        <Text className="font-body text-muted-foreground text-[11px]">
           {styles.map((style) => style.name).join(' ')}
         </Text>
-        <Text className="font-body-semibold text-[15px] text-foreground" numberOfLines={1}>
+        <Text className="font-body-semibold text-foreground text-[15px]" numberOfLines={1}>
           {event.name}
         </Text>
-        <Text className="font-body text-[12px] text-muted-foreground">
+        <Text className="font-body text-muted-foreground text-[12px]">
           {formatRelativeDay(event.starts_at)} · {formatTime(event.starts_at)} ·{' '}
           {formatPrice(event.cover_charge)}
         </Text>

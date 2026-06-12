@@ -1,7 +1,7 @@
 import * as Location from 'expo-location';
 import { useCallback, useState } from 'react';
 
-import type { LatLng } from '../utils/geo';
+import type { LatLng } from '@/utils/geo';
 
 export type LocationStatus = 'idle' | 'loading' | 'granted' | 'denied';
 

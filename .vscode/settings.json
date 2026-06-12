@@ -1,58 +1,76 @@
 {
-    // ---- Package manager ----
-    "npm.packageManager": "pnpm",
+  // ---- Package manager ----
+  "npm.packageManager": "pnpm",
 
-    // ---- TypeScript ----
-    // Use the workspace TypeScript (root devDependency), not VS Code's bundled one,
-    // so the editor matches what `turbo typecheck` runs.
-    "typescript.tsdk": "node_modules/typescript/lib",
-    "typescript.enablePromptUseWorkspaceTsdk": true,
-    // cmd/ctrl-click jumps to the real source in packages/core instead of the built .d.ts
-    "typescript.preferGoToSourceDefinition": true,
+  // ---- TypeScript ----
+  // Use the workspace TypeScript (root devDependency), not VS Code's bundled one,
+  // so the editor matches what `turbo typecheck` runs.
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+  // cmd/ctrl-click jumps to the real source in packages/core instead of the built .d.ts
+  "typescript.preferGoToSourceDefinition": true,
 
-    // ---- Format on save (Prettier) ----
-    "editor.formatOnSave": true,
-    "editor.defaultFormatter": "esbenp.prettier-vscode",
+  // ---- Format on save (Prettier) ----
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
 
-    // ---- ESLint ----
-    // "auto" makes ESLint resolve the correct config per workspace in the monorepo.
-    "eslint.workingDirectories": [{ "mode": "auto" }],
-    "eslint.validate": ["javascript", "javascriptreact", "typescript", "typescriptreact"],
-    "editor.codeActionsOnSave": {
-        // new value form; boolean true/false is deprecated
-        "source.fixAll.eslint": "explicit"
-    },
+  // ---- ESLint ----
+  // "auto" makes ESLint resolve the correct config per workspace in the monorepo.
+  "eslint.workingDirectories": [{ "mode": "auto" }],
+  "eslint.validate": ["javascript", "javascriptreact", "typescript", "typescriptreact"],
+  "editor.codeActionsOnSave": {
+    // new value form; boolean true/false is deprecated
+    "source.fixAll.eslint": "explicit"
+  },
 
-    // ---- Tailwind IntelliSense tuned for Nativewind ----
-    // RN uses `className`, and we surface autocomplete inside tv()/cva() variants too.
-    "tailwindCSS.classAttributes": ["className", "class", "tw"],
-    "tailwindCSS.experimental.classRegex": [
-        ["tv\\(([^)]*)\\)", "[\"'`]([^\"'`]*)[\"'`]"],
-        ["cva\\(([^)]*)\\)", "[\"'`]([^\"'`]*)[\"'`]"]
-    ],
+  // ---- Tailwind IntelliSense tuned for Nativewind ----
+  // RN uses `className`, and we surface autocomplete inside tv()/cva() variants too.
+  "tailwindCSS.classAttributes": ["className", "class", "tw"],
+  "tailwindCSS.experimental.classRegex": [
+    ["tv\\(([^)]*)\\)", "[\"'`]([^\"'`]*)[\"'`]"],
+    ["cva\\(([^)]*)\\)", "[\"'`]([^\"'`]*)[\"'`]"]
+  ],
 
-    // ---- Per-language formatters ----
-    "[json]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
-    "[jsonc]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  // ---- Per-language formatters ----
+  "[json]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[jsonc]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
 
-    // ---- Keep the file watcher fast in a large monorepo (avoids CPU spikes) ----
-    "files.watcherExclude": {
-        "**/node_modules/**": true,
-        "**/.turbo/**": true,
-        "**/.expo/**": true,
-        "**/dist/**": true,
-        "**/ios/Pods/**": true,
-        "**/android/build/**": true
-    },
+  // ---- Keep the file watcher fast in a large monorepo (avoids CPU spikes) ----
+  "files.watcherExclude": {
+    "**/node_modules/**": true,
+    "**/.turbo/**": true,
+    "**/.expo/**": true,
+    "**/dist/**": true,
+    "**/ios/Pods/**": true,
+    "**/android/build/**": true
+  },
 
-    // ---- Keep search/quick-open clean ----
-    "search.exclude": {
-        "**/node_modules": true,
-        "**/.turbo": true,
-        "**/.expo": true,
-        "**/dist": true,
-        "**/ios/Pods": true,
-        "**/android/build": true,
-        "**/pnpm-lock.yaml": true
-    }
+  // ---- Keep search/quick-open clean ----
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/.turbo": true,
+    "**/.expo": true,
+    "**/dist": true,
+    "**/ios/Pods": true,
+    "**/android/build": true,
+    "**/pnpm-lock.yaml": true
+  },
+
+  // ---- Explorer: agrupar arquivos relacionados (file nesting) ----
+  // Testes ficam aninhados sob o arquivo testado; configs de tooling sob o
+  // package.json; declarações .d.ts e variantes sob o tsconfig; .env.* sob o .env.
+  "explorer.fileNesting.enabled": true,
+  "explorer.fileNesting.expand": false,
+  "explorer.fileNesting.patterns": {
+    "*.ts": "${capture}.test.ts, ${capture}.spec.ts",
+    "*.tsx": "${capture}.test.tsx, ${capture}.spec.tsx",
+    "package.json": "pnpm-lock.yaml, pnpm-workspace.yaml, .npmrc, .nvmrc, turbo.json, eas.json, eslint.config.mjs, prettier.config.mjs, .prettierignore, .editorconfig, .gitattributes, babel.config.js, metro.config.js, jest.config.js, postcss.config.mjs, vite.config.ts",
+    "tsconfig.json": "tsconfig.*.json, *-env.d.ts",
+    "app.config.ts": "app.json",
+    ".env": ".env.*",
+    "README.md": "AGENTS.md, CLAUDE.md, LICENSE, CHANGELOG.md",
+    "index.html": "favicon.ico"
+  },
+  // Pastas com filho único aparecem compactadas (ex.: src/lib) — menos níveis para navegar
+  "explorer.compactFolders": true
 }

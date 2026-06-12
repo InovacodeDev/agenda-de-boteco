@@ -1,30 +1,24 @@
 import { useLocalSearchParams } from 'expo-router';
-import {
-  AtSign,
-  Clock,
-  Heart,
-  MapPin,
-  MessageCircle,
-  Navigation,
-} from 'lucide-react-native';
+import { AtSign, Clock, Heart, MapPin, MessageCircle, Navigation } from 'lucide-react-native';
 import { useState } from 'react';
 import { Linking, StyleSheet } from 'react-native';
 
-import { AgendaItem } from '@/src/components/establishment/AgendaItem';
-import { MenuItemRow } from '@/src/components/establishment/MenuItemRow';
-import { Screen } from '@/src/components/layout/Screen';
-import { ScreenHeader } from '@/src/components/layout/ScreenHeader';
-import { Button } from '@/src/components/ui/Button';
-import { CircleIconButton } from '@/src/components/ui/CircleIconButton';
-import { RatingStars } from '@/src/components/ui/RatingStars';
-import { SegmentedTabs } from '@/src/components/ui/SegmentedTabs';
-import { ESTABLISHMENTS, EVENTS, MUSIC_STYLES } from '@/src/data';
-import { useRequireAuth } from '@/src/hooks/useRequireAuth';
-import { useFavoritesStore } from '@/src/store/useFavoritesStore';
-import { colors } from '@/src/theme/colors';
-import { headingLetterSpacing } from '@/src/theme/typography';
-import { Image, ScrollView, Text, View } from '@/src/tw';
-import { buildDirectionsUrl, buildWhatsAppUrl } from '@/src/utils/links';
+import { AgendaItem } from '@/components/establishment/AgendaItem';
+import { MenuItemRow } from '@/components/establishment/MenuItemRow';
+import { Screen } from '@/components/layout/Screen';
+import { ScreenHeader } from '@/components/layout/ScreenHeader';
+import { Button } from '@/components/ui/Button';
+import { CircleIconButton } from '@/components/ui/CircleIconButton';
+import { RatingStars } from '@/components/ui/RatingStars';
+import { SegmentedTabs } from '@/components/ui/SegmentedTabs';
+import { EVENTS } from '@/data';
+import { ESTABLISHMENTS_BY_ID, musicStylesForEvent } from '@/data/lookup';
+import { useRequireAuth } from '@/hooks/useRequireAuth';
+import { useFavoritesStore } from '@/store/useFavoritesStore';
+import { colors } from '@/theme/colors';
+import { headingLetterSpacing } from '@/theme/typography';
+import { Image, ScrollView, Text, View } from '@/tw';
+import { buildDirectionsUrl, buildWhatsAppUrl } from '@/utils/links';
 
 const TABS = ['Sobre', 'Agenda', 'Cardápio', 'Reviews'];
 
@@ -36,12 +30,12 @@ interface AboutCardProps {
 
 function AboutCard({ label, value, icon }: AboutCardProps) {
   return (
-    <View className="gap-1 rounded-2xl bg-card px-4 py-3.5">
+    <View className="bg-card gap-1 rounded-2xl px-4 py-3.5">
       <View className="flex-row items-center gap-1.5">
         {icon}
-        <Text className="font-body text-[12px] text-muted-foreground">{label}</Text>
+        <Text className="font-body text-muted-foreground text-[12px]">{label}</Text>
       </View>
-      <Text className="font-body-semibold text-[14px] text-foreground">{value}</Text>
+      <Text className="font-body-semibold text-foreground text-[14px]">{value}</Text>
     </View>
   );
 }
@@ -51,7 +45,7 @@ export default function EstablishmentDetailScreen() {
   const requireAuth = useRequireAuth();
   const [activeTab, setActiveTab] = useState(0);
 
-  const establishment = ESTABLISHMENTS.find((item) => item.id === id);
+  const establishment = id ? ESTABLISHMENTS_BY_ID[id] : undefined;
   const isFavorite = useFavoritesStore((state) =>
     establishment ? state.establishmentIds.includes(establishment.id) : false,
   );
@@ -62,7 +56,7 @@ export default function EstablishmentDetailScreen() {
       <Screen>
         <ScreenHeader showBack />
         <View className="flex-1 items-center justify-center">
-          <Text className="font-body text-[14px] text-muted-foreground">
+          <Text className="font-body text-muted-foreground text-[14px]">
             Estabelecimento não encontrado.
           </Text>
         </View>
@@ -70,21 +64,13 @@ export default function EstablishmentDetailScreen() {
     );
   }
 
-  const agenda = EVENTS.filter(
-    (event) => event.establishment_id === establishment.id,
-  ).sort((a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime());
-
-  const stylesFor = (styleIds: string[]) =>
-    styleIds
-      .map((styleId) => MUSIC_STYLES.find((style) => style.id === styleId))
-      .filter((style) => style !== undefined);
+  const agenda = EVENTS.filter((event) => event.establishment_id === establishment.id).sort(
+    (a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime(),
+  );
 
   return (
     <Screen noTopInset>
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        style={{ flex: 1 }}
-      >
+      <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }}>
         <View className="h-65">
           <Image
             source={{ uri: establishment.cover_url }}
@@ -99,11 +85,11 @@ export default function EstablishmentDetailScreen() {
             <Image
               source={{ uri: establishment.logo_url }}
               contentFit="cover"
-              className="h-16 w-16 rounded-2xl border-2 border-background"
+              className="border-background h-16 w-16 rounded-2xl border-2"
               accessibilityLabel={`Logo ${establishment.name}`}
             />
             <View className="flex-1 gap-0.5 pb-1">
-              <Text className="font-body text-[12px] text-muted-foreground">
+              <Text className="font-body text-muted-foreground text-[12px]">
                 {establishment.ambiance} · {establishment.price_range}
               </Text>
             </View>
@@ -111,25 +97,22 @@ export default function EstablishmentDetailScreen() {
 
           <View className="gap-1">
             <Text
-              className="font-heading text-[24px] text-foreground"
+              className="font-heading text-foreground text-[24px]"
               style={{ letterSpacing: headingLetterSpacing(24) }}
             >
               {establishment.name}
             </Text>
-            <RatingStars
-              avg={establishment.rating_avg}
-              count={establishment.rating_count}
-            />
+            <RatingStars avg={establishment.rating_avg} count={establishment.rating_count} />
           </View>
 
-          <Text className="font-body text-[14px] leading-5 text-foreground">
+          <Text className="font-body text-foreground text-[14px] leading-5">
             {establishment.description}
           </Text>
 
           <View className="flex-row flex-wrap gap-2">
             {establishment.highlights.map((highlight) => (
-              <View key={highlight} className="rounded-full bg-surface-elevated px-3 py-1.5">
-                <Text className="font-body text-[12px] text-foreground">{highlight}</Text>
+              <View key={highlight} className="bg-surface-elevated rounded-full px-3 py-1.5">
+                <Text className="font-body text-foreground text-[12px]">{highlight}</Text>
               </View>
             ))}
           </View>
@@ -161,16 +144,12 @@ export default function EstablishmentDetailScreen() {
           {activeTab === 1 ? (
             <View className="gap-3">
               {agenda.length === 0 ? (
-                <Text className="font-body text-[14px] text-muted-foreground">
+                <Text className="font-body text-muted-foreground text-[14px]">
                   Nenhum evento agendado.
                 </Text>
               ) : (
                 agenda.map((event) => (
-                  <AgendaItem
-                    key={event.id}
-                    event={event}
-                    styles={stylesFor(event.music_style_ids)}
-                  />
+                  <AgendaItem key={event.id} event={event} styles={musicStylesForEvent(event)} />
                 ))
               )}
             </View>
@@ -179,26 +158,20 @@ export default function EstablishmentDetailScreen() {
           {activeTab === 2 ? (
             <View className="gap-3">
               {establishment.menu_items.length === 0 ? (
-                <Text className="font-body text-[14px] text-muted-foreground">
+                <Text className="font-body text-muted-foreground text-[14px]">
                   Cardápio não informado.
                 </Text>
               ) : (
-                establishment.menu_items.map((item) => (
-                  <MenuItemRow key={item.name} item={item} />
-                ))
+                establishment.menu_items.map((item) => <MenuItemRow key={item.name} item={item} />)
               )}
             </View>
           ) : null}
 
           {activeTab === 3 ? (
-            <View className="items-center gap-2 rounded-2xl bg-card p-6">
-              <RatingStars
-                avg={establishment.rating_avg}
-                count={establishment.rating_count}
-              />
-              <Text className="text-center font-body text-[13px] text-muted-foreground">
-                Avaliações de {establishment.rating_count} pessoas que já curtiram a noite
-                por aqui.
+            <View className="bg-card items-center gap-2 rounded-2xl p-6">
+              <RatingStars avg={establishment.rating_avg} count={establishment.rating_count} />
+              <Text className="font-body text-muted-foreground text-center text-[13px]">
+                Avaliações de {establishment.rating_count} pessoas que já curtiram a noite por aqui.
               </Text>
             </View>
           ) : null}
@@ -206,7 +179,7 @@ export default function EstablishmentDetailScreen() {
       </ScrollView>
 
       <View
-        className="gap-3 bg-background/95 px-4 pt-2 pb-2"
+        className="bg-background/95 gap-3 px-4 pt-2 pb-2"
         style={{ flexDirection: 'row', flexWrap: 'wrap' }}
       >
         <Button
@@ -222,9 +195,7 @@ export default function EstablishmentDetailScreen() {
           style={{ backgroundColor: colors.background }}
           icon={<Navigation color={colors.foreground} size={16} />}
           onPress={() =>
-            Linking.openURL(
-              buildDirectionsUrl({ lat: establishment.lat, lng: establishment.lng }),
-            )
+            Linking.openURL(buildDirectionsUrl({ lat: establishment.lat, lng: establishment.lng }))
           }
         />
       </View>
@@ -233,9 +204,7 @@ export default function EstablishmentDetailScreen() {
         showBack
         right={
           <CircleIconButton
-            accessibilityLabel={
-              isFavorite ? 'Remover dos favoritos' : 'Favoritar estabelecimento'
-            }
+            accessibilityLabel={isFavorite ? 'Remover dos favoritos' : 'Favoritar estabelecimento'}
             icon={
               <Heart
                 color={isFavorite ? colors.primary : colors.foreground}

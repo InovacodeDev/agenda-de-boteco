@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react';
 
-import { useGuardedPress } from '../../hooks/useGuardedPress';
-import { Pressable } from '../../tw';
-import { cn } from '../../utils/cn';
+import { useGuardedPress } from '@/hooks/useGuardedPress';
+import { Pressable } from '@/tw';
+import { cn } from '@/utils/cn';
 
 export interface CircleIconButtonProps {
   icon: ReactNode;
@@ -26,7 +26,7 @@ export function CircleIconButton({
       accessibilityLabel={accessibilityLabel}
       onPress={guardedPress}
       className={cn(
-        'h-10 w-10 items-center justify-center rounded-full bg-background/60 active:opacity-80',
+        'bg-background/60 h-10 w-10 items-center justify-center rounded-full active:opacity-80',
         className,
       )}
     >

@@ -2,8 +2,8 @@ import { Tabs } from 'expo-router';
 import { Bell, Heart, House, MapPin, User } from 'lucide-react-native';
 import { StyleSheet } from 'react-native';
 
-import { colors } from '../../src/theme/colors';
-import { fontFamilies } from '../../src/theme/typography';
+import { colors } from '@/theme/colors';
+import { fontFamilies } from '@/theme/typography';
 
 export default function TabsLayout() {
   return (

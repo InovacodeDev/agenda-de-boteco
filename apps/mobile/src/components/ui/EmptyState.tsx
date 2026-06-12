@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 
-import { Text, View } from '../../tw';
+import { Text, View } from '@/tw';
+
 import { GuardedPressable } from './GuardedPressable';
 
 export interface EmptyStateProps {
@@ -13,18 +14,16 @@ export interface EmptyStateProps {
 /** Card de estado vazio com borda tracejada (Favoritos) */
 export function EmptyState({ icon, message, actionLabel, onAction }: EmptyStateProps) {
   return (
-    <View className="items-center gap-3 rounded-2xl border border-dashed border-border px-6 py-10">
+    <View className="border-border items-center gap-3 rounded-2xl border border-dashed px-6 py-10">
       {icon}
-      <Text className="text-center font-body text-[14px] text-muted-foreground">
-        {message}
-      </Text>
+      <Text className="font-body text-muted-foreground text-center text-[14px]">{message}</Text>
       {actionLabel ? (
         <GuardedPressable
           accessibilityRole="button"
           onPress={onAction}
           className="active:opacity-80"
         >
-          <Text className="font-body-semibold text-[14px] text-primary">{actionLabel}</Text>
+          <Text className="font-body-semibold text-primary text-[14px]">{actionLabel}</Text>
         </GuardedPressable>
       ) : null}
     </View>

@@ -14,7 +14,7 @@
       "env": ["EXPO_PUBLIC_*", "VITE_*"],
       "outputs": ["dist/**", "build/**", "web-build/**"]
     },
-    "core#build": {
+    "@agenda/core#build": {
       "outputs": []
     },
     "dev": {

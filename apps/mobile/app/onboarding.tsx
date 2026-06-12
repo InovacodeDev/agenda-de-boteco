@@ -1,22 +1,22 @@
+import brandLogo from '@assets/logo.png';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MapPin, Music, Sparkles } from 'lucide-react-native';
 import type { ReactNode } from 'react';
 import { StyleSheet } from 'react-native';
 
-import brandLogo from '../assets/logo.png';
-import { Screen } from '../src/components/layout/Screen';
-import { ScreenHeader } from '../src/components/layout/ScreenHeader';
-import { Button } from '../src/components/ui/Button';
-import { GuardedPressable } from '../src/components/ui/GuardedPressable';
-import { CITIES } from '../src/data';
-import { useUserLocation } from '../src/hooks/useUserLocation';
-import { usePreferencesStore } from '../src/store/usePreferencesStore';
-import { colors } from '../src/theme/colors';
-import { gradientNight } from '../src/theme/gradients';
-import { shadows } from '../src/theme/shadows';
-import { headingLetterSpacing } from '../src/theme/typography';
-import { Image, ScrollView, Text, View } from '../src/tw';
-import { nearestCity } from '../src/utils/geo';
+import { Screen } from '@/components/layout/Screen';
+import { ScreenHeader } from '@/components/layout/ScreenHeader';
+import { Button } from '@/components/ui/Button';
+import { GuardedPressable } from '@/components/ui/GuardedPressable';
+import { CITIES } from '@/data';
+import { useUserLocation } from '@/hooks/useUserLocation';
+import { usePreferencesStore } from '@/store/usePreferencesStore';
+import { colors } from '@/theme/colors';
+import { gradientNight } from '@/theme/gradients';
+import { shadows } from '@/theme/shadows';
+import { headingLetterSpacing } from '@/theme/typography';
+import { Image, ScrollView, Text, View } from '@/tw';
+import { nearestCity } from '@/utils/geo';
 
 interface FeatureCardProps {
   icon: ReactNode;
@@ -25,9 +25,9 @@ interface FeatureCardProps {
 
 function FeatureCard({ icon, label }: FeatureCardProps) {
   return (
-    <View className="flex-1 items-center gap-1.5 rounded-2xl bg-surface/80 px-2 py-4">
+    <View className="bg-surface/80 flex-1 items-center gap-1.5 rounded-2xl px-2 py-4">
       {icon}
-      <Text className="font-body-medium text-[12px] text-foreground">{label}</Text>
+      <Text className="font-body-medium text-foreground text-[12px]">{label}</Text>
     </View>
   );
 }
@@ -59,36 +59,24 @@ export default function OnboardingScreen() {
           accessibilityLabel="Agenda de Boteco"
         />
       </ScreenHeader>
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerClassName="gap-6 p-6"
-      >
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerClassName="gap-6 p-6">
         <View className="gap-3">
           <Text
-            className="font-heading text-[32px] text-foreground"
+            className="font-heading text-foreground text-[32px]"
             style={{ letterSpacing: headingLetterSpacing(32) }}
           >
             A noite começa <Text className="text-primary">aqui</Text>.
           </Text>
-          <Text className="font-body text-[15px] leading-6 text-muted-foreground">
-            Descubra o que está rolando em bares, pubs e botecos da sua cidade. Música ao
-            vivo, happy hour e a melhor agenda da noite.
+          <Text className="font-body text-muted-foreground text-[15px] leading-6">
+            Descubra o que está rolando em bares, pubs e botecos da sua cidade. Música ao vivo,
+            happy hour e a melhor agenda da noite.
           </Text>
         </View>
 
         <View className="flex-row gap-3">
-          <FeatureCard
-            icon={<Music color={colors.primary} size={20} />}
-            label="Música ao vivo"
-          />
-          <FeatureCard
-            icon={<Sparkles color={colors.primary} size={20} />}
-            label="Promoções"
-          />
-          <FeatureCard
-            icon={<MapPin color={colors.primary} size={20} />}
-            label="Perto de você"
-          />
+          <FeatureCard icon={<Music color={colors.primary} size={20} />} label="Música ao vivo" />
+          <FeatureCard icon={<Sparkles color={colors.primary} size={20} />} label="Promoções" />
+          <FeatureCard icon={<MapPin color={colors.primary} size={20} />} label="Perto de você" />
         </View>
 
         <View className="gap-4 pt-4">
@@ -100,11 +88,11 @@ export default function OnboardingScreen() {
             style={{ boxShadow: shadows.neon }}
           />
           {status === 'denied' ? (
-            <Text className="text-center font-body text-[12px] text-muted-foreground">
+            <Text className="font-body text-muted-foreground text-center text-[12px]">
               Permissão negada — escolha sua cidade abaixo.
             </Text>
           ) : null}
-          <Text className="text-center font-body text-[13px] text-muted-foreground">
+          <Text className="font-body text-muted-foreground text-center text-[13px]">
             ou escolha sua cidade
           </Text>
           <View className="flex-row flex-wrap gap-3">
@@ -114,12 +102,10 @@ export default function OnboardingScreen() {
                 accessibilityRole="button"
                 accessibilityLabel={`${city.name}, ${city.uf}`}
                 onPress={() => chooseCity(city.id)}
-                className="w-[47%] grow rounded-2xl bg-surface/80 px-4 py-3.5 active:opacity-80"
+                className="bg-surface/80 w-[47%] grow rounded-2xl px-4 py-3.5 active:opacity-80"
               >
-                <Text className="font-body-semibold text-[14px] text-foreground">
-                  {city.name}
-                </Text>
-                <Text className="font-body text-[12px] text-muted-foreground">{city.uf}</Text>
+                <Text className="font-body-semibold text-foreground text-[14px]">{city.name}</Text>
+                <Text className="font-body text-muted-foreground text-[12px]">{city.uf}</Text>
               </GuardedPressable>
             ))}
           </View>

@@ -1,24 +1,24 @@
+import brandLogo from '@assets/logo.png';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { Apple, Info, Mail } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
-import { Platform,StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
 
-import brandLogo from '../assets/logo.png';
-import { Screen } from '../src/components/layout/Screen';
-import { ScreenHeader } from '../src/components/layout/ScreenHeader';
-import { Button } from '../src/components/ui/Button';
+import { Screen } from '@/components/layout/Screen';
+import { ScreenHeader } from '@/components/layout/ScreenHeader';
+import { Button } from '@/components/ui/Button';
 import {
   type AuthProvider,
   signInWithEmailOtp,
   signInWithProvider,
   verifyEmailOtp,
-} from '../src/services/auth';
-import { useAuthStore } from '../src/store/useAuthStore';
-import { colors } from '../src/theme/colors';
-import { gradientNight } from '../src/theme/gradients';
-import { headingLetterSpacing } from '../src/theme/typography';
-import { Image, KeyboardAvoidingView, ScrollView,Text, TextInput, View } from '../src/tw';
+} from '@/services/auth';
+import { useAuthStore } from '@/store/useAuthStore';
+import { colors } from '@/theme/colors';
+import { gradientNight } from '@/theme/gradients';
+import { headingLetterSpacing } from '@/theme/typography';
+import { Image, KeyboardAvoidingView, ScrollView, Text, TextInput, View } from '@/tw';
 
 type EmailStep = 'hidden' | 'editing' | 'sent';
 
@@ -90,10 +90,7 @@ export default function LoginScreen() {
   return (
     <Screen background={<LinearGradient {...gradientNight} style={StyleSheet.absoluteFill} />}>
       <ScreenHeader showBack />
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'padding'}
-        className="flex-1"
-      >
+      <KeyboardAvoidingView behavior="padding" className="flex-1">
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerClassName="grow justify-end p-6"
@@ -108,34 +105,33 @@ export default function LoginScreen() {
             />
             <View className="gap-2">
               <Text
-                className="font-heading text-[26px] text-foreground"
+                className="font-heading text-foreground text-[26px]"
                 style={{ letterSpacing: headingLetterSpacing(26) }}
               >
                 Entre para curtir mais
               </Text>
-              <Text className="font-body text-[14px] leading-5 text-muted-foreground">
+              <Text className="font-body text-muted-foreground text-[14px] leading-5">
                 Salve favoritos, avalie bares e receba avisos dos seus lugares favoritos.
               </Text>
             </View>
 
             {unavailable ? (
-              <View className="flex-row items-start gap-2.5 rounded-2xl border border-border bg-surface/80 p-4">
+              <View className="border-border bg-surface/80 flex-row items-start gap-2.5 rounded-2xl border p-4">
                 <Info color={colors.accent} size={18} />
                 <View className="flex-1 gap-1">
-                  <Text className="font-body-semibold text-[14px] text-foreground">
+                  <Text className="font-body-semibold text-foreground text-[14px]">
                     Login indisponível no momento
                   </Text>
-                  <Text className="font-body text-[13px] leading-5 text-muted-foreground">
-                    Estamos finalizando a configuração das contas. Você já pode explorar a
-                    agenda normalmente — favoritar e avaliar liberam assim que o login
-                    estiver no ar.
+                  <Text className="font-body text-muted-foreground text-[13px] leading-5">
+                    Estamos finalizando a configuração das contas. Você já pode explorar a agenda
+                    normalmente — favoritar e avaliar liberam assim que o login estiver no ar.
                   </Text>
                 </View>
               </View>
             ) : null}
 
             {errorMessage ? (
-              <Text className="font-body text-[13px] text-destructive">{errorMessage}</Text>
+              <Text className="font-body text-destructive text-[13px]">{errorMessage}</Text>
             ) : null}
 
             <View className="gap-3">
@@ -145,11 +141,7 @@ export default function LoginScreen() {
                 fullWidth
                 disabled={unavailable || busy}
                 onPress={() => handleProvider('google')}
-                icon={
-                  <Text className="font-body-bold text-[15px] text-primary-foreground">
-                    G
-                  </Text>
-                }
+                icon={<Text className="font-body-bold text-primary-foreground text-[15px]">G</Text>}
               />
               <Button
                 label="Continuar com Apple"
@@ -169,7 +161,7 @@ export default function LoginScreen() {
                     keyboardType="email-address"
                     autoCapitalize="none"
                     autoCorrect={false}
-                    className="h-12 rounded-full border border-border bg-surface px-5 py-2.5 font-body text-[14px] text-foreground"
+                    className="border-border bg-surface font-body text-foreground h-12 rounded-full border px-5 py-2.5 text-[14px]"
                     accessibilityLabel="Seu e-mail"
                   />
                   <Button
@@ -183,7 +175,7 @@ export default function LoginScreen() {
                 </View>
               ) : emailStep === 'sent' ? (
                 <View className="gap-3">
-                  <Text className="text-center font-body text-[13px] text-muted-foreground">
+                  <Text className="font-body text-muted-foreground text-center text-[13px]">
                     Enviamos um código de acesso para {email.trim()}. Insira-o abaixo:
                   </Text>
                   <TextInput
@@ -195,7 +187,7 @@ export default function LoginScreen() {
                     maxLength={6}
                     autoCapitalize="none"
                     autoCorrect={false}
-                    className="h-12 rounded-full border border-border bg-surface px-5 py-2.5 text-center font-body text-[14px] text-foreground"
+                    className="border-border bg-surface font-body text-foreground h-12 rounded-full border px-5 py-2.5 text-center text-[14px]"
                     style={{ letterSpacing: 6 }}
                     accessibilityLabel="Código de acesso"
                   />
@@ -230,7 +222,7 @@ export default function LoginScreen() {
               )}
             </View>
 
-            <Text className="text-center font-body text-[12px] text-muted-foreground">
+            <Text className="font-body text-muted-foreground text-center text-[12px]">
               Ao continuar, você aceita os termos do Agenda de Boteco.
             </Text>
           </View>

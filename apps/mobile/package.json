@@ -1,5 +1,5 @@
 {
-  "name": "mobile",
+  "name": "@agenda/mobile",
   "version": "1.0.0",
   "main": "expo-router/entry",
   "private": true,
@@ -11,8 +11,8 @@
     "@react-native-community/slider": "5.2.0",
     "@shopify/flash-list": "^2.3.1",
     "@supabase/supabase-js": "^2.106.2",
+    "@agenda/core": "workspace:*",
     "clsx": "^2.1.1",
-    "core": "workspace:*",
     "expo": "~56.0.8",
     "expo-constants": "^56.0.16",
     "expo-font": "~56.0.5",
@@ -55,6 +55,7 @@
     "test": "jest"
   },
   "devDependencies": {
+    "@agenda/typescript-config": "workspace:*",
     "@tailwindcss/postcss": "^4.0.0",
     "@types/jest": "^29.5.14",
     "@types/react": "^19.2.15",

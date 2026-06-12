@@ -1,5 +1,5 @@
 {
-  "name": "admin",
+  "name": "@agenda/admin",
   "version": "1.0.0",
   "private": true,
   "type": "module",
@@ -10,11 +10,12 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@agenda/core": "workspace:*",
     "react": "19.2.3",
-    "react-dom": "19.2.3",
-    "core": "workspace:*"
+    "react-dom": "19.2.3"
   },
   "devDependencies": {
+    "@agenda/typescript-config": "workspace:*",
     "@types/react": "^19.2.15",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^4.3.4",

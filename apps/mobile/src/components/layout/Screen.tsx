@@ -2,8 +2,8 @@ import type { ReactNode } from 'react';
 import { StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { View } from '../../tw';
-import { cn } from '../../utils/cn';
+import { View } from '@/tw';
+import { cn } from '@/utils/cn';
 
 export interface ScreenProps {
   children: ReactNode;
@@ -30,7 +30,7 @@ export function Screen({
 }: ScreenProps) {
   const insets = useSafeAreaInsets();
   return (
-    <View className={cn('flex-1 bg-background', className)}>
+    <View className={cn('bg-background flex-1', className)}>
       {background ? <View style={StyleSheet.absoluteFill}>{background}</View> : null}
       <View
         className="flex-1"

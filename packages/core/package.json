@@ -1,9 +1,15 @@
 {
-  "name": "core",
+  "name": "@agenda/core",
   "version": "1.0.0",
   "private": true,
   "main": "./src/index.ts",
   "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
   "scripts": {
     "build": "echo 'core is a source-only internal package — nothing to build'",
     "lint": "eslint .",
@@ -15,6 +21,7 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@agenda/typescript-config": "workspace:*",
     "@types/node": "^22.0.0",
     "typescript": "^6.0.3"
   }

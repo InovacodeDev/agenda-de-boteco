@@ -1,11 +1,4 @@
 {
-  "extends": "../../tsconfig.json",
-  "compilerOptions": {
-    "target": "ES2022",
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
-    "noEmit": true,
-    "skipLibCheck": true
-  },
+  "extends": "@agenda/typescript-config/base.json",
   "include": ["src/**/*"]
 }

@@ -1,28 +1,33 @@
 import { FlashList } from '@shopify/flash-list';
 import { useEffect, useMemo, useState } from 'react';
 
-import { EventCard } from '../../src/components/event/EventCard';
-import { FeedHeader } from '../../src/components/feed/FeedHeader';
-import { QuickFilterChips } from '../../src/components/feed/QuickFilterChips';
-import { SearchBar } from '../../src/components/feed/SearchBar';
-import { StyleCard } from '../../src/components/feed/StyleCard';
-import { Screen } from '../../src/components/layout/Screen';
-import { ScreenHeader } from '../../src/components/layout/ScreenHeader';
-import { SectionLabel } from '../../src/components/ui/SectionLabel';
-import { CITIES, ESTABLISHMENTS, EVENTS, MUSIC_STYLES } from '../../src/data';
-import type { Establishment } from '../../src/data/schemas';
-import { useFiltersStore } from '../../src/store/useFiltersStore';
-import { usePreferencesStore } from '../../src/store/usePreferencesStore';
-import { headingLetterSpacing } from '../../src/theme/typography';
-import { ScrollView, Text, View } from '../../src/tw';
-import { applyEventFilters } from '../../src/utils/filters';
+import { EventCard } from '@/components/event/EventCard';
+import { FeedHeader } from '@/components/feed/FeedHeader';
+import { QuickFilterChips } from '@/components/feed/QuickFilterChips';
+import { SearchBar } from '@/components/feed/SearchBar';
+import { StyleCard } from '@/components/feed/StyleCard';
+import { Screen } from '@/components/layout/Screen';
+import { ScreenHeader } from '@/components/layout/ScreenHeader';
+import { SectionLabel } from '@/components/ui/SectionLabel';
+import { EVENTS, MUSIC_STYLES } from '@/data';
+import { cityByIdOrDefault, ESTABLISHMENTS_BY_ID, musicStylesForEvent } from '@/data/lookup';
+import type { Event } from '@/data/schemas';
+import { useFiltersStore } from '@/store/useFiltersStore';
+import { usePreferencesStore } from '@/store/usePreferencesStore';
+import { headingLetterSpacing } from '@/theme/typography';
+import { ScrollView, Text, View } from '@/tw';
+import { applyEventFilters } from '@/utils/filters';
 
-const ESTABLISHMENTS_BY_ID: Record<string, Establishment> = Object.fromEntries(
-  ESTABLISHMENTS.map((establishment) => [establishment.id, establishment]),
-);
+const ItemSeparator = () => <View className="h-4" />;
 
-const STYLES_BY_ID = Object.fromEntries(
-  MUSIC_STYLES.map((style) => [style.id, style]),
+// Estável fora do componente: junto com EventCard memoizado e os caches de
+// lookup, evita re-render dos cards visíveis a cada tecla da busca.
+const renderEvent = ({ item }: { item: Event }) => (
+  <EventCard
+    event={item}
+    establishment={ESTABLISHMENTS_BY_ID[item.establishment_id]}
+    styles={musicStylesForEvent(item)}
+  />
 );
 
 export default function FeedScreen() {
@@ -38,7 +43,7 @@ export default function FeedScreen() {
     return () => clearInterval(interval);
   }, []);
 
-  const city = CITIES.find((c) => c.id === cityId) ?? CITIES[0];
+  const city = cityByIdOrDefault(cityId);
 
   const events = useMemo(
     () =>
@@ -60,17 +65,17 @@ export default function FeedScreen() {
         keyExtractor={(event) => event.id}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 24 }}
-        ItemSeparatorComponent={() => <View className="h-4" />}
+        ItemSeparatorComponent={ItemSeparator}
         ListHeaderComponent={
-          <View className="gap-4 pb-4 pt-2">
+          <View className="gap-4 pt-2 pb-4">
             <View className="gap-1">
               <Text
-                className="font-heading text-[28px] text-foreground"
+                className="font-heading text-foreground text-[28px]"
                 style={{ letterSpacing: headingLetterSpacing(28) }}
               >
                 O que rola em <Text className="text-primary">{city.name}</Text> hoje?
               </Text>
-              <Text className="font-body text-[14px] text-muted-foreground">
+              <Text className="font-body text-muted-foreground text-[14px]">
                 Cards quentinhos da agenda da noite.
               </Text>
             </View>
@@ -98,15 +103,7 @@ export default function FeedScreen() {
             </SectionLabel>
           </View>
         }
-        renderItem={({ item }) => (
-          <EventCard
-            event={item}
-            establishment={ESTABLISHMENTS_BY_ID[item.establishment_id]}
-            styles={item.music_style_ids
-              .map((id) => STYLES_BY_ID[id])
-              .filter((style) => style !== undefined)}
-          />
-        )}
+        renderItem={renderEvent}
       />
     </Screen>
   );

@@ -6,10 +6,7 @@ import {
   Inter_600SemiBold,
   Inter_700Bold,
 } from '@expo-google-fonts/inter';
-import {
-  SpaceGrotesk_500Medium,
-  SpaceGrotesk_700Bold,
-} from '@expo-google-fonts/space-grotesk';
+import { SpaceGrotesk_500Medium, SpaceGrotesk_700Bold } from '@expo-google-fonts/space-grotesk';
 import { useFonts } from 'expo-font';
 import * as Linking from 'expo-linking';
 import { Stack } from 'expo-router';
@@ -18,10 +15,10 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-import { handleDeepLink } from '../src/services/auth';
-import { useAuthStore } from '../src/store/useAuthStore';
-import { usePreferencesStore } from '../src/store/usePreferencesStore';
-import { colors } from '../src/theme/colors';
+import { handleDeepLink } from '@/services/auth';
+import { useAuthStore } from '@/store/useAuthStore';
+import { usePreferencesStore } from '@/store/usePreferencesStore';
+import { colors } from '@/theme/colors';
 
 SplashScreen.preventAutoHideAsync();
 

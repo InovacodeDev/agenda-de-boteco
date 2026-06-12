@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 
-import { Text, View } from '../../tw';
+import { Text, View } from '@/tw';
 
 export interface FilterSectionProps {
   title: string;
@@ -14,9 +14,9 @@ export function FilterSection({ title, trailing, children }: FilterSectionProps)
   return (
     <View className="gap-3">
       <View className="flex-row items-center justify-between">
-        <Text className="font-body-semibold text-[14px] text-foreground">{title}</Text>
+        <Text className="font-body-semibold text-foreground text-[14px]">{title}</Text>
         {trailing ? (
-          <Text className="font-body text-[13px] text-muted-foreground">{trailing}</Text>
+          <Text className="font-body text-muted-foreground text-[13px]">{trailing}</Text>
         ) : null}
       </View>
       {children}
