@@ -3,8 +3,8 @@ import * as WebBrowser from 'expo-web-browser';
 import { Platform } from 'react-native';
 
 import { getSupabase, isSupabaseConfigured } from '../lib/supabase';
-import { handleServiceError, logErrorToTerminal } from '../utils/errors';
 import { parseAuthTokensFromUrl } from '../utils/auth';
+import { handleServiceError, logErrorToTerminal } from '../utils/errors';
 
 export type AuthProvider = 'google' | 'apple';
 
@@ -153,9 +153,7 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
 }
 
 /** Observa mudanças de sessão; retorna função de unsubscribe */
-export function onAuthUserChange(
-  callback: (user: AuthUser | null) => void,
-): () => void {
+export function onAuthUserChange(callback: (user: AuthUser | null) => void): () => void {
   const client = getSupabase();
   if (!client) {
     return () => undefined;

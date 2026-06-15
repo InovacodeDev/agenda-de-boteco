@@ -12,7 +12,7 @@ import {
 describe('errors utility', () => {
   const originalDev = (globalThis as typeof globalThis & { __DEV__: boolean }).__DEV__;
   const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
-  const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
+  // const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
 
   beforeEach(() => {
     jest.clearAllMocks();

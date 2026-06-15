@@ -14,12 +14,12 @@ import {
   signInWithProvider,
   verifyEmailOtp,
 } from '@/services/auth';
-import { getFriendlyErrorMessage } from '@/utils/errors';
 import { useAuthStore } from '@/store/useAuthStore';
 import { colors } from '@/theme/colors';
 import { gradientNight } from '@/theme/gradients';
 import { headingLetterSpacing } from '@/theme/typography';
 import { Image, KeyboardAvoidingView, ScrollView, Text, TextInput, View } from '@/tw';
+import { getFriendlyErrorMessage } from '@/utils/errors';
 
 type EmailStep = 'hidden' | 'editing' | 'sent';
 
