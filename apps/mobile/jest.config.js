@@ -9,6 +9,6 @@ module.exports = {
     '^@assets/(.*)$': '<rootDir>/assets/$1',
   },
   transformIgnorePatterns: [
-    'node_modules/(?!((jest-)?react-native|@react-native(-community)?|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|react-native-svg|react-native-css|nativewind|lucide-react-native|zustand|@supabase/.*|@tanstack/.*|@agenda/.*|@fortawesome/.*))',
+    'node_modules/(?!((jest-)?react-native|@react-native(-community)?|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|react-native-svg|react-native-css|nativewind|zustand|@supabase/.*|@tanstack/.*|@agenda/.*|@fortawesome/.*))',
   ],
 };

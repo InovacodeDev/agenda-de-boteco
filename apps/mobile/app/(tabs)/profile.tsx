@@ -1,9 +1,9 @@
 import { useRouter } from 'expo-router';
-import { ChevronRight, Heart, LogOut, MapPin, User } from 'lucide-react-native';
 
 import { Screen } from '@/components/layout/Screen';
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import { Button } from '@/components/ui/Button';
+import { Icon } from '@/components/ui/Icon';
 import { cityByIdOrDefault } from '@/data/lookup';
 import { useCitiesQuery } from '@/hooks/queries';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -18,7 +18,7 @@ function SignedOutProfile() {
   return (
     <View className="flex-1 items-center gap-4 px-8 pt-16">
       <View className="bg-surface-elevated h-16 w-16 items-center justify-center rounded-2xl">
-        <User color={colors.mutedForeground} size={28} />
+        <Icon name="user" variant="regular" color={colors.mutedForeground} size={28} />
       </View>
       <View className="items-center gap-2">
         <Text
@@ -100,10 +100,10 @@ function SignedInProfile() {
           className="border-border active:bg-surface/50 flex-row items-center justify-between border-b px-4 py-4"
         >
           <View className="flex-row items-center gap-3">
-            <Heart color={colors.primary} size={18} />
+            <Icon name="heart" variant="solid" color={colors.primary} size={18} />
             <Text className="font-body-medium text-foreground text-[15px]">Meus favoritos</Text>
           </View>
-          <ChevronRight color={colors.mutedForeground} size={16} />
+          <Icon name="chevron-right" color={colors.mutedForeground} size={16} />
         </Pressable>
 
         <Pressable
@@ -111,10 +111,10 @@ function SignedInProfile() {
           className="active:bg-surface/50 flex-row items-center justify-between px-4 py-4"
         >
           <View className="flex-row items-center gap-3">
-            <MapPin color={colors.primary} size={18} />
+            <Icon name="location-dot" color={colors.primary} size={18} />
             <Text className="font-body-medium text-foreground text-[15px]">Mudar cidade</Text>
           </View>
-          <ChevronRight color={colors.mutedForeground} size={16} />
+          <Icon name="chevron-right" color={colors.mutedForeground} size={16} />
         </Pressable>
       </View>
 
@@ -124,7 +124,7 @@ function SignedInProfile() {
         onPress={() => signOut()}
         className="border-destructive/20 active:bg-destructive/10 mb-4 h-12 w-full flex-row items-center justify-center gap-2 rounded-xl border bg-transparent"
       >
-        <LogOut color={colors.destructive} size={16} />
+        <Icon name="right-from-bracket" color={colors.destructive} size={16} />
         <Text className="font-body-semibold text-destructive text-[15px]">Sair</Text>
       </Pressable>
     </View>

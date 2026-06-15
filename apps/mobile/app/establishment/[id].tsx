@@ -1,5 +1,4 @@
 import { useLocalSearchParams } from 'expo-router';
-import { AtSign, Clock, Heart, MapPin, MessageCircle, Navigation, Share2 } from 'lucide-react-native';
 import { useMemo, useState } from 'react';
 import { Linking, Share, StyleSheet } from 'react-native';
 
@@ -9,6 +8,7 @@ import { Screen } from '@/components/layout/Screen';
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import { Button } from '@/components/ui/Button';
 import { CircleIconButton } from '@/components/ui/CircleIconButton';
+import { Icon } from '@/components/ui/Icon';
 import { RatingStars } from '@/components/ui/RatingStars';
 import { SegmentedTabs } from '@/components/ui/SegmentedTabs';
 import { indexById, musicStylesForEvent } from '@/data/lookup';
@@ -152,18 +152,18 @@ export default function EstablishmentDetailScreen() {
               <AboutCard
                 label="Endereço"
                 value={`${establishment.address} · ${establishment.neighborhood}`}
-                icon={<MapPin color={colors.primary} size={13} />}
+                icon={<Icon name="location-dot" color={colors.primary} size={13} />}
               />
               <AboutCard
                 label="Horário"
                 value={establishment.opening_hours}
-                icon={<Clock color={colors.mutedForeground} size={13} />}
+                icon={<Icon name="clock" variant="regular" color={colors.mutedForeground} size={13} />}
               />
               {establishment.instagram ? (
                 <AboutCard
                   label="Instagram"
                   value={establishment.instagram}
-                  icon={<AtSign color={colors.primary} size={13} />}
+                  icon={<Icon name="at" color={colors.primary} size={13} />}
                 />
               ) : null}
             </View>
@@ -217,14 +217,14 @@ export default function EstablishmentDetailScreen() {
         <Button
           label="WhatsApp"
           className="flex-1"
-          icon={<MessageCircle color={colors.primaryForeground} size={16} />}
+          icon={<Icon name="comment" variant="regular" color={colors.primaryForeground} size={16} />}
           onPress={() => Linking.openURL(buildWhatsAppUrl(establishment.whatsapp))}
         />
         <Button
           variant="outline"
           className="border-foreground/50 border-[0.5px]"
           style={{ backgroundColor: colors.background }}
-          icon={<Navigation color={colors.foreground} size={16} />}
+          icon={<Icon name="location-arrow" color={colors.foreground} size={16} />}
           onPress={() =>
             Linking.openURL(buildDirectionsUrl({ lat: establishment.lat, lng: establishment.lng }))
           }
@@ -237,7 +237,7 @@ export default function EstablishmentDetailScreen() {
           <>
             <CircleIconButton
               accessibilityLabel="Compartilhar estabelecimento"
-              icon={<Share2 color={colors.foreground} size={18} />}
+              icon={<Icon name="share-nodes" color={colors.foreground} size={18} />}
               onPress={share}
             />
             <CircleIconButton
@@ -245,9 +245,10 @@ export default function EstablishmentDetailScreen() {
                 isFavorite ? 'Remover dos favoritos' : 'Favoritar estabelecimento'
               }
               icon={
-                <Heart
+                <Icon
+                  name="heart"
+                  variant={isFavorite ? 'solid' : 'regular'}
                   color={isFavorite ? colors.primary : colors.foreground}
-                  fill={isFavorite ? colors.primary : 'transparent'}
                   size={18}
                 />
               }

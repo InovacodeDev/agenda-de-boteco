@@ -1,14 +1,4 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import {
-  Calendar,
-  Clock,
-  Heart,
-  MapPin,
-  Navigation,
-  Share2,
-  Store,
-  Ticket,
-} from 'lucide-react-native';
 import { useMemo } from 'react';
 import { Linking, Share, StyleSheet } from 'react-native';
 
@@ -17,6 +7,7 @@ import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import { Button } from '@/components/ui/Button';
 import { CircleIconButton } from '@/components/ui/CircleIconButton';
 import { GradientBadge } from '@/components/ui/GradientBadge';
+import { Icon } from '@/components/ui/Icon';
 import { InfoCard } from '@/components/ui/InfoCard';
 import { SectionLabel } from '@/components/ui/SectionLabel';
 import { indexById, musicStylesForEvent } from '@/data/lookup';
@@ -138,24 +129,24 @@ export default function EventDetailScreen() {
               <InfoCard
                 label="Data"
                 value={formatRelativeDay(event.starts_at)}
-                icon={<Calendar color={colors.mutedForeground} size={13} />}
+                icon={<Icon name="calendar" variant="regular" color={colors.mutedForeground} size={13} />}
               />
               <InfoCard
                 label="Horário"
                 value={formatTime(event.starts_at)}
-                icon={<Clock color={colors.mutedForeground} size={13} />}
+                icon={<Icon name="clock" variant="regular" color={colors.mutedForeground} size={13} />}
               />
             </View>
             <View className="flex-row gap-3">
               <InfoCard
                 label="Local"
                 value={`${establishment.name} · ${establishment.neighborhood}`}
-                icon={<MapPin color={colors.mutedForeground} size={13} />}
+                icon={<Icon name="location-dot" color={colors.mutedForeground} size={13} />}
               />
               <InfoCard
                 label="Entrada"
                 value={formatPrice(event.cover_charge)}
-                icon={<Ticket color={colors.mutedForeground} size={13} />}
+                icon={<Icon name="ticket" color={colors.mutedForeground} size={13} />}
                 highlight
               />
             </View>
@@ -186,7 +177,7 @@ export default function EventDetailScreen() {
           variant="outline"
           className="border-foreground/50 flex-1 border-[0.5px]"
           style={{ backgroundColor: colors.background }}
-          icon={<Navigation color={colors.foreground} size={16} />}
+          icon={<Icon name="location-arrow" color={colors.foreground} size={16} />}
           onPress={() =>
             Linking.openURL(buildDirectionsUrl({ lat: establishment.lat, lng: establishment.lng }))
           }
@@ -194,7 +185,7 @@ export default function EventDetailScreen() {
         <Button
           label="Ver estabelecimento"
           className="flex-1"
-          icon={<Store color={colors.primaryForeground} size={16} />}
+          icon={<Icon name="store" color={colors.primaryForeground} size={16} />}
           onPress={() => router.push(`/establishment/${establishment.id}`)}
         />
       </View>
@@ -205,15 +196,16 @@ export default function EventDetailScreen() {
           <>
             <CircleIconButton
               accessibilityLabel="Compartilhar evento"
-              icon={<Share2 color={colors.foreground} size={18} />}
+              icon={<Icon name="share-nodes" color={colors.foreground} size={18} />}
               onPress={share}
             />
             <CircleIconButton
               accessibilityLabel={isFavorite ? 'Remover dos favoritos' : 'Favoritar evento'}
               icon={
-                <Heart
+                <Icon
+                  name="heart"
+                  variant={isFavorite ? 'solid' : 'regular'}
                   color={isFavorite ? colors.primary : colors.foreground}
-                  fill={isFavorite ? colors.primary : 'transparent'}
                   size={18}
                 />
               }

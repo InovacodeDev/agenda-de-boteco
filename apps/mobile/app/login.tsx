@@ -1,13 +1,13 @@
 import brandLogo from '@assets/logo.png';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import { Apple, Info, Mail } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
 import { StyleSheet } from 'react-native';
 
 import { Screen } from '@/components/layout/Screen';
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import { Button } from '@/components/ui/Button';
+import { Icon } from '@/components/ui/Icon';
 import {
   type AuthProvider,
   signInWithEmailOtp,
@@ -117,7 +117,7 @@ export default function LoginScreen() {
 
             {unavailable ? (
               <View className="border-border bg-surface/80 flex-row items-start gap-2.5 rounded-2xl border p-4">
-                <Info color={colors.accent} size={18} />
+                <Icon name="circle-info" color={colors.accent} size={18} />
                 <View className="flex-1 gap-1">
                   <Text className="font-body-semibold text-foreground text-[14px]">
                     Login indisponível no momento
@@ -142,7 +142,7 @@ export default function LoginScreen() {
                 disabled={unavailable || busy}
                 style={{ flex: 1, flexDirection: 'row' }}
                 onPress={() => handleProvider('google')}
-                icon={<Text className="font-body-bold text-primary-foreground text-[15px]">G</Text>}
+                icon={<Icon name="google" size={18} />}
               />
               <Button
                 label="Continuar com Apple"
@@ -151,7 +151,7 @@ export default function LoginScreen() {
                 disabled={unavailable || busy}
                 style={{ flex: 1, flexDirection: 'row' }}
                 onPress={() => handleProvider('apple')}
-                icon={<Apple color={colors.foreground} size={16} />}
+                icon={<Icon name="apple" color={colors.foreground} size={16} />}
               />
               {emailStep === 'editing' ? (
                 <View className="gap-3">
@@ -172,7 +172,7 @@ export default function LoginScreen() {
                     disabled={unavailable || busy || !email.trim()}
                     onPress={handleEmail}
                     className="bg-accent"
-                    icon={<Mail color={colors.primaryForeground} size={16} />}
+                    icon={<Icon name="envelope" variant="regular" color={colors.primaryForeground} size={16} />}
                   />
                 </View>
               ) : emailStep === 'sent' ? (
@@ -199,7 +199,7 @@ export default function LoginScreen() {
                     disabled={unavailable || busy || otpToken.trim().length !== 6}
                     onPress={handleVerifyOtp}
                     className="bg-accent"
-                    icon={<Mail color={colors.primaryForeground} size={16} />}
+                    icon={<Icon name="envelope" variant="regular" color={colors.primaryForeground} size={16} />}
                   />
                   <Button
                     label="Alterar e-mail"
@@ -220,7 +220,7 @@ export default function LoginScreen() {
                   disabled={unavailable || busy}
                   onPress={handleEmail}
                   style={{ flex: 1, flexDirection: 'row' }}
-                  icon={<Mail color={colors.foreground} size={16} />}
+                  icon={<Icon name="envelope" variant="regular" color={colors.foreground} size={16} />}
                 />
               )}
             </View>

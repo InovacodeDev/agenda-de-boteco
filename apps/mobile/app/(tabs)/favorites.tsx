@@ -1,6 +1,5 @@
 import { FlashList } from '@shopify/flash-list';
 import { useRouter } from 'expo-router';
-import { Heart } from 'lucide-react-native';
 import { useCallback, useMemo, useState } from 'react';
 
 import { EstablishmentCard } from '@/components/establishment/EstablishmentCard';
@@ -8,6 +7,7 @@ import { EventCard } from '@/components/event/EventCard';
 import { Screen } from '@/components/layout/Screen';
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { Icon } from '@/components/ui/Icon';
 import { SegmentedTabs } from '@/components/ui/SegmentedTabs';
 import { indexById, musicStylesForEvent } from '@/data/lookup';
 import type { Establishment, Event } from '@/data/schemas';
@@ -85,7 +85,7 @@ export default function FavoritesScreen() {
       {isEmpty ? (
         <View className="px-4">
           <EmptyState
-            icon={<Heart color={colors.mutedForeground} size={32} />}
+            icon={<Icon name="heart" variant="regular" color={colors.mutedForeground} size={32} />}
             message={
               showingEvents
                 ? 'Você ainda não favoritou nenhum evento.'

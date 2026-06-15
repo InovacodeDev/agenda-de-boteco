@@ -1,7 +1,7 @@
 import { Tabs } from 'expo-router';
-import { Bell, Heart, House, MapPin, User } from 'lucide-react-native';
 import { StyleSheet } from 'react-native';
 
+import { Icon } from '@/components/ui/Icon';
 import { colors } from '@/theme/colors';
 import { fontFamilies } from '@/theme/typography';
 
@@ -28,35 +28,41 @@ export default function TabsLayout() {
         name="index"
         options={{
           title: 'Feed',
-          tabBarIcon: ({ color, size }) => <House color={color} size={size} />,
+          tabBarIcon: ({ color, size }) => <Icon name="house" color={color} size={size} />,
         }}
       />
       <Tabs.Screen
         name="map"
         options={{
           title: 'Mapa',
-          tabBarIcon: ({ color, size }) => <MapPin color={color} size={size} />,
+          tabBarIcon: ({ color, size }) => <Icon name="location-dot" color={color} size={size} />,
         }}
       />
       <Tabs.Screen
         name="favorites"
         options={{
           title: 'Favoritos',
-          tabBarIcon: ({ color, size }) => <Heart color={color} size={size} />,
+          tabBarIcon: ({ color, size }) => (
+            <Icon name="heart" variant="regular" color={color} size={size} />
+          ),
         }}
       />
       <Tabs.Screen
         name="notifications"
         options={{
           title: 'Avisos',
-          tabBarIcon: ({ color, size }) => <Bell color={color} size={size} />,
+          tabBarIcon: ({ color, size }) => (
+            <Icon name="bell" variant="regular" color={color} size={size} />
+          ),
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
           title: 'Perfil',
-          tabBarIcon: ({ color, size }) => <User color={color} size={size} />,
+          tabBarIcon: ({ color, size }) => (
+            <Icon name="user" variant="regular" color={color} size={size} />
+          ),
         }}
       />
     </Tabs>
