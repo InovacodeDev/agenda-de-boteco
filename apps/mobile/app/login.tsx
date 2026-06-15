@@ -14,6 +14,7 @@ import {
   signInWithProvider,
   verifyEmailOtp,
 } from '@/services/auth';
+import { getFriendlyErrorMessage } from '@/utils/errors';
 import { useAuthStore } from '@/store/useAuthStore';
 import { colors } from '@/theme/colors';
 import { gradientNight } from '@/theme/gradients';
@@ -40,8 +41,8 @@ export default function LoginScreen() {
     setBusy(true);
     try {
       await verifyEmailOtp(email.trim(), otpToken.trim());
-    } catch {
-      setErrorMessage('Código inválido ou expirado. Tente novamente.');
+    } catch (error: unknown) {
+      setErrorMessage(getFriendlyErrorMessage(error));
     } finally {
       setBusy(false);
     }
@@ -60,8 +61,8 @@ export default function LoginScreen() {
     setBusy(true);
     try {
       await signInWithProvider(provider);
-    } catch {
-      setErrorMessage('Não foi possível entrar agora. Tente novamente.');
+    } catch (error: unknown) {
+      setErrorMessage(getFriendlyErrorMessage(error));
     } finally {
       setBusy(false);
     }
@@ -80,8 +81,8 @@ export default function LoginScreen() {
     try {
       await signInWithEmailOtp(email.trim());
       setEmailStep('sent');
-    } catch {
-      setErrorMessage('Não foi possível enviar o link. Confira o e-mail e tente de novo.');
+    } catch (error: unknown) {
+      setErrorMessage(getFriendlyErrorMessage(error));
     } finally {
       setBusy(false);
     }

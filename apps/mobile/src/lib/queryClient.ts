@@ -1,4 +1,6 @@
-import { QueryClient } from '@tanstack/react-query';
+import { MutationCache, QueryCache, QueryClient } from '@tanstack/react-query';
+
+import { showUserFriendlyAlert } from '../utils/errors';
 
 /**
  * Client único do app. gcTime (25h) é estritamente maior que o maxAge do
@@ -15,4 +17,14 @@ export const queryClient = new QueryClient({
       retry: 2,
     },
   },
+  queryCache: new QueryCache({
+    onError: (error: unknown) => {
+      showUserFriendlyAlert(error);
+    },
+  }),
+  mutationCache: new MutationCache({
+    onError: (error: unknown) => {
+      showUserFriendlyAlert(error);
+    },
+  }),
 });

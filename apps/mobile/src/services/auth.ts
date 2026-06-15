@@ -3,6 +3,7 @@ import * as WebBrowser from 'expo-web-browser';
 import { Platform } from 'react-native';
 
 import { getSupabase, isSupabaseConfigured } from '../lib/supabase';
+import { handleServiceError, logErrorToTerminal } from '../utils/errors';
 import { parseAuthTokensFromUrl } from '../utils/auth';
 
 export type AuthProvider = 'google' | 'apple';
@@ -60,50 +61,62 @@ export async function signInWithProvider(provider: AuthProvider): Promise<void> 
   const client = requireClient();
   const redirectTo = buildRedirectUrl();
 
-  const { data, error } = await client.auth.signInWithOAuth({
-    provider,
-    options: { redirectTo, skipBrowserRedirect: Platform.OS !== 'web' },
-  });
-  if (error) {
-    throw error;
-  }
-  if (Platform.OS === 'web' || !data.url) {
-    return;
-  }
-
-  const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
-  if (result.type !== 'success') {
-    return;
-  }
-  const tokens = parseAuthTokensFromUrl(result.url);
-  if (tokens) {
-    const { error: sessionError } = await client.auth.setSession(tokens);
-    if (sessionError) {
-      throw sessionError;
+  try {
+    const { data, error } = await client.auth.signInWithOAuth({
+      provider,
+      options: { redirectTo, skipBrowserRedirect: Platform.OS !== 'web' },
+    });
+    if (error) {
+      throw error;
     }
+    if (Platform.OS === 'web' || !data.url) {
+      return;
+    }
+
+    const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
+    if (result.type !== 'success') {
+      return;
+    }
+    const tokens = parseAuthTokensFromUrl(result.url);
+    if (tokens) {
+      const { error: sessionError } = await client.auth.setSession(tokens);
+      if (sessionError) {
+        throw sessionError;
+      }
+    }
+  } catch (error) {
+    return handleServiceError(error, { method: 'auth.signInWithProvider', args: { provider } });
   }
 }
 
 export async function signInWithEmailOtp(email: string): Promise<void> {
   const client = requireClient();
-  const { error } = await client.auth.signInWithOtp({
-    email,
-    options: { emailRedirectTo: buildRedirectUrl() },
-  });
-  if (error) {
-    throw error;
+  try {
+    const { error } = await client.auth.signInWithOtp({
+      email,
+      options: { emailRedirectTo: buildRedirectUrl() },
+    });
+    if (error) {
+      throw error;
+    }
+  } catch (error) {
+    return handleServiceError(error, { method: 'auth.signInWithEmailOtp', args: { email } });
   }
 }
 
 export async function verifyEmailOtp(email: string, token: string): Promise<void> {
   const client = requireClient();
-  const { error } = await client.auth.verifyOtp({
-    email,
-    token,
-    type: 'email',
-  });
-  if (error) {
-    throw error;
+  try {
+    const { error } = await client.auth.verifyOtp({
+      email,
+      token,
+      type: 'email',
+    });
+    if (error) {
+      throw error;
+    }
+  } catch (error) {
+    return handleServiceError(error, { method: 'auth.verifyEmailOtp', args: { email, token } });
   }
 }
 
@@ -112,9 +125,13 @@ export async function signOut(): Promise<void> {
   if (!client) {
     return;
   }
-  const { error } = await client.auth.signOut();
-  if (error) {
-    throw error;
+  try {
+    const { error } = await client.auth.signOut();
+    if (error) {
+      throw error;
+    }
+  } catch (error) {
+    return handleServiceError(error, { method: 'auth.signOut' });
   }
 }
 
@@ -123,9 +140,16 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
   if (!client) {
     return null;
   }
-  const { data } = await client.auth.getSession();
-  const user = data.session?.user;
-  return user ? mapUser(user) : null;
+  try {
+    const { data, error } = await client.auth.getSession();
+    if (error) {
+      throw error;
+    }
+    const user = data.session?.user;
+    return user ? mapUser(user) : null;
+  } catch (error) {
+    return handleServiceError(error, { method: 'auth.getCurrentUser' });
+  }
 }
 
 /** Observa mudanças de sessão; retorna função de unsubscribe */
@@ -149,9 +173,15 @@ export async function handleDeepLink(url: string): Promise<boolean> {
   }
   const tokens = parseAuthTokensFromUrl(url);
   if (tokens) {
-    const { error } = await client.auth.setSession(tokens);
-    if (!error) {
+    try {
+      const { error } = await client.auth.setSession(tokens);
+      if (error) {
+        throw error;
+      }
       return true;
+    } catch (error) {
+      logErrorToTerminal(error, { method: 'auth.handleDeepLink', args: { url } });
+      return false;
     }
   }
   return false;
