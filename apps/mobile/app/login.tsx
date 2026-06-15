@@ -163,7 +163,8 @@ export default function LoginScreen() {
                     keyboardType="email-address"
                     autoCapitalize="none"
                     autoCorrect={false}
-                    className="border-border bg-surface font-body text-foreground h-12 rounded-full border px-5 py-2.5 text-[14px]"
+                    style={{ paddingHorizontal: 12 }}
+                    className="border-border bg-surface font-body text-foreground h-12 rounded-full border py-2.5 text-[14px]"
                     accessibilityLabel="Seu e-mail"
                   />
                   <Button
@@ -171,8 +172,15 @@ export default function LoginScreen() {
                     fullWidth
                     disabled={unavailable || busy || !email.trim()}
                     onPress={handleEmail}
-                    className="bg-accent"
-                    icon={<Icon name="envelope" variant="regular" color={colors.primaryForeground} size={16} />}
+                    style={{ backgroundColor: colors.accent }}
+                    icon={
+                      <Icon
+                        name="envelope"
+                        variant="regular"
+                        color={colors.primaryForeground}
+                        size={16}
+                      />
+                    }
                   />
                 </View>
               ) : emailStep === 'sent' ? (
@@ -198,14 +206,22 @@ export default function LoginScreen() {
                     fullWidth
                     disabled={unavailable || busy || otpToken.trim().length !== 6}
                     onPress={handleVerifyOtp}
-                    className="bg-accent"
-                    icon={<Icon name="envelope" variant="regular" color={colors.primaryForeground} size={16} />}
+                    style={{ backgroundColor: colors.accent }}
+                    icon={
+                      <Icon
+                        name="envelope"
+                        variant="regular"
+                        color={colors.primaryForeground}
+                        size={16}
+                      />
+                    }
                   />
                   <Button
                     label="Alterar e-mail"
                     variant="outline"
                     fullWidth
                     disabled={busy}
+                    style={{ backgroundColor: colors.background }}
                     onPress={() => {
                       setEmailStep('editing');
                       setOtpToken('');
@@ -220,7 +236,9 @@ export default function LoginScreen() {
                   disabled={unavailable || busy}
                   onPress={handleEmail}
                   style={{ flex: 1, flexDirection: 'row' }}
-                  icon={<Icon name="envelope" variant="regular" color={colors.foreground} size={16} />}
+                  icon={
+                    <Icon name="envelope" variant="regular" color={colors.foreground} size={16} />
+                  }
                 />
               )}
             </View>
