@@ -7,11 +7,6 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
-  __InternalSupabase: {
-    PostgrestVersion: "14.5"
-  }
   graphql_public: {
     Tables: {
       [_ in never]: never
@@ -45,6 +40,7 @@ export type Database = {
           lat: number
           lng: number
           name: string
+          slug: string | null
           uf: string
         }
         Insert: {
@@ -52,6 +48,7 @@ export type Database = {
           lat: number
           lng: number
           name: string
+          slug?: string | null
           uf: string
         }
         Update: {
@@ -59,6 +56,7 @@ export type Database = {
           lat?: number
           lng?: number
           name?: string
+          slug?: string | null
           uf?: string
         }
         Relationships: []
@@ -84,6 +82,7 @@ export type Database = {
           price_range: Database["public"]["Enums"]["price_range_enum"]
           rating_avg: number
           rating_count: number
+          slug: string | null
           whatsapp: string
         }
         Insert: {
@@ -106,6 +105,7 @@ export type Database = {
           price_range: Database["public"]["Enums"]["price_range_enum"]
           rating_avg?: number
           rating_count?: number
+          slug?: string | null
           whatsapp: string
         }
         Update: {
@@ -128,6 +128,7 @@ export type Database = {
           price_range?: Database["public"]["Enums"]["price_range_enum"]
           rating_avg?: number
           rating_count?: number
+          slug?: string | null
           whatsapp?: string
         }
         Relationships: [
@@ -153,6 +154,7 @@ export type Database = {
           music_style_ids: string[]
           name: string
           promo: string | null
+          slug: string | null
           starts_at: string
         }
         Insert: {
@@ -167,6 +169,7 @@ export type Database = {
           music_style_ids?: string[]
           name: string
           promo?: string | null
+          slug?: string | null
           starts_at: string
         }
         Update: {
@@ -181,6 +184,7 @@ export type Database = {
           music_style_ids?: string[]
           name?: string
           promo?: string | null
+          slug?: string | null
           starts_at?: string
         }
         Relationships: [
@@ -589,6 +593,38 @@ export type Database = {
       geomfromewkt: { Args: { "": string }; Returns: unknown }
       gettransactionid: { Args: never; Returns: unknown }
       longtransactionsenabled: { Args: never; Returns: boolean }
+      nearby_establishments: {
+        Args: {
+          max_results?: number
+          origin_lat: number
+          origin_lng: number
+          radius_km?: number
+        }
+        Returns: {
+          address: string
+          ambiance: string
+          city_id: string
+          cover_url: string
+          description: string
+          distance_km: number
+          highlights: string[]
+          id: string
+          instagram: string
+          lat: number
+          lng: number
+          location: unknown
+          logo_url: string
+          menu_items: Json
+          name: string
+          neighborhood: string
+          opening_hours: string
+          price_range: Database["public"]["Enums"]["price_range_enum"]
+          rating_avg: number
+          rating_count: number
+          slug: string
+          whatsapp: string
+        }[]
+      }
       populate_geometry_columns:
         | { Args: { tbl_oid: unknown; use_typmod?: boolean }; Returns: number }
         | { Args: { use_typmod?: boolean }; Returns: string }
@@ -629,6 +665,7 @@ export type Database = {
       }
       postgis_version: { Args: never; Returns: string }
       postgis_wagyu_version: { Args: never; Returns: string }
+      slugify: { Args: { input: string }; Returns: string }
       st_3dclosestpoint: {
         Args: { geom1: unknown; geom2: unknown }
         Returns: unknown
@@ -1368,3 +1405,4 @@ export const Constants = {
     },
   },
 } as const
+
