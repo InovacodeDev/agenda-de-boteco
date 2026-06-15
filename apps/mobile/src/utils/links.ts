@@ -15,3 +15,59 @@ export function buildWhatsAppUrl(phone: string, text?: string): string {
   const base = `https://wa.me/${phone}`;
   return text ? `${base}?text=${encodeURIComponent(text)}` : base;
 }
+
+/** Scheme custom do app (deep link nativo). */
+export const APP_SCHEME = 'agenda-de-boteco';
+
+export interface ShareTarget {
+  /** slug quando disponível; quando ausente, é o próprio id. */
+  slugOrId: string;
+  /** slug da cidade — usado apenas no formato https público. */
+  citySlug?: string;
+}
+
+/** Remove a barra final do baseUrl para evitar dupla barra ao concatenar. */
+function normalizeBaseUrl(baseUrl: string): string {
+  return baseUrl.replace(/\/+$/, '');
+}
+
+/**
+ * Monta a URL de compartilhamento de um evento.
+ * - Sem `baseUrl` → deep link nativo `agenda-de-boteco://event/{slugOrId}`.
+ * - Com `baseUrl` → URL https pública `{baseUrl}/eventos/{citySlug}/{slug}`
+ *   (o segmento `citySlug` é omitido quando ausente).
+ * Os segmentos de path são URL-encoded.
+ */
+export function buildEventShareUrl(target: ShareTarget, baseUrl?: string): string {
+  const slug = encodeURIComponent(target.slugOrId);
+  if (!baseUrl) {
+    return `${APP_SCHEME}://event/${slug}`;
+  }
+  const base = normalizeBaseUrl(baseUrl);
+  const citySegment = target.citySlug
+    ? `${encodeURIComponent(target.citySlug)}/`
+    : '';
+  return `${base}/eventos/${citySegment}${slug}`;
+}
+
+/**
+ * Monta a URL de compartilhamento de um estabelecimento.
+ * - Sem `baseUrl` → deep link nativo `agenda-de-boteco://establishment/{slugOrId}`.
+ * - Com `baseUrl` → URL https pública `{baseUrl}/bares/{citySlug}/{slug}`
+ *   (o segmento `citySlug` é omitido quando ausente).
+ * Os segmentos de path são URL-encoded.
+ */
+export function buildEstablishmentShareUrl(
+  target: ShareTarget,
+  baseUrl?: string,
+): string {
+  const slug = encodeURIComponent(target.slugOrId);
+  if (!baseUrl) {
+    return `${APP_SCHEME}://establishment/${slug}`;
+  }
+  const base = normalizeBaseUrl(baseUrl);
+  const citySegment = target.citySlug
+    ? `${encodeURIComponent(target.citySlug)}/`
+    : '';
+  return `${base}/bares/${citySegment}${slug}`;
+}
