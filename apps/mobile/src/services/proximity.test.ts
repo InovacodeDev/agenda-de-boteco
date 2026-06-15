@@ -191,3 +191,33 @@ describe('listNearbyEstablishments — caminho RPC (com client)', () => {
     ).rejects.toBe(rpcError);
   });
 });
+
+describe('listNearbyEstablishments — coordenadas inválidas', () => {
+  beforeEach(() => {
+    mockGetSupabase.mockReturnValue(null);
+  });
+
+  it('rejeita lat NaN', async () => {
+    await expect(
+      listNearbyEstablishments({ lat: Number.NaN, lng: FLN.lng }),
+    ).rejects.toThrow(/coordenada/i);
+  });
+
+  it('rejeita lng fora do intervalo [-180, 180]', async () => {
+    await expect(
+      listNearbyEstablishments({ lat: FLN.lat, lng: 200 }),
+    ).rejects.toThrow(/coordenada/i);
+  });
+
+  it('rejeita lat fora do intervalo [-90, 90]', async () => {
+    await expect(
+      listNearbyEstablishments({ lat: 95, lng: FLN.lng }),
+    ).rejects.toThrow(/coordenada/i);
+  });
+
+  it('aceita coordenadas válidas nos limites', async () => {
+    await expect(
+      listNearbyEstablishments({ lat: -90, lng: 180, radiusKm: 1 }),
+    ).resolves.toBeInstanceOf(Array);
+  });
+});

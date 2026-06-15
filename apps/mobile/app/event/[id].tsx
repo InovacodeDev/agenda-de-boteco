@@ -6,6 +6,7 @@ import { Screen } from '@/components/layout/Screen';
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import { Button } from '@/components/ui/Button';
 import { CircleIconButton } from '@/components/ui/CircleIconButton';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { GradientBadge } from '@/components/ui/GradientBadge';
 import { Icon } from '@/components/ui/Icon';
 import { InfoCard } from '@/components/ui/InfoCard';
@@ -53,6 +54,22 @@ export default function EventDetailScreen() {
         <ScreenHeader showBack />
         <View className="flex-1 items-center justify-center">
           <Text className="font-body text-muted-foreground text-[14px]">Carregando…</Text>
+        </View>
+      </Screen>
+    );
+  }
+
+  if (eventQuery.isError && !event) {
+    return (
+      <Screen>
+        <ScreenHeader showBack />
+        <View className="flex-1 items-center justify-center px-6">
+          <EmptyState
+            icon={<Icon name="circle-info" color={colors.mutedForeground} size={28} />}
+            message="Você está sem internet no momento. Tente novamente quando reconectar."
+            actionLabel="Tentar novamente"
+            onAction={() => { eventQuery.refetch(); }}
+          />
         </View>
       </Screen>
     );

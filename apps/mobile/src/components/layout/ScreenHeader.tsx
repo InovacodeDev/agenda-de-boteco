@@ -5,10 +5,12 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { CircleIconButton } from '@/components/ui/CircleIconButton';
 import { Icon } from '@/components/ui/Icon';
+import { useResponsive } from '@/hooks/useResponsive';
 import { colors } from '@/theme/colors';
 import { headingLetterSpacing } from '@/theme/typography';
 import { Image, Text, View } from '@/tw';
 import { cn } from '@/utils/cn';
+import { scaleFontSize } from '@/utils/responsiveType';
 
 export interface ScreenHeaderProps {
   title?: string;
@@ -34,6 +36,8 @@ export function ScreenHeader({
 }: ScreenHeaderProps) {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { breakpoint } = useResponsive();
+  const titleSize = scaleFontSize(24, breakpoint);
 
   return (
     <View
@@ -63,9 +67,9 @@ export function ScreenHeader({
         {children ??
           (title ? (
             <Text
-              className="font-heading text-foreground text-[24px]"
+              className="font-heading text-foreground"
               numberOfLines={1}
-              style={{ letterSpacing: headingLetterSpacing(24) }}
+              style={{ fontSize: titleSize, letterSpacing: headingLetterSpacing(titleSize) }}
             >
               {title}
             </Text>

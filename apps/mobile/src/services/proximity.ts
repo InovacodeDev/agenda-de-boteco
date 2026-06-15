@@ -35,6 +35,19 @@ export interface NearbyParams {
   limit?: number;
 }
 
+function assertValidCoordinates(lat: number, lng: number): void {
+  const valid =
+    Number.isFinite(lat) &&
+    Number.isFinite(lng) &&
+    lat >= -90 &&
+    lat <= 90 &&
+    lng >= -180 &&
+    lng <= 180;
+  if (!valid) {
+    throw new Error(`Coordenada inválida: lat=${lat}, lng=${lng}`);
+  }
+}
+
 function nullToUndefined<T>(value: T | null): T | undefined {
   return value === null ? undefined : value;
 }
@@ -118,6 +131,7 @@ function listFromMock(params: NearbyParams): NearbyEstablishment[] {
 export async function listNearbyEstablishments(
   params: NearbyParams,
 ): Promise<NearbyEstablishment[]> {
+  assertValidCoordinates(params.lat, params.lng);
   const client = getSupabase();
   if (client === null) {
     return listFromMock(params);
