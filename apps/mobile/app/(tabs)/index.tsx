@@ -46,10 +46,7 @@ export default function FeedScreen() {
     return () => clearInterval(interval);
   }, []);
 
-  const establishmentsById = useMemo(
-    () => indexById(establishments ?? []),
-    [establishments],
-  );
+  const establishmentsById = useMemo(() => indexById(establishments ?? []), [establishments]);
   const stylesById = useMemo(() => indexById(musicStyles ?? []), [musicStyles]);
 
   const city = useMemo(() => cityByIdOrDefault(cities ?? [], cityId), [cities, cityId]);
@@ -67,8 +64,7 @@ export default function FeedScreen() {
     }
   }, [filters.nearMe, status, request]);
 
-  const nearbyOrigin =
-    filters.nearMe && city ? resolveNearbyOrigin(coords, status, city) : null;
+  const nearbyOrigin = filters.nearMe && city ? resolveNearbyOrigin(coords, status, city) : null;
   const { data: nearby } = useNearbyEstablishments({
     origin: nearbyOrigin,
     radiusKm: filters.maxDistanceKm,
