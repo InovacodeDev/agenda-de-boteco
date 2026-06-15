@@ -169,7 +169,7 @@ export default function LoginScreen() {
                     fullWidth
                     disabled={unavailable || busy || !email.trim()}
                     onPress={handleEmail}
-                    style={{ backgroundColor: colors.accent }}
+                    className="bg-accent"
                     icon={<Mail color={colors.primaryForeground} size={16} />}
                   />
                 </View>
@@ -196,7 +196,7 @@ export default function LoginScreen() {
                     fullWidth
                     disabled={unavailable || busy || otpToken.trim().length !== 6}
                     onPress={handleVerifyOtp}
-                    style={{ backgroundColor: colors.accent }}
+                    className="bg-accent"
                     icon={<Mail color={colors.primaryForeground} size={16} />}
                   />
                   <Button

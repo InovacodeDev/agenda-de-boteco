@@ -195,7 +195,6 @@ export default function EventDetailScreen() {
           label="Ver estabelecimento"
           className="flex-1"
           icon={<Store color={colors.primaryForeground} size={16} />}
-          style={{ backgroundColor: colors.primary }}
           onPress={() => router.push(`/establishment/${establishment.id}`)}
         />
       </View>

@@ -169,12 +169,7 @@ export default function FiltersSheet() {
           className="border-foreground/50 flex-1 border-[0.5px]"
           style={{ backgroundColor: colors.background }}
         />
-        <Button
-          label="Aplicar filtros"
-          onPress={apply}
-          className="flex-1"
-          style={{ backgroundColor: colors.primary }}
-        />
+        <Button label="Aplicar filtros" onPress={apply} className="flex-1" />
       </View>
     </View>
   );

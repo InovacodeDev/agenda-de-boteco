@@ -217,7 +217,6 @@ export default function EstablishmentDetailScreen() {
         <Button
           label="WhatsApp"
           className="flex-1"
-          style={{ backgroundColor: colors.primary }}
           icon={<MessageCircle color={colors.primaryForeground} size={16} />}
           onPress={() => Linking.openURL(buildWhatsAppUrl(establishment.whatsapp))}
         />
