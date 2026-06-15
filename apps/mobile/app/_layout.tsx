@@ -7,6 +7,7 @@ import {
   Inter_700Bold,
 } from '@expo-google-fonts/inter';
 import { SpaceGrotesk_500Medium, SpaceGrotesk_700Bold } from '@expo-google-fonts/space-grotesk';
+import { onlineManager } from '@tanstack/react-query';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { useFonts } from 'expo-font';
 import * as Linking from 'expo-linking';
@@ -16,13 +17,16 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { OfflineBanner } from '@/components/ui/OfflineBanner';
 import { useRealtimeSync } from '@/hooks/useRealtimeSync';
 import { queryClient } from '@/lib/queryClient';
 import { persister } from '@/lib/queryPersister';
-import { handleDeepLink } from '@/services/auth';
+import { handleDeepLink, onAuthUserChange } from '@/services/auth';
 import { CACHE_BUSTER, shouldDehydrateQuery } from '@/services/cachePolicy';
 import { setupFocusManager, setupOnlineManager } from '@/services/connectivity';
 import { useAuthStore } from '@/store/useAuthStore';
+import { useFavoritesStore } from '@/store/useFavoritesStore';
 import { usePreferencesStore } from '@/store/usePreferencesStore';
 import { colors } from '@/theme/colors';
 
@@ -51,6 +55,27 @@ export default function RootLayout() {
     return () => {
       teardownOnline();
       teardownFocus();
+    };
+  }, []);
+
+  useEffect(() => {
+    const { flushQueue, mergeLocalIntoServer } = useFavoritesStore.getState();
+    let lastUserId: string | null = useAuthStore.getState().user?.id ?? null;
+    const unsubscribeOnline = onlineManager.subscribe((online) => {
+      if (online) {
+        flushQueue(useAuthStore.getState().user?.id ?? null);
+      }
+    });
+    const unsubscribeAuth = onAuthUserChange((user) => {
+      const nextUserId = user?.id ?? null;
+      if (nextUserId !== null && nextUserId !== lastUserId) {
+        mergeLocalIntoServer(nextUserId);
+      }
+      lastUserId = nextUserId;
+    });
+    return () => {
+      unsubscribeOnline();
+      unsubscribeAuth();
     };
   }, []);
 
@@ -93,35 +118,38 @@ export default function RootLayout() {
       }}
     >
       <SafeAreaProvider>
-        <RealtimeBridge />
-        <StatusBar style="light" />
-        <Stack
-          screenOptions={{
-            headerShown: false,
-            contentStyle: { backgroundColor: colors.background },
-          }}
-        >
-          <Stack.Protected guard={hasOnboarded}>
-            <Stack.Screen name="(tabs)" />
-            <Stack.Screen name="event/[id]" />
-            <Stack.Screen name="establishment/[id]" />
-            <Stack.Screen name="city" />
-            <Stack.Screen name="login" />
-            <Stack.Screen
-              name="filters"
-              options={{
-                presentation: 'formSheet',
-                sheetAllowedDetents: [0.92],
-                sheetGrabberVisible: true,
-                sheetCornerRadius: 24,
-                contentStyle: { backgroundColor: colors.popover },
-              }}
-            />
-          </Stack.Protected>
-          <Stack.Protected guard={!hasOnboarded}>
-            <Stack.Screen name="onboarding" />
-          </Stack.Protected>
-        </Stack>
+        <ErrorBoundary>
+          <RealtimeBridge />
+          <StatusBar style="light" />
+          <OfflineBanner />
+          <Stack
+            screenOptions={{
+              headerShown: false,
+              contentStyle: { backgroundColor: colors.background },
+            }}
+          >
+            <Stack.Protected guard={hasOnboarded}>
+              <Stack.Screen name="(tabs)" />
+              <Stack.Screen name="event/[id]" />
+              <Stack.Screen name="establishment/[id]" />
+              <Stack.Screen name="city" />
+              <Stack.Screen name="login" />
+              <Stack.Screen
+                name="filters"
+                options={{
+                  presentation: 'formSheet',
+                  sheetAllowedDetents: [0.92],
+                  sheetGrabberVisible: true,
+                  sheetCornerRadius: 24,
+                  contentStyle: { backgroundColor: colors.popover },
+                }}
+              />
+            </Stack.Protected>
+            <Stack.Protected guard={!hasOnboarded}>
+              <Stack.Screen name="onboarding" />
+            </Stack.Protected>
+          </Stack>
+        </ErrorBoundary>
       </SafeAreaProvider>
     </PersistQueryClientProvider>
   );
