@@ -1,4 +1,4 @@
-import { ESTABLISHMENTS, EVENTS } from '../data';
+import { ESTABLISHMENTS, EVENTS } from '../data/mock';
 import type { Establishment, Event } from '../data/schemas';
 import {
   applyEventFilters,
@@ -167,6 +167,51 @@ describe('applyEventFilters', () => {
       makeContext(),
     );
     expect(withoutLocation).toHaveLength(7);
+  });
+
+  it('nearMe com nearbyEstablishmentIds faz interseção por establishment_id', () => {
+    // e1 é o establishment de ev1/ev11; ao restringir o set a {e1}, só esses
+    // eventos da cidade sobrevivem ao ramo de proximidade server-side.
+    const result = applyEventFilters(
+      EVENTS,
+      makeFilters({ nearMe: true }),
+      makeContext({ nearbyEstablishmentIds: new Set(['e1']) }),
+    );
+    expect(new Set(ids(result))).toEqual(new Set(['ev1', 'ev11']));
+  });
+
+  it('nearMe com nearbyEstablishmentIds vazio remove todos os eventos', () => {
+    const result = applyEventFilters(
+      EVENTS,
+      makeFilters({ nearMe: true }),
+      makeContext({ nearbyEstablishmentIds: new Set<string>() }),
+    );
+    expect(result).toHaveLength(0);
+  });
+
+  it('nearbyEstablishmentIds tem prioridade sobre o fallback Haversine', () => {
+    // Mesmo com userLocation que excluiria por raio, o set manda quando presente.
+    const far = { lat: 0, lng: 0 };
+    const result = applyEventFilters(
+      EVENTS,
+      makeFilters({ nearMe: true, maxDistanceKm: 1 }),
+      makeContext({
+        userLocation: far,
+        nearbyEstablishmentIds: new Set(['e1']),
+      }),
+    );
+    expect(new Set(ids(result))).toEqual(new Set(['ev1', 'ev11']));
+  });
+
+  it('nearMe sem nearbyEstablishmentIds preserva o Haversine (byte-a-byte)', () => {
+    // Espelha o caso existente: ausência do set === comportamento de hoje.
+    const atBotecoDoZe = { lat: -27.5915, lng: -48.5234 };
+    const near = applyEventFilters(
+      EVENTS,
+      makeFilters({ nearMe: true, maxDistanceKm: 1 }),
+      makeContext({ userLocation: atBotecoDoZe }),
+    );
+    expect(new Set(ids(near))).toEqual(new Set(['ev1', 'ev11']));
   });
 
   it('openNow usa o horário do establishment (qui 20:00)', () => {

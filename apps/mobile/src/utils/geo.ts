@@ -1,4 +1,5 @@
 import type { City } from '../data/schemas';
+import type { LocationStatus } from '../hooks/useUserLocation';
 
 export interface LatLng {
   lat: number;
@@ -38,4 +39,33 @@ export function nearestCity(coords: LatLng, cities: City[]): City {
     }
   }
   return best;
+}
+
+/**
+ * Arredonda lat/lng para `decimals` casas (3 casas ≈ 110 m). Estabiliza a
+ * queryKey de proximidade: micro-movimentos do GPS não disparam refetch.
+ * Idempotente: coarseLatLng(coarseLatLng(x)) === coarseLatLng(x).
+ */
+export function coarseLatLng(coords: LatLng, decimals = 3): LatLng {
+  const factor = 10 ** decimals;
+  return {
+    lat: Math.round(coords.lat * factor) / factor,
+    lng: Math.round(coords.lng * factor) / factor,
+  };
+}
+
+/**
+ * Origem para a consulta de proximidade: usa a localização do usuário quando
+ * concedida e disponível; senão cai para o centro da cidade. Garante que o RPC
+ * sempre tenha uma origem e a tela nunca fique vazia por permissão negada.
+ */
+export function resolveNearbyOrigin(
+  coords: LatLng | null,
+  status: LocationStatus,
+  city: City,
+): LatLng {
+  if (status === 'granted' && coords !== null) {
+    return coords;
+  }
+  return { lat: city.lat, lng: city.lng };
 }
