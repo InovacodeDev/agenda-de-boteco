@@ -140,6 +140,7 @@ export default function LoginScreen() {
                 variant="white"
                 fullWidth
                 disabled={unavailable || busy}
+                style={{ flex: 1, flexDirection: 'row' }}
                 onPress={() => handleProvider('google')}
                 icon={<Text className="font-body-bold text-primary-foreground text-[15px]">G</Text>}
               />
@@ -148,6 +149,7 @@ export default function LoginScreen() {
                 variant="outline"
                 fullWidth
                 disabled={unavailable || busy}
+                style={{ flex: 1, flexDirection: 'row' }}
                 onPress={() => handleProvider('apple')}
                 icon={<Apple color={colors.foreground} size={16} />}
               />
@@ -217,6 +219,7 @@ export default function LoginScreen() {
                   fullWidth
                   disabled={unavailable || busy}
                   onPress={handleEmail}
+                  style={{ flex: 1, flexDirection: 'row' }}
                   icon={<Mail color={colors.foreground} size={16} />}
                 />
               )}

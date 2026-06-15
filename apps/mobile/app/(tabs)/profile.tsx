@@ -31,7 +31,13 @@ function SignedOutProfile() {
           Para favoritar, avaliar e receber avisos dos bares que você ama.
         </Text>
       </View>
-      <Button label="Entrar" fullWidth onPress={() => router.push('/login')} className="mt-2" />
+      <Button
+        label="Entrar"
+        fullWidth
+        onPress={() => router.push('/login')}
+        className="mt-2"
+        style={{ backgroundColor: colors.primary }}
+      />
     </View>
   );
 }
