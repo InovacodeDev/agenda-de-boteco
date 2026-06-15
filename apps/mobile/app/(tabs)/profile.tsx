@@ -1,8 +1,10 @@
 import { useRouter } from 'expo-router';
+import { useState } from 'react';
 
 import { Screen } from '@/components/layout/Screen';
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import { Button } from '@/components/ui/Button';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { Icon } from '@/components/ui/Icon';
 import { cityByIdOrDefault } from '@/data/lookup';
 import { useCitiesQuery } from '@/hooks/queries';
@@ -46,6 +48,13 @@ function SignedInProfile() {
   const user = useAuthStore((state) => state.user);
   const signOut = useAuthStore((state) => state.signOut);
   const router = useRouter();
+
+  const [confirmVisible, setConfirmVisible] = useState(false);
+
+  const handleConfirmSignOut = () => {
+    setConfirmVisible(false);
+    signOut();
+  };
 
   const eventIds = useFavoritesStore((state) => state.eventIds);
   const establishmentIds = useFavoritesStore((state) => state.establishmentIds);
@@ -121,12 +130,22 @@ function SignedInProfile() {
       <View className="flex-1" />
 
       <Pressable
-        onPress={() => signOut()}
+        onPress={() => setConfirmVisible(true)}
         className="border-destructive/20 active:bg-destructive/10 mb-4 h-12 w-full flex-row items-center justify-center gap-2 rounded-xl border bg-transparent"
       >
         <Icon name="right-from-bracket" color={colors.destructive} size={16} />
         <Text className="font-body-semibold text-destructive text-[15px]">Sair</Text>
       </Pressable>
+
+      <ConfirmDialog
+        visible={confirmVisible}
+        destructive
+        title="Sair da conta?"
+        message="Você precisará entrar novamente para favoritar e receber avisos."
+        confirmLabel="Sair"
+        onCancel={() => setConfirmVisible(false)}
+        onConfirm={handleConfirmSignOut}
+      />
     </View>
   );
 }
