@@ -26,6 +26,7 @@ import {
   notificationSchema,
 } from '../data/schemas';
 import { getSupabase } from '../lib/supabase';
+import { handleServiceError } from '../utils/errors';
 
 const eventListSchema = z.array(eventSchema);
 const establishmentListSchema = z.array(establishmentSchema);
@@ -90,7 +91,11 @@ export async function listEvents(): Promise<Event[]> {
   if (client === null) {
     return mockListEvents();
   }
-  return coreQueries.listEvents(client);
+  try {
+    return await coreQueries.listEvents(client);
+  } catch (error) {
+    return handleServiceError(error, { method: 'catalog.listEvents' });
+  }
 }
 
 export async function getEvent(id: string): Promise<Event | null> {
@@ -98,7 +103,11 @@ export async function getEvent(id: string): Promise<Event | null> {
   if (client === null) {
     return mockGetEvent(id);
   }
-  return coreQueries.getEvent(client, id);
+  try {
+    return await coreQueries.getEvent(client, id);
+  } catch (error) {
+    return handleServiceError(error, { method: 'catalog.getEvent', args: { id } });
+  }
 }
 
 export async function listEstablishments(
@@ -108,7 +117,11 @@ export async function listEstablishments(
   if (client === null) {
     return mockListEstablishments(cityId);
   }
-  return coreQueries.listEstablishments(client, cityId);
+  try {
+    return await coreQueries.listEstablishments(client, cityId);
+  } catch (error) {
+    return handleServiceError(error, { method: 'catalog.listEstablishments', args: { cityId } });
+  }
 }
 
 export async function getEstablishment(
@@ -118,7 +131,11 @@ export async function getEstablishment(
   if (client === null) {
     return mockGetEstablishment(id);
   }
-  return coreQueries.getEstablishment(client, id);
+  try {
+    return await coreQueries.getEstablishment(client, id);
+  } catch (error) {
+    return handleServiceError(error, { method: 'catalog.getEstablishment', args: { id } });
+  }
 }
 
 export async function listEventsByEstablishment(
@@ -128,7 +145,11 @@ export async function listEventsByEstablishment(
   if (client === null) {
     return mockListEventsByEstablishment(establishmentId);
   }
-  return coreQueries.listEventsByEstablishment(client, establishmentId);
+  try {
+    return await coreQueries.listEventsByEstablishment(client, establishmentId);
+  } catch (error) {
+    return handleServiceError(error, { method: 'catalog.listEventsByEstablishment', args: { establishmentId } });
+  }
 }
 
 export async function listMusicStyles(): Promise<MusicStyle[]> {
@@ -136,7 +157,11 @@ export async function listMusicStyles(): Promise<MusicStyle[]> {
   if (client === null) {
     return mockListMusicStyles();
   }
-  return coreQueries.listMusicStyles(client);
+  try {
+    return await coreQueries.listMusicStyles(client);
+  } catch (error) {
+    return handleServiceError(error, { method: 'catalog.listMusicStyles' });
+  }
 }
 
 export async function listCities(): Promise<City[]> {
@@ -144,7 +169,11 @@ export async function listCities(): Promise<City[]> {
   if (client === null) {
     return mockListCities();
   }
-  return coreQueries.listCities(client);
+  try {
+    return await coreQueries.listCities(client);
+  } catch (error) {
+    return handleServiceError(error, { method: 'catalog.listCities' });
+  }
 }
 
 export async function listNotifications(): Promise<AppNotification[]> {
@@ -152,5 +181,9 @@ export async function listNotifications(): Promise<AppNotification[]> {
   if (client === null) {
     return mockListNotifications();
   }
-  return coreQueries.listNotifications(client);
+  try {
+    return await coreQueries.listNotifications(client);
+  } catch (error) {
+    return handleServiceError(error, { method: 'catalog.listNotifications' });
+  }
 }

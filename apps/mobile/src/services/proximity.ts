@@ -14,6 +14,7 @@ import { z } from 'zod';
 import { ESTABLISHMENTS } from '@/data/mock';
 import { establishmentSchema, menuItemSchema } from '@/data/schemas';
 import { getSupabase } from '@/lib/supabase';
+import { handleServiceError } from '@/utils/errors';
 import { haversineDistanceKm } from '@/utils/geo';
 
 export const nearbyEstablishmentSchema = establishmentSchema.extend({
@@ -122,14 +123,21 @@ export async function listNearbyEstablishments(
     return listFromMock(params);
   }
 
-  const { data, error } = await client.rpc('nearby_establishments', {
-    origin_lat: params.lat,
-    origin_lng: params.lng,
-    radius_km: params.radiusKm ?? DEFAULT_RADIUS_KM,
-    max_results: params.limit ?? DEFAULT_LIMIT,
-  });
-  if (error) throw error;
+  try {
+    const { data, error } = await client.rpc('nearby_establishments', {
+      origin_lat: params.lat,
+      origin_lng: params.lng,
+      radius_km: params.radiusKm ?? DEFAULT_RADIUS_KM,
+      max_results: params.limit ?? DEFAULT_LIMIT,
+    });
+    if (error) throw error;
 
-  const rows = (data ?? []) as NearbyRow[];
-  return nearbyListSchema.parse(rows.map(mapRow));
+    const rows = (data ?? []) as NearbyRow[];
+    return nearbyListSchema.parse(rows.map(mapRow));
+  } catch (error) {
+    return handleServiceError(error, {
+      method: 'proximity.listNearbyEstablishments',
+      args: params as unknown as Record<string, unknown>,
+    });
+  }
 }
