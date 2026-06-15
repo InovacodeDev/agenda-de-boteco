@@ -1,6 +1,6 @@
 /**
  * Espelho TS dos design tokens definidos em src/global.css (@theme).
- * Usar apenas onde className não alcança: cor de ícone lucide, mapStyle,
+ * Usar apenas onde className não alcança: cor de ícone, mapStyle,
  * tintColor, placeholderTextColor, gradientes, etc.
  * Fonte da verdade visual: protótipo vibe-noite.lovable.app.
  */

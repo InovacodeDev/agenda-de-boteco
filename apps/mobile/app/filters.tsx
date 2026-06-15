@@ -1,5 +1,4 @@
 import { useRouter } from 'expo-router';
-import { X } from 'lucide-react-native';
 import { useState } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -10,7 +9,8 @@ import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
 import { GuardedPressable } from '@/components/ui/GuardedPressable';
-import { CITIES, MUSIC_STYLES } from '@/data';
+import { Icon } from '@/components/ui/Icon';
+import { useCitiesQuery, useMusicStylesQuery } from '@/hooks/queries';
 import { useFiltersStore } from '@/store/useFiltersStore';
 import { usePreferencesStore } from '@/store/usePreferencesStore';
 import { colors } from '@/theme/colors';
@@ -35,6 +35,8 @@ export default function FiltersSheet() {
   const replaceFilters = useFiltersStore((state) => state.replaceFilters);
   const cityId = usePreferencesStore((state) => state.cityId);
   const setCity = usePreferencesStore((state) => state.setCity);
+  const { data: cities } = useCitiesQuery();
+  const { data: musicStyles } = useMusicStylesQuery();
 
   // estado provisório: só aplica ao tocar "Aplicar filtros"
   const [draft, setDraft] = useState<EventFilters>(storedFilters);
@@ -72,7 +74,7 @@ export default function FiltersSheet() {
             hitSlop={8}
             className="active:opacity-80"
           >
-            <X color={colors.mutedForeground} size={20} />
+            <Icon name="xmark" color={colors.mutedForeground} size={20} />
           </GuardedPressable>
         }
       />
@@ -92,7 +94,7 @@ export default function FiltersSheet() {
 
         <FilterSection title="Cidade">
           <View className="flex-row flex-wrap gap-2">
-            {CITIES.map((city) => (
+            {(cities ?? []).map((city) => (
               <Chip
                 key={city.id}
                 label={city.name}
@@ -114,7 +116,7 @@ export default function FiltersSheet() {
 
         <FilterSection title="Estilo musical">
           <View className="flex-row flex-wrap gap-2">
-            {MUSIC_STYLES.map((style) => (
+            {(musicStyles ?? []).map((style) => (
               <Chip
                 key={style.id}
                 label={`${style.emoji} ${style.name}`}
@@ -167,12 +169,7 @@ export default function FiltersSheet() {
           className="border-foreground/50 flex-1 border-[0.5px]"
           style={{ backgroundColor: colors.background }}
         />
-        <Button
-          label="Aplicar filtros"
-          onPress={apply}
-          className="flex-1"
-          style={{ backgroundColor: colors.primary }}
-        />
+        <Button label="Aplicar filtros" onPress={apply} className="flex-1" />
       </View>
     </View>
   );

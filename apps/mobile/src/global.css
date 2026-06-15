@@ -65,3 +65,50 @@
     --font-body-bold: 'Inter_700Bold';
   }
 }
+
+/*
+ * Safelist de classes de cor do tema. O scanner do Tailwind/NativeWind v5 só
+ * emite utilities que encontra como string LITERAL no código-fonte. Classes
+ * guardadas em mapas de variante `const` (ex.: Button containerByVariant) não
+ * são detectadas e nunca chegam a ser geradas — o estilo simplesmente não
+ * aplica. Declaramos aqui, explicitamente, as utilities de cor usadas dessa
+ * forma para que existam sempre, independente de onde sejam referenciadas.
+ */
+@layer utilities {
+  .bg-primary {
+    background-color: var(--color-primary);
+  }
+  .bg-accent {
+    background-color: var(--color-accent);
+  }
+  .bg-destructive {
+    background-color: var(--color-destructive);
+  }
+  .bg-foreground {
+    background-color: var(--color-foreground);
+  }
+  .text-primary {
+    color: var(--color-primary);
+  }
+  .text-primary-foreground {
+    color: var(--color-primary-foreground);
+  }
+  .text-accent-foreground {
+    color: var(--color-accent-foreground);
+  }
+  .text-destructive {
+    color: var(--color-destructive);
+  }
+  .text-destructive-foreground {
+    color: var(--color-destructive-foreground);
+  }
+  .border-primary {
+    border-color: var(--color-primary);
+  }
+  .border-accent {
+    border-color: var(--color-accent);
+  }
+  .border-destructive {
+    border-color: var(--color-destructive);
+  }
+}

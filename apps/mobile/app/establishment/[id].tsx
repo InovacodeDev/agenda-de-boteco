@@ -1,7 +1,6 @@
 import { useLocalSearchParams } from 'expo-router';
-import { AtSign, Clock, Heart, MapPin, MessageCircle, Navigation } from 'lucide-react-native';
-import { useState } from 'react';
-import { Linking, StyleSheet } from 'react-native';
+import { useMemo, useState } from 'react';
+import { Linking, Share, StyleSheet } from 'react-native';
 
 import { AgendaItem } from '@/components/establishment/AgendaItem';
 import { MenuItemRow } from '@/components/establishment/MenuItemRow';
@@ -9,16 +8,21 @@ import { Screen } from '@/components/layout/Screen';
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import { Button } from '@/components/ui/Button';
 import { CircleIconButton } from '@/components/ui/CircleIconButton';
+import { Icon } from '@/components/ui/Icon';
 import { RatingStars } from '@/components/ui/RatingStars';
 import { SegmentedTabs } from '@/components/ui/SegmentedTabs';
-import { EVENTS } from '@/data';
-import { ESTABLISHMENTS_BY_ID, musicStylesForEvent } from '@/data/lookup';
+import { indexById, musicStylesForEvent } from '@/data/lookup';
+import { useEstablishmentQuery, useEventsByEstablishmentQuery, useMusicStylesQuery } from '@/hooks/queries';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useFavoritesStore } from '@/store/useFavoritesStore';
 import { colors } from '@/theme/colors';
 import { headingLetterSpacing } from '@/theme/typography';
 import { Image, ScrollView, Text, View } from '@/tw';
-import { buildDirectionsUrl, buildWhatsAppUrl } from '@/utils/links';
+import {
+  buildDirectionsUrl,
+  buildEstablishmentShareUrl,
+  buildWhatsAppUrl,
+} from '@/utils/links';
 
 const TABS = ['Sobre', 'Agenda', 'Cardápio', 'Reviews'];
 
@@ -45,11 +49,29 @@ export default function EstablishmentDetailScreen() {
   const requireAuth = useRequireAuth();
   const [activeTab, setActiveTab] = useState(0);
 
-  const establishment = id ? ESTABLISHMENTS_BY_ID[id] : undefined;
+  const establishmentQuery = useEstablishmentQuery(id ?? '');
+  const establishment = establishmentQuery.data;
+  // O service/core já ordena a agenda por starts_at asc.
+  const { data: agendaData } = useEventsByEstablishmentQuery(id ?? '');
+  const agenda = agendaData ?? [];
+  const { data: musicStyles } = useMusicStylesQuery();
+  const stylesById = useMemo(() => indexById(musicStyles ?? []), [musicStyles]);
+
   const isFavorite = useFavoritesStore((state) =>
     establishment ? state.establishmentIds.includes(establishment.id) : false,
   );
   const toggleEstablishment = useFavoritesStore((state) => state.toggleEstablishment);
+
+  if (establishmentQuery.isLoading) {
+    return (
+      <Screen>
+        <ScreenHeader showBack />
+        <View className="flex-1 items-center justify-center">
+          <Text className="font-body text-muted-foreground text-[14px]">Carregando…</Text>
+        </View>
+      </Screen>
+    );
+  }
 
   if (!establishment) {
     return (
@@ -64,9 +86,15 @@ export default function EstablishmentDetailScreen() {
     );
   }
 
-  const agenda = EVENTS.filter((event) => event.establishment_id === establishment.id).sort(
-    (a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime(),
-  );
+  const share = () => {
+    const url = buildEstablishmentShareUrl(
+      { slugOrId: establishment.id },
+      process.env.EXPO_PUBLIC_SHARE_BASE_URL,
+    );
+    const text = `${establishment.name} no Agenda de Boteco`;
+    // No Android o campo `url` é ignorado, por isso a URL vai também no message.
+    Share.share({ message: `${text}\n${url}`, url });
+  };
 
   return (
     <Screen noTopInset>
@@ -124,18 +152,18 @@ export default function EstablishmentDetailScreen() {
               <AboutCard
                 label="Endereço"
                 value={`${establishment.address} · ${establishment.neighborhood}`}
-                icon={<MapPin color={colors.primary} size={13} />}
+                icon={<Icon name="location-dot" color={colors.primary} size={13} />}
               />
               <AboutCard
                 label="Horário"
                 value={establishment.opening_hours}
-                icon={<Clock color={colors.mutedForeground} size={13} />}
+                icon={<Icon name="clock" variant="regular" color={colors.mutedForeground} size={13} />}
               />
               {establishment.instagram ? (
                 <AboutCard
                   label="Instagram"
                   value={establishment.instagram}
-                  icon={<AtSign color={colors.primary} size={13} />}
+                  icon={<Icon name="at" color={colors.primary} size={13} />}
                 />
               ) : null}
             </View>
@@ -149,7 +177,11 @@ export default function EstablishmentDetailScreen() {
                 </Text>
               ) : (
                 agenda.map((event) => (
-                  <AgendaItem key={event.id} event={event} styles={musicStylesForEvent(event)} />
+                  <AgendaItem
+                    key={event.id}
+                    event={event}
+                    styles={musicStylesForEvent(event, stylesById)}
+                  />
                 ))
               )}
             </View>
@@ -185,15 +217,14 @@ export default function EstablishmentDetailScreen() {
         <Button
           label="WhatsApp"
           className="flex-1"
-          style={{ backgroundColor: colors.primary }}
-          icon={<MessageCircle color={colors.primaryForeground} size={16} />}
+          icon={<Icon name="comment" variant="regular" color={colors.primaryForeground} size={16} />}
           onPress={() => Linking.openURL(buildWhatsAppUrl(establishment.whatsapp))}
         />
         <Button
           variant="outline"
           className="border-foreground/50 border-[0.5px]"
           style={{ backgroundColor: colors.background }}
-          icon={<Navigation color={colors.foreground} size={16} />}
+          icon={<Icon name="location-arrow" color={colors.foreground} size={16} />}
           onPress={() =>
             Linking.openURL(buildDirectionsUrl({ lat: establishment.lat, lng: establishment.lng }))
           }
@@ -203,17 +234,27 @@ export default function EstablishmentDetailScreen() {
         overlay
         showBack
         right={
-          <CircleIconButton
-            accessibilityLabel={isFavorite ? 'Remover dos favoritos' : 'Favoritar estabelecimento'}
-            icon={
-              <Heart
-                color={isFavorite ? colors.primary : colors.foreground}
-                fill={isFavorite ? colors.primary : 'transparent'}
-                size={18}
-              />
-            }
-            onPress={() => requireAuth(() => toggleEstablishment(establishment.id))}
-          />
+          <>
+            <CircleIconButton
+              accessibilityLabel="Compartilhar estabelecimento"
+              icon={<Icon name="share-nodes" color={colors.foreground} size={18} />}
+              onPress={share}
+            />
+            <CircleIconButton
+              accessibilityLabel={
+                isFavorite ? 'Remover dos favoritos' : 'Favoritar estabelecimento'
+              }
+              icon={
+                <Icon
+                  name="heart"
+                  variant={isFavorite ? 'solid' : 'regular'}
+                  color={isFavorite ? colors.primary : colors.foreground}
+                  size={18}
+                />
+              }
+              onPress={() => requireAuth(() => toggleEstablishment(establishment.id))}
+            />
+          </>
         }
       />
     </Screen>

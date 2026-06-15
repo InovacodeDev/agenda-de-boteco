@@ -1,10 +1,13 @@
 import { useRouter } from 'expo-router';
-import { ChevronRight, Heart, LogOut, MapPin, User } from 'lucide-react-native';
+import { useState } from 'react';
 
 import { Screen } from '@/components/layout/Screen';
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import { Button } from '@/components/ui/Button';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { Icon } from '@/components/ui/Icon';
 import { cityByIdOrDefault } from '@/data/lookup';
+import { useCitiesQuery } from '@/hooks/queries';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useFavoritesStore } from '@/store/useFavoritesStore';
 import { usePreferencesStore } from '@/store/usePreferencesStore';
@@ -17,7 +20,7 @@ function SignedOutProfile() {
   return (
     <View className="flex-1 items-center gap-4 px-8 pt-16">
       <View className="bg-surface-elevated h-16 w-16 items-center justify-center rounded-2xl">
-        <User color={colors.mutedForeground} size={28} />
+        <Icon name="user" variant="regular" color={colors.mutedForeground} size={28} />
       </View>
       <View className="items-center gap-2">
         <Text
@@ -30,7 +33,13 @@ function SignedOutProfile() {
           Para favoritar, avaliar e receber avisos dos bares que você ama.
         </Text>
       </View>
-      <Button label="Entrar" fullWidth onPress={() => router.push('/login')} className="mt-2" />
+      <Button
+        label="Entrar"
+        fullWidth
+        onPress={() => router.push('/login')}
+        className="mt-2"
+        style={{ backgroundColor: colors.primary }}
+      />
     </View>
   );
 }
@@ -40,12 +49,20 @@ function SignedInProfile() {
   const signOut = useAuthStore((state) => state.signOut);
   const router = useRouter();
 
+  const [confirmVisible, setConfirmVisible] = useState(false);
+
+  const handleConfirmSignOut = () => {
+    setConfirmVisible(false);
+    signOut();
+  };
+
   const eventIds = useFavoritesStore((state) => state.eventIds);
   const establishmentIds = useFavoritesStore((state) => state.establishmentIds);
   const totalFavorites = eventIds.length + establishmentIds.length;
 
   const cityId = usePreferencesStore((state) => state.cityId);
-  const city = cityByIdOrDefault(cityId);
+  const { data: cities } = useCitiesQuery();
+  const city = cityByIdOrDefault(cities ?? [], cityId);
 
   const name = user?.name || 'Você';
   const email = user?.email || '';
@@ -76,7 +93,7 @@ function SignedInProfile() {
         </View>
         <View className="bg-card flex-1 items-center justify-center gap-1 rounded-2xl p-4">
           <Text className="font-heading text-foreground text-[20px]" numberOfLines={1}>
-            {city.name}
+            {city?.name ?? '…'}
           </Text>
           <Text className="font-body text-muted-foreground text-[12px]">Cidade</Text>
         </View>
@@ -92,10 +109,10 @@ function SignedInProfile() {
           className="border-border active:bg-surface/50 flex-row items-center justify-between border-b px-4 py-4"
         >
           <View className="flex-row items-center gap-3">
-            <Heart color={colors.primary} size={18} />
+            <Icon name="heart" variant="solid" color={colors.primary} size={18} />
             <Text className="font-body-medium text-foreground text-[15px]">Meus favoritos</Text>
           </View>
-          <ChevronRight color={colors.mutedForeground} size={16} />
+          <Icon name="chevron-right" color={colors.mutedForeground} size={16} />
         </Pressable>
 
         <Pressable
@@ -103,22 +120,32 @@ function SignedInProfile() {
           className="active:bg-surface/50 flex-row items-center justify-between px-4 py-4"
         >
           <View className="flex-row items-center gap-3">
-            <MapPin color={colors.primary} size={18} />
+            <Icon name="location-dot" color={colors.primary} size={18} />
             <Text className="font-body-medium text-foreground text-[15px]">Mudar cidade</Text>
           </View>
-          <ChevronRight color={colors.mutedForeground} size={16} />
+          <Icon name="chevron-right" color={colors.mutedForeground} size={16} />
         </Pressable>
       </View>
 
       <View className="flex-1" />
 
       <Pressable
-        onPress={() => signOut()}
+        onPress={() => setConfirmVisible(true)}
         className="border-destructive/20 active:bg-destructive/10 mb-4 h-12 w-full flex-row items-center justify-center gap-2 rounded-xl border bg-transparent"
       >
-        <LogOut color={colors.destructive} size={16} />
+        <Icon name="right-from-bracket" color={colors.destructive} size={16} />
         <Text className="font-body-semibold text-destructive text-[15px]">Sair</Text>
       </Pressable>
+
+      <ConfirmDialog
+        visible={confirmVisible}
+        destructive
+        title="Sair da conta?"
+        message="Você precisará entrar novamente para favoritar e receber avisos."
+        confirmLabel="Sair"
+        onCancel={() => setConfirmVisible(false)}
+        onConfirm={handleConfirmSignOut}
+      />
     </View>
   );
 }

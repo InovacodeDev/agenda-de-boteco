@@ -1,7 +1,7 @@
 import { useRouter } from 'expo-router';
-import { Search, SlidersHorizontal } from 'lucide-react-native';
 
 import { GuardedPressable } from '@/components/ui/GuardedPressable';
+import { Icon } from '@/components/ui/Icon';
 import { colors } from '@/theme/colors';
 import { TextInput, View } from '@/tw';
 
@@ -16,7 +16,7 @@ export function SearchBar({ value, onChangeText }: SearchBarProps) {
   return (
     <View className="flex-row items-center gap-3">
       <View className="bg-surface-elevated h-12 flex-1 flex-row items-center gap-2 rounded-2xl px-4">
-        <Search color={colors.mutedForeground} size={18} />
+        <Icon name="magnifying-glass" color={colors.mutedForeground} size={18} />
         <TextInput
           value={value}
           onChangeText={onChangeText}
@@ -32,7 +32,7 @@ export function SearchBar({ value, onChangeText }: SearchBarProps) {
         onPress={() => router.push('/filters')}
         className="bg-surface-elevated h-12 w-12 items-center justify-center rounded-2xl active:opacity-80"
       >
-        <SlidersHorizontal color={colors.foreground} size={18} />
+        <Icon name="sliders" color={colors.foreground} size={18} />
       </GuardedPressable>
     </View>
   );

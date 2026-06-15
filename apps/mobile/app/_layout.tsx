@@ -7,6 +7,7 @@ import {
   Inter_700Bold,
 } from '@expo-google-fonts/inter';
 import { SpaceGrotesk_500Medium, SpaceGrotesk_700Bold } from '@expo-google-fonts/space-grotesk';
+import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { useFonts } from 'expo-font';
 import * as Linking from 'expo-linking';
 import { Stack } from 'expo-router';
@@ -15,12 +16,23 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { useRealtimeSync } from '@/hooks/useRealtimeSync';
+import { queryClient } from '@/lib/queryClient';
+import { persister } from '@/lib/queryPersister';
 import { handleDeepLink } from '@/services/auth';
+import { CACHE_BUSTER, shouldDehydrateQuery } from '@/services/cachePolicy';
+import { setupFocusManager, setupOnlineManager } from '@/services/connectivity';
 import { useAuthStore } from '@/store/useAuthStore';
 import { usePreferencesStore } from '@/store/usePreferencesStore';
 import { colors } from '@/theme/colors';
 
 SplashScreen.preventAutoHideAsync();
+
+/** Liga o realtime ao cache. Montado dentro do provider para garantir contexto. */
+function RealtimeBridge() {
+  useRealtimeSync();
+  return null;
+}
 
 export default function RootLayout() {
   const hasOnboarded = usePreferencesStore((state) => state.hasOnboarded);
@@ -32,6 +44,15 @@ export default function RootLayout() {
   useEffect(() => {
     initializeAuth();
   }, [initializeAuth]);
+
+  useEffect(() => {
+    const teardownOnline = setupOnlineManager();
+    const teardownFocus = setupFocusManager();
+    return () => {
+      teardownOnline();
+      teardownFocus();
+    };
+  }, []);
 
   useEffect(() => {
     if (url) {
@@ -62,35 +83,46 @@ export default function RootLayout() {
   }
 
   return (
-    <SafeAreaProvider>
-      <StatusBar style="light" />
-      <Stack
-        screenOptions={{
-          headerShown: false,
-          contentStyle: { backgroundColor: colors.background },
-        }}
-      >
-        <Stack.Protected guard={hasOnboarded}>
-          <Stack.Screen name="(tabs)" />
-          <Stack.Screen name="event/[id]" />
-          <Stack.Screen name="establishment/[id]" />
-          <Stack.Screen name="city" />
-          <Stack.Screen name="login" />
-          <Stack.Screen
-            name="filters"
-            options={{
-              presentation: 'formSheet',
-              sheetAllowedDetents: [0.92],
-              sheetGrabberVisible: true,
-              sheetCornerRadius: 24,
-              contentStyle: { backgroundColor: colors.popover },
-            }}
-          />
-        </Stack.Protected>
-        <Stack.Protected guard={!hasOnboarded}>
-          <Stack.Screen name="onboarding" />
-        </Stack.Protected>
-      </Stack>
-    </SafeAreaProvider>
+    <PersistQueryClientProvider
+      client={queryClient}
+      persistOptions={{
+        persister,
+        maxAge: 24 * 60 * 60_000,
+        buster: CACHE_BUSTER,
+        dehydrateOptions: { shouldDehydrateQuery },
+      }}
+    >
+      <SafeAreaProvider>
+        <RealtimeBridge />
+        <StatusBar style="light" />
+        <Stack
+          screenOptions={{
+            headerShown: false,
+            contentStyle: { backgroundColor: colors.background },
+          }}
+        >
+          <Stack.Protected guard={hasOnboarded}>
+            <Stack.Screen name="(tabs)" />
+            <Stack.Screen name="event/[id]" />
+            <Stack.Screen name="establishment/[id]" />
+            <Stack.Screen name="city" />
+            <Stack.Screen name="login" />
+            <Stack.Screen
+              name="filters"
+              options={{
+                presentation: 'formSheet',
+                sheetAllowedDetents: [0.92],
+                sheetGrabberVisible: true,
+                sheetCornerRadius: 24,
+                contentStyle: { backgroundColor: colors.popover },
+              }}
+            />
+          </Stack.Protected>
+          <Stack.Protected guard={!hasOnboarded}>
+            <Stack.Screen name="onboarding" />
+          </Stack.Protected>
+        </Stack>
+      </SafeAreaProvider>
+    </PersistQueryClientProvider>
   );
 }

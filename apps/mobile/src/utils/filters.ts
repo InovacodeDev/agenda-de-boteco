@@ -34,6 +34,13 @@ export interface EventFilterContext {
   cityId: string;
   userLocation?: { lat: number; lng: number };
   establishmentsById: Record<string, Establishment>;
+  /**
+   * Ids dos establishments dentro do raio, vindos do RPC PostGIS
+   * (`listNearbyEstablishments`). Quando presente com `nearMe` ativo, a
+   * proximidade vira interseção por id sobre dados de servidor — sem recalcular
+   * distância no cliente.
+   */
+  nearbyEstablishmentIds?: ReadonlySet<string>;
 }
 
 /** Normaliza para busca: lowercase + remoção de acentos (decomposição NFD). */
@@ -71,7 +78,10 @@ function matchesDateBucket(event: Event, bucket: DateBucket, now: Date): boolean
  * Regras:
  * - Sempre restringe à cidade do contexto (via establishment do evento);
  *   eventos sem establishment conhecido são descartados.
- * - `nearMe` só atua quando ctx.userLocation existe — sem localização do
+ * - `nearMe` com `ctx.nearbyEstablishmentIds` presente: interseção por id sobre
+ *   o resultado do RPC PostGIS (fronteira de proximidade server-side).
+ * - `nearMe` sem `nearbyEstablishmentIds`: fallback Haversine sobre os dados já
+ *   em memória; só atua quando ctx.userLocation existe — sem localização do
  *   usuário é no-op (não dá para medir distância).
  */
 export function applyEventFilters(
@@ -108,12 +118,20 @@ export function applyEventFilters(
       }
       if (filters.freeOnly && event.cover_charge !== 0) return false;
 
-      if (filters.nearMe && ctx.userLocation) {
-        const distanceKm = haversineDistanceKm(ctx.userLocation, {
-          lat: establishment.lat,
-          lng: establishment.lng,
-        });
-        if (distanceKm > filters.maxDistanceKm) return false;
+      if (filters.nearMe) {
+        if (ctx.nearbyEstablishmentIds) {
+          // Proximidade server-side: interseção por id com o resultado do RPC.
+          if (!ctx.nearbyEstablishmentIds.has(event.establishment_id)) {
+            return false;
+          }
+        } else if (ctx.userLocation) {
+          // Fallback Haversine sobre dados já carregados.
+          const distanceKm = haversineDistanceKm(ctx.userLocation, {
+            lat: establishment.lat,
+            lng: establishment.lng,
+          });
+          if (distanceKm > filters.maxDistanceKm) return false;
+        }
       }
 
       if (filters.openNow && !isOpenNow(establishment.opening_hours, ctx.now)) {

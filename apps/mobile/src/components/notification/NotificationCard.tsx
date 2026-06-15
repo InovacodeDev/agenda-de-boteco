@@ -1,8 +1,8 @@
 import { useRouter } from 'expo-router';
-import { Heart, MapPin, Music, Sparkles } from 'lucide-react-native';
 import { memo, type ReactNode } from 'react';
 
 import { GuardedPressable } from '@/components/ui/GuardedPressable';
+import { Icon } from '@/components/ui/Icon';
 import type { AppNotification, NotificationType } from '@/data/schemas';
 import { colors } from '@/theme/colors';
 import { Text, View } from '@/tw';
@@ -13,13 +13,13 @@ function iconFor(type: NotificationType, unread: boolean): ReactNode {
   const color = unread ? colors.primary : colors.mutedForeground;
   switch (type) {
     case 'style':
-      return <Music color={color} size={18} />;
+      return <Icon name="music" color={color} size={18} />;
     case 'city':
-      return <MapPin color={color} size={18} />;
+      return <Icon name="location-dot" color={color} size={18} />;
     case 'favorite':
-      return <Heart color={color} size={18} />;
+      return <Icon name="heart" variant="regular" color={color} size={18} />;
     case 'promo':
-      return <Sparkles color={color} size={18} />;
+      return <Icon name="wand-magic-sparkles" color={color} size={18} />;
   }
 }
 

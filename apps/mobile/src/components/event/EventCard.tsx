@@ -1,11 +1,11 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import { Calendar, Clock, Heart, MapPin, Ticket } from 'lucide-react-native';
 import { memo, type ReactNode } from 'react';
 import { StyleSheet } from 'react-native';
 
 import { GradientBadge } from '@/components/ui/GradientBadge';
 import { GuardedPressable } from '@/components/ui/GuardedPressable';
+import { Icon } from '@/components/ui/Icon';
 import type { Establishment, Event, MusicStyle } from '@/data/schemas';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useFavoritesStore } from '@/store/useFavoritesStore';
@@ -87,9 +87,10 @@ export const EventCard = memo(function EventCard({ event, establishment, styles 
               hitSlop={8}
               className="bg-background/40 h-9 w-9 items-center justify-center rounded-full active:opacity-80"
             >
-              <Heart
+              <Icon
+                name="heart"
+                variant={isFavorite ? 'solid' : 'regular'}
                 color={isFavorite ? colors.primary : colors.foreground}
-                fill={isFavorite ? colors.primary : 'transparent'}
                 size={18}
               />
             </GuardedPressable>
@@ -112,24 +113,24 @@ export const EventCard = memo(function EventCard({ event, establishment, styles 
 
       <View className="bg-popover flex-row justify-between px-4 py-3">
         <View className="gap-2">
-          <FooterItem icon={<Calendar color={colors.primary} size={14} />}>
+          <FooterItem icon={<Icon name="calendar" variant="regular" color={colors.primary} size={14} />}>
             <Text className="font-body text-foreground text-[13px]">
               {formatRelativeDay(event.starts_at)}
             </Text>
           </FooterItem>
-          <FooterItem icon={<MapPin color={colors.primary} size={14} />}>
+          <FooterItem icon={<Icon name="location-dot" color={colors.primary} size={14} />}>
             <Text className="font-body text-foreground text-[13px]">
               {establishment.neighborhood}
             </Text>
           </FooterItem>
         </View>
         <View className="items-end gap-2">
-          <FooterItem icon={<Clock color={colors.primary} size={14} />}>
+          <FooterItem icon={<Icon name="clock" variant="regular" color={colors.primary} size={14} />}>
             <Text className="font-body text-foreground text-[13px]">
               {formatTime(event.starts_at)}
             </Text>
           </FooterItem>
-          <FooterItem icon={<Ticket color={colors.primary} size={14} />}>
+          <FooterItem icon={<Icon name="ticket" color={colors.primary} size={14} />}>
             <Text className="font-body-semibold text-primary text-[13px]">{price}</Text>
           </FooterItem>
         </View>

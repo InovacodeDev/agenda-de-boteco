@@ -1,5 +1,5 @@
 import { FlashList } from '@shopify/flash-list';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { EventCard } from '@/components/event/EventCard';
 import { FeedHeader } from '@/components/feed/FeedHeader';
@@ -9,32 +9,35 @@ import { StyleCard } from '@/components/feed/StyleCard';
 import { Screen } from '@/components/layout/Screen';
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import { SectionLabel } from '@/components/ui/SectionLabel';
-import { EVENTS, MUSIC_STYLES } from '@/data';
-import { cityByIdOrDefault, ESTABLISHMENTS_BY_ID, musicStylesForEvent } from '@/data/lookup';
+import { cityByIdOrDefault, indexById, musicStylesForEvent } from '@/data/lookup';
 import type { Event } from '@/data/schemas';
+import {
+  useCitiesQuery,
+  useEstablishmentsQuery,
+  useEventsQuery,
+  useMusicStylesQuery,
+} from '@/hooks/queries';
+import { useNearbyEstablishments } from '@/hooks/useNearbyEstablishments';
+import { useUserLocation } from '@/hooks/useUserLocation';
 import { useFiltersStore } from '@/store/useFiltersStore';
 import { usePreferencesStore } from '@/store/usePreferencesStore';
 import { headingLetterSpacing } from '@/theme/typography';
 import { ScrollView, Text, View } from '@/tw';
 import { applyEventFilters } from '@/utils/filters';
+import { resolveNearbyOrigin } from '@/utils/geo';
 
 const ItemSeparator = () => <View className="h-4" />;
-
-// Estável fora do componente: junto com EventCard memoizado e os caches de
-// lookup, evita re-render dos cards visíveis a cada tecla da busca.
-const renderEvent = ({ item }: { item: Event }) => (
-  <EventCard
-    event={item}
-    establishment={ESTABLISHMENTS_BY_ID[item.establishment_id]}
-    styles={musicStylesForEvent(item)}
-  />
-);
 
 export default function FeedScreen() {
   const cityId = usePreferencesStore((state) => state.cityId);
   const filters = useFiltersStore((state) => state.filters);
   const setQuery = useFiltersStore((state) => state.setQuery);
   const toggleStyle = useFiltersStore((state) => state.toggleStyle);
+
+  const { data: events } = useEventsQuery();
+  const { data: establishments } = useEstablishmentsQuery();
+  const { data: musicStyles } = useMusicStylesQuery();
+  const { data: cities } = useCitiesQuery();
 
   // "agora" estável por render da lista, atualizado a cada minuto
   const [now, setNow] = useState(() => new Date());
@@ -43,25 +46,66 @@ export default function FeedScreen() {
     return () => clearInterval(interval);
   }, []);
 
-  const city = cityByIdOrDefault(cityId);
+  const establishmentsById = useMemo(() => indexById(establishments ?? []), [establishments]);
+  const stylesById = useMemo(() => indexById(musicStyles ?? []), [musicStyles]);
 
-  const events = useMemo(
+  const city = useMemo(() => cityByIdOrDefault(cities ?? [], cityId), [cities, cityId]);
+
+  // Proximidade server-side: quando nearMe está ativo, resolve a origem (GPS ou
+  // centro da cidade) e busca os establishments dentro do raio via RPC PostGIS.
+  // Sem nearMe a query fica desabilitada (origin null) — zero custo.
+  const { coords, status, request } = useUserLocation();
+
+  // Pede a localização ao ligar "Perto de mim"; se negada, resolveNearbyOrigin
+  // cai para o centro da cidade (a tela nunca fica vazia).
+  useEffect(() => {
+    if (filters.nearMe && status === 'idle') {
+      request();
+    }
+  }, [filters.nearMe, status, request]);
+
+  const nearbyOrigin = filters.nearMe && city ? resolveNearbyOrigin(coords, status, city) : null;
+  const { data: nearby } = useNearbyEstablishments({
+    origin: nearbyOrigin,
+    radiusKm: filters.maxDistanceKm,
+  });
+
+  const nearbyEstablishmentIds = useMemo(
+    () => (filters.nearMe && nearby ? new Set(nearby.map((item) => item.id)) : undefined),
+    [filters.nearMe, nearby],
+  );
+
+  const filteredEvents = useMemo(
     () =>
-      applyEventFilters(EVENTS, filters, {
-        now,
-        cityId: city.id,
-        establishmentsById: ESTABLISHMENTS_BY_ID,
-      }),
-    [filters, now, city.id],
+      city
+        ? applyEventFilters(events ?? [], filters, {
+            now,
+            cityId: city.id,
+            establishmentsById,
+            nearbyEstablishmentIds,
+          })
+        : [],
+    [events, filters, now, city, establishmentsById, nearbyEstablishmentIds],
+  );
+
+  // Estável enquanto os índices não mudam: junto com EventCard memoizado e os
+  // caches de lookup, evita re-render dos cards visíveis a cada tecla da busca.
+  const renderEvent = useCallback(
+    ({ item }: { item: Event }) => (
+      <EventCard
+        event={item}
+        establishment={establishmentsById[item.establishment_id]}
+        styles={musicStylesForEvent(item, stylesById)}
+      />
+    ),
+    [establishmentsById, stylesById],
   );
 
   return (
     <Screen>
-      <ScreenHeader>
-        <FeedHeader city={city} />
-      </ScreenHeader>
+      <ScreenHeader>{city ? <FeedHeader city={city} /> : null}</ScreenHeader>
       <FlashList
-        data={events}
+        data={filteredEvents}
         keyExtractor={(event) => event.id}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 24 }}
@@ -73,7 +117,7 @@ export default function FeedScreen() {
                 className="font-heading text-foreground text-[28px]"
                 style={{ letterSpacing: headingLetterSpacing(28) }}
               >
-                O que rola em <Text className="text-primary">{city.name}</Text> hoje?
+                O que rola em <Text className="text-primary">{city?.name ?? '…'}</Text> hoje?
               </Text>
               <Text className="font-body text-muted-foreground text-[14px]">
                 Cards quentinhos da agenda da noite.
@@ -88,7 +132,7 @@ export default function FeedScreen() {
                 showsHorizontalScrollIndicator={false}
                 contentContainerClassName="flex-row gap-2"
               >
-                {MUSIC_STYLES.map((style) => (
+                {(musicStyles ?? []).map((style) => (
                   <StyleCard
                     key={style.id}
                     style={style}
@@ -99,7 +143,7 @@ export default function FeedScreen() {
               </ScrollView>
             </View>
             <SectionLabel>
-              {`${events.length} ${events.length === 1 ? 'evento encontrado' : 'eventos encontrados'}`}
+              {`${filteredEvents.length} ${filteredEvents.length === 1 ? 'evento encontrado' : 'eventos encontrados'}`}
             </SectionLabel>
           </View>
         }
