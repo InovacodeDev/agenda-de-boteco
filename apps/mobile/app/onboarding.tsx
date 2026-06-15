@@ -8,7 +8,7 @@ import { Screen } from '@/components/layout/Screen';
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import { Button } from '@/components/ui/Button';
 import { GuardedPressable } from '@/components/ui/GuardedPressable';
-import { CITIES } from '@/data';
+import { useCitiesQuery } from '@/hooks/queries';
 import { useUserLocation } from '@/hooks/useUserLocation';
 import { usePreferencesStore } from '@/store/usePreferencesStore';
 import { colors } from '@/theme/colors';
@@ -36,6 +36,7 @@ export default function OnboardingScreen() {
   const setCity = usePreferencesStore((state) => state.setCity);
   const completeOnboarding = usePreferencesStore((state) => state.completeOnboarding);
   const { request, status } = useUserLocation();
+  const { data: cities } = useCitiesQuery();
 
   const chooseCity = (cityId: string) => {
     setCity(cityId);
@@ -44,8 +45,8 @@ export default function OnboardingScreen() {
 
   const useMyLocation = async () => {
     const coords = await request();
-    if (coords) {
-      chooseCity(nearestCity(coords, CITIES).id);
+    if (coords && cities && cities.length > 0) {
+      chooseCity(nearestCity(coords, cities).id);
     }
   };
 
@@ -96,7 +97,7 @@ export default function OnboardingScreen() {
             ou escolha sua cidade
           </Text>
           <View className="flex-row flex-wrap gap-3">
-            {CITIES.map((city) => (
+            {(cities ?? []).map((city) => (
               <GuardedPressable
                 key={city.id}
                 accessibilityRole="button"

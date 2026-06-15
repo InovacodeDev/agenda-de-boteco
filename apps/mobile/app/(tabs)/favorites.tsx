@@ -1,7 +1,7 @@
 import { FlashList } from '@shopify/flash-list';
 import { useRouter } from 'expo-router';
 import { Heart } from 'lucide-react-native';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import { EstablishmentCard } from '@/components/establishment/EstablishmentCard';
 import { EventCard } from '@/components/event/EventCard';
@@ -9,9 +9,9 @@ import { Screen } from '@/components/layout/Screen';
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { SegmentedTabs } from '@/components/ui/SegmentedTabs';
-import { ESTABLISHMENTS, EVENTS } from '@/data';
-import { ESTABLISHMENTS_BY_ID, musicStylesForEvent } from '@/data/lookup';
+import { indexById, musicStylesForEvent } from '@/data/lookup';
 import type { Establishment, Event } from '@/data/schemas';
+import { useEstablishmentsQuery, useEventsQuery, useMusicStylesQuery } from '@/hooks/queries';
 import { useFavoritesStore } from '@/store/useFavoritesStore';
 import { colors } from '@/theme/colors';
 import { View } from '@/tw';
@@ -19,14 +19,6 @@ import { View } from '@/tw';
 // Espaçamentos do layout original: eventos gap-4, bares gap-3
 const EventSeparator = () => <View className="h-4" />;
 const EstablishmentSeparator = () => <View className="h-3" />;
-
-const renderFavoriteEvent = ({ item }: { item: Event }) => (
-  <EventCard
-    event={item}
-    establishment={ESTABLISHMENTS_BY_ID[item.establishment_id]}
-    styles={musicStylesForEvent(item)}
-  />
-);
 
 const renderFavoriteEstablishment = ({ item }: { item: Establishment }) => (
   <EstablishmentCard establishment={item} />
@@ -38,13 +30,43 @@ export default function FavoritesScreen() {
   const eventIds = useFavoritesStore((state) => state.eventIds);
   const establishmentIds = useFavoritesStore((state) => state.establishmentIds);
 
+  const { data: events } = useEventsQuery();
+  const { data: establishments } = useEstablishmentsQuery();
+  const { data: musicStyles } = useMusicStylesQuery();
+
+  const establishmentsById = useMemo(
+    () => indexById(establishments ?? []),
+    [establishments],
+  );
+  const stylesById = useMemo(() => indexById(musicStyles ?? []), [musicStyles]);
+
+  // Descarta eventos cujo estabelecimento ainda não chegou (queries têm
+  // latências distintas) ou foi removido no servidor — EventCard exige
+  // `establishment` e quebraria com uma referência pendente.
   const favoriteEvents = useMemo(
-    () => EVENTS.filter((event) => eventIds.includes(event.id)),
-    [eventIds],
+    () =>
+      (events ?? []).filter(
+        (event) => eventIds.includes(event.id) && establishmentsById[event.establishment_id],
+      ),
+    [events, eventIds, establishmentsById],
   );
   const favoriteEstablishments = useMemo(
-    () => ESTABLISHMENTS.filter((establishment) => establishmentIds.includes(establishment.id)),
-    [establishmentIds],
+    () =>
+      (establishments ?? []).filter((establishment) =>
+        establishmentIds.includes(establishment.id),
+      ),
+    [establishments, establishmentIds],
+  );
+
+  const renderFavoriteEvent = useCallback(
+    ({ item }: { item: Event }) => (
+      <EventCard
+        event={item}
+        establishment={establishmentsById[item.establishment_id]}
+        styles={musicStylesForEvent(item, stylesById)}
+      />
+    ),
+    [establishmentsById, stylesById],
   );
 
   const showingEvents = activeTab === 0;

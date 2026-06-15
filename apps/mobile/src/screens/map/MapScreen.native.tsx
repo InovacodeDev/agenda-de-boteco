@@ -7,9 +7,9 @@ import MapView, { Marker, PROVIDER_DEFAULT, PROVIDER_GOOGLE, type Region } from 
 import { EstablishmentCard } from '@/components/establishment/EstablishmentCard';
 import { Screen } from '@/components/layout/Screen';
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
-import { ESTABLISHMENTS } from '@/data';
 import { cityByIdOrDefault } from '@/data/lookup';
 import type { Establishment } from '@/data/schemas';
+import { useCitiesQuery, useEstablishmentsQuery } from '@/hooks/queries';
 import { useUserLocation } from '@/hooks/useUserLocation';
 import { usePreferencesStore } from '@/store/usePreferencesStore';
 import { colors } from '@/theme/colors';
@@ -58,21 +58,23 @@ export function MapScreen() {
     request();
   }, [request]);
 
-  const city = cityByIdOrDefault(cityId);
-  const centerLat = coords?.lat ?? city.lat;
-  const centerLng = coords?.lng ?? city.lng;
+  const { data: cities } = useCitiesQuery();
+  const city = cityByIdOrDefault(cities ?? [], cityId);
+  const centerLat = coords?.lat ?? city?.lat ?? 0;
+  const centerLng = coords?.lng ?? city?.lng ?? 0;
   const center: LatLng = { lat: centerLat, lng: centerLng };
+
+  const { data: cityEstablishments } = useEstablishmentsQuery(city?.id);
 
   // bares da cidade ordenados por distância de onde o usuário está
   const establishments = useMemo(() => {
     const reference: LatLng = { lat: centerLat, lng: centerLng };
-    const inCity = ESTABLISHMENTS.filter((establishment) => establishment.city_id === city.id);
-    return [...inCity].sort(
+    return [...(cityEstablishments ?? [])].sort(
       (a, b) =>
         haversineDistanceKm(reference, { lat: a.lat, lng: a.lng }) -
         haversineDistanceKm(reference, { lat: b.lat, lng: b.lng }),
     );
-  }, [city.id, centerLat, centerLng]);
+  }, [cityEstablishments, centerLat, centerLng]);
 
   const focusEstablishment = (index: number) => {
     setSelectedIndex(index);

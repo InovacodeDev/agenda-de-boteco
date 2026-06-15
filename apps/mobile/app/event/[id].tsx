@@ -9,6 +9,7 @@ import {
   Store,
   Ticket,
 } from 'lucide-react-native';
+import { useMemo } from 'react';
 import { Linking, Share, StyleSheet } from 'react-native';
 
 import { Screen } from '@/components/layout/Screen';
@@ -18,7 +19,12 @@ import { CircleIconButton } from '@/components/ui/CircleIconButton';
 import { GradientBadge } from '@/components/ui/GradientBadge';
 import { InfoCard } from '@/components/ui/InfoCard';
 import { SectionLabel } from '@/components/ui/SectionLabel';
-import { ESTABLISHMENTS_BY_ID, EVENTS_BY_ID, musicStylesForEvent } from '@/data/lookup';
+import { indexById, musicStylesForEvent } from '@/data/lookup';
+import {
+  useEstablishmentQuery,
+  useEventQuery,
+  useMusicStylesQuery,
+} from '@/hooks/queries';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useFavoritesStore } from '@/store/useFavoritesStore';
 import { colors } from '@/theme/colors';
@@ -26,20 +32,40 @@ import { headingLetterSpacing } from '@/theme/typography';
 import { Image, ScrollView, Text, View } from '@/tw';
 import { formatRelativeDay, formatTime } from '@/utils/dates';
 import { formatPrice } from '@/utils/format';
-import { buildDirectionsUrl } from '@/utils/links';
+import { buildDirectionsUrl, buildEventShareUrl } from '@/utils/links';
 
 export default function EventDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const requireAuth = useRequireAuth();
 
-  const event = id ? EVENTS_BY_ID[id] : undefined;
-  const establishment = event ? ESTABLISHMENTS_BY_ID[event.establishment_id] : undefined;
+  const eventQuery = useEventQuery(id ?? '');
+  const event = eventQuery.data;
+  const establishmentQuery = useEstablishmentQuery(event?.establishment_id ?? '');
+  const establishment = establishmentQuery.data;
+  const { data: musicStyles } = useMusicStylesQuery();
+  const stylesById = useMemo(() => indexById(musicStyles ?? []), [musicStyles]);
 
   const isFavorite = useFavoritesStore((state) =>
     event ? state.eventIds.includes(event.id) : false,
   );
   const toggleEvent = useFavoritesStore((state) => state.toggleEvent);
+
+  // Não mostrar "não encontrado" enquanto carrega: só quando as queries
+  // terminaram e o evento (ou seu estabelecimento) realmente não existe.
+  const isLoading =
+    eventQuery.isLoading || (!!event && establishmentQuery.isLoading);
+
+  if (isLoading) {
+    return (
+      <Screen>
+        <ScreenHeader showBack />
+        <View className="flex-1 items-center justify-center">
+          <Text className="font-body text-muted-foreground text-[14px]">Carregando…</Text>
+        </View>
+      </Screen>
+    );
+  }
 
   if (!event || !establishment) {
     return (
@@ -54,7 +80,7 @@ export default function EventDetailScreen() {
     );
   }
 
-  const styles = musicStylesForEvent(event);
+  const styles = musicStylesForEvent(event, stylesById);
 
   const badge = event.courtesy
     ? { label: 'Cortesia', text: event.courtesy }
@@ -63,9 +89,13 @@ export default function EventDetailScreen() {
       : null;
 
   const share = () => {
-    Share.share({
-      message: `${event.name} — ${event.attraction} no ${establishment.name}. Bora?`,
-    });
+    const url = buildEventShareUrl(
+      { slugOrId: event.id },
+      process.env.EXPO_PUBLIC_SHARE_BASE_URL,
+    );
+    const text = `${event.name} — ${event.attraction} no ${establishment.name}. Bora?`;
+    // No Android o campo `url` é ignorado, por isso a URL vai também no message.
+    Share.share({ message: `${text}\n${url}`, url });
   };
 
   return (

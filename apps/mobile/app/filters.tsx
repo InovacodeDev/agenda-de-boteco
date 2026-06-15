@@ -10,7 +10,7 @@ import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
 import { GuardedPressable } from '@/components/ui/GuardedPressable';
-import { CITIES, MUSIC_STYLES } from '@/data';
+import { useCitiesQuery, useMusicStylesQuery } from '@/hooks/queries';
 import { useFiltersStore } from '@/store/useFiltersStore';
 import { usePreferencesStore } from '@/store/usePreferencesStore';
 import { colors } from '@/theme/colors';
@@ -35,6 +35,8 @@ export default function FiltersSheet() {
   const replaceFilters = useFiltersStore((state) => state.replaceFilters);
   const cityId = usePreferencesStore((state) => state.cityId);
   const setCity = usePreferencesStore((state) => state.setCity);
+  const { data: cities } = useCitiesQuery();
+  const { data: musicStyles } = useMusicStylesQuery();
 
   // estado provisório: só aplica ao tocar "Aplicar filtros"
   const [draft, setDraft] = useState<EventFilters>(storedFilters);
@@ -92,7 +94,7 @@ export default function FiltersSheet() {
 
         <FilterSection title="Cidade">
           <View className="flex-row flex-wrap gap-2">
-            {CITIES.map((city) => (
+            {(cities ?? []).map((city) => (
               <Chip
                 key={city.id}
                 label={city.name}
@@ -114,7 +116,7 @@ export default function FiltersSheet() {
 
         <FilterSection title="Estilo musical">
           <View className="flex-row flex-wrap gap-2">
-            {MUSIC_STYLES.map((style) => (
+            {(musicStyles ?? []).map((style) => (
               <Chip
                 key={style.id}
                 label={`${style.emoji} ${style.name}`}

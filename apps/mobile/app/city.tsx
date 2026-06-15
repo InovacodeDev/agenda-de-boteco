@@ -5,7 +5,7 @@ import { Screen } from '@/components/layout/Screen';
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import { Button } from '@/components/ui/Button';
 import { GuardedPressable } from '@/components/ui/GuardedPressable';
-import { CITIES } from '@/data';
+import { useCitiesQuery } from '@/hooks/queries';
 import { useUserLocation } from '@/hooks/useUserLocation';
 import { usePreferencesStore } from '@/store/usePreferencesStore';
 import { colors } from '@/theme/colors';
@@ -17,6 +17,7 @@ export default function CityScreen() {
   const cityId = usePreferencesStore((state) => state.cityId);
   const setCity = usePreferencesStore((state) => state.setCity);
   const { request, status } = useUserLocation();
+  const { data: cities } = useCitiesQuery();
 
   const selectCity = (id: string) => {
     setCity(id);
@@ -25,8 +26,8 @@ export default function CityScreen() {
 
   const useMyLocation = async () => {
     const coords = await request();
-    if (coords) {
-      selectCity(nearestCity(coords, CITIES).id);
+    if (coords && cities && cities.length > 0) {
+      selectCity(nearestCity(coords, cities).id);
     }
   };
 
@@ -49,7 +50,7 @@ export default function CityScreen() {
           </Text>
         ) : null}
         <View className="gap-3">
-          {CITIES.map((city) => {
+          {(cities ?? []).map((city) => {
             const selected = city.id === cityId;
             return (
               <GuardedPressable

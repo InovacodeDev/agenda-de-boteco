@@ -5,6 +5,7 @@ import { Screen } from '@/components/layout/Screen';
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import { Button } from '@/components/ui/Button';
 import { cityByIdOrDefault } from '@/data/lookup';
+import { useCitiesQuery } from '@/hooks/queries';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useFavoritesStore } from '@/store/useFavoritesStore';
 import { usePreferencesStore } from '@/store/usePreferencesStore';
@@ -45,7 +46,8 @@ function SignedInProfile() {
   const totalFavorites = eventIds.length + establishmentIds.length;
 
   const cityId = usePreferencesStore((state) => state.cityId);
-  const city = cityByIdOrDefault(cityId);
+  const { data: cities } = useCitiesQuery();
+  const city = cityByIdOrDefault(cities ?? [], cityId);
 
   const name = user?.name || 'Você';
   const email = user?.email || '';
@@ -76,7 +78,7 @@ function SignedInProfile() {
         </View>
         <View className="bg-card flex-1 items-center justify-center gap-1 rounded-2xl p-4">
           <Text className="font-heading text-foreground text-[20px]" numberOfLines={1}>
-            {city.name}
+            {city?.name ?? '…'}
           </Text>
           <Text className="font-body text-muted-foreground text-[12px]">Cidade</Text>
         </View>
