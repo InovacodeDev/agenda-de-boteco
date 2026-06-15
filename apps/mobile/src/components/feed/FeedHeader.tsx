@@ -1,8 +1,8 @@
 import brandLogo from '@assets/logo.png';
 import { useRouter } from 'expo-router';
-import { MapPin } from 'lucide-react-native';
 
 import { GuardedPressable } from '@/components/ui/GuardedPressable';
+import { Icon } from '@/components/ui/Icon';
 import type { City } from '@/data/schemas';
 import { colors } from '@/theme/colors';
 import { Image, Text, View } from '@/tw';
@@ -28,7 +28,7 @@ export function FeedHeader({ city }: FeedHeaderProps) {
         onPress={() => router.push('/city')}
         className="bg-surface-elevated h-9 flex-row items-center gap-1.5 rounded-full px-3 active:opacity-80"
       >
-        <MapPin color={colors.primary} size={14} />
+        <Icon name="location-dot" color={colors.primary} size={14} />
         <Text className="font-body-semibold text-foreground text-[13px]">{city.name}</Text>
         <Text className="font-body text-muted-foreground text-[13px]">/{city.uf}</Text>
       </GuardedPressable>

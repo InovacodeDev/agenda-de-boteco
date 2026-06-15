@@ -1,10 +1,10 @@
 import { useRouter } from 'expo-router';
-import { Check, MapPin } from 'lucide-react-native';
 
 import { Screen } from '@/components/layout/Screen';
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import { Button } from '@/components/ui/Button';
 import { GuardedPressable } from '@/components/ui/GuardedPressable';
+import { Icon } from '@/components/ui/Icon';
 import { useCitiesQuery } from '@/hooks/queries';
 import { useUserLocation } from '@/hooks/useUserLocation';
 import { usePreferencesStore } from '@/store/usePreferencesStore';
@@ -41,7 +41,7 @@ export default function CityScreen() {
           fullWidth
           className="border-foreground/50"
           style={{ flex: 1, backgroundColor: colors.background, borderWidth: 0.5 }}
-          icon={<MapPin color={colors.foreground} size={16} />}
+          icon={<Icon name="location-dot" color={colors.foreground} size={16} />}
           onPress={useMyLocation}
         />
         {status === 'denied' ? (
@@ -66,7 +66,7 @@ export default function CityScreen() {
                   </Text>
                   <Text className="font-body text-muted-foreground text-[12px]">{city.uf}</Text>
                 </View>
-                {selected ? <Check color={colors.primary} size={18} /> : null}
+                {selected ? <Icon name="check" color={colors.primary} size={18} /> : null}
               </GuardedPressable>
             );
           })}

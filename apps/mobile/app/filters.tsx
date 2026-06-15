@@ -1,5 +1,4 @@
 import { useRouter } from 'expo-router';
-import { X } from 'lucide-react-native';
 import { useState } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -10,6 +9,7 @@ import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
 import { GuardedPressable } from '@/components/ui/GuardedPressable';
+import { Icon } from '@/components/ui/Icon';
 import { useCitiesQuery, useMusicStylesQuery } from '@/hooks/queries';
 import { useFiltersStore } from '@/store/useFiltersStore';
 import { usePreferencesStore } from '@/store/usePreferencesStore';
@@ -74,7 +74,7 @@ export default function FiltersSheet() {
             hitSlop={8}
             className="active:opacity-80"
           >
-            <X color={colors.mutedForeground} size={20} />
+            <Icon name="xmark" color={colors.mutedForeground} size={20} />
           </GuardedPressable>
         }
       />

@@ -1,10 +1,10 @@
 import brandLogo from '@assets/logo.png';
 import { useRouter } from 'expo-router';
-import { ArrowLeft } from 'lucide-react-native';
 import type { ReactNode } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { CircleIconButton } from '@/components/ui/CircleIconButton';
+import { Icon } from '@/components/ui/Icon';
 import { colors } from '@/theme/colors';
 import { headingLetterSpacing } from '@/theme/typography';
 import { Image, Text, View } from '@/tw';
@@ -46,7 +46,7 @@ export function ScreenHeader({
       {showBack ? (
         <CircleIconButton
           accessibilityLabel="Voltar"
-          icon={<ArrowLeft color={colors.foreground} size={20} />}
+          icon={<Icon name="arrow-left" color={colors.foreground} size={20} />}
           onPress={() => router.back()}
           className={overlay ? undefined : 'bg-surface'}
         />
