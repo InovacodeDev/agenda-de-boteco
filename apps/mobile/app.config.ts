@@ -13,6 +13,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     supportsTablet: true,
     bundleIdentifier: 'com.agenda.boteco',
     config: {
+      usesNonExemptEncryption: false,
       googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY_IOS,
     },
   },
@@ -54,5 +55,10 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ],
   experiments: {
     typedRoutes: true,
+  },
+  extra: {
+    eas: {
+      projectId: process.env.EAS_PROJECT_ID,
+    },
   },
 });
