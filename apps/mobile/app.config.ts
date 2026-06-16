@@ -2,9 +2,12 @@ import type { ConfigContext, ExpoConfig } from 'expo/config';
 
 // Validação defensiva para garantir que chaves críticas não fiquem undefined em produção/preview
 const getEnvVar = (value: string | undefined, name: string): string => {
-  const isEasProduction = process.env.EAS_BUILD_PROFILE === 'production' || process.env.EAS_BUILD_PROFILE === 'preview';
+  const isEasProduction =
+    process.env.EAS_BUILD_PROFILE === 'production' || process.env.EAS_BUILD_PROFILE === 'preview';
   if (!value && isEasProduction) {
-    throw new Error(`[FALHA NO BUILD] A variável de ambiente obrigatória "${name}" não foi definida.`);
+    throw new Error(
+      `[FALHA NO BUILD] A variável de ambiente obrigatória "${name}" não foi definida.`,
+    );
   }
   return value || '';
 };
@@ -13,7 +16,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: 'Agenda de Boteco',
   slug: 'agenda-de-boteco',
-  version: '1.0.0',
+  version: '0.0.1',
   orientation: 'portrait',
   icon: './assets/icon.png',
   scheme: 'agenda-de-boteco',
@@ -64,7 +67,10 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     [
       'react-native-maps',
       {
-        iosGoogleMapsApiKey: getEnvVar(process.env.GOOGLE_MAPS_API_KEY_IOS, 'GOOGLE_MAPS_API_KEY_IOS'),
+        iosGoogleMapsApiKey: getEnvVar(
+          process.env.GOOGLE_MAPS_API_KEY_IOS,
+          'GOOGLE_MAPS_API_KEY_IOS',
+        ),
       },
     ],
   ],
