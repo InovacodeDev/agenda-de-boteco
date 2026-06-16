@@ -12,11 +12,7 @@ import { Icon } from '@/components/ui/Icon';
 import { InfoCard } from '@/components/ui/InfoCard';
 import { SectionLabel } from '@/components/ui/SectionLabel';
 import { indexById, musicStylesForEvent } from '@/data/lookup';
-import {
-  useEstablishmentQuery,
-  useEventQuery,
-  useMusicStylesQuery,
-} from '@/hooks/queries';
+import { useEstablishmentQuery, useEventQuery, useMusicStylesQuery } from '@/hooks/queries';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useFavoritesStore } from '@/store/useFavoritesStore';
 import { colors } from '@/theme/colors';
@@ -45,8 +41,7 @@ export default function EventDetailScreen() {
 
   // Não mostrar "não encontrado" enquanto carrega: só quando as queries
   // terminaram e o evento (ou seu estabelecimento) realmente não existe.
-  const isLoading =
-    eventQuery.isLoading || (!!event && establishmentQuery.isLoading);
+  const isLoading = eventQuery.isLoading || (!!event && establishmentQuery.isLoading);
 
   if (isLoading) {
     return (
@@ -68,7 +63,9 @@ export default function EventDetailScreen() {
             icon={<Icon name="circle-info" color={colors.mutedForeground} size={28} />}
             message="Você está sem internet no momento. Tente novamente quando reconectar."
             actionLabel="Tentar novamente"
-            onAction={() => { eventQuery.refetch(); }}
+            onAction={() => {
+              eventQuery.refetch();
+            }}
           />
         </View>
       </Screen>
@@ -97,10 +94,7 @@ export default function EventDetailScreen() {
       : null;
 
   const share = () => {
-    const url = buildEventShareUrl(
-      { slugOrId: event.id },
-      process.env.EXPO_PUBLIC_SHARE_BASE_URL,
-    );
+    const url = buildEventShareUrl({ slugOrId: event.id }, process.env.EXPO_PUBLIC_SHARE_BASE_URL);
     const text = `${event.name} — ${event.attraction} no ${establishment.name}. Bora?`;
     // No Android o campo `url` é ignorado, por isso a URL vai também no message.
     Share.share({ message: `${text}\n${url}`, url });
@@ -146,12 +140,21 @@ export default function EventDetailScreen() {
               <InfoCard
                 label="Data"
                 value={formatRelativeDay(event.starts_at)}
-                icon={<Icon name="calendar" variant="regular" color={colors.mutedForeground} size={13} />}
+                icon={
+                  <Icon
+                    name="calendar"
+                    variant="regular"
+                    color={colors.mutedForeground}
+                    size={13}
+                  />
+                }
               />
               <InfoCard
                 label="Horário"
                 value={formatTime(event.starts_at)}
-                icon={<Icon name="clock" variant="regular" color={colors.mutedForeground} size={13} />}
+                icon={
+                  <Icon name="clock" variant="regular" color={colors.mutedForeground} size={13} />
+                }
               />
             </View>
             <View className="flex-row gap-3">
@@ -203,6 +206,7 @@ export default function EventDetailScreen() {
           label="Ver estabelecimento"
           className="flex-1"
           icon={<Icon name="store" color={colors.primaryForeground} size={16} />}
+          style={{ backgroundColor: colors.primary }}
           onPress={() => router.push(`/establishment/${establishment.id}`)}
         />
       </View>

@@ -4,6 +4,7 @@ import { Linking, Share, StyleSheet } from 'react-native';
 
 import { AgendaItem } from '@/components/establishment/AgendaItem';
 import { MenuItemRow } from '@/components/establishment/MenuItemRow';
+import { UnderConstruction } from '@/components/feedback/UnderConstruction';
 import { Screen } from '@/components/layout/Screen';
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import { Button } from '@/components/ui/Button';
@@ -11,18 +12,19 @@ import { CircleIconButton } from '@/components/ui/CircleIconButton';
 import { Icon } from '@/components/ui/Icon';
 import { RatingStars } from '@/components/ui/RatingStars';
 import { SegmentedTabs } from '@/components/ui/SegmentedTabs';
+import { FEATURES } from '@/config/features';
 import { indexById, musicStylesForEvent } from '@/data/lookup';
-import { useEstablishmentQuery, useEventsByEstablishmentQuery, useMusicStylesQuery } from '@/hooks/queries';
+import {
+  useEstablishmentQuery,
+  useEventsByEstablishmentQuery,
+  useMusicStylesQuery,
+} from '@/hooks/queries';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useFavoritesStore } from '@/store/useFavoritesStore';
 import { colors } from '@/theme/colors';
 import { headingLetterSpacing } from '@/theme/typography';
 import { Image, ScrollView, Text, View } from '@/tw';
-import {
-  buildDirectionsUrl,
-  buildEstablishmentShareUrl,
-  buildWhatsAppUrl,
-} from '@/utils/links';
+import { buildDirectionsUrl, buildEstablishmentShareUrl, buildWhatsAppUrl } from '@/utils/links';
 
 const TABS = ['Sobre', 'Agenda', 'Cardápio', 'Reviews'];
 
@@ -44,7 +46,7 @@ function AboutCard({ label, value, icon }: AboutCardProps) {
   );
 }
 
-export default function EstablishmentDetailScreen() {
+function EstablishmentDetailContent() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const requireAuth = useRequireAuth();
   const [activeTab, setActiveTab] = useState(0);
@@ -157,7 +159,9 @@ export default function EstablishmentDetailScreen() {
               <AboutCard
                 label="Horário"
                 value={establishment.opening_hours}
-                icon={<Icon name="clock" variant="regular" color={colors.mutedForeground} size={13} />}
+                icon={
+                  <Icon name="clock" variant="regular" color={colors.mutedForeground} size={13} />
+                }
               />
               {establishment.instagram ? (
                 <AboutCard
@@ -217,7 +221,10 @@ export default function EstablishmentDetailScreen() {
         <Button
           label="WhatsApp"
           className="flex-1"
-          icon={<Icon name="comment" variant="regular" color={colors.primaryForeground} size={16} />}
+          icon={
+            <Icon name="comment" variant="regular" color={colors.primaryForeground} size={16} />
+          }
+          style={{ backgroundColor: colors.primary }}
           onPress={() => Linking.openURL(buildWhatsAppUrl(establishment.whatsapp))}
         />
         <Button
@@ -259,4 +266,18 @@ export default function EstablishmentDetailScreen() {
       />
     </Screen>
   );
+}
+
+export default function EstablishmentDetailScreen() {
+  if (!FEATURES.establishmentDetail) {
+    return (
+      <UnderConstruction
+        version="v2"
+        icon={<Icon name="store" color={colors.primary} size={36} />}
+        title="Os botecos estão se arrumando"
+        description='Em breve você explora cada bar por dentro: cardápio, fotos, agenda completa e aquele papo de "bora pra cá hoje?". Tá vindo na v2 — aguenta firme que a rodada tá chegando.'
+      />
+    );
+  }
+  return <EstablishmentDetailContent />;
 }

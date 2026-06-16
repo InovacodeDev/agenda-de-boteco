@@ -36,6 +36,7 @@ describe('iconMap', () => {
         'magnifying-glass',
         'music',
         'right-from-bracket',
+        'screwdriver-wrench',
         'share-nodes',
         'sliders',
         'star',
