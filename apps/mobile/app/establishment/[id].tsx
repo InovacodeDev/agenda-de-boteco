@@ -4,6 +4,7 @@ import { Linking, Share, StyleSheet } from 'react-native';
 
 import { AgendaItem } from '@/components/establishment/AgendaItem';
 import { MenuItemRow } from '@/components/establishment/MenuItemRow';
+import { UnderConstruction } from '@/components/feedback/UnderConstruction';
 import { Screen } from '@/components/layout/Screen';
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import { Button } from '@/components/ui/Button';
@@ -11,6 +12,7 @@ import { CircleIconButton } from '@/components/ui/CircleIconButton';
 import { Icon } from '@/components/ui/Icon';
 import { RatingStars } from '@/components/ui/RatingStars';
 import { SegmentedTabs } from '@/components/ui/SegmentedTabs';
+import { FEATURES } from '@/config/features';
 import { indexById, musicStylesForEvent } from '@/data/lookup';
 import {
   useEstablishmentQuery,
@@ -44,7 +46,7 @@ function AboutCard({ label, value, icon }: AboutCardProps) {
   );
 }
 
-export default function EstablishmentDetailScreen() {
+function EstablishmentDetailContent() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const requireAuth = useRequireAuth();
   const [activeTab, setActiveTab] = useState(0);
@@ -264,4 +266,18 @@ export default function EstablishmentDetailScreen() {
       />
     </Screen>
   );
+}
+
+export default function EstablishmentDetailScreen() {
+  if (!FEATURES.establishmentDetail) {
+    return (
+      <UnderConstruction
+        version="v2"
+        icon={<Icon name="store" color={colors.primary} size={36} />}
+        title="Os botecos estão se arrumando"
+        description='Em breve você explora cada bar por dentro: cardápio, fotos, agenda completa e aquele papo de "bora pra cá hoje?". Tá vindo na v2 — aguenta firme que a rodada tá chegando.'
+      />
+    );
+  }
+  return <EstablishmentDetailContent />;
 }

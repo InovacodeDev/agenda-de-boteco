@@ -26,6 +26,7 @@ import { faLocationDot } from '@fortawesome/free-solid-svg-icons/faLocationDot';
 import { faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons/faMagnifyingGlass';
 import { faMusic } from '@fortawesome/free-solid-svg-icons/faMusic';
 import { faRightFromBracket } from '@fortawesome/free-solid-svg-icons/faRightFromBracket';
+import { faScrewdriverWrench } from '@fortawesome/free-solid-svg-icons/faScrewdriverWrench';
 import { faShareNodes } from '@fortawesome/free-solid-svg-icons/faShareNodes';
 import { faSliders } from '@fortawesome/free-solid-svg-icons/faSliders';
 import { faStar } from '@fortawesome/free-solid-svg-icons/faStar';
@@ -63,6 +64,7 @@ const ICON_MAP = {
   'magnifying-glass': { solid: faMagnifyingGlass },
   'music': { solid: faMusic },
   'right-from-bracket': { solid: faRightFromBracket },
+  'screwdriver-wrench': { solid: faScrewdriverWrench },
   'share-nodes': { solid: faShareNodes },
   'sliders': { solid: faSliders },
   'star': { solid: faStar, regular: faStarRegular },
