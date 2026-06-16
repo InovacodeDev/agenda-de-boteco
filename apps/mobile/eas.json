@@ -18,11 +18,11 @@
       "environment": "production"
     },
     "alfa": {
-      "extends": "production",
-      "environment": "development"
+      "extends": "preview",
+      "environment": "preview"
     },
     "beta": {
-      "extends": "production",
+      "extends": "preview",
       "environment": "preview"
     }
   },

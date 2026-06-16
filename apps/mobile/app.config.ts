@@ -1,5 +1,14 @@
 import type { ConfigContext, ExpoConfig } from 'expo/config';
 
+// Validação defensiva para garantir que chaves críticas não fiquem undefined em produção/preview
+const getEnvVar = (value: string | undefined, name: string): string => {
+  const isEasProduction = process.env.EAS_BUILD_PROFILE === 'production' || process.env.EAS_BUILD_PROFILE === 'preview';
+  if (!value && isEasProduction) {
+    throw new Error(`[FALHA NO BUILD] A variável de ambiente obrigatória "${name}" não foi definida.`);
+  }
+  return value || '';
+};
+
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: 'Agenda de Boteco',
@@ -9,12 +18,13 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   icon: './assets/icon.png',
   scheme: 'agenda-de-boteco',
   userInterfaceStyle: 'dark',
+  owner: 'inovacode',
   ios: {
     supportsTablet: true,
     bundleIdentifier: 'com.agenda.boteco',
     config: {
       usesNonExemptEncryption: false,
-      googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY_IOS,
+      googleMapsApiKey: getEnvVar(process.env.GOOGLE_MAPS_API_KEY_IOS, 'GOOGLE_MAPS_API_KEY_IOS'),
     },
   },
   android: {
@@ -25,7 +35,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     package: 'com.agenda.boteco',
     config: {
       googleMaps: {
-        apiKey: process.env.GOOGLE_MAPS_API_KEY_ANDROID,
+        apiKey: getEnvVar(process.env.GOOGLE_MAPS_API_KEY_ANDROID, 'GOOGLE_MAPS_API_KEY_ANDROID'),
       },
     },
   },
@@ -58,7 +68,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   extra: {
     eas: {
-      projectId: process.env.EAS_PROJECT_ID,
+      projectId: '14d06c33-6b50-40ef-81b6-ab4a404b3e7f',
     },
   },
 });

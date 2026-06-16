@@ -62,6 +62,7 @@ graph TD
 Estas edições eliminam três causas conhecidas de "vai e vem". Faça **antes** do primeiro build.
 
 1. **Export Compliance (iOS) — sem isso o build trava em "Missing Compliance" e não chega ao TestFlight sozinho.**
+
    ```ts
    ios: {
      supportsTablet: true,
@@ -72,9 +73,11 @@ Estas edições eliminam três causas conhecidas de "vai e vem". Faça **antes**
      },
    },
    ```
+
    > `false` é uma **declaração legal vinculante** (lei de exportação dos EUA). É legítimo aqui porque não há criptografia proprietária — apenas HTTPS via `@supabase/supabase-js` e Google Maps.
 
 2. **`projectId` do EAS** — gravado por `eas init` (passo 5.1.2). Como **não existe `app.json`**, o `projectId` precisa ser persistido **à mão** no `return` do `app.config.ts`:
+
    ```ts
    extra: {
      eas: { projectId: '<uuid-retornado-pelo-eas-init>' },
@@ -141,6 +144,7 @@ eas build --platform all --profile production
 ### 5.2.1 — Ajustes de identidade no app (binário)
 
 1. **Splash dark explícito** — preferir `splash-icon.png` (1024×1024 com alfa, já existe) em vez de `logo.png` (sem alfa). Definir bloco `dark` para garantir `#0F0F0F`:
+
    ```ts
    ['expo-splash-screen', {
      backgroundColor: '#0F0F0F',
@@ -150,7 +154,9 @@ eas build --platform all --profile production
      dark: { backgroundColor: '#0F0F0F', image: './assets/splash-icon.png' },
    }],
    ```
+
 2. **Adaptive icon Android completo** — os assets `android-icon-background.png` e `android-icon-monochrome.png` existem mas não estão referenciados:
+
    ```ts
    adaptiveIcon: {
      foregroundImage: './assets/android-icon-foreground.png',
@@ -158,14 +164,17 @@ eas build --platform all --profile production
      monochromeImage: './assets/android-icon-monochrome.png', // themed icons Android 13+
    },
    ```
+
    > **Atenção ao foreground:** o `android-icon-foreground.png` atual (1024×1024) está **sem alfa** (`hasAlpha: no`). O foreground adaptive **precisa** de margem transparente — o logo deve caber no **círculo central de 66 dp** (≈48–66 dp), pois os 18 dp de cada borda são cortados por máscaras dos fabricantes (Pixel squircle, Samsung círculo). Reexporte o foreground **com alfa** e a arte dentro da safe zone, senão há risco de clipping/fundo sólido.
 
 ### 5.2.2 — Ícone do app iOS (binário)
 
 - `assets/icon.png`: **1024×1024 PNG, totalmente opaco, sem canal alfa**, quadrado, sem cantos arredondados nem sombra (o sistema mascara). O `icon.png` atual já está correto (`hasAlpha: no`). Valide sempre antes do build:
+
   ```bash
   sips -g hasAlpha apps/mobile/assets/icon.png   # deve retornar "hasAlpha: no"
   ```
+
   > **ITMS-90717** ("large app icon can't be transparent / alpha channel") é a rejeição clássica — qualquer alfa residual (borda de 1 px, "Transparency" marcada no editor) derruba o upload.
 
 ### 5.2.3 — Assets de listagem (manuais nos consoles)
@@ -194,9 +203,11 @@ eas build --platform all --profile production
 4. **Privacy Policy URL** (a de 5.1.5) em ASC > App Information.
 5. **Categoria** coerente: *Food & Drink* ou *Lifestyle*.
 6. **Submeter para TestFlight:**
+
    ```bash
    eas submit -p ios --profile alfa --latest
    ```
+
    - Build processa no ASC (5–30 min). **Internos** (até 100, com role no ASC) recebem sem review. **Externos** (até 10.000) passam por Beta App Review leve no 1º build (24–48 h).
    - Builds TestFlight **expiram em 90 dias** a partir do upload de cada build.
 
@@ -206,10 +217,12 @@ eas build --platform all --profile production
 
 1. **Criar o app** em Play Console > Create app (nome, idioma, tipo, gratuito). O **package** (`com.agenda.boteco`) é travado no **1º upload do AAB** e é imutável — confirmar antes.
 2. **1º upload MANUAL do AAB é obrigatório** (limitação da API do Google). Só depois `eas submit` automatiza:
+
    ```bash
    # depois do 1º upload manual em Internal testing:
    eas submit -p android --profile alfa --latest   # track 'internal'
    ```
+
 3. **Service Account** (para `eas submit`): Google Cloud > Service Accounts > criar + chave JSON → habilitar *Google Play Android Developer API* → Play Console > Users and permissions > convidar o e-mail do SA com permissão de **release no track internal**. Ativação pode levar ~24 h. **Nunca commitar o JSON** (em CI use `eas env:create --type file --visibility secret`, não o legado `eas secret:create`).
 4. **Prominent disclosure de localização (in-app):** o Google exige um aviso **dentro do app, antes do prompt do SO**, explicando a coleta e a finalidade, com opção de recusar. **A string do `expo-location` (texto do prompt do SO) NÃO substitui isso.** Esta é uma pendência de implementação se ainda não existir.
 5. **App content** (todos obrigatórios para publicar):
@@ -225,6 +238,7 @@ eas build --platform all --profile production
 
 - **iOS:** ASC > aba App Store > versão > **Submit for Review**.
 - **Android:** Play Console > Testing > Internal testing > **Promote release** > Production (não exige re-upload nem novo versionCode). Ou:
+
   ```bash
   eas submit -p android --profile production   # track 'production'
   ```
@@ -322,17 +336,17 @@ A Fase 5 só é considerada finalizada quando:
 
 ## 🔗 Fontes oficiais (auditadas)
 
-- Expo SDK 56 — config do app: https://docs.expo.dev/versions/v56.0.0/config/app/
-- EAS submit (iOS): https://docs.expo.dev/submit/ios/ · (Android): https://docs.expo.dev/submit/android/
-- EAS app versions (`appVersionSource: remote`): https://docs.expo.dev/build-reference/app-versions/
-- EAS auto-submit: https://docs.expo.dev/build/automate-submissions/
-- EAS credenciais gerenciadas: https://docs.expo.dev/app-signing/managed-credentials/
-- Monorepos no EAS: https://docs.expo.dev/build-reference/build-with-monorepos/
-- Apple — Export Compliance: https://developer.apple.com/documentation/bundleresources/information-property-list/itsappusesnonexemptencryption
-- Apple — Privacy Manifest (12/02/2025): https://developer.apple.com/news/?id=pvszzano
-- Apple — novo Age Rating (31/01/2026): https://developer.apple.com/news/?id=ks775ehf
-- Apple — especificação de screenshots: https://developer.apple.com/help/app-store-connect/reference/screenshot-specifications/
-- Google — target SDK: https://developer.android.com/google/play/requirements/target-sdk
-- Google — Closed testing 12 testers/14 dias: https://support.google.com/googleplay/android-developer/answer/14151465
-- Google — Data safety: https://support.google.com/googleplay/android-developer/answer/10787469
-- Google — assets de listagem: https://support.google.com/googleplay/android-developer/answer/9866151
+- Expo SDK 56 — config do app: <https://docs.expo.dev/versions/v56.0.0/config/app/>
+- EAS submit (iOS): <https://docs.expo.dev/submit/ios/> · (Android): <https://docs.expo.dev/submit/android/>
+- EAS app versions (`appVersionSource: remote`): <https://docs.expo.dev/build-reference/app-versions/>
+- EAS auto-submit: <https://docs.expo.dev/build/automate-submissions/>
+- EAS credenciais gerenciadas: <https://docs.expo.dev/app-signing/managed-credentials/>
+- Monorepos no EAS: <https://docs.expo.dev/build-reference/build-with-monorepos/>
+- Apple — Export Compliance: <https://developer.apple.com/documentation/bundleresources/information-property-list/itsappusesnonexemptencryption>
+- Apple — Privacy Manifest (12/02/2025): <https://developer.apple.com/news/?id=pvszzano>
+- Apple — novo Age Rating (31/01/2026): <https://developer.apple.com/news/?id=ks775ehf>
+- Apple — especificação de screenshots: <https://developer.apple.com/help/app-store-connect/reference/screenshot-specifications/>
+- Google — target SDK: <https://developer.android.com/google/play/requirements/target-sdk>
+- Google — Closed testing 12 testers/14 dias: <https://support.google.com/googleplay/android-developer/answer/14151465>
+- Google — Data safety: <https://support.google.com/googleplay/android-developer/answer/10787469>
+- Google — assets de listagem: <https://support.google.com/googleplay/android-developer/answer/9866151>

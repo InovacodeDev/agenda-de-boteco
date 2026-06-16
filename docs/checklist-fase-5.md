@@ -18,21 +18,25 @@ Todos os comandos `eas` rodam com `cwd` em `apps/mobile`.
 > Setup completo em [deploy-automatizado-fase-5.md](file:///Users/titorm/git/agenda-de-boteco/docs/deploy-automatizado-fase-5.md). Depois disso, `git push` em `alfa`/`beta`/`release` publica sozinho.
 
 **GitHub → Settings → Secrets and variables → Actions:**
+
 - [ ] **Secret** `EXPO_TOKEN` (gerado em expo.dev → Access Tokens). Único segredo.
 - [ ] **Variable** `EAS_PROJECT_ID` (do `eas init`).
 - [ ] **Variable** `ASC_APP_ID` (Apple ID do app no ASC).
 
 **Credenciais no EAS (`eas credentials`, tudo gerenciado — nada no git):**
+
 - [ ] iOS: Distribution Cert + Provisioning Profile + ASC API Key (`.p8`).
 - [ ] Android: Keystore (backup!) + Google Service Account Key.
 
 **Env vars do app no EAS** (`eas env:create`, por environment):
+
 - [ ] `development` (canal alfa), `preview` (canal beta), `production` (canal release).
   - `EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_KEY` (sensitive), `GOOGLE_MAPS_API_KEY_IOS`/`_ANDROID` (sensitive), `EXPO_PUBLIC_SHARE_BASE_URL`.
 - [ ] `eas env:list --environment production` confere os valores.
 - [ ] **Nada** de `.env`, JSON de Service Account ou keystore commitado.
 
 **Antes do 1º deploy automático:**
+
 - [ ] 1º upload **manual** do AAB no Play Console (limitação da API Google).
 - [ ] `git push alfa` valida o pipeline ponta a ponta (verify → deploy → TestFlight/Internal).
 
@@ -50,12 +54,14 @@ Todos os comandos `eas` rodam com `cwd` em `apps/mobile`.
 ## T5.2 — Identidade de Loja (8h)
 
 **No binário (`app.config.ts`):**
+
 - [ ] Splash dark com `splash-icon.png` + bloco `dark` (#0F0F0F).
 - [ ] `adaptiveIcon.monochromeImage` referenciado.
 - [ ] `android-icon-foreground.png` reexportado **com alfa** e arte dentro do círculo de 66 dp.
 - [ ] `sips -g hasAlpha apps/mobile/assets/icon.png` → **`hasAlpha: no`** (evita ITMS-90717).
 
 **Listagem (manual nos consoles — `eas submit` NÃO sobe estes):**
+
 - [ ] Ícone Play **512×512 PNG 32-bit**, ≤ 1024 KB.
 - [ ] Feature graphic Play **1024×500**, PNG 24-bit **sem alfa** (ou JPEG).
 - [ ] Screenshots **iPhone 6.9"** (dimensão confirmada no media manager do ASC), tema dark, app em uso.
@@ -65,6 +71,7 @@ Todos os comandos `eas` rodam com `cwd` em `apps/mobile`.
 ## T5.3 — Submissão (12h)
 
 **iOS — App Store Connect:**
+
 - [ ] App criado (Bundle ID `com.agenda.boteco`, PT-BR, nome ≤ 30 chars) — ou auto-criado via `eas submit`.
 - [ ] App Privacy: Precise Location / App Functionality / Not tracking / Linked = **Yes** (dados sob `auth.uid()`).
 - [ ] **Age Rating (novo sistema)** preenchido — álcool declarado honestamente (≈16+).
@@ -72,6 +79,7 @@ Todos os comandos `eas` rodam com `cwd` em `apps/mobile`.
 - [ ] `eas submit -p ios --profile alfa --latest` → build **ativo no TestFlight** (sem "Missing Compliance").
 
 **Android — Play Console:**
+
 - [ ] App criado; **1º upload MANUAL do AAB** feito (trava o package).
 - [ ] Service Account JSON criado, API habilitada, permissão de release no track internal (≈24 h p/ ativar).
 - [ ] `eas submit -p android --profile alfa --latest` → build no **Internal testing**.
@@ -79,6 +87,7 @@ Todos os comandos `eas` rodam com `cwd` em `apps/mobile`.
 - [ ] **Pre-launch report** sem crashes bloqueantes.
 
 **Promoção → Produção:**
+
 - [ ] iOS: ASC > App Store > **Submit for Review**.
 - [ ] Android: **Closed testing ≥ 12 testers por 14 dias** concluído *se conta pessoal pós-13/11/2023* → depois Promote para Production.
 
