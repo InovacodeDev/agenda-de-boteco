@@ -12,17 +12,17 @@ import { Icon } from '@/components/ui/Icon';
 import { RatingStars } from '@/components/ui/RatingStars';
 import { SegmentedTabs } from '@/components/ui/SegmentedTabs';
 import { indexById, musicStylesForEvent } from '@/data/lookup';
-import { useEstablishmentQuery, useEventsByEstablishmentQuery, useMusicStylesQuery } from '@/hooks/queries';
+import {
+  useEstablishmentQuery,
+  useEventsByEstablishmentQuery,
+  useMusicStylesQuery,
+} from '@/hooks/queries';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useFavoritesStore } from '@/store/useFavoritesStore';
 import { colors } from '@/theme/colors';
 import { headingLetterSpacing } from '@/theme/typography';
 import { Image, ScrollView, Text, View } from '@/tw';
-import {
-  buildDirectionsUrl,
-  buildEstablishmentShareUrl,
-  buildWhatsAppUrl,
-} from '@/utils/links';
+import { buildDirectionsUrl, buildEstablishmentShareUrl, buildWhatsAppUrl } from '@/utils/links';
 
 const TABS = ['Sobre', 'Agenda', 'Cardápio', 'Reviews'];
 
@@ -157,7 +157,9 @@ export default function EstablishmentDetailScreen() {
               <AboutCard
                 label="Horário"
                 value={establishment.opening_hours}
-                icon={<Icon name="clock" variant="regular" color={colors.mutedForeground} size={13} />}
+                icon={
+                  <Icon name="clock" variant="regular" color={colors.mutedForeground} size={13} />
+                }
               />
               {establishment.instagram ? (
                 <AboutCard
@@ -217,7 +219,10 @@ export default function EstablishmentDetailScreen() {
         <Button
           label="WhatsApp"
           className="flex-1"
-          icon={<Icon name="comment" variant="regular" color={colors.primaryForeground} size={16} />}
+          icon={
+            <Icon name="comment" variant="regular" color={colors.primaryForeground} size={16} />
+          }
+          style={{ backgroundColor: colors.primary }}
           onPress={() => Linking.openURL(buildWhatsAppUrl(establishment.whatsapp))}
         />
         <Button
