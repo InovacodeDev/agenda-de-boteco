@@ -1,5 +1,7 @@
 import type { ConfigContext, ExpoConfig } from 'expo/config';
 
+import { version } from './package.json';
+
 // Validação defensiva para garantir que chaves críticas não fiquem undefined em produção/preview
 const getEnvVar = (value: string | undefined, name: string): string => {
   const isEasProduction =
@@ -16,7 +18,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: 'Agenda de Boteco',
   slug: 'agenda-de-boteco',
-  version: '0.0.1',
+  // Fonte única da versão: package.json. Alterar lá propaga para o build (Expo/EAS).
+  version,
   orientation: 'portrait',
   icon: './assets/icon.png',
   scheme: 'agenda-de-boteco',
