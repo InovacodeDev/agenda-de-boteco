@@ -24,7 +24,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     bundleIdentifier: 'com.agenda.boteco',
     config: {
       usesNonExemptEncryption: false,
-      googleMapsApiKey: getEnvVar(process.env.GOOGLE_MAPS_API_KEY_IOS, 'GOOGLE_MAPS_API_KEY_IOS'),
     },
   },
   android: {
@@ -60,6 +59,12 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       {
         locationWhenInUsePermission:
           'Usamos sua localização para mostrar bares e eventos perto de você.',
+      },
+    ],
+    [
+      'react-native-maps',
+      {
+        iosGoogleMapsApiKey: getEnvVar(process.env.GOOGLE_MAPS_API_KEY_IOS, 'GOOGLE_MAPS_API_KEY_IOS'),
       },
     ],
   ],
