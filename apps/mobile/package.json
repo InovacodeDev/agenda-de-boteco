@@ -60,7 +60,16 @@
     "web": "expo start --web",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
-    "test": "jest"
+    "test": "jest",
+    "build:local:alfa:android": "eas build --local --platform android --profile alfa",
+    "build:local:alfa:ios": "eas build --local --platform ios --profile alfa",
+    "build:local:alfa:all": "eas build --local --platform all --profile alfa",
+    "build:local:beta:android": "eas build --local --platform android --profile beta",
+    "build:local:beta:ios": "eas build --local --platform ios --profile beta",
+    "build:local:beta:all": "eas build --local --platform all --profile beta",
+    "build:local:release:android": "eas build --local --platform android --profile production",
+    "build:local:release:ios": "eas build --local --platform ios --profile production",
+    "build:local:release:all": "eas build --local --platform all --profile production"
   },
   "devDependencies": {
     "@agenda/typescript-config": "workspace:*",

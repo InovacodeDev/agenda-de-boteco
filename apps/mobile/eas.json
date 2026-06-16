@@ -32,7 +32,7 @@
         "track": "internal"
       },
       "ios": {
-        "ascAppId": "6780913943"
+        "ascAppId": "$ASC_APP_ID"
       }
     },
     "beta": {
@@ -40,7 +40,7 @@
         "track": "beta"
       },
       "ios": {
-        "ascAppId": "6780913943"
+        "ascAppId": "$ASC_APP_ID"
       }
     },
     "production": {
@@ -48,7 +48,7 @@
         "track": "production"
       },
       "ios": {
-        "ascAppId": "6780913943"
+        "ascAppId": "$ASC_APP_ID"
       }
     }
   }
