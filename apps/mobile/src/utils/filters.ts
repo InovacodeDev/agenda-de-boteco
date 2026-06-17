@@ -1,6 +1,6 @@
 import type { Establishment, Event } from '../data/schemas';
 import { isOpenNow, isWeekend } from './dates';
-import { haversineDistanceKm } from './geo';
+import { haversineDistanceKm, isVirtualCityId } from './geo';
 
 export type DateBucket = 'any' | 'today' | 'tomorrow' | 'weekend';
 
@@ -91,10 +91,16 @@ export function applyEventFilters(
 ): Event[] {
   const query = normalizeText(filters.query.trim());
 
+  // Cidade virtual (geolocalização fora do catálogo): não há establishments
+  // cadastrados nela, então o recorte por cidade é ignorado e a seleção passa
+  // a depender da proximidade (nearMe). Cidades do catálogo seguem recortadas.
+  const isVirtualCity = isVirtualCityId(ctx.cityId);
+
   return events
     .filter((event) => {
       const establishment = ctx.establishmentsById[event.establishment_id];
-      if (!establishment || establishment.city_id !== ctx.cityId) return false;
+      if (!establishment) return false;
+      if (!isVirtualCity && establishment.city_id !== ctx.cityId) return false;
 
       if (query) {
         const haystacks = [event.name, event.attraction, establishment.name];

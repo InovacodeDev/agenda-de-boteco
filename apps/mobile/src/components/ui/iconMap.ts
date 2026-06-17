@@ -8,6 +8,7 @@ import { faComment as faCommentRegular } from '@fortawesome/free-regular-svg-ico
 import { faEnvelope as faEnvelopeRegular } from '@fortawesome/free-regular-svg-icons/faEnvelope';
 import { faHeart as faHeartRegular } from '@fortawesome/free-regular-svg-icons/faHeart';
 import { faStar as faStarRegular } from '@fortawesome/free-regular-svg-icons/faStar';
+import { faTrashCan as faTrashCanRegular } from '@fortawesome/free-regular-svg-icons/faTrashCan';
 import { faUser as faUserRegular } from '@fortawesome/free-regular-svg-icons/faUser';
 import { faArrowLeft } from '@fortawesome/free-solid-svg-icons/faArrowLeft';
 import { faAt } from '@fortawesome/free-solid-svg-icons/faAt';
@@ -32,6 +33,7 @@ import { faSliders } from '@fortawesome/free-solid-svg-icons/faSliders';
 import { faStar } from '@fortawesome/free-solid-svg-icons/faStar';
 import { faStore } from '@fortawesome/free-solid-svg-icons/faStore';
 import { faTicket } from '@fortawesome/free-solid-svg-icons/faTicket';
+import { faTrashCan } from '@fortawesome/free-solid-svg-icons/faTrashCan';
 import { faUser } from '@fortawesome/free-solid-svg-icons/faUser';
 import { faWandMagicSparkles } from '@fortawesome/free-solid-svg-icons/faWandMagicSparkles';
 import { faXmark } from '@fortawesome/free-solid-svg-icons/faXmark';
@@ -70,6 +72,7 @@ const ICON_MAP = {
   'star': { solid: faStar, regular: faStarRegular },
   'store': { solid: faStore },
   'ticket': { solid: faTicket },
+  'trash-can': { solid: faTrashCan, regular: faTrashCanRegular },
   'user': { solid: faUser, regular: faUserRegular },
   'wand-magic-sparkles': { solid: faWandMagicSparkles },
   'xmark': { solid: faXmark },

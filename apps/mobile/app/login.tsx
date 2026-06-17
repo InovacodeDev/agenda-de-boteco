@@ -89,8 +89,10 @@ export default function LoginScreen() {
   };
 
   return (
-    <Screen background={<LinearGradient {...gradientNight} style={StyleSheet.absoluteFill} />}>
-      <ScreenHeader showBack />
+    <Screen
+      header={<ScreenHeader showBack />}
+      background={<LinearGradient {...gradientNight} style={StyleSheet.absoluteFill} />}
+    >
       <KeyboardAvoidingView behavior="padding" className="flex-1">
         <ScrollView
           showsVerticalScrollIndicator={false}

@@ -2,10 +2,13 @@ import { CITIES } from '../data/mock';
 import type { City } from '../data/schemas';
 import type { LocationStatus } from '../hooks/useUserLocation';
 import {
+  buildVirtualCity,
   coarseLatLng,
   haversineDistanceKm,
+  isVirtualCityId,
   type LatLng,
   nearestCity,
+  resolveCityFromLocation,
   resolveNearbyOrigin,
 } from './geo';
 
@@ -106,5 +109,90 @@ describe('resolveNearbyOrigin', () => {
         lng: city.lng,
       });
     }
+  });
+});
+
+describe('isVirtualCityId', () => {
+  it('reconhece ids virtuais (prefixo geo:)', () => {
+    expect(isVirtualCityId('geo:-27.595,-48.548')).toBe(true);
+  });
+
+  it('rejeita ids de catálogo', () => {
+    expect(isVirtualCityId('fln')).toBe(false);
+    expect(isVirtualCityId('sao')).toBe(false);
+  });
+});
+
+describe('buildVirtualCity', () => {
+  const coords: LatLng = { lat: -26.3045, lng: -48.8487 }; // Joinville/SC
+
+  it('usa nome e UF do reverse geocode', () => {
+    const city = buildVirtualCity(coords, { city: 'Joinville', uf: 'SC' });
+    expect(city.name).toBe('Joinville');
+    expect(city.uf).toBe('SC');
+  });
+
+  it('preserva as coordenadas reais (não arredondadas) na City', () => {
+    const city = buildVirtualCity(coords, { city: 'Joinville', uf: 'SC' });
+    expect(city.lat).toBe(-26.3045);
+    expect(city.lng).toBe(-48.8487);
+  });
+
+  it('deriva um id virtual estável a partir das coords arredondadas (3 casas)', () => {
+    const city = buildVirtualCity(coords, { city: 'Joinville', uf: 'SC' });
+    expect(city.id).toBe('geo:-26.304,-48.849');
+    expect(isVirtualCityId(city.id)).toBe(true);
+  });
+
+  it('o id é estável para micro-variações de GPS dentro do mesmo bucket', () => {
+    const a = buildVirtualCity({ lat: -26.3041, lng: -48.8486 }, { city: 'X', uf: 'SC' });
+    const b = buildVirtualCity({ lat: -26.3043, lng: -48.8488 }, { city: 'X', uf: 'SC' });
+    expect(a.id).toBe(b.id);
+    expect(a.id).toBe('geo:-26.304,-48.849');
+  });
+
+  it('usa rótulo genérico quando o geocode não traz cidade', () => {
+    const city = buildVirtualCity(coords, { city: null, uf: 'SC' });
+    expect(city.name).toBe('Sua localização');
+  });
+
+  it('usa -- quando a UF é ausente ou inválida (citySchema exige 2 chars)', () => {
+    expect(buildVirtualCity(coords, { city: 'X', uf: null }).uf).toBe('--');
+    expect(buildVirtualCity(coords, { city: 'X', uf: 'Santa Catarina' }).uf).toBe('--');
+  });
+
+  it('normaliza a UF para maiúsculas', () => {
+    expect(buildVirtualCity(coords, { city: 'X', uf: 'sc' }).uf).toBe('SC');
+  });
+});
+
+describe('resolveCityFromLocation', () => {
+  const noGeocode = { city: null, uf: null };
+
+  it('usa a cidade do catálogo quando o usuário está dentro do raio metropolitano', () => {
+    // Centro de Florianópolis — praticamente sobre a cidade do catálogo "fln".
+    const coords: LatLng = { lat: -27.5954, lng: -48.548 };
+    const result = resolveCityFromLocation(coords, noGeocode, CITIES);
+    expect(result.isCatalog).toBe(true);
+    expect(result.city.id).toBe('fln');
+  });
+
+  it('cria cidade virtual quando o usuário está longe de qualquer cidade do catálogo', () => {
+    // Manaus/AM — distante de todas as cidades do catálogo.
+    const coords: LatLng = { lat: -3.119, lng: -60.0217 };
+    const result = resolveCityFromLocation(coords, { city: 'Manaus', uf: 'AM' }, CITIES);
+    expect(result.isCatalog).toBe(false);
+    expect(result.city.name).toBe('Manaus');
+    expect(result.city.uf).toBe('AM');
+    expect(isVirtualCityId(result.city.id)).toBe(true);
+    // Mantém as coords reais (feed de proximidade usa a posição do usuário).
+    expect(result.city.lat).toBe(-3.119);
+  });
+
+  it('cria cidade virtual quando o catálogo está vazio', () => {
+    const coords: LatLng = { lat: -27.5954, lng: -48.548 };
+    const result = resolveCityFromLocation(coords, { city: 'Floripa', uf: 'SC' }, []);
+    expect(result.isCatalog).toBe(false);
+    expect(isVirtualCityId(result.city.id)).toBe(true);
   });
 });

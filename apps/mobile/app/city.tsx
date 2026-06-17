@@ -10,12 +10,13 @@ import { useUserLocation } from '@/hooks/useUserLocation';
 import { usePreferencesStore } from '@/store/usePreferencesStore';
 import { colors } from '@/theme/colors';
 import { ScrollView, Text, View } from '@/tw';
-import { nearestCity } from '@/utils/geo';
+import { resolveCityFromLocation } from '@/utils/geo';
 
 export default function CityScreen() {
   const router = useRouter();
   const cityId = usePreferencesStore((state) => state.cityId);
   const setCity = usePreferencesStore((state) => state.setCity);
+  const setCustomCity = usePreferencesStore((state) => state.setCustomCity);
   const { request, status } = useUserLocation();
   const { data: cities } = useCitiesQuery();
 
@@ -25,15 +26,21 @@ export default function CityScreen() {
   };
 
   const useMyLocation = async () => {
-    const coords = await request();
-    if (coords && cities && cities.length > 0) {
-      selectCity(nearestCity(coords, cities).id);
+    const result = await request();
+    if (!result) {
+      return;
     }
+    const { city, isCatalog } = resolveCityFromLocation(result.coords, result.geocode, cities ?? []);
+    if (isCatalog) {
+      setCity(city.id);
+    } else {
+      setCustomCity(city);
+    }
+    router.back();
   };
 
   return (
-    <Screen>
-      <ScreenHeader title="Escolha sua cidade" showBack />
+    <Screen header={<ScreenHeader title="Escolha sua cidade" showBack />}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerClassName="gap-3 p-4">
         <Button
           label={status === 'loading' ? 'Localizando…' : 'Usar minha localização'}

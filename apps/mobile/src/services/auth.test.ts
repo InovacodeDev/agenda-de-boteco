@@ -4,6 +4,7 @@ import {
   handleDeepLink,
   isAuthAvailable,
   onAuthUserChange,
+  requestAccountDeletion,
   signInWithEmailOtp,
   signInWithProvider,
   signOut,
@@ -34,7 +35,7 @@ interface MockAuth {
   verifyOtp: jest.Mock;
 }
 
-function makeClient(overrides: Partial<MockAuth> = {}) {
+function makeClient(overrides: Partial<MockAuth> = {}, rpc?: jest.Mock) {
   const auth: MockAuth = {
     signInWithOtp: jest.fn().mockResolvedValue({ error: null }),
     signOut: jest.fn().mockResolvedValue({ error: null }),
@@ -47,7 +48,7 @@ function makeClient(overrides: Partial<MockAuth> = {}) {
     verifyOtp: jest.fn().mockResolvedValue({ error: null }),
     ...overrides,
   };
-  return { auth };
+  return { auth, rpc: rpc ?? jest.fn().mockResolvedValue({ data: null, error: null }) };
 }
 
 beforeEach(() => {
@@ -253,5 +254,32 @@ describe('verifyEmailOtp', () => {
     const client = makeClient({ verifyOtp });
     mockGetSupabase.mockReturnValue(client);
     await expect(verifyEmailOtp('tito@exemplo.com', '123456')).rejects.toThrow('invalid token');
+  });
+});
+
+describe('requestAccountDeletion', () => {
+  it('é no-op sem Supabase configurado', async () => {
+    mockGetSupabase.mockReturnValue(null);
+    await expect(requestAccountDeletion()).resolves.toBeUndefined();
+  });
+
+  it('chama a RPC request_account_deletion e desloga em caso de sucesso', async () => {
+    const rpc = jest.fn().mockResolvedValue({ data: null, error: null });
+    const client = makeClient({}, rpc);
+    mockGetSupabase.mockReturnValue(client);
+
+    await requestAccountDeletion();
+
+    expect(rpc).toHaveBeenCalledWith('request_account_deletion');
+    expect(client.auth.signOut).toHaveBeenCalledTimes(1);
+  });
+
+  it('propaga erro e NÃO desloga quando a RPC falha', async () => {
+    const rpc = jest.fn().mockResolvedValue({ data: null, error: new Error('not authenticated') });
+    const client = makeClient({}, rpc);
+    mockGetSupabase.mockReturnValue(client);
+
+    await expect(requestAccountDeletion()).rejects.toThrow('not authenticated');
+    expect(client.auth.signOut).not.toHaveBeenCalled();
   });
 });

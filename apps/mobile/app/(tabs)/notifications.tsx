@@ -29,8 +29,7 @@ function NotificationsContent() {
   );
 
   return (
-    <Screen>
-      <ScreenHeader title="Avisos" showLogo />
+    <Screen header={<ScreenHeader title="Avisos" showLogo />}>
       <FlashList
         data={notifications ?? []}
         keyExtractor={(notification) => notification.id}

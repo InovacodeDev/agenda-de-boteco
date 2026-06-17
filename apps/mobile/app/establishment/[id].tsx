@@ -66,8 +66,7 @@ function EstablishmentDetailContent() {
 
   if (establishmentQuery.isLoading) {
     return (
-      <Screen>
-        <ScreenHeader showBack />
+      <Screen header={<ScreenHeader showBack />}>
         <View className="flex-1 items-center justify-center">
           <Text className="font-body text-muted-foreground text-[14px]">Carregando…</Text>
         </View>
@@ -77,8 +76,7 @@ function EstablishmentDetailContent() {
 
   if (!establishment) {
     return (
-      <Screen>
-        <ScreenHeader showBack />
+      <Screen header={<ScreenHeader showBack />}>
         <View className="flex-1 items-center justify-center">
           <Text className="font-body text-muted-foreground text-[14px]">
             Estabelecimento não encontrado.
@@ -100,6 +98,35 @@ function EstablishmentDetailContent() {
 
   return (
     <Screen noTopInset>
+      {/* Header overlay dentro do conteúdo limitado: sobrepõe o banner alinhado
+          à coluna central de 768px (não full-bleed). */}
+      <ScreenHeader
+        overlay
+        showBack
+        right={
+          <>
+            <CircleIconButton
+              accessibilityLabel="Compartilhar estabelecimento"
+              icon={<Icon name="share-nodes" color={colors.foreground} size={18} />}
+              onPress={share}
+            />
+            <CircleIconButton
+              accessibilityLabel={
+                isFavorite ? 'Remover dos favoritos' : 'Favoritar estabelecimento'
+              }
+              icon={
+                <Icon
+                  name="heart"
+                  variant={isFavorite ? 'solid' : 'regular'}
+                  color={isFavorite ? colors.primary : colors.foreground}
+                  size={18}
+                />
+              }
+              onPress={() => requireAuth(() => toggleEstablishment(establishment.id))}
+            />
+          </>
+        }
+      />
       <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }}>
         <View className="h-65">
           <Image
@@ -237,33 +264,6 @@ function EstablishmentDetailContent() {
           }
         />
       </View>
-      <ScreenHeader
-        overlay
-        showBack
-        right={
-          <>
-            <CircleIconButton
-              accessibilityLabel="Compartilhar estabelecimento"
-              icon={<Icon name="share-nodes" color={colors.foreground} size={18} />}
-              onPress={share}
-            />
-            <CircleIconButton
-              accessibilityLabel={
-                isFavorite ? 'Remover dos favoritos' : 'Favoritar estabelecimento'
-              }
-              icon={
-                <Icon
-                  name="heart"
-                  variant={isFavorite ? 'solid' : 'regular'}
-                  color={isFavorite ? colors.primary : colors.foreground}
-                  size={18}
-                />
-              }
-              onPress={() => requireAuth(() => toggleEstablishment(establishment.id))}
-            />
-          </>
-        }
-      />
     </Screen>
   );
 }

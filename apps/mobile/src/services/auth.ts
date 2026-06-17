@@ -135,6 +135,39 @@ export async function signOut(): Promise<void> {
   }
 }
 
+/**
+ * Enfileira a exclusão definitiva da conta do usuário autenticado. A anon key
+ * não pode apagar `auth.users`; em vez disso chamamos a RPC SECURITY DEFINER
+ * `request_account_deletion`, que insere o auth.uid() na fila. Uma rotina
+ * agendada (pg_cron, de hora em hora) apaga as contas pendentes — e, por
+ * cascata, seus favoritos. Em caso de sucesso, encerra a sessão local.
+ *
+ * Requer sessão ativa (a RPC valida auth.uid()). Usada tanto pela tela de
+ * perfil (usuário já logado) quanto pelo formulário público /excluir-conta
+ * (que autentica via OTP antes de chamar).
+ */
+export async function requestAccountDeletion(): Promise<void> {
+  const client = getSupabase();
+  if (!client) {
+    return;
+  }
+  try {
+    // A RPC vem da migration 20260617120000_account_deletion_queue. O
+    // database.types.ts é gerado em CI após aplicar as migrations; até a próxima
+    // regeneração, o nome ainda não consta no tipo Functions — daí o cast pontual.
+    const rpc = client.rpc as unknown as (
+      fn: string,
+    ) => PromiseLike<{ error: unknown }>;
+    const { error } = await rpc('request_account_deletion');
+    if (error) {
+      throw error;
+    }
+    await client.auth.signOut();
+  } catch (error) {
+    return handleServiceError(error, { method: 'auth.requestAccountDeletion' });
+  }
+}
+
 export async function getCurrentUser(): Promise<AuthUser | null> {
   const client = getSupabase();
   if (!client) {

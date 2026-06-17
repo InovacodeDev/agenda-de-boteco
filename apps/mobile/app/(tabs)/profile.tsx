@@ -6,11 +6,9 @@ import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import { Button } from '@/components/ui/Button';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { Icon } from '@/components/ui/Icon';
-import { cityByIdOrDefault } from '@/data/lookup';
-import { useCitiesQuery } from '@/hooks/queries';
+import { useActiveCity } from '@/hooks/useActiveCity';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useFavoritesStore } from '@/store/useFavoritesStore';
-import { usePreferencesStore } from '@/store/usePreferencesStore';
 import { colors } from '@/theme/colors';
 import { headingLetterSpacing } from '@/theme/typography';
 import { Pressable, Text, View } from '@/tw';
@@ -47,22 +45,33 @@ function SignedOutProfile() {
 function SignedInProfile() {
   const user = useAuthStore((state) => state.user);
   const signOut = useAuthStore((state) => state.signOut);
+  const requestAccountDeletion = useAuthStore((state) => state.requestAccountDeletion);
   const router = useRouter();
 
   const [confirmVisible, setConfirmVisible] = useState(false);
+  const [deleteVisible, setDeleteVisible] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const handleConfirmSignOut = () => {
     setConfirmVisible(false);
     signOut();
   };
 
+  const handleConfirmDelete = async () => {
+    setDeleting(true);
+    try {
+      await requestAccountDeletion();
+      setDeleteVisible(false);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   const eventIds = useFavoritesStore((state) => state.eventIds);
   const establishmentIds = useFavoritesStore((state) => state.establishmentIds);
   const totalFavorites = eventIds.length + establishmentIds.length;
 
-  const cityId = usePreferencesStore((state) => state.cityId);
-  const { data: cities } = useCitiesQuery();
-  const city = cityByIdOrDefault(cities ?? [], cityId);
+  const city = useActiveCity();
 
   const name = user?.name || 'Você';
   const email = user?.email || '';
@@ -129,13 +138,23 @@ function SignedInProfile() {
 
       <View className="flex-1" />
 
-      <Pressable
-        onPress={() => setConfirmVisible(true)}
-        className="border-destructive/20 active:bg-destructive/10 mb-4 h-12 w-full flex-row items-center justify-center gap-2 rounded-xl border bg-transparent"
-      >
-        <Icon name="right-from-bracket" color={colors.destructive} size={16} />
-        <Text className="font-body-semibold text-destructive text-[15px]">Sair</Text>
-      </Pressable>
+      <View className="mb-4 gap-3">
+        <Pressable
+          onPress={() => setConfirmVisible(true)}
+          className="border-destructive/20 active:bg-destructive/10 h-12 w-full flex-row items-center justify-center gap-2 rounded-xl border bg-transparent"
+        >
+          <Icon name="right-from-bracket" color={colors.destructive} size={16} />
+          <Text className="font-body-semibold text-destructive text-[15px]">Sair</Text>
+        </Pressable>
+
+        <Pressable
+          onPress={() => setDeleteVisible(true)}
+          className="active:bg-surface/50 h-12 w-full flex-row items-center justify-center gap-2 rounded-xl bg-transparent"
+        >
+          <Icon name="trash-can" variant="regular" color={colors.mutedForeground} size={16} />
+          <Text className="font-body-medium text-muted-foreground text-[14px]">Excluir conta</Text>
+        </Pressable>
+      </View>
 
       <ConfirmDialog
         visible={confirmVisible}
@@ -146,6 +165,21 @@ function SignedInProfile() {
         onCancel={() => setConfirmVisible(false)}
         onConfirm={handleConfirmSignOut}
       />
+
+      <ConfirmDialog
+        visible={deleteVisible}
+        destructive
+        title="Excluir sua conta?"
+        message="Esta ação é permanente. Você será desconectado agora e sua conta e favoritos sincronizados serão apagados em até 1 hora, sem possibilidade de recuperação."
+        confirmLabel={deleting ? 'Processando…' : 'Excluir conta'}
+        cancelLabel="Cancelar"
+        onCancel={() => {
+          if (!deleting) {
+            setDeleteVisible(false);
+          }
+        }}
+        onConfirm={handleConfirmDelete}
+      />
     </View>
   );
 }
@@ -154,8 +188,7 @@ export default function ProfileScreen() {
   const status = useAuthStore((state) => state.status);
 
   return (
-    <Screen>
-      <ScreenHeader title="Perfil" showLogo />
+    <Screen header={<ScreenHeader title="Perfil" showLogo />}>
       {status === 'signedIn' ? <SignedInProfile /> : <SignedOutProfile />}
     </Screen>
   );

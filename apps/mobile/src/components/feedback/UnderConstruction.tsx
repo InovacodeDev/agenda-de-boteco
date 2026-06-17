@@ -46,8 +46,10 @@ export function UnderConstruction({
     : { label: 'Voltar', iconName: 'arrow-left' as const, onPress: () => router.back() };
 
   return (
-    <Screen background={<LinearGradient {...gradientNight} style={StyleSheet.absoluteFill} />}>
-      <ScreenHeader showLogo={isTab} showBack={!isTab} />
+    <Screen
+      header={<ScreenHeader showLogo={isTab} showBack={!isTab} />}
+      background={<LinearGradient {...gradientNight} style={StyleSheet.absoluteFill} />}
+    >
       <View className="flex-1 items-center justify-center gap-6 px-8">
         <View
           className="bg-surface h-24 w-24 items-center justify-center rounded-3xl"

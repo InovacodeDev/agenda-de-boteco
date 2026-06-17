@@ -7,11 +7,10 @@ import MapView, { Marker, PROVIDER_DEFAULT, PROVIDER_GOOGLE, type Region } from 
 import { EstablishmentCard } from '@/components/establishment/EstablishmentCard';
 import { Screen } from '@/components/layout/Screen';
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
-import { cityByIdOrDefault } from '@/data/lookup';
 import type { Establishment } from '@/data/schemas';
-import { useCitiesQuery, useEstablishmentsQuery } from '@/hooks/queries';
+import { useEstablishmentsQuery } from '@/hooks/queries';
+import { useActiveCity } from '@/hooks/useActiveCity';
 import { useUserLocation } from '@/hooks/useUserLocation';
-import { usePreferencesStore } from '@/store/usePreferencesStore';
 import { colors } from '@/theme/colors';
 import { ScrollView, Text, View } from '@/tw';
 import { haversineDistanceKm, type LatLng } from '@/utils/geo';
@@ -47,7 +46,6 @@ function MissingKeyFallback({ establishments }: { establishments: Establishment[
 }
 
 export function MapScreen() {
-  const cityId = usePreferencesStore((state) => state.cityId);
   const { coords, request } = useUserLocation();
 
   const mapRef = useRef<MapView>(null);
@@ -58,8 +56,7 @@ export function MapScreen() {
     request();
   }, [request]);
 
-  const { data: cities } = useCitiesQuery();
-  const city = cityByIdOrDefault(cities ?? [], cityId);
+  const city = useActiveCity();
   const centerLat = coords?.lat ?? city?.lat ?? 0;
   const centerLng = coords?.lng ?? city?.lng ?? 0;
   const center: LatLng = { lat: centerLat, lng: centerLng };
@@ -98,8 +95,7 @@ export function MapScreen() {
 
   if (Platform.OS === 'android' && !hasAndroidMapsKey()) {
     return (
-      <Screen noBottomInset>
-        <ScreenHeader title="Mapa" showLogo />
+      <Screen noBottomInset header={<ScreenHeader title="Mapa" showLogo />}>
         <MissingKeyFallback establishments={establishments} />
       </Screen>
     );
@@ -114,8 +110,7 @@ export function MapScreen() {
   };
 
   return (
-    <Screen noBottomInset>
-      <ScreenHeader title="Mapa" showLogo />
+    <Screen noBottomInset fullBleedContent header={<ScreenHeader title="Mapa" showLogo />}>
       <View className="flex-1">
         <MapView
           ref={mapRef}

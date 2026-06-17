@@ -9,18 +9,17 @@ import { StyleCard } from '@/components/feed/StyleCard';
 import { Screen } from '@/components/layout/Screen';
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import { SectionLabel } from '@/components/ui/SectionLabel';
-import { cityByIdOrDefault, indexById, musicStylesForEvent } from '@/data/lookup';
+import { indexById, musicStylesForEvent } from '@/data/lookup';
 import type { Event } from '@/data/schemas';
 import {
-  useCitiesQuery,
   useEstablishmentsQuery,
   useEventsQuery,
   useMusicStylesQuery,
 } from '@/hooks/queries';
+import { useActiveCity } from '@/hooks/useActiveCity';
 import { useNearbyEstablishments } from '@/hooks/useNearbyEstablishments';
 import { useUserLocation } from '@/hooks/useUserLocation';
 import { useFiltersStore } from '@/store/useFiltersStore';
-import { usePreferencesStore } from '@/store/usePreferencesStore';
 import { headingLetterSpacing } from '@/theme/typography';
 import { ScrollView, Text, View } from '@/tw';
 import { applyEventFilters } from '@/utils/filters';
@@ -29,7 +28,6 @@ import { resolveNearbyOrigin } from '@/utils/geo';
 const ItemSeparator = () => <View className="h-4" />;
 
 export default function FeedScreen() {
-  const cityId = usePreferencesStore((state) => state.cityId);
   const filters = useFiltersStore((state) => state.filters);
   const setQuery = useFiltersStore((state) => state.setQuery);
   const toggleStyle = useFiltersStore((state) => state.toggleStyle);
@@ -37,7 +35,6 @@ export default function FeedScreen() {
   const { data: events } = useEventsQuery();
   const { data: establishments } = useEstablishmentsQuery();
   const { data: musicStyles } = useMusicStylesQuery();
-  const { data: cities } = useCitiesQuery();
 
   // "agora" estável por render da lista, atualizado a cada minuto
   const [now, setNow] = useState(() => new Date());
@@ -49,7 +46,7 @@ export default function FeedScreen() {
   const establishmentsById = useMemo(() => indexById(establishments ?? []), [establishments]);
   const stylesById = useMemo(() => indexById(musicStyles ?? []), [musicStyles]);
 
-  const city = useMemo(() => cityByIdOrDefault(cities ?? [], cityId), [cities, cityId]);
+  const city = useActiveCity();
 
   // Proximidade server-side: quando nearMe está ativo, resolve a origem (GPS ou
   // centro da cidade) e busca os establishments dentro do raio via RPC PostGIS.
@@ -102,8 +99,7 @@ export default function FeedScreen() {
   );
 
   return (
-    <Screen>
-      <ScreenHeader>{city ? <FeedHeader city={city} /> : null}</ScreenHeader>
+    <Screen header={<ScreenHeader>{city ? <FeedHeader city={city} /> : null}</ScreenHeader>}>
       <FlashList
         data={filteredEvents}
         keyExtractor={(event) => event.id}

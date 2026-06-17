@@ -148,6 +148,9 @@ export default function RootLayout() {
             <Stack.Protected guard={!hasOnboarded}>
               <Stack.Screen name="onboarding" />
             </Stack.Protected>
+            {/* Rotas públicas: acessíveis sem onboarding (URLs exigidas pelas lojas + crawler). */}
+            <Stack.Screen name="privacidade" />
+            <Stack.Screen name="excluir-conta" />
           </Stack>
         </ErrorBoundary>
       </SafeAreaProvider>

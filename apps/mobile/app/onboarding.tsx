@@ -16,7 +16,7 @@ import { gradientNight } from '@/theme/gradients';
 import { shadows } from '@/theme/shadows';
 import { headingLetterSpacing } from '@/theme/typography';
 import { Image, ScrollView, Text, View } from '@/tw';
-import { nearestCity } from '@/utils/geo';
+import { resolveCityFromLocation } from '@/utils/geo';
 
 interface FeatureCardProps {
   icon: ReactNode;
@@ -34,6 +34,7 @@ function FeatureCard({ icon, label }: FeatureCardProps) {
 
 export default function OnboardingScreen() {
   const setCity = usePreferencesStore((state) => state.setCity);
+  const setCustomCity = usePreferencesStore((state) => state.setCustomCity);
   const completeOnboarding = usePreferencesStore((state) => state.completeOnboarding);
   const { request, status } = useUserLocation();
   const { data: cities } = useCitiesQuery();
@@ -44,22 +45,33 @@ export default function OnboardingScreen() {
   };
 
   const useMyLocation = async () => {
-    const coords = await request();
-    if (coords && cities && cities.length > 0) {
-      chooseCity(nearestCity(coords, cities).id);
+    const result = await request();
+    if (!result) {
+      return;
     }
+    const { city, isCatalog } = resolveCityFromLocation(result.coords, result.geocode, cities ?? []);
+    if (isCatalog) {
+      setCity(city.id);
+    } else {
+      setCustomCity(city);
+    }
+    completeOnboarding();
   };
 
   return (
-    <Screen background={<LinearGradient {...gradientNight} style={StyleSheet.absoluteFill} />}>
-      <ScreenHeader>
-        <Image
-          source={brandLogo}
-          className="h-10 w-10 rounded-lg"
-          contentFit="cover"
-          accessibilityLabel="Agenda de Boteco"
-        />
-      </ScreenHeader>
+    <Screen
+      header={
+        <ScreenHeader>
+          <Image
+            source={brandLogo}
+            className="h-10 w-10 rounded-lg"
+            contentFit="cover"
+            accessibilityLabel="Agenda de Boteco"
+          />
+        </ScreenHeader>
+      }
+      background={<LinearGradient {...gradientNight} style={StyleSheet.absoluteFill} />}
+    >
       <ScrollView showsVerticalScrollIndicator={false} contentContainerClassName="gap-6 p-6">
         <View className="gap-3">
           <Text

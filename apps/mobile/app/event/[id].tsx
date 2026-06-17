@@ -45,8 +45,7 @@ export default function EventDetailScreen() {
 
   if (isLoading) {
     return (
-      <Screen>
-        <ScreenHeader showBack />
+      <Screen header={<ScreenHeader showBack />}>
         <View className="flex-1 items-center justify-center">
           <Text className="font-body text-muted-foreground text-[14px]">Carregando…</Text>
         </View>
@@ -56,8 +55,7 @@ export default function EventDetailScreen() {
 
   if (eventQuery.isError && !event) {
     return (
-      <Screen>
-        <ScreenHeader showBack />
+      <Screen header={<ScreenHeader showBack />}>
         <View className="flex-1 items-center justify-center px-6">
           <EmptyState
             icon={<Icon name="circle-info" color={colors.mutedForeground} size={28} />}
@@ -74,8 +72,7 @@ export default function EventDetailScreen() {
 
   if (!event || !establishment) {
     return (
-      <Screen>
-        <ScreenHeader showBack />
+      <Screen header={<ScreenHeader showBack />}>
         <View className="flex-1 items-center justify-center">
           <Text className="font-body text-muted-foreground text-[14px]">
             Evento não encontrado.
@@ -102,6 +99,33 @@ export default function EventDetailScreen() {
 
   return (
     <Screen noTopInset>
+      {/* Header overlay dentro do conteúdo limitado: sobrepõe o banner alinhado
+          à coluna central de 768px (não full-bleed). */}
+      <ScreenHeader
+        overlay
+        showBack
+        right={
+          <>
+            <CircleIconButton
+              accessibilityLabel="Compartilhar evento"
+              icon={<Icon name="share-nodes" color={colors.foreground} size={18} />}
+              onPress={share}
+            />
+            <CircleIconButton
+              accessibilityLabel={isFavorite ? 'Remover dos favoritos' : 'Favoritar evento'}
+              icon={
+                <Icon
+                  name="heart"
+                  variant={isFavorite ? 'solid' : 'regular'}
+                  color={isFavorite ? colors.primary : colors.foreground}
+                  size={18}
+                />
+              }
+              onPress={() => requireAuth(() => toggleEvent(event.id))}
+            />
+          </>
+        }
+      />
       <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }}>
         <View className="h-65">
           <Image
@@ -210,31 +234,6 @@ export default function EventDetailScreen() {
           onPress={() => router.push(`/establishment/${establishment.id}`)}
         />
       </View>
-      <ScreenHeader
-        overlay
-        showBack
-        right={
-          <>
-            <CircleIconButton
-              accessibilityLabel="Compartilhar evento"
-              icon={<Icon name="share-nodes" color={colors.foreground} size={18} />}
-              onPress={share}
-            />
-            <CircleIconButton
-              accessibilityLabel={isFavorite ? 'Remover dos favoritos' : 'Favoritar evento'}
-              icon={
-                <Icon
-                  name="heart"
-                  variant={isFavorite ? 'solid' : 'regular'}
-                  color={isFavorite ? colors.primary : colors.foreground}
-                  size={18}
-                />
-              }
-              onPress={() => requireAuth(() => toggleEvent(event.id))}
-            />
-          </>
-        }
-      />
     </Screen>
   );
 }

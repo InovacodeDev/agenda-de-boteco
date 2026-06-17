@@ -1,12 +1,20 @@
 import { Tabs } from 'expo-router';
-import { StyleSheet } from 'react-native';
+import { Platform, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { MAX_CONTENT_WIDTH } from '@/components/layout/Screen';
 import { Icon } from '@/components/ui/Icon';
 import { colors } from '@/theme/colors';
 import { fontFamilies } from '@/theme/typography';
 
 const TAB_BAR_BASE_HEIGHT = 56;
+
+// Web: acompanha o limite de largura do conteúdo (Screen), centralizando a tab
+// bar em telas largas em vez de esticá-la de borda a borda.
+const tabBarWidthStyle =
+  Platform.OS === 'web'
+    ? ({ maxWidth: MAX_CONTENT_WIDTH, width: '100%', marginHorizontal: 'auto' } as const)
+    : null;
 
 export default function TabsLayout() {
   const insets = useSafeAreaInsets();
@@ -21,6 +29,7 @@ export default function TabsLayout() {
           borderTopWidth: StyleSheet.hairlineWidth,
           height: TAB_BAR_BASE_HEIGHT + insets.bottom,
           paddingBottom: insets.bottom,
+          ...tabBarWidthStyle,
         },
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.mutedForeground,

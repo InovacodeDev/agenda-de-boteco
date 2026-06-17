@@ -225,4 +225,37 @@ describe('applyEventFilters', () => {
       new Set(['ev1', 'ev2', 'ev4', 'ev9', 'ev10', 'ev11']),
     );
   });
+
+  describe('cidade virtual (geo:)', () => {
+    const virtualCtx = makeContext({ cityId: 'geo:-27.595,-48.548' });
+
+    it('ignora o recorte por cidade: sem nearMe, considera eventos de todas as cidades', () => {
+      // Com cidade virtual e sem nearMe, o recorte por cidade não se aplica →
+      // vêm mais eventos do que o recorte estrito de fln (que limita a 1 cidade).
+      const virtual = applyEventFilters(EVENTS, makeFilters(), virtualCtx);
+      const catalog = applyEventFilters(EVENTS, makeFilters(), makeContext({ cityId: 'fln' }));
+      expect(virtual.length).toBeGreaterThan(catalog.length);
+    });
+
+    it('com nearMe + nearbyEstablishmentIds, recorta só pela proximidade', () => {
+      const nearbyEstablishmentIds = new Set(['e1']);
+      const result = applyEventFilters(
+        EVENTS,
+        makeFilters({ nearMe: true }),
+        makeContext({ cityId: 'geo:-27.595,-48.548', nearbyEstablishmentIds }),
+      );
+      // Só eventos do establishment e1 sobrevivem, independentemente da cidade.
+      expect(result.every((event) => event.establishment_id === 'e1')).toBe(true);
+      expect(result.length).toBeGreaterThan(0);
+    });
+
+    it('descarta eventos cujo establishment não existe no índice', () => {
+      const result = applyEventFilters(
+        [{ ...EVENTS[0], establishment_id: 'inexistente' }],
+        makeFilters(),
+        virtualCtx,
+      );
+      expect(result).toHaveLength(0);
+    });
+  });
 });

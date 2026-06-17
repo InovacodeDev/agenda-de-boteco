@@ -5,6 +5,7 @@ import {
   getCurrentUser,
   isAuthAvailable,
   onAuthUserChange,
+  requestAccountDeletion as authRequestAccountDeletion,
   signOut as authSignOut,
 } from '../services/auth';
 
@@ -16,6 +17,8 @@ export interface AuthState {
   /** Carrega a sessão atual e passa a observar mudanças de auth */
   initialize: () => Promise<void>;
   signOut: () => Promise<void>;
+  /** Enfileira a exclusão da conta (processada por cron) e limpa o estado local */
+  requestAccountDeletion: () => Promise<void>;
 }
 
 let unsubscribe: (() => void) | null = null;
@@ -37,6 +40,10 @@ export const useAuthStore = create<AuthState>()((set) => ({
   },
   signOut: async () => {
     await authSignOut();
+    set({ user: null, status: 'signedOut' });
+  },
+  requestAccountDeletion: async () => {
+    await authRequestAccountDeletion();
     set({ user: null, status: 'signedOut' });
   },
 }));

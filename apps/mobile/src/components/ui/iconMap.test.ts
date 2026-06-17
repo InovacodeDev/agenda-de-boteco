@@ -42,6 +42,7 @@ describe('iconMap', () => {
         'star',
         'store',
         'ticket',
+        'trash-can',
         'user',
         'wand-magic-sparkles',
         'xmark',

@@ -73,8 +73,7 @@ export default function FavoritesScreen() {
   const isEmpty = showingEvents ? favoriteEvents.length === 0 : favoriteEstablishments.length === 0;
 
   return (
-    <Screen>
-      <ScreenHeader title="Favoritos" showLogo />
+    <Screen header={<ScreenHeader title="Favoritos" showLogo />}>
       <View className="px-4 pb-4">
         <SegmentedTabs
           tabs={[`Eventos (${favoriteEvents.length})`, `Bares (${favoriteEstablishments.length})`]}

@@ -10,6 +10,24 @@ export function cityByIdOrDefault(cities: City[], id: string): City {
   return cities.find((city) => city.id === id) ?? cities[0];
 }
 
+/**
+ * Resolve a cidade ativa a partir do estado de preferências. Quando `cityId`
+ * aponta para uma cidade do catálogo, retorna-a (ou a primeira como fallback).
+ * Quando aponta para uma cidade virtual (`geo:`, fora do catálogo), retorna a
+ * `customCity` guardada no store — que carrega as coords reais do usuário.
+ * Sem catálogo e sem cidade virtual correspondente, retorna `undefined`.
+ */
+export function resolveActiveCity(
+  cities: City[],
+  cityId: string,
+  customCity: City | null,
+): City | undefined {
+  if (customCity && customCity.id === cityId) {
+    return customCity;
+  }
+  return cities.find((city) => city.id === cityId) ?? cities[0];
+}
+
 // Cache por referência de evento: arrays estáveis permitem que cards memoizados
 // (React.memo) não re-renderizem quando o evento não mudou. O structural sharing
 // do TanStack Query preserva a referência de cada Event entre refetches, então
