@@ -76,6 +76,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         ),
       },
     ],
+    'expo-image',
   ],
   experiments: {
     typedRoutes: true,
