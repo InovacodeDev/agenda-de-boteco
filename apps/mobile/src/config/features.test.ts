@@ -8,8 +8,8 @@ describe('FEATURES', () => {
     );
   });
 
-  it('mantém as três telas bloqueadas na v1 (todas false)', () => {
-    expect(FEATURES.establishmentDetail).toBe(false);
+  it('libera o detalhe do estabelecimento na v2 e mantém as demais bloqueadas', () => {
+    expect(FEATURES.establishmentDetail).toBe(true);
     expect(FEATURES.notifications).toBe(false);
     expect(FEATURES.map).toBe(false);
   });
