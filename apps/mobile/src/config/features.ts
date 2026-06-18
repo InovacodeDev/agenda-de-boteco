@@ -6,7 +6,7 @@ export const FEATURES = {
   /** Detalhe do estabelecimento — liberado na v2 */
   establishmentDetail: true,
   /** Aba de avisos/notificações — libera na v3 */
-  notifications: false,
+  notifications: true,
   /** Aba de mapa — libera na v4 */
   map: false,
 } as const;
