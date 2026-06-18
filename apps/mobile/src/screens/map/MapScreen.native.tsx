@@ -110,7 +110,7 @@ export function MapScreen() {
   };
 
   return (
-    <Screen noBottomInset fullBleedContent header={<ScreenHeader title="Mapa" showLogo />}>
+    <Screen header={<ScreenHeader title="Mapa" showLogo />}>
       <View className="flex-1">
         <MapView
           ref={mapRef}
