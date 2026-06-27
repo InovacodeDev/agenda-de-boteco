@@ -1,6 +1,7 @@
 import { FlashList } from '@shopify/flash-list';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
+import { EstablishmentCard } from '@/components/establishment/EstablishmentCard';
 import { EventCard } from '@/components/event/EventCard';
 import { FeedHeader } from '@/components/feed/FeedHeader';
 import { QuickFilterChips } from '@/components/feed/QuickFilterChips';
@@ -9,6 +10,7 @@ import { StyleCard } from '@/components/feed/StyleCard';
 import { Screen } from '@/components/layout/Screen';
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import { SectionLabel } from '@/components/ui/SectionLabel';
+import { SegmentedTabs } from '@/components/ui/SegmentedTabs';
 import { indexById, musicStylesForEvent } from '@/data/lookup';
 import type { Event } from '@/data/schemas';
 import {
@@ -22,12 +24,15 @@ import { useUserLocation } from '@/hooks/useUserLocation';
 import { useFiltersStore } from '@/store/useFiltersStore';
 import { headingLetterSpacing } from '@/theme/typography';
 import { ScrollView, Text, View } from '@/tw';
-import { applyEventFilters } from '@/utils/filters';
+import { applyEventFilters, normalizeText } from '@/utils/filters';
 import { resolveNearbyOrigin } from '@/utils/geo';
 
 const ItemSeparator = () => <View className="h-4" />;
 
 export default function FeedScreen() {
+  const [activeTab, setActiveTab] = useState(0); // 0 = Eventos, 1 = Bares
+  const [barQuery, setBarQuery] = useState('');
+
   const filters = useFiltersStore((state) => state.filters);
   const setQuery = useFiltersStore((state) => state.setQuery);
   const toggleStyle = useFiltersStore((state) => state.toggleStyle);
@@ -85,6 +90,14 @@ export default function FeedScreen() {
     [events, filters, now, city, establishmentsById, nearbyEstablishmentIds],
   );
 
+  const cityEstablishments = useMemo(() => {
+    const all = establishments ?? [];
+    const scoped = city ? all.filter((e) => e.city_id === city.id) : all;
+    const q = normalizeText(barQuery.trim());
+    if (!q) return scoped;
+    return scoped.filter((e) => normalizeText(e.name).includes(q));
+  }, [establishments, city, barQuery]);
+
   // Estável enquanto os índices não mudam: junto com EventCard memoizado e os
   // caches de lookup, evita re-render dos cards visíveis a cada tecla da busca.
   const renderEvent = useCallback(
@@ -98,53 +111,85 @@ export default function FeedScreen() {
     [establishmentsById, stylesById],
   );
 
+  const commonHeader = useMemo(
+    () => (
+      <View className="gap-4 pt-2 pb-4">
+        <View className="gap-1">
+          <Text
+            className="font-heading text-foreground text-[28px]"
+            style={{ letterSpacing: headingLetterSpacing(28) }}
+          >
+            O que rola em <Text className="text-primary">{city?.name ?? '…'}</Text> hoje?
+          </Text>
+          <Text className="font-body text-muted-foreground text-[14px]">
+            Cards quentinhos da agenda da noite.
+          </Text>
+        </View>
+        <SearchBar
+          value={activeTab === 0 ? filters.query : barQuery}
+          onChangeText={activeTab === 0 ? setQuery : setBarQuery}
+        />
+        <SegmentedTabs tabs={['Eventos', 'Bares']} activeIndex={activeTab} onChange={setActiveTab} />
+      </View>
+    ),
+    [city, filters.query, setQuery, barQuery, activeTab],
+  );
+
+  const eventsListHeader = useMemo(
+    () => (
+      <View>
+        {commonHeader}
+        <View className="gap-4 pb-4">
+          <QuickFilterChips />
+          <View className="gap-2.5">
+            <SectionLabel>Estilos em alta</SectionLabel>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerClassName="flex-row gap-2"
+            >
+              {(musicStyles ?? []).map((style) => (
+                <StyleCard
+                  key={style.id}
+                  style={style}
+                  selected={filters.styleIds.includes(style.id)}
+                  onPress={() => toggleStyle(style.id)}
+                />
+              ))}
+            </ScrollView>
+          </View>
+          <SectionLabel>
+            {`${filteredEvents.length} ${filteredEvents.length === 1 ? 'evento encontrado' : 'eventos encontrados'}`}
+          </SectionLabel>
+        </View>
+      </View>
+    ),
+    [commonHeader, musicStyles, filters.styleIds, filteredEvents.length, toggleStyle],
+  );
+
   return (
     <Screen header={<ScreenHeader>{city ? <FeedHeader city={city} /> : null}</ScreenHeader>}>
-      <FlashList
-        data={filteredEvents}
-        keyExtractor={(event) => event.id}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 24 }}
-        ItemSeparatorComponent={ItemSeparator}
-        ListHeaderComponent={
-          <View className="gap-4 pt-2 pb-4">
-            <View className="gap-1">
-              <Text
-                className="font-heading text-foreground text-[28px]"
-                style={{ letterSpacing: headingLetterSpacing(28) }}
-              >
-                O que rola em <Text className="text-primary">{city?.name ?? '…'}</Text> hoje?
-              </Text>
-              <Text className="font-body text-muted-foreground text-[14px]">
-                Cards quentinhos da agenda da noite.
-              </Text>
-            </View>
-            <SearchBar value={filters.query} onChangeText={setQuery} />
-            <QuickFilterChips />
-            <View className="gap-2.5">
-              <SectionLabel>Estilos em alta</SectionLabel>
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerClassName="flex-row gap-2"
-              >
-                {(musicStyles ?? []).map((style) => (
-                  <StyleCard
-                    key={style.id}
-                    style={style}
-                    selected={filters.styleIds.includes(style.id)}
-                    onPress={() => toggleStyle(style.id)}
-                  />
-                ))}
-              </ScrollView>
-            </View>
-            <SectionLabel>
-              {`${filteredEvents.length} ${filteredEvents.length === 1 ? 'evento encontrado' : 'eventos encontrados'}`}
-            </SectionLabel>
-          </View>
-        }
-        renderItem={renderEvent}
-      />
+      {activeTab === 0 ? (
+        <FlashList
+          data={filteredEvents}
+          keyExtractor={(event) => event.id}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 24 }}
+          ItemSeparatorComponent={ItemSeparator}
+          ListHeaderComponent={eventsListHeader}
+          renderItem={renderEvent}
+        />
+      ) : (
+        <FlashList
+          data={cityEstablishments}
+          keyExtractor={(e) => e.id}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 24 }}
+          ItemSeparatorComponent={() => <View className="h-3" />}
+          ListHeaderComponent={commonHeader}
+          renderItem={({ item }) => <EstablishmentCard establishment={item} />}
+        />
+      )}
     </Screen>
   );
 }

@@ -9,6 +9,7 @@ import { z } from 'zod';
 import {
   CITIES,
   ESTABLISHMENTS,
+  EVENT_ATTRACTIONS,
   EVENTS,
   MUSIC_STYLES,
   NOTIFICATIONS,
@@ -20,6 +21,8 @@ import {
   type Establishment,
   establishmentSchema,
   type Event,
+  type EventAttraction,
+  eventAttractionSchema,
   eventSchema,
   type MusicStyle,
   musicStyleSchema,
@@ -28,6 +31,7 @@ import {
 import { getSupabase } from '../lib/supabase';
 import { handleServiceError } from '../utils/errors';
 
+const eventAttractionListSchema = z.array(eventAttractionSchema);
 const eventListSchema = z.array(eventSchema);
 const establishmentListSchema = z.array(establishmentSchema);
 const musicStyleListSchema = z.array(musicStyleSchema);
@@ -185,5 +189,29 @@ export async function listNotifications(): Promise<AppNotification[]> {
     return await coreQueries.listNotifications(client);
   } catch (error) {
     return handleServiceError(error, { method: 'catalog.listNotifications' });
+  }
+}
+
+function mockListEventAttractions(eventId: string): EventAttraction[] {
+  const items = EVENT_ATTRACTIONS.filter((a) => a.event_id === eventId).sort(
+    (a, b) => a.position - b.position,
+  );
+  return eventAttractionListSchema.parse(items);
+}
+
+export async function listEventAttractions(
+  eventId: string,
+): Promise<EventAttraction[]> {
+  const client = getSupabase();
+  if (client === null) {
+    return mockListEventAttractions(eventId);
+  }
+  try {
+    return await coreQueries.listEventAttractions(client, eventId);
+  } catch (error) {
+    return handleServiceError(error, {
+      method: 'catalog.listEventAttractions',
+      args: { eventId },
+    });
   }
 }

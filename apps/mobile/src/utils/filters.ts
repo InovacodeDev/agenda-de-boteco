@@ -4,6 +4,8 @@ import { haversineDistanceKm, isVirtualCityId } from './geo';
 
 export type DateBucket = 'any' | 'today' | 'tomorrow' | 'weekend';
 
+export type SortBy = 'date' | 'distance' | 'rating' | 'price';
+
 export interface EventFilters {
   query: string;
   dateBucket: DateBucket;
@@ -15,6 +17,9 @@ export interface EventFilters {
   freeOnly: boolean;
   nearMe: boolean;
   openNow: boolean;
+  /** intervalo de datas (ISO yyyy-mm-dd local); null = sem intervalo. Precede dateBucket. */
+  dateRange: { start: string; end: string } | null;
+  sortBy: SortBy;
 }
 
 export const DEFAULT_EVENT_FILTERS: EventFilters = {
@@ -27,6 +32,8 @@ export const DEFAULT_EVENT_FILTERS: EventFilters = {
   freeOnly: false,
   nearMe: false,
   openNow: false,
+  dateRange: null,
+  sortBy: 'date',
 };
 
 export interface EventFilterContext {
@@ -60,6 +67,16 @@ function isSameLocalDay(iso: string, reference: Date): boolean {
   );
 }
 
+function isWithinDateRange(
+  iso: string,
+  range: { start: string; end: string },
+): boolean {
+  const day = new Date(iso);
+  const start = new Date(`${range.start}T00:00:00`);
+  const end = new Date(`${range.end}T23:59:59.999`);
+  return day >= start && day <= end;
+}
+
 function matchesDateBucket(event: Event, bucket: DateBucket, now: Date): boolean {
   if (bucket === 'any') return true;
   if (bucket === 'today') return isSameLocalDay(event.starts_at, now);
@@ -73,7 +90,8 @@ function matchesDateBucket(event: Event, bucket: DateBucket, now: Date): boolean
 
 /**
  * Aplica os filtros do feed sobre a lista de eventos. Função pura: não muta
- * a entrada e retorna nova lista ordenada por starts_at ascendente.
+ * a entrada e retorna nova lista ordenada conforme `filters.sortBy`
+ * (desempate sempre por starts_at ascendente).
  *
  * Regras:
  * - Sempre restringe à cidade do contexto (via establishment do evento);
@@ -109,7 +127,11 @@ export function applyEventFilters(
         }
       }
 
-      if (!matchesDateBucket(event, filters.dateBucket, ctx.now)) return false;
+      if (filters.dateRange) {
+        if (!isWithinDateRange(event.starts_at, filters.dateRange)) return false;
+      } else if (!matchesDateBucket(event, filters.dateBucket, ctx.now)) {
+        return false;
+      }
 
       if (
         filters.styleIds.length > 0 &&
@@ -146,7 +168,36 @@ export function applyEventFilters(
 
       return true;
     })
-    .sort(
-      (a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime(),
-    );
+    .sort(makeComparator(filters, ctx));
+}
+
+function startsAtAsc(a: Event, b: Event): number {
+  return new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime();
+}
+
+function makeComparator(
+  filters: EventFilters,
+  ctx: EventFilterContext,
+): (a: Event, b: Event) => number {
+  // Captura userLocation antes do closure: canDistance garante que é definido
+  // quando true, e origin elimina a necessidade de checagens adicionais dentro.
+  const origin = ctx.userLocation;
+  const canDistance = filters.sortBy === 'distance' && !!origin;
+  return (a, b) => {
+    let primary = 0;
+    if (filters.sortBy === 'rating') {
+      const ra = ctx.establishmentsById[a.establishment_id]?.rating_avg ?? 0;
+      const rb = ctx.establishmentsById[b.establishment_id]?.rating_avg ?? 0;
+      primary = rb - ra;
+    } else if (filters.sortBy === 'price') {
+      primary = a.cover_charge - b.cover_charge;
+    } else if (canDistance) {
+      const ea = ctx.establishmentsById[a.establishment_id];
+      const eb = ctx.establishmentsById[b.establishment_id];
+      const da = ea ? haversineDistanceKm(origin, { lat: ea.lat, lng: ea.lng }) : Infinity;
+      const db = eb ? haversineDistanceKm(origin, { lat: eb.lat, lng: eb.lng }) : Infinity;
+      primary = da - db;
+    }
+    return primary !== 0 ? primary : startsAtAsc(a, b);
+  };
 }

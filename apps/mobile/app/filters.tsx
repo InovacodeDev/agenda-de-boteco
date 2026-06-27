@@ -2,6 +2,7 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { DateRangeField } from '@/components/filters/DateRangeField';
 import { FilterSection } from '@/components/filters/FilterSection';
 import { FilterSlider } from '@/components/filters/FilterSlider';
 import { SwitchRow } from '@/components/filters/SwitchRow';
@@ -15,7 +16,7 @@ import { useFiltersStore } from '@/store/useFiltersStore';
 import { usePreferencesStore } from '@/store/usePreferencesStore';
 import { colors } from '@/theme/colors';
 import { ScrollView, View } from '@/tw';
-import type { DateBucket, EventFilters } from '@/utils/filters';
+import type { DateBucket, EventFilters, SortBy } from '@/utils/filters';
 import { DEFAULT_EVENT_FILTERS } from '@/utils/filters';
 
 const DATE_OPTIONS: Array<{ label: string; bucket: DateBucket }> = [
@@ -23,6 +24,13 @@ const DATE_OPTIONS: Array<{ label: string; bucket: DateBucket }> = [
   { label: 'Hoje', bucket: 'today' },
   { label: 'Amanhã', bucket: 'tomorrow' },
   { label: 'Fim de semana', bucket: 'weekend' },
+];
+
+const SORT_OPTIONS: Array<{ label: string; value: SortBy }> = [
+  { label: 'Data', value: 'date' },
+  { label: 'Distância', value: 'distance' },
+  { label: 'Avaliação', value: 'rating' },
+  { label: 'Preço', value: 'price' },
 ];
 
 const MAX_PRICE_LIMIT = 100;
@@ -85,8 +93,25 @@ export default function FiltersSheet() {
               <Chip
                 key={bucket}
                 label={label}
-                selected={draft.dateBucket === bucket}
-                onPress={() => patch({ dateBucket: bucket })}
+                selected={!draft.dateRange && draft.dateBucket === bucket}
+                onPress={() => patch({ dateBucket: bucket, dateRange: null })}
+              />
+            ))}
+          </View>
+          <DateRangeField
+            value={draft.dateRange}
+            onChange={(range) => patch({ dateRange: range, dateBucket: 'any' })}
+          />
+        </FilterSection>
+
+        <FilterSection title="Ordenar por">
+          <View className="flex-row flex-wrap gap-2">
+            {SORT_OPTIONS.map((opt) => (
+              <Chip
+                key={opt.value}
+                label={opt.label}
+                selected={draft.sortBy === opt.value}
+                onPress={() => patch({ sortBy: opt.value })}
               />
             ))}
           </View>

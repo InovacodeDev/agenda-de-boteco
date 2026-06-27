@@ -50,6 +50,29 @@ describe('useFiltersStore', () => {
     expect(useFiltersStore.getState().filters.maxPrice).toBeNull();
   });
 
+  it('setDateRange seta o intervalo e zera o dateBucket', () => {
+    const store = useFiltersStore.getState();
+    store.setDateBucket('today');
+    store.setDateRange({ start: '2026-06-12', end: '2026-06-15' });
+    const f = useFiltersStore.getState().filters;
+    expect(f.dateRange).toEqual({ start: '2026-06-12', end: '2026-06-15' });
+    expect(f.dateBucket).toBe('any');
+  });
+
+  it('setDateBucket limpa o dateRange', () => {
+    const store = useFiltersStore.getState();
+    store.setDateRange({ start: '2026-06-12', end: '2026-06-15' });
+    store.setDateBucket('weekend');
+    const f = useFiltersStore.getState().filters;
+    expect(f.dateRange).toBeNull();
+    expect(f.dateBucket).toBe('weekend');
+  });
+
+  it('setSortBy atualiza o critério', () => {
+    useFiltersStore.getState().setSortBy('price');
+    expect(useFiltersStore.getState().filters.sortBy).toBe('price');
+  });
+
   it('replaceFilters substitui o objeto inteiro e resetFilters volta ao default', () => {
     useFiltersStore.getState().replaceFilters({
       ...DEFAULT_EVENT_FILTERS,

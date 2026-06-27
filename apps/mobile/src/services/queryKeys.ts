@@ -10,6 +10,8 @@ export const catalogKeys = {
     detail: (id: string) => ['events', 'detail', id] as const,
     byEstablishment: (establishmentId: string) =>
       ['events', 'by-establishment', establishmentId] as const,
+    attractions: (eventId: string) =>
+      ['events', 'attractions', eventId] as const,
   },
   establishments: {
     root: ['establishments'] as const,

@@ -226,6 +226,80 @@ describe('applyEventFilters', () => {
     );
   });
 
+  describe('dateRange (precede dateBucket)', () => {
+    // buildEventDate usa new Date() como base, então as datas dos eventos são
+    // relativas ao dia de execução. Calculamos o intervalo cobrindo offset 1..7
+    // (eventos ev3, ev4, ev9, ev10, ev11 de fln) para ter resultados não-vazios.
+    function isoDate(daysOffset: number): string {
+      const d = new Date();
+      d.setDate(d.getDate() + daysOffset);
+      return d.toISOString().slice(0, 10);
+    }
+
+    it('filtra eventos cujo starts_at cai dentro do intervalo, inclusivo', () => {
+      const range = { start: isoDate(1), end: isoDate(7) };
+      const result = applyEventFilters(
+        EVENTS,
+        makeFilters({ dateRange: range }),
+        makeContext(),
+      );
+      for (const ev of result) {
+        const d = new Date(ev.starts_at);
+        expect(d >= new Date(`${range.start}T00:00:00`)).toBe(true);
+        expect(d <= new Date(`${range.end}T23:59:59.999`)).toBe(true);
+      }
+    });
+
+    it('quando dateRange está setado, dateBucket é ignorado', () => {
+      const range = { start: isoDate(1), end: isoDate(7) };
+      const withBucket = applyEventFilters(
+        EVENTS,
+        makeFilters({ dateBucket: 'today', dateRange: range }),
+        makeContext(),
+      );
+      const onlyRange = applyEventFilters(
+        EVENTS,
+        makeFilters({ dateBucket: 'any', dateRange: range }),
+        makeContext(),
+      );
+      expect(ids(withBucket)).toEqual(ids(onlyRange));
+    });
+  });
+
+  describe('sortBy', () => {
+    it("'date' (default) ordena por starts_at asc — regressão preservada", () => {
+      const result = applyEventFilters(EVENTS, makeFilters({ sortBy: 'date' }), makeContext());
+      const times = result.map((e) => new Date(e.starts_at).getTime());
+      expect(times).toEqual([...times].sort((a, b) => a - b));
+    });
+
+    it("'price' ordena por cover_charge asc, desempate por starts_at asc", () => {
+      const result = applyEventFilters(EVENTS, makeFilters({ sortBy: 'price' }), makeContext());
+      for (let i = 1; i < result.length; i++) {
+        expect(result[i - 1].cover_charge <= result[i].cover_charge).toBe(true);
+        if (result[i - 1].cover_charge === result[i].cover_charge) {
+          expect(new Date(result[i - 1].starts_at).getTime() <= new Date(result[i].starts_at).getTime()).toBe(true);
+        }
+      }
+    });
+
+    it("'rating' ordena por rating_avg do estabelecimento desc", () => {
+      const ctx = makeContext();
+      const result = applyEventFilters(EVENTS, makeFilters({ sortBy: 'rating' }), ctx);
+      for (let i = 1; i < result.length; i++) {
+        const prev = ctx.establishmentsById[result[i - 1].establishment_id].rating_avg;
+        const cur = ctx.establishmentsById[result[i].establishment_id].rating_avg;
+        expect(prev >= cur).toBe(true);
+      }
+    });
+
+    it("'distance' sem userLocation cai para ordenação por data", () => {
+      const byDate = applyEventFilters(EVENTS, makeFilters({ sortBy: 'date' }), makeContext());
+      const byDist = applyEventFilters(EVENTS, makeFilters({ sortBy: 'distance' }), makeContext());
+      expect(ids(byDist)).toEqual(ids(byDate));
+    });
+  });
+
   describe('cidade virtual (geo:)', () => {
     const virtualCtx = makeContext({ cityId: 'geo:-27.595,-48.548' });
 

@@ -26,7 +26,7 @@ export function QuickFilterChips() {
         <Chip
           key={bucket}
           label={label}
-          selected={filters.dateBucket === bucket}
+          selected={!filters.dateRange && filters.dateBucket === bucket}
           onPress={() => setDateBucket(filters.dateBucket === bucket ? 'any' : bucket)}
         />
       ))}
