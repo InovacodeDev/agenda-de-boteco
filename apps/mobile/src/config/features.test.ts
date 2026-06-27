@@ -11,6 +11,6 @@ describe('FEATURES', () => {
   it('libera o detalhe do estabelecimento na v2 e mantém as demais bloqueadas', () => {
     expect(FEATURES.establishmentDetail).toBe(true);
     expect(FEATURES.notifications).toBe(true);
-    expect(FEATURES.map).toBe(true);
+    expect(FEATURES.map).toBe(false);
   });
 });
