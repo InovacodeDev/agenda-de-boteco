@@ -3,8 +3,8 @@
  * página "Em construção" enquanto a flag estiver false. Reverter = trocar para true.
  */
 export const FEATURES = {
-  /** Detalhe do estabelecimento — libera na v2 */
-  establishmentDetail: false,
+  /** Detalhe do estabelecimento — liberado na v2 */
+  establishmentDetail: true,
   /** Aba de avisos/notificações — libera na v3 */
   notifications: false,
   /** Aba de mapa — libera na v4 */
