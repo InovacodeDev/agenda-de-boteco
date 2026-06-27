@@ -1,7 +1,8 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMemo } from 'react';
-import { Linking, Share, StyleSheet } from 'react-native';
+import { Linking, Share } from 'react-native';
 
+import { EventPhotoCarousel } from '@/components/event/EventPhotoCarousel';
 import { Screen } from '@/components/layout/Screen';
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import { Button } from '@/components/ui/Button';
@@ -12,13 +13,13 @@ import { Icon } from '@/components/ui/Icon';
 import { InfoCard } from '@/components/ui/InfoCard';
 import { SectionLabel } from '@/components/ui/SectionLabel';
 import { indexById, musicStylesForEvent } from '@/data/lookup';
-import { useEstablishmentQuery, useEventQuery, useMusicStylesQuery } from '@/hooks/queries';
+import { useEstablishmentQuery, useEventAttractionsQuery, useEventQuery, useMusicStylesQuery } from '@/hooks/queries';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useFavoritesStore } from '@/store/useFavoritesStore';
 import { colors } from '@/theme/colors';
 import { headingLetterSpacing } from '@/theme/typography';
-import { Image, ScrollView, Text, View } from '@/tw';
-import { formatRelativeDay, formatTime } from '@/utils/dates';
+import { ScrollView, Text, View } from '@/tw';
+import { formatRelativeDay, formatTimeRange } from '@/utils/dates';
 import { formatPrice } from '@/utils/format';
 import { buildDirectionsUrl, buildEventShareUrl } from '@/utils/links';
 
@@ -33,6 +34,11 @@ export default function EventDetailScreen() {
   const establishment = establishmentQuery.data;
   const { data: musicStyles } = useMusicStylesQuery();
   const stylesById = useMemo(() => indexById(musicStyles ?? []), [musicStyles]);
+  const { data: attractions } = useEventAttractionsQuery(event?.id ?? '');
+  const photos = useMemo(
+    () => [event?.banner_url, ...(event?.photo_urls ?? [])].filter(Boolean) as string[],
+    [event],
+  );
 
   const isFavorite = useFavoritesStore((state) =>
     event ? state.eventIds.includes(event.id) : false,
@@ -128,13 +134,8 @@ export default function EventDetailScreen() {
       />
       <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }}>
         <View className="h-65">
-          <Image
-            source={{ uri: event.banner_url }}
-            contentFit="cover"
-            style={StyleSheet.absoluteFill}
-            accessibilityLabel={event.name}
-          />
-          <View className="flex-1 justify-end p-4">
+          <EventPhotoCarousel photos={photos} accessibilityLabel={event.name} />
+          <View className="absolute inset-0 justify-end p-4" pointerEvents="none">
             <View className="flex-row gap-1.5">
               {styles.map((style) => (
                 <View key={style.id} className="bg-background/70 rounded-full px-2.5 py-1">
@@ -175,7 +176,7 @@ export default function EventDetailScreen() {
               />
               <InfoCard
                 label="Horário"
-                value={formatTime(event.starts_at)}
+                value={formatTimeRange(event.starts_at, event.ends_at)}
                 icon={
                   <Icon name="clock" variant="regular" color={colors.mutedForeground} size={13} />
                 }
@@ -209,6 +210,22 @@ export default function EventDetailScreen() {
               {event.description}
             </Text>
           </View>
+
+          {attractions && attractions.length > 0 ? (
+            <View className="gap-2">
+              <SectionLabel>Outras atrações</SectionLabel>
+              <View className="gap-1.5">
+                {attractions.map((attraction) => (
+                  <View key={attraction.id} className="flex-row items-center gap-2">
+                    <Icon name="music" color={colors.primary} size={13} />
+                    <Text className="font-body text-foreground text-[14px]">
+                      {attraction.name}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          ) : null}
         </View>
       </ScrollView>
 

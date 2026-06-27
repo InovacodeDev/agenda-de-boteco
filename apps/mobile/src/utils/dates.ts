@@ -69,6 +69,13 @@ export function formatTime(iso: string): string {
   return `${h}:${m}`;
 }
 
+/** '20:00 – 23:30' no fuso local; só o início quando coincidem. */
+export function formatTimeRange(startIso: string, endIso: string): string {
+  const start = formatTime(startIso);
+  const end = formatTime(endIso);
+  return start === end ? start : `${start} – ${end}`;
+}
+
 /**
  * Tempo relativo no formato curto do protótipo: 'agora', 'X min', 'X h', 'X d'.
  */

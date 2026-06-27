@@ -5,6 +5,8 @@ export {
   type Establishment,
   establishmentSchema,
   type Event,
+  type EventAttraction,
+  eventAttractionSchema,
   eventSchema,
   type MenuItem,
   menuItemSchema,

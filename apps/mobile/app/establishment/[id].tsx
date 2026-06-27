@@ -24,6 +24,7 @@ import { useFavoritesStore } from '@/store/useFavoritesStore';
 import { colors } from '@/theme/colors';
 import { headingLetterSpacing } from '@/theme/typography';
 import { Image, ScrollView, Text, View } from '@/tw';
+import { upcomingEventsForEstablishment } from '@/utils/events';
 import { buildDirectionsUrl, buildEstablishmentShareUrl, buildWhatsAppUrl } from '@/utils/links';
 
 const TABS = ['Sobre', 'Agenda', 'Cardápio', 'Reviews'];
@@ -55,9 +56,13 @@ function EstablishmentDetailContent() {
   const establishment = establishmentQuery.data;
   // O service/core já ordena a agenda por starts_at asc.
   const { data: agendaData } = useEventsByEstablishmentQuery(id ?? '');
-  const agenda = agendaData ?? [];
   const { data: musicStyles } = useMusicStylesQuery();
   const stylesById = useMemo(() => indexById(musicStyles ?? []), [musicStyles]);
+
+  const upcoming = useMemo(
+    () => upcomingEventsForEstablishment(agendaData ?? [], id ?? '', new Date(), 5),
+    [agendaData, id],
+  );
 
   const isFavorite = useFavoritesStore((state) =>
     establishment ? state.establishmentIds.includes(establishment.id) : false,
@@ -202,12 +207,12 @@ function EstablishmentDetailContent() {
 
           {activeTab === 1 ? (
             <View className="gap-3">
-              {agenda.length === 0 ? (
+              {upcoming.length === 0 ? (
                 <Text className="font-body text-muted-foreground text-[14px]">
-                  Nenhum evento agendado.
+                  Nenhum evento agendado por aqui ainda.
                 </Text>
               ) : (
-                agenda.map((event) => (
+                upcoming.map((event) => (
                   <AgendaItem
                     key={event.id}
                     event={event}

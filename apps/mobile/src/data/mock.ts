@@ -229,6 +229,7 @@ export const EVENTS: Event[] = [
     description:
       'A melhor roda de samba da cidade, com clássicos de Fundo de Quintal e Zeca Pagodinho.',
     banner_url: img('1493676304819-0d7a8d026dcf'),
+    photo_urls: [],
     music_style_ids: ['samba', 'pagode'],
     establishment_id: 'e1',
     starts_at: buildEventDate(0, 20),
@@ -242,6 +243,7 @@ export const EVENTS: Event[] = [
     attraction: 'Banda The Garage',
     description: 'Os maiores hits do rock clássico em uma noite eletrizante.',
     banner_url: img('1514933651103-005eec06c04b'),
+    photo_urls: [],
     music_style_ids: ['rock'],
     establishment_id: 'e2',
     starts_at: buildEventDate(0, 22),
@@ -255,6 +257,7 @@ export const EVENTS: Event[] = [
     attraction: 'Dupla João & Marcelo',
     description: 'Modão, sofrência e os hits do momento.',
     banner_url: img('1571266028243-d220c6a4dbd8'),
+    photo_urls: [],
     music_style_ids: ['sertanejo'],
     establishment_id: 'e3',
     starts_at: buildEventDate(1, 22),
@@ -268,6 +271,7 @@ export const EVENTS: Event[] = [
     attraction: 'Marina Costa Trio',
     description: 'Tributo a Elis Regina, Djavan e Caetano Veloso.',
     banner_url: img('1470225620780-dba8ba36b745'),
+    photo_urls: [],
     music_style_ids: ['mpb', 'jazz'],
     establishment_id: 'e4',
     starts_at: buildEventDate(2, 21),
@@ -281,6 +285,7 @@ export const EVENTS: Event[] = [
     description:
       'Hits dos anos 90 e 2000 em versão acústica para esquentar a noite.',
     banner_url: img('1538488881038-e252a119ace7'),
+    photo_urls: [],
     music_style_ids: ['mpb', 'rock'],
     establishment_id: 'e5',
     starts_at: buildEventDate(0, 18),
@@ -294,6 +299,7 @@ export const EVENTS: Event[] = [
     attraction: 'Grupo Suingue Carioca',
     description: 'Pagode raiz na Lapa com a melhor energia do Rio.',
     banner_url: img('1571266028243-d220c6a4dbd8'),
+    photo_urls: [],
     music_style_ids: ['pagode', 'samba'],
     establishment_id: 'e6',
     starts_at: buildEventDate(3, 22),
@@ -306,6 +312,7 @@ export const EVENTS: Event[] = [
     attraction: 'Trio Xote do Bem',
     description: 'Forró pé de serra com aulas grátis a partir das 21h.',
     banner_url: img('1582719508461-905c673771fd'),
+    photo_urls: [],
     music_style_ids: ['forro'],
     establishment_id: 'e7',
     starts_at: buildEventDate(2, 21),
@@ -319,6 +326,7 @@ export const EVENTS: Event[] = [
     attraction: 'DJ Marina K · DJ Pulse',
     description: 'Line-up nacional com techno e house até o amanhecer.',
     banner_url: img('1571266028243-d220c6a4dbd8'),
+    photo_urls: [],
     music_style_ids: ['eletronica'],
     establishment_id: 'e8',
     starts_at: buildEventDate(4, 23),
@@ -331,6 +339,7 @@ export const EVENTS: Event[] = [
     attraction: 'Pedro Lima e convidados',
     description: 'Uma noite de risadas com o melhor do humor independente.',
     banner_url: img('1514933651103-005eec06c04b'),
+    photo_urls: [],
     music_style_ids: ['standup'],
     establishment_id: 'e2',
     starts_at: buildEventDate(5, 21),
@@ -344,6 +353,7 @@ export const EVENTS: Event[] = [
     description:
       'Noite intimista com jazz instrumental e carta de vinhos especial.',
     banner_url: img('1470225620780-dba8ba36b745'),
+    photo_urls: [],
     music_style_ids: ['jazz'],
     establishment_id: 'e4',
     starts_at: buildEventDate(6, 20),
@@ -358,6 +368,7 @@ export const EVENTS: Event[] = [
     description:
       'A roda de samba que toma conta da varanda no domingo à tarde.',
     banner_url: img('1493676304819-0d7a8d026dcf'),
+    photo_urls: [],
     music_style_ids: ['samba'],
     establishment_id: 'e1',
     starts_at: buildEventDate(7, 15),
@@ -371,12 +382,18 @@ export const EVENTS: Event[] = [
     attraction: 'Banda Maré Alta',
     description: 'Hits do reggae e MPB em versão acústica.',
     banner_url: img('1538488881038-e252a119ace7'),
+    photo_urls: [],
     music_style_ids: ['mpb'],
     establishment_id: 'e5',
     starts_at: buildEventDate(1, 20),
     ends_at: buildEventDate(2, 0),
     cover_charge: 15,
   },
+];
+
+export const EVENT_ATTRACTIONS = [
+  { id: 'att1', event_id: 'ev1', name: 'DJ Convidado', position: 0 },
+  { id: 'att2', event_id: 'ev1', name: 'Banda Abertura', position: 1 },
 ];
 
 export const NOTIFICATIONS: AppNotification[] = [
