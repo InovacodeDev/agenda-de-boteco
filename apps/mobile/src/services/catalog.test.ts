@@ -12,6 +12,7 @@ import { z } from 'zod';
 import {
   CITIES,
   ESTABLISHMENTS,
+  EVENT_ATTRACTIONS,
   EVENTS,
   MUSIC_STYLES,
   NOTIFICATIONS,
@@ -35,6 +36,7 @@ import {
   getEvent,
   listCities,
   listEstablishments,
+  listEventAttractions,
   listEvents,
   listEventsByEstablishment,
   listMusicStyles,
@@ -171,6 +173,19 @@ describe('catalog service — fallback mock (client nulo)', () => {
       ).not.toThrow();
     });
   });
+
+  describe('listEventAttractions', () => {
+    it('retorna atrações do evento ordenadas por position', async () => {
+      const result = await listEventAttractions('ev1');
+      expect(result.map((a) => a.id)).toEqual(['att1', 'att2']);
+      expect(result.every((a) => a.event_id === 'ev1')).toBe(true);
+    });
+
+    it('retorna [] para evento sem atrações', async () => {
+      const result = await listEventAttractions('inexistente');
+      expect(result).toEqual([]);
+    });
+  });
 });
 
 /**
@@ -253,10 +268,18 @@ const notificationRows: Row[] = NOTIFICATIONS.map((notification) => ({
   establishment_id: optionalToNull(notification.establishment_id),
 }));
 
+const attractionRows: Row[] = EVENT_ATTRACTIONS.map((attraction) => ({
+  id: attraction.id,
+  event_id: attraction.event_id,
+  name: attraction.name,
+  position: attraction.position,
+}));
+
 const TABLE_ROWS: Record<string, Row[]> = {
   cities: cityRows,
   establishments: establishmentRows,
   events: eventRows,
+  event_attractions: attractionRows,
   music_styles: musicStyleRows,
   notifications: notificationRows,
 };
@@ -480,6 +503,19 @@ describe('catalog service — caminho Supabase (client fake)', () => {
     });
   });
 
+  describe('listEventAttractions', () => {
+    it('retorna atrações do evento ordenadas por position', async () => {
+      const result = await listEventAttractions('ev1');
+      expect(result.map((a) => a.id)).toEqual(['att1', 'att2']);
+      expect(result.every((a) => a.event_id === 'ev1')).toBe(true);
+    });
+
+    it('retorna [] para evento sem atrações', async () => {
+      const result = await listEventAttractions('inexistente');
+      expect(result).toEqual([]);
+    });
+  });
+
   describe('propagação de erro do PostgREST', () => {
     it('listEvents rejeita quando a query de events retorna error', async () => {
       mockGetSupabase.mockReturnValue(
@@ -500,6 +536,13 @@ describe('catalog service — caminho Supabase (client fake)', () => {
         createFakeClient({ events: POSTGREST_ERROR }),
       );
       await expect(getEvent('ev1')).rejects.toEqual(POSTGREST_ERROR);
+    });
+
+    it('listEventAttractions rejeita quando a query de event_attractions retorna error', async () => {
+      mockGetSupabase.mockReturnValue(
+        createFakeClient({ event_attractions: POSTGREST_ERROR }),
+      );
+      await expect(listEventAttractions('ev1')).rejects.toEqual(POSTGREST_ERROR);
     });
   });
 });

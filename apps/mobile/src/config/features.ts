@@ -8,7 +8,7 @@ export const FEATURES = {
   /** Aba de avisos/notificações — libera na v3 */
   notifications: true,
   /** Aba de mapa — libera na v4 */
-  map: false,
+  map: true,
 } as const;
 
 export type FeatureFlag = keyof typeof FEATURES;

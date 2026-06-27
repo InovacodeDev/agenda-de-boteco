@@ -13,7 +13,7 @@ import { colors } from '@/theme/colors';
 import { gradientCardOverlay } from '@/theme/gradients';
 import { headingLetterSpacing } from '@/theme/typography';
 import { Image, Text, View } from '@/tw';
-import { formatRelativeDay, formatTime } from '@/utils/dates';
+import { formatRelativeDay, formatTimeRange } from '@/utils/dates';
 import { formatPrice } from '@/utils/format';
 
 interface FooterItemProps {
@@ -127,7 +127,7 @@ export const EventCard = memo(function EventCard({ event, establishment, styles 
         <View className="items-end gap-2">
           <FooterItem icon={<Icon name="clock" variant="regular" color={colors.primary} size={14} />}>
             <Text className="font-body text-foreground text-[13px]">
-              {formatTime(event.starts_at)}
+              {formatTimeRange(event.starts_at, event.ends_at)}
             </Text>
           </FooterItem>
           <FooterItem icon={<Icon name="ticket" color={colors.primary} size={14} />}>

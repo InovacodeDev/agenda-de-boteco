@@ -51,6 +51,7 @@ export const eventSchema = z.object({
   attraction: z.string(),
   description: z.string(),
   banner_url: z.string().url(),
+  photo_urls: z.array(z.string().url()).default([]),
   music_style_ids: z.array(z.string()),
   establishment_id: z.string(),
   starts_at: z.string().datetime({ offset: true }),
@@ -60,6 +61,13 @@ export const eventSchema = z.object({
   courtesy: z.string().optional(),
   promo: z.string().optional(),
   slug: z.string().optional(),
+});
+
+export const eventAttractionSchema = z.object({
+  id: z.string(),
+  event_id: z.string(),
+  name: z.string(),
+  position: z.number().int().nonnegative().default(0),
 });
 
 export const notificationTypeSchema = z.enum([
@@ -86,5 +94,6 @@ export type MenuItem = z.infer<typeof menuItemSchema>;
 export type PriceRange = z.infer<typeof priceRangeSchema>;
 export type Establishment = z.infer<typeof establishmentSchema>;
 export type Event = z.infer<typeof eventSchema>;
+export type EventAttraction = z.infer<typeof eventAttractionSchema>;
 export type NotificationType = z.infer<typeof notificationTypeSchema>;
 export type AppNotification = z.infer<typeof notificationSchema>;

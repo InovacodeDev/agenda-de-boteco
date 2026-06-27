@@ -2,6 +2,7 @@ import {
   buildEventDate,
   formatRelativeDay,
   formatTime,
+  formatTimeRange,
   isOpenNow,
   isWeekend,
   relativeTime,
@@ -204,5 +205,23 @@ describe('isOpenNow', () => {
     it('retorna false sem dias reconhecíveis', () => {
       expect(isOpenNow('17h às 01h', FIXED_NOW)).toBe(false);
     });
+  });
+});
+
+describe('formatTimeRange', () => {
+  const at = (h: number, m = 0) => new Date(2026, 5, 12, h, m, 0, 0).toISOString();
+
+  it('formata início e fim no mesmo dia', () => {
+    expect(formatTimeRange(at(20, 0), at(23, 30))).toBe('20:00 – 23:30');
+  });
+
+  it('quando início e fim coincidem, mostra só o horário', () => {
+    expect(formatTimeRange(at(20, 0), at(20, 0))).toBe('20:00');
+  });
+
+  it('mantém os horários locais mesmo virando o dia', () => {
+    const start = new Date(2026, 5, 12, 22, 0).toISOString();
+    const end = new Date(2026, 5, 13, 2, 0).toISOString();
+    expect(formatTimeRange(start, end)).toBe('22:00 – 02:00');
   });
 });

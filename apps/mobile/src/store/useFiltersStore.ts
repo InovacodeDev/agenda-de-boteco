@@ -4,12 +4,15 @@ import {
   type DateBucket,
   DEFAULT_EVENT_FILTERS,
   type EventFilters,
+  type SortBy,
 } from '../utils/filters';
 
 export interface FiltersState {
   filters: EventFilters;
   setQuery: (query: string) => void;
   setDateBucket: (dateBucket: DateBucket) => void;
+  setDateRange: (range: { start: string; end: string } | null) => void;
+  setSortBy: (sortBy: SortBy) => void;
   toggleStyle: (id: string) => void;
   setMaxDistanceKm: (km: number) => void;
   setMinRating: (rating: number) => void;
@@ -28,7 +31,9 @@ export const useFiltersStore = create<FiltersState>()((set) => {
   return {
     filters: DEFAULT_EVENT_FILTERS,
     setQuery: (query) => patchFilters({ query }),
-    setDateBucket: (dateBucket) => patchFilters({ dateBucket }),
+    setDateBucket: (dateBucket) => patchFilters({ dateBucket, dateRange: null }),
+    setDateRange: (dateRange) => patchFilters({ dateRange, dateBucket: 'any' }),
+    setSortBy: (sortBy) => patchFilters({ sortBy }),
     toggleStyle: (id) =>
       set((state) => ({
         filters: {

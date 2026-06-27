@@ -66,3 +66,11 @@ export function useNotificationsQuery() {
     queryFn: () => catalog.listNotifications(),
   });
 }
+
+export function useEventAttractionsQuery(eventId: string) {
+  return useQuery({
+    queryKey: catalogKeys.events.attractions(eventId),
+    queryFn: () => catalog.listEventAttractions(eventId),
+    enabled: !!eventId,
+  });
+}

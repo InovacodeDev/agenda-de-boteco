@@ -7,6 +7,8 @@ import {
   type Establishment,
   establishmentSchema,
   type Event,
+  type EventAttraction,
+  eventAttractionSchema,
   eventSchema,
   menuItemSchema,
   type MusicStyle,
@@ -28,11 +30,25 @@ type NotificationRow = Database['public']['Tables']['notifications']['Row'];
 const CITY_COLUMNS = 'id,name,uf,lat,lng,slug';
 const ESTABLISHMENT_COLUMNS =
   'id,name,description,logo_url,cover_url,address,neighborhood,city_id,lat,lng,whatsapp,instagram,opening_hours,menu_items,price_range,ambiance,rating_avg,rating_count,highlights,slug';
+// photo_urls incluído; database.types.ts ainda não tem a coluna — selects de events usam
+// (client as SupabaseClient) sem generic para contornar a validação estática do supabase-js.
 const EVENT_COLUMNS =
-  'id,name,attraction,description,banner_url,music_style_ids,establishment_id,starts_at,ends_at,cover_charge,courtesy,promo,slug';
+  'id,name,attraction,description,banner_url,photo_urls,music_style_ids,establishment_id,starts_at,ends_at,cover_charge,courtesy,promo,slug';
 const MUSIC_STYLE_COLUMNS = 'id,name,emoji';
 const NOTIFICATION_COLUMNS =
   'id,title,body,type,created_at,read,event_id,establishment_id';
+const EVENT_ATTRACTION_COLUMNS = 'id,event_id,name,position';
+
+// Helper: acessa a tabela 'events' sem validação de colunas pelo supabase-js, necessário
+// enquanto database.types.ts não incluir photo_urls.
+function eventsFrom(client: SupabaseClient<Database>) {
+  return (client as SupabaseClient).from('events');
+}
+
+// Helper: acessa a tabela 'event_attractions', ainda ausente em database.types.ts.
+function attractionsFrom(client: SupabaseClient<Database>) {
+  return (client as SupabaseClient).from('event_attractions');
+}
 
 function nullToUndefined<T>(value: T | null): T | undefined {
   return value === null ? undefined : value;
@@ -85,6 +101,7 @@ function mapEvent(row: EventRow): Event {
     attraction: row.attraction,
     description: row.description,
     banner_url: row.banner_url,
+    photo_urls: (row as { photo_urls?: string[] }).photo_urls ?? [],
     music_style_ids: row.music_style_ids,
     establishment_id: row.establishment_id,
     starts_at: row.starts_at,
@@ -122,25 +139,23 @@ export async function listEvents(
 ): Promise<Event[]> {
   // Invariante: esta ordenação (starts_at asc) deve casar com o fallback mock
   // em apps/mobile/src/services/catalog.ts (sortByStartsAtAsc).
-  const { data, error } = await client
-    .from('events')
+  const { data, error } = await eventsFrom(client)
     .select(EVENT_COLUMNS)
     .order('starts_at', { ascending: true });
   if (error) throw error;
-  return (data ?? []).map(mapEvent);
+  return ((data ?? []) as EventRow[]).map(mapEvent);
 }
 
 export async function getEvent(
   client: SupabaseClient<Database>,
   id: string,
 ): Promise<Event | null> {
-  const { data, error } = await client
-    .from('events')
+  const { data, error } = await eventsFrom(client)
     .select(EVENT_COLUMNS)
     .eq('id', id)
     .maybeSingle();
   if (error) throw error;
-  return data ? mapEvent(data) : null;
+  return data ? mapEvent(data as EventRow) : null;
 }
 
 export async function listEstablishments(
@@ -175,13 +190,32 @@ export async function listEventsByEstablishment(
 ): Promise<Event[]> {
   // Invariante: esta ordenação (starts_at asc) deve casar com o fallback mock
   // em apps/mobile/src/services/catalog.ts (sortByStartsAtAsc).
-  const { data, error } = await client
-    .from('events')
+  const { data, error } = await eventsFrom(client)
     .select(EVENT_COLUMNS)
     .eq('establishment_id', establishmentId)
     .order('starts_at', { ascending: true });
   if (error) throw error;
-  return (data ?? []).map(mapEvent);
+  return ((data ?? []) as EventRow[]).map(mapEvent);
+}
+
+export async function listEventAttractions(
+  client: SupabaseClient<Database>,
+  eventId: string,
+): Promise<EventAttraction[]> {
+  const { data, error } = await attractionsFrom(client)
+    .select(EVENT_ATTRACTION_COLUMNS)
+    .eq('event_id', eventId)
+    .order('position', { ascending: true });
+  if (error) throw error;
+  return (data ?? []).map((row) => {
+    const r = row as { id: string; event_id: string; name: string; position: number };
+    return eventAttractionSchema.parse({
+      id: r.id,
+      event_id: r.event_id,
+      name: r.name,
+      position: r.position,
+    });
+  });
 }
 
 export async function listMusicStyles(
