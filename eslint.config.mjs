@@ -27,11 +27,13 @@ export default tseslint.config(
       '**/coverage/**',
       '**/.turbo/**',
       '**/.expo/**',
+      '**/.next/**',
       '**/android/**',
       '**/ios/**',
       '**/*.config.js',
       '**/*.config.cjs',
       'expo-env.d.ts',
+      '**/next-env.d.ts',
     ],
   },
 
