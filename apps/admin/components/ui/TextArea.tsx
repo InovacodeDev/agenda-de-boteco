@@ -9,11 +9,11 @@ export function TextArea({
   rows = 3,
   ...props
 }: TextareaHTMLAttributes<HTMLTextAreaElement>) {
-  // h-11 do INPUT_CLASS não faz sentido em textarea; sobrescreve com min-h.
+  // h-12 do INPUT_CLASS não faz sentido em textarea; sobrescreve com min-h.
   return (
     <textarea
       rows={rows}
-      className={`${INPUT_CLASS} h-auto min-h-[2.75rem] py-2 ${className}`}
+      className={`${INPUT_CLASS} h-auto min-h-[3rem] py-3 ${className}`}
       {...props}
     />
   );

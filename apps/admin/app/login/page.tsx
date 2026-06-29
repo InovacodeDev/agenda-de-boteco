@@ -10,16 +10,14 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
+import { BTN_GHOST as BTN_GHOST_BASE, BTN_PRIMARY as BTN_PRIMARY_BASE, INPUT_CLASS as INPUT_BASE } from '@/components/ui/styles';
+
 type EmailStep = 'editing' | 'sent';
 
-const INPUT_CLASS =
-  'h-12 w-full rounded-lg border border-border bg-input px-4 text-[14px] text-foreground placeholder:text-muted-foreground outline-none focus:border-primary';
-
-const BTN_PRIMARY =
-  'flex h-12 w-full items-center justify-center rounded-lg bg-primary text-[14px] font-semibold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50';
-
-const BTN_GHOST =
-  'flex h-12 w-full items-center justify-center rounded-lg border border-border bg-background text-[14px] font-medium text-foreground transition-opacity hover:opacity-90 disabled:opacity-50';
+// Mesmos tokens das telas internas, esticados para largura total do card.
+const INPUT_CLASS = INPUT_BASE;
+const BTN_PRIMARY = `${BTN_PRIMARY_BASE} w-full`;
+const BTN_GHOST = `${BTN_GHOST_BASE} w-full`;
 
 export default function LoginPage() {
   const router = useRouter();
@@ -68,10 +66,10 @@ export default function LoginPage() {
 
   return (
     <main className="flex min-h-dvh items-center justify-center bg-surface p-6">
-      <div className="flex w-full max-w-sm flex-col gap-6 rounded-2xl border border-border bg-card p-8 shadow-sm">
+      <div className="flex w-full max-w-sm flex-col gap-6 rounded-2xl border border-border bg-card p-8 shadow-[var(--shadow-card)]">
         <div className="flex flex-col gap-1">
           <span className="text-[28px]">🍺</span>
-          <h1 className="font-[family-name:var(--font-heading)] text-[22px] text-foreground">
+          <h1 className="font-[family-name:var(--font-heading)] text-[24px] font-bold leading-tight text-foreground">
             Painel Admin
           </h1>
           <p className="text-[13px] text-muted-foreground">
@@ -80,7 +78,7 @@ export default function LoginPage() {
         </div>
 
         {unavailable ? (
-          <p className="rounded-lg border border-border bg-surface p-3 text-[13px] text-muted-foreground">
+          <p className="rounded-2xl bg-surface-elevated p-3 text-[13px] text-muted-foreground">
             Login indisponível: configuração do Supabase ausente.
           </p>
         ) : null}

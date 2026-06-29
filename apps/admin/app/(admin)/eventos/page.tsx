@@ -298,10 +298,10 @@ export default function EventosPage() {
                   return (
                     <label
                       key={s.id}
-                      className={`flex cursor-pointer items-center gap-1.5 rounded-lg border px-3 py-1.5 text-[13px] ${
+                      className={`flex h-9 cursor-pointer items-center gap-1.5 rounded-full px-4 text-[13px] font-medium transition-colors ${
                         checked
-                          ? 'border-primary bg-primary/10 text-foreground'
-                          : 'border-border text-muted-foreground hover:bg-muted'
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-surface-elevated text-muted-foreground hover:text-foreground'
                       }`}
                     >
                       <input

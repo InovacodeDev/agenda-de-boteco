@@ -48,7 +48,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <button
           type="button"
           onClick={() => void useAuthStore.getState().signOut()}
-          className="rounded-lg border border-border px-4 py-2 text-[13px] text-muted-foreground hover:bg-muted"
+          className="rounded-full bg-surface-elevated px-5 py-2.5 text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
         >
           Sair
         </button>

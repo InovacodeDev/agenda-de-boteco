@@ -16,9 +16,9 @@ export function Sidebar() {
 
   return (
     <aside className="flex w-60 shrink-0 flex-col border-r border-border bg-surface">
-      <div className="flex items-center gap-2 px-5 py-5">
-        <span className="text-[22px]">🍺</span>
-        <span className="font-[family-name:var(--font-heading)] text-[15px] font-semibold text-foreground">
+      <div className="flex items-center gap-2 px-5 py-6">
+        <span className="text-[24px]">🍺</span>
+        <span className="font-[family-name:var(--font-heading)] text-[16px] font-bold text-foreground">
           Agenda Admin
         </span>
       </div>
@@ -31,10 +31,10 @@ export function Sidebar() {
             <Link
               key={item.href}
               href={item.href}
-              className={`rounded-lg px-3 py-2 text-[14px] transition-colors ${
+              className={`rounded-full px-4 py-2.5 text-[14px] font-[family-name:var(--font-body)] font-medium transition-colors ${
                 active
-                  ? 'bg-primary/10 font-semibold text-foreground'
-                  : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                  ? 'bg-primary text-primary-foreground'
+                  : 'text-muted-foreground hover:bg-surface-elevated hover:text-foreground'
               }`}
             >
               {item.label}
@@ -46,7 +46,7 @@ export function Sidebar() {
       <button
         type="button"
         onClick={() => void signOut()}
-        className="m-3 rounded-lg border border-border px-3 py-2 text-[13px] text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+        className="m-3 rounded-full bg-surface-elevated px-4 py-2.5 text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
       >
         Sair
       </button>
