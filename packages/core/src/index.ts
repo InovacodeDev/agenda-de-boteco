@@ -22,6 +22,7 @@ export * from './utils/images';
 export * from './utils/links';
 export * from './utils/pressGuard';
 export * from './utils/responsiveType';
+export * from './utils/slug';
 // `./services/catalog` e `./queries` exportam os mesmos nomes (listEvents, etc.).
 // O re-export nomeado abaixo resolve o TS2308: a fachada async do service (com
 // fallback de mock) vence na API flat; a query layer crua segue acessível via
@@ -36,6 +37,9 @@ export * from './lib/queryPersister';
 export * from './services/auth';
 export * from './services/cachePolicy';
 export {
+  deleteEstablishment,
+  deleteEvent,
+  deleteNotification,
   getEstablishment,
   getEvent,
   listCities,
@@ -45,6 +49,9 @@ export {
   listEventsByEstablishment,
   listMusicStyles,
   listNotifications,
+  upsertEstablishment,
+  upsertEvent,
+  upsertNotification,
 } from './services/catalog';
 export * from './services/connectivity';
 export * from './services/favorites';
