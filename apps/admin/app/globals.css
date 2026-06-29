@@ -1,0 +1,41 @@
+@import 'tailwindcss';
+
+@theme {
+  /* Tema claro do admin: fundo branco para um ar de painel de controle,
+     mantendo a paleta de marca (primary verde, accent laranja, destructive rosa). */
+  --color-background: #ffffff;
+  --color-foreground: #111827;
+  --color-card: #ffffff;
+  --color-card-foreground: #111827;
+  --color-popover: #ffffff;
+  --color-popover-foreground: #111827;
+  --color-surface: #f9fafb;
+  --color-surface-elevated: #f3f4f6;
+  --color-muted: #f3f4f6;
+  --color-muted-foreground: #6b7280;
+  --color-input: #ffffff;
+  --color-secondary: #f3f4f6;
+  --color-secondary-foreground: #111827;
+  --color-border: #e5e7eb;
+  --color-primary: #1dd75e;
+  --color-primary-foreground: #0f0f0f;
+  --color-primary-glow: #3df57d;
+  --color-accent: #f9a91f;
+  --color-accent-foreground: #0f0f0f;
+  --color-destructive: #f53d7a;
+  --color-destructive-foreground: #ffffff;
+  --color-ring: #1dd75e;
+
+  --font-heading: var(--font-space-grotesk), system-ui, sans-serif;
+  --font-body: var(--font-inter), system-ui, sans-serif;
+}
+
+html,
+body {
+  background: var(--color-background);
+  color: var(--color-foreground);
+}
+
+body {
+  font-family: var(--font-body);
+}

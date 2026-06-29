@@ -11,7 +11,7 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "env": ["EXPO_PUBLIC_*", "VITE_*"],
+      "env": ["EXPO_PUBLIC_*", "VITE_*", "NEXT_PUBLIC_*"],
       "outputs": ["dist/**", "build/**", "web-build/**"]
     },
     "@agenda/core#build": {
