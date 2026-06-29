@@ -32,3 +32,25 @@ export const useNotificationsStore = create<NotificationsState>()(
 registerRehydrator(() => {
   void useNotificationsStore.persist.rehydrate();
 });
+
+/** Forma mínima de aviso para o cálculo de não-lido (alinha com AppNotification). */
+export interface NotificationReadState {
+  id: string;
+  read: boolean;
+}
+
+/**
+ * Selector puro: o aviso está não-lido? Combina a flag `read` do servidor com a
+ * lista local `readIds` (marcações otimistas que ainda não voltaram do server).
+ */
+export function isNotificationUnread(readIds: string[], notification: NotificationReadState): boolean {
+  return !notification.read && !readIds.includes(notification.id);
+}
+
+/** Selector puro: quantos avisos não-lidos há na lista, dado o estado local. */
+export function unreadNotificationCount(
+  readIds: string[],
+  notifications: readonly NotificationReadState[],
+): number {
+  return notifications.reduce((count, n) => (isNotificationUnread(readIds, n) ? count + 1 : count), 0);
+}

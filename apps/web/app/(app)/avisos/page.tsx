@@ -1,7 +1,11 @@
 'use client';
 
-import { FEATURES, useNotificationsQuery, useNotificationsStore } from '@agenda/core';
-import { useMemo } from 'react';
+import {
+  FEATURES,
+  isNotificationUnread,
+  useNotificationsQuery,
+  useNotificationsStore,
+} from '@agenda/core';
 
 import { UnderConstruction } from '@/components/feedback/UnderConstruction';
 import { NotificationCard } from '@/components/notification/NotificationCard';
@@ -33,10 +37,7 @@ function NotificationsContent() {
   const { data: notifications } = useNotificationsQuery();
   const list = notifications ?? [];
 
-  const isUnread = useMemo(
-    () => (n: { id: string; read: boolean }) => !n.read && !readIds.includes(n.id),
-    [readIds],
-  );
+  const isUnread = (n: { id: string; read: boolean }) => isNotificationUnread(readIds, n);
   const hasUnread = list.some(isUnread);
 
   return (

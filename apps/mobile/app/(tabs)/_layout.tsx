@@ -1,3 +1,8 @@
+import {
+  unreadNotificationCount,
+  useNotificationsQuery,
+  useNotificationsStore,
+} from '@agenda/core';
 import { Tabs } from 'expo-router';
 import { Platform, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -18,6 +23,9 @@ const tabBarWidthStyle =
 
 export default function TabsLayout() {
   const insets = useSafeAreaInsets();
+  const readIds = useNotificationsStore((state) => state.readIds);
+  const { data: notifications } = useNotificationsQuery();
+  const unreadCount = unreadNotificationCount(readIds, notifications ?? []);
   return (
     <Tabs
       screenOptions={{
@@ -66,6 +74,12 @@ export default function TabsLayout() {
         name="notifications"
         options={{
           title: 'Avisos',
+          tabBarBadge: unreadCount > 0 ? unreadCount : undefined,
+          tabBarBadgeStyle: {
+            backgroundColor: colors.primary,
+            color: colors.primaryForeground,
+            fontFamily: fontFamilies.bodyMedium,
+          },
           tabBarIcon: ({ color, size }) => (
             <Icon name="bell" variant="regular" color={color} size={size} />
           ),

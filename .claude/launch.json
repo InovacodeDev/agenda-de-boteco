@@ -11,7 +11,7 @@
       "name": "agenda-web",
       "runtimeExecutable": "pnpm",
       "runtimeArgs": ["--filter", "@agenda/web", "dev"],
-      "autoPort": true
+      "port": 8088
     }
   ]
 }

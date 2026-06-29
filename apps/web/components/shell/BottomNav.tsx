@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
+import { useUnreadCount } from '@/hooks/useUnreadCount';
 import { cn } from '@/lib/cn';
 
 import { NavIcon } from './icons';
@@ -10,6 +11,7 @@ import { isActive, NAV_ITEMS } from './navItems';
 
 export function BottomNav() {
   const pathname = usePathname();
+  const unreadCount = useUnreadCount();
 
   return (
     <nav
@@ -19,6 +21,7 @@ export function BottomNav() {
     >
       {NAV_ITEMS.map((item) => {
         const active = isActive(item.href, pathname);
+        const showBadge = item.href === '/avisos' && unreadCount > 0;
         return (
           <Link
             key={item.href}
@@ -29,7 +32,17 @@ export function BottomNav() {
               active ? 'text-primary' : 'text-muted-foreground',
             )}
           >
-            <NavIcon name={item.icon} className="h-6 w-6" />
+            <span className="relative">
+              <NavIcon name={item.icon} className="h-6 w-6" />
+              {showBadge ? (
+                <span
+                  aria-label={`${unreadCount} não lidos`}
+                  className="absolute -right-2 -top-1 inline-flex min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-semibold leading-4 text-primary-foreground"
+                >
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </span>
+              ) : null}
+            </span>
             <span>{item.label}</span>
           </Link>
         );

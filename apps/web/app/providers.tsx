@@ -14,6 +14,7 @@ import {
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { useEffect } from 'react';
 
+import { useAppSync } from '@/hooks/useAppSync';
 import { webQueryStorage, webStorage } from '@/lib/storage';
 import { getSupabase } from '@/lib/supabase';
 
@@ -34,6 +35,12 @@ function bootstrap() {
 bootstrap();
 
 const persister = createQueryPersister(webQueryStorage);
+
+/** Liga auth/favoritos/realtime ao cache. Dentro do provider para ter contexto. */
+function AppSyncBridge() {
+  useAppSync();
+  return null;
+}
 
 export function Providers({ children }: { children: React.ReactNode }) {
   // Conecta o online manager ao navigator (cleanup no unmount).
@@ -61,6 +68,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         dehydrateOptions: { shouldDehydrateQuery },
       }}
     >
+      <AppSyncBridge />
       {children}
     </PersistQueryClientProvider>
   );

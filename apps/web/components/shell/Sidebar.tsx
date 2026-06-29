@@ -3,13 +3,16 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
+import { useUnreadCount } from '@/hooks/useUnreadCount';
 import { cn } from '@/lib/cn';
 
 import { NavIcon } from './icons';
+import { NavBadge } from './NavBadge';
 import { isActive, NAV_ITEMS } from './navItems';
 
 export function Sidebar() {
   const pathname = usePathname();
+  const unreadCount = useUnreadCount();
 
   return (
     <aside className="hidden w-[245px] shrink-0 border-r border-border bg-popover md:flex md:flex-col">
@@ -36,6 +39,7 @@ export function Sidebar() {
               >
                 <NavIcon name={item.icon} />
                 <span className="text-base">{item.label}</span>
+                {item.href === '/avisos' ? <NavBadge count={unreadCount} /> : null}
               </Link>
             );
           })}
