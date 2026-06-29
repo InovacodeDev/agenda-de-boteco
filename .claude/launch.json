@@ -6,6 +6,12 @@
       "runtimeExecutable": "pnpm",
       "runtimeArgs": ["--filter", "@agenda/mobile", "exec", "expo", "start", "--web"],
       "autoPort": true
+    },
+    {
+      "name": "agenda-web",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter", "@agenda/web", "dev"],
+      "autoPort": true
     }
   ]
 }
