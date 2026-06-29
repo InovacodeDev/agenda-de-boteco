@@ -16,19 +16,19 @@ import {
   EVENTS,
   MUSIC_STYLES,
   NOTIFICATIONS,
-} from '../data/mock';
+} from '../data';
 import {
   citySchema,
   establishmentSchema,
   eventSchema,
   musicStyleSchema,
   notificationSchema,
-} from '../data/schemas';
+} from '../schemas';
 
 const mockGetSupabase = jest.fn();
 
-jest.mock('../lib/supabase', () => ({
-  getSupabase: () => mockGetSupabase(),
+jest.mock('../supabase/client', () => ({
+  getConfiguredSupabase: () => mockGetSupabase(),
 }));
 
 import {

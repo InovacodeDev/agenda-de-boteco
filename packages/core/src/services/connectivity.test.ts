@@ -1,25 +1,27 @@
 /**
  * connectivity é um service com lógica → exige teste. Contrato travado: mapear
- * eventos de rede/AppState para `onlineManager`/`focusManager` reais do
+ * eventos de conectividade/foco para `onlineManager`/`focusManager` reais do
  * TanStack, e devolver cleanup que desinscreve. Usamos os managers reais
  * (não mockamos o TanStack) e injetamos fakes de `subscribe` para controlar os
  * eventos. O estado dos managers é restaurado entre testes.
  */
-import type { NetInfoState } from '@react-native-community/netinfo';
 import { focusManager, onlineManager } from '@tanstack/react-query';
-import { type AppStateStatus, type NativeEventSubscription } from 'react-native';
 
-import { setupFocusManager, setupOnlineManager } from './connectivity';
+import {
+  type ConnectivityState,
+  setupFocusManager,
+  setupOnlineManager,
+} from './connectivity';
 
-/** Constrói um NetInfoState mínimo com apenas os campos lidos pela função. */
+/** Constrói um ConnectivityState mínimo com apenas os campos lidos pela função. */
 function netState(
-  partial: Partial<Pick<NetInfoState, 'isConnected' | 'isInternetReachable'>>,
-): NetInfoState {
+  partial: Partial<ConnectivityState>,
+): ConnectivityState {
   return {
     isConnected: false,
     isInternetReachable: false,
     ...partial,
-  } as unknown as NetInfoState;
+  };
 }
 
 describe('setupOnlineManager', () => {
@@ -30,9 +32,9 @@ describe('setupOnlineManager', () => {
   });
 
   it('fica online quando isConnected e isInternetReachable são true', () => {
-    let emit: ((state: NetInfoState) => void) | undefined;
+    let emit: ((state: ConnectivityState) => void) | undefined;
     const unsubscribe = jest.fn();
-    const subscribe = jest.fn((listener: (state: NetInfoState) => void) => {
+    const subscribe = jest.fn((listener: (state: ConnectivityState) => void) => {
       emit = listener;
       return unsubscribe;
     });
@@ -44,8 +46,8 @@ describe('setupOnlineManager', () => {
   });
 
   it('fica offline quando isConnected é false', () => {
-    let emit: ((state: NetInfoState) => void) | undefined;
-    const subscribe = jest.fn((listener: (state: NetInfoState) => void) => {
+    let emit: ((state: ConnectivityState) => void) | undefined;
+    const subscribe = jest.fn((listener: (state: ConnectivityState) => void) => {
       emit = listener;
       return jest.fn();
     });
@@ -57,8 +59,8 @@ describe('setupOnlineManager', () => {
   });
 
   it('fica offline quando isInternetReachable é false mesmo conectado', () => {
-    let emit: ((state: NetInfoState) => void) | undefined;
-    const subscribe = jest.fn((listener: (state: NetInfoState) => void) => {
+    let emit: ((state: ConnectivityState) => void) | undefined;
+    const subscribe = jest.fn((listener: (state: ConnectivityState) => void) => {
       emit = listener;
       return jest.fn();
     });
@@ -86,40 +88,40 @@ describe('setupFocusManager', () => {
     focusManager.setFocused(undefined);
   });
 
-  function makeAppStateSubscribe() {
-    let emit: ((status: AppStateStatus) => void) | undefined;
-    const remove = jest.fn();
-    const subscribe = jest.fn((listener: (status: AppStateStatus) => void) => {
+  function makeFocusSubscribe() {
+    let emit: ((isActive: boolean) => void) | undefined;
+    const unsubscribe = jest.fn();
+    const subscribe = jest.fn((listener: (isActive: boolean) => void) => {
       emit = listener;
-      return { remove } as unknown as NativeEventSubscription;
+      return unsubscribe;
     });
-    return { subscribe, remove, getEmit: () => emit };
+    return { subscribe, unsubscribe, getEmit: () => emit };
   }
 
-  it('foca quando AppState muda para "active"', () => {
-    const { subscribe, getEmit } = makeAppStateSubscribe();
+  it('foca quando o subscribe emite true (app ativo)', () => {
+    const { subscribe, getEmit } = makeFocusSubscribe();
 
     setupFocusManager(subscribe);
-    getEmit()?.('active');
+    getEmit()?.(true);
 
     expect(focusManager.isFocused()).toBe(true);
   });
 
-  it('desfoca quando AppState muda para "background"', () => {
-    const { subscribe, getEmit } = makeAppStateSubscribe();
+  it('desfoca quando o subscribe emite false (app em background)', () => {
+    const { subscribe, getEmit } = makeFocusSubscribe();
 
     setupFocusManager(subscribe);
-    getEmit()?.('background');
+    getEmit()?.(false);
 
     expect(focusManager.isFocused()).toBe(false);
   });
 
-  it('cleanup chama .remove() do subscription', () => {
-    const { subscribe, remove } = makeAppStateSubscribe();
+  it('cleanup chama o unsubscribe do subscribe', () => {
+    const { subscribe, unsubscribe } = makeFocusSubscribe();
 
     const teardown = setupFocusManager(subscribe);
     teardown();
 
-    expect(remove).toHaveBeenCalledTimes(1);
+    expect(unsubscribe).toHaveBeenCalledTimes(1);
   });
 });

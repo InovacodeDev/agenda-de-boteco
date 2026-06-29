@@ -5,7 +5,7 @@
  * `catalog-changes`, resolve as keys via `payload.table` e devolve um cleanup
  * que remove o canal. Usamos um client fake (não toca o Supabase real).
  */
-import type { Database } from '@agenda/core';
+import type { Database } from '../types';
 import type {
   RealtimePostgresChangesPayload,
   SupabaseClient,

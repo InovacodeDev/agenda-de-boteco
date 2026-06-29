@@ -1,4 +1,4 @@
-import type { FavoriteTarget } from '@/services/favorites';
+import type { FavoriteTarget } from '../services/favorites';
 
 import {
   isEstablishmentFavorite,
@@ -16,7 +16,7 @@ const mockFetchServerFavorites = jest.fn<Promise<FavoriteTarget[]>, []>(() =>
   Promise.resolve([]),
 );
 
-jest.mock('@/services/favorites', () => ({
+jest.mock('../services/favorites', () => ({
   addServerFavorite: (userId: string, target: FavoriteTarget) =>
     mockAddServerFavorite(userId, target),
   removeServerFavorite: (userId: string, target: FavoriteTarget) =>

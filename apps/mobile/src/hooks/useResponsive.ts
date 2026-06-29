@@ -1,6 +1,7 @@
+import type { Breakpoint } from '@agenda/core';
 import { useWindowDimensions } from 'react-native';
 
-export type Breakpoint = 'sm' | 'md' | 'lg';
+export type { Breakpoint };
 
 const SM_MAX = 380;
 const LG_MIN = 768;

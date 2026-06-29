@@ -1,6 +1,6 @@
-import { CITIES } from '../data/mock';
-import type { City } from '../data/schemas';
-import type { LocationStatus } from '../hooks/useUserLocation';
+import { CITIES } from '../data';
+import type { City } from '../schemas';
+import type { LocationStatus } from '../types';
 import {
   buildVirtualCity,
   coarseLatLng,

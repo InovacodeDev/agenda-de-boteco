@@ -7,8 +7,8 @@ import {
 
 const mockGetSupabase = jest.fn();
 
-jest.mock('@/lib/supabase', () => ({
-  getSupabase: () => mockGetSupabase(),
+jest.mock('../supabase/client', () => ({
+  getConfiguredSupabase: () => mockGetSupabase(),
 }));
 
 beforeEach(() => {

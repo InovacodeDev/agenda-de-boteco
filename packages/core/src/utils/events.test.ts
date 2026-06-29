@@ -1,4 +1,4 @@
-import type { Event } from '../data/schemas';
+import type { Event } from '../schemas';
 import { upcomingEventsForEstablishment } from './events';
 
 const NOW = new Date(2026, 5, 11, 20, 0, 0, 0);

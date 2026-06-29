@@ -5,7 +5,7 @@
  * ordenado por distance_km asc, respeitando raio e limite. O caminho RPC é
  * exercitado com um client fake; o fallback usa os mocks reais.
  */
-import { ESTABLISHMENTS } from '@/data/mock';
+import { ESTABLISHMENTS } from '../data';
 
 import {
   listNearbyEstablishments,
@@ -15,8 +15,8 @@ import {
 
 const mockGetSupabase = jest.fn();
 
-jest.mock('@/lib/supabase', () => ({
-  getSupabase: () => mockGetSupabase(),
+jest.mock('../supabase/client', () => ({
+  getConfiguredSupabase: () => mockGetSupabase(),
 }));
 
 // Centro de Floripa — origem conhecida para verificar monotonicidade.

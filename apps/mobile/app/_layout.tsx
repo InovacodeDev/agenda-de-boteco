@@ -1,4 +1,8 @@
 import '../src/global.css';
+// bootstrap: configura o storage do persist (configureAppStorage) — NÃO remover
+import '@/store/storage';
+// bootstrap: registra client supabase, redirect de auth e handler de erro — NÃO remover
+import '@/lib/bootstrap';
 
 import {
   Inter_400Regular,
@@ -7,6 +11,7 @@ import {
   Inter_700Bold,
 } from '@expo-google-fonts/inter';
 import { SpaceGrotesk_500Medium, SpaceGrotesk_700Bold } from '@expo-google-fonts/space-grotesk';
+import NetInfo from '@react-native-community/netinfo';
 import { onlineManager } from '@tanstack/react-query';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { useFonts } from 'expo-font';
@@ -15,6 +20,7 @@ import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
+import { AppState } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { ErrorBoundary } from '@/components/ErrorBoundary';
@@ -50,8 +56,20 @@ export default function RootLayout() {
   }, [initializeAuth]);
 
   useEffect(() => {
-    const teardownOnline = setupOnlineManager();
-    const teardownFocus = setupFocusManager();
+    const teardownOnline = setupOnlineManager((listener) =>
+      NetInfo.addEventListener((state) =>
+        listener({
+          isConnected: state.isConnected,
+          isInternetReachable: state.isInternetReachable,
+        }),
+      ),
+    );
+    const teardownFocus = setupFocusManager((listener) => {
+      const sub = AppState.addEventListener('change', (status) =>
+        listener(status === 'active'),
+      );
+      return () => sub.remove();
+    });
     return () => {
       teardownOnline();
       teardownFocus();

@@ -1,5 +1,5 @@
-import { ESTABLISHMENTS, EVENTS } from '../data/mock';
-import type { Establishment, Event } from '../data/schemas';
+import { ESTABLISHMENTS, EVENTS } from '../data';
+import type { Establishment, Event } from '../schemas';
 import {
   applyEventFilters,
   DEFAULT_EVENT_FILTERS,
