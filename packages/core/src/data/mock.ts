@@ -3,8 +3,6 @@
  * Datas são relativas ao momento do import (mesmo comportamento do site).
  * Quando o Supabase entrar, este módulo é substituído mantendo os schemas.
  */
-import { buildEventDate } from '../utils/dates';
-import { buildUnsplashUrl } from '../utils/images';
 import type {
   AppNotification,
   City,
@@ -12,6 +10,8 @@ import type {
   Event,
   MusicStyle,
 } from '../schemas';
+import { buildEventDate } from '../utils/dates';
+import { buildUnsplashUrl } from '../utils/images';
 
 const img = buildUnsplashUrl;
 

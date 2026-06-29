@@ -1,10 +1,9 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-import { isVirtualCityId } from '../utils/geo';
-
-import type { City } from '../schemas';
 import { appJsonStorage, registerRehydrator } from '../platform/storage';
+import type { City } from '../schemas';
+import { isVirtualCityId } from '../utils/geo';
 
 export interface PreferencesState {
   cityId: string;

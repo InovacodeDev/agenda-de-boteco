@@ -1,8 +1,8 @@
-import { handleServiceError } from '../utils/errors';
 import {
   getConfiguredSupabase,
   isSupabaseConfigured,
 } from '../supabase/client';
+import { handleServiceError } from '../utils/errors';
 
 export type AuthProvider = 'google' | 'apple';
 

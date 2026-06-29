@@ -1,10 +1,10 @@
-import type { Database } from '../types';
 import type {
   RealtimePostgresChangesPayload,
   SupabaseClient,
 } from '@supabase/supabase-js';
 import type { QueryKey } from '@tanstack/react-query';
 
+import type { Database } from '../types';
 import { isProduction } from '../utils/env';
 import { catalogKeys } from './queryKeys';
 

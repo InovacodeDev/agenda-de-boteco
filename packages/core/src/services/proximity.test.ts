@@ -6,7 +6,6 @@
  * exercitado com um client fake; o fallback usa os mocks reais.
  */
 import { ESTABLISHMENTS } from '../data';
-
 import {
   listNearbyEstablishments,
   type NearbyEstablishment,

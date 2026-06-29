@@ -1,6 +1,6 @@
+import type { Event } from '../schemas';
 import { cityByIdOrDefault, indexById, musicStylesForEvent } from './lookup';
 import { CITIES, ESTABLISHMENTS, EVENTS, MUSIC_STYLES } from './mock';
-import type { Event } from '../schemas';
 
 describe('indexById', () => {
   it('indexa todos os itens da lista pelos próprios ids', () => {

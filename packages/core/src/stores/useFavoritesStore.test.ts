@@ -1,5 +1,4 @@
 import type { FavoriteTarget } from '../services/favorites';
-
 import {
   isEstablishmentFavorite,
   isEventFavorite,

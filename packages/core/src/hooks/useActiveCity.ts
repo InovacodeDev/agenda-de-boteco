@@ -2,8 +2,8 @@ import { useMemo } from 'react';
 
 import { resolveActiveCity } from '../data/lookup';
 import type { City } from '../schemas';
-import { useCitiesQuery } from './queries';
 import { usePreferencesStore } from '../stores/usePreferencesStore';
+import { useCitiesQuery } from './queries';
 
 /**
  * Cidade ativa do app, unindo catálogo (TanStack Query) + preferências (store).

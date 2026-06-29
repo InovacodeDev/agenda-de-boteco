@@ -1,14 +1,13 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
+import { appJsonStorage, registerRehydrator } from '../platform/storage';
 import {
   addServerFavorite,
   type FavoriteTarget,
   fetchServerFavorites,
   removeServerFavorite,
 } from '../services/favorites';
-
-import { appJsonStorage, registerRehydrator } from '../platform/storage';
 
 export interface PendingOp {
   op: 'add' | 'remove';
