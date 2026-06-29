@@ -6,6 +6,7 @@ import {
   useAuthStore,
   verifyEmailOtp,
 } from '@agenda/core';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
@@ -144,6 +145,13 @@ export default function LoginPage() {
             </button>
           </div>
         )}
+
+        <Link
+          href="/privacidade"
+          className="text-center text-[12px] text-muted-foreground underline-offset-2 hover:underline"
+        >
+          Política de Privacidade
+        </Link>
       </div>
     </main>
   );
