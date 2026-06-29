@@ -1,45 +1,94 @@
 {
-    // Dev servers must be running before the browser (chrome) configs work:
-    //   pnpm dev          -> turbo runs every app
-    //   or per app:        expo start (apps/mobile)  |  vite (apps/admin)
+    // Dev servers must be running before the chrome configs attach:
+    //   pnpm --filter @agenda/web dev    -> Next.js  (http://localhost:8088)
+    //   pnpm --filter @agenda/admin dev  -> Vite     (http://localhost:8089)
     //
-    // Native debugging uses the "React Native Tools" extension (msjsdiag.vscode-react-native).
-    // Zero-config alternative for native: run `expo start` and press `j` to open
-    // React Native DevTools (the flow Expo officially recommends today).
+    // Mobile (native) debugging uses the "React Native Tools" extension
+    // (msjsdiag.vscode-react-native) via Hermes direct debugging. The dev
+    // build configs run `expo run:<platform>`, build/install the dev client
+    // and attach Hermes; pick Emulator/Simulator or Device by `target`.
     "version": "0.2.0",
     "configurations": [
         {
-            // Launch Expo for a native target via Hermes direct debugging.
-            // Starts Metro and shows the QR / dev menu for Expo Go or a dev client.
-            "name": "Mobile: Expo (Hermes)",
+            // Android dev build on an emulator.
+            "name": "Mobile: Android Dev (Emulator)",
             "request": "launch",
             "type": "reactnativedirect",
             "cwd": "${workspaceFolder}/apps/mobile",
-            "platform": "exponent",
-            "expoHostType": "local"
+            "platform": "android",
+            "target": "simulator"
         },
         {
-            // Attach to an already-running Hermes app (when `expo start` is already up).
+            // Android dev build on a physical device (USB / network).
+            "name": "Mobile: Android Dev (Device)",
+            "request": "launch",
+            "type": "reactnativedirect",
+            "cwd": "${workspaceFolder}/apps/mobile",
+            "platform": "android",
+            "target": "device"
+        },
+        {
+            // iOS dev build on a simulator.
+            "name": "Mobile: iOS Dev (Simulator)",
+            "request": "launch",
+            "type": "reactnativedirect",
+            "cwd": "${workspaceFolder}/apps/mobile",
+            "platform": "ios",
+            "target": "simulator"
+        },
+        {
+            // iOS dev build on a physical device (requires provisioning).
+            "name": "Mobile: iOS Dev (Device)",
+            "request": "launch",
+            "type": "reactnativedirect",
+            "cwd": "${workspaceFolder}/apps/mobile",
+            "platform": "ios",
+            "target": "device"
+        },
+        {
+            // Attach to an already-running Hermes app (Metro already up).
             "name": "Mobile: Attach to Hermes",
             "request": "attach",
             "type": "reactnativedirect",
             "cwd": "${workspaceFolder}/apps/mobile"
         },
         {
-            // Expo Web target. Metro's web dev server defaults to :8081.
-            "name": "Mobile Web: Chrome",
+            // Web (Next.js) — server-side: API routes, SSR, server components.
+            "name": "Web: Next.js Server (Node)",
             "request": "launch",
-            "type": "chrome",
-            "url": "http://localhost:8081",
-            "webRoot": "${workspaceFolder}/apps/mobile"
+            "type": "node-terminal",
+            "cwd": "${workspaceFolder}/apps/web",
+            "command": "pnpm dev"
         },
         {
-            // Admin (Vite + React). Vite dev server defaults to :5173.
+            // Web (Next.js) — client-side debug in Chrome with sourcemaps.
+            "name": "Web: Chrome (Next.js)",
+            "request": "launch",
+            "type": "chrome",
+            "url": "http://localhost:8088",
+            "webRoot": "${workspaceFolder}/apps/web",
+            "sourceMapPathOverrides": {
+                "webpack://_N_E/*": "${workspaceFolder}/apps/web/*",
+                "webpack://*": "${workspaceFolder}/apps/web/*"
+            }
+        },
+        {
+            // Admin (Vite + React) — client-side debug in Chrome.
             "name": "Admin: Chrome (Vite)",
             "request": "launch",
             "type": "chrome",
-            "url": "http://localhost:5173",
+            "url": "http://localhost:8089",
             "webRoot": "${workspaceFolder}/apps/admin"
+        }
+    ],
+    "compounds": [
+        {
+            // Next.js full-stack debug: server (Node) + browser (Chrome).
+            "name": "Web: Full-stack (Server + Chrome)",
+            "configurations": [
+                "Web: Next.js Server (Node)",
+                "Web: Chrome (Next.js)"
+            ]
         }
     ]
 }
