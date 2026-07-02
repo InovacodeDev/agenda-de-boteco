@@ -12,6 +12,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import { BTN_GHOST as BTN_GHOST_BASE, BTN_PRIMARY as BTN_PRIMARY_BASE, INPUT_CLASS as INPUT_BASE } from '@/components/ui/styles';
+import logo from '@/public/logo.png';
 
 type EmailStep = 'editing' | 'sent';
 
@@ -69,14 +70,7 @@ export default function LoginPage() {
     <main className="flex min-h-dvh items-center justify-center bg-surface p-6">
       <div className="flex w-full max-w-sm flex-col gap-6 rounded-2xl border border-border bg-card p-8 shadow-[var(--shadow-card)]">
         <div className="flex flex-col gap-1">
-          <Image
-            src="/logo.png"
-            alt="Agenda de Boteco"
-            width={811}
-            height={582}
-            priority
-            className="mb-1 h-auto w-32"
-          />
+          <Image src={logo} alt="Agenda de Boteco" priority className="mb-1 h-auto w-32" />
           <h1 className="font-[family-name:var(--font-heading)] text-[24px] font-bold leading-tight text-foreground">
             Painel Admin
           </h1>

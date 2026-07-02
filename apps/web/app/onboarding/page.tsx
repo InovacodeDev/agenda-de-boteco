@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 import { MusicIcon, PinIcon, SparklesIcon } from '@/components/auth/icons';
+import logo from '@/public/logo.png';
 
 // ponytail: guard de onboarding (redirect) fica para integração de rotas.
 
@@ -77,14 +78,7 @@ export default function OnboardingPage() {
 
   return (
     <main className="flex min-h-dvh flex-col gap-6 bg-[linear-gradient(160deg,#1A122B,#0F0F0F)] p-6">
-      <Image
-        src="/logo.png"
-        alt="Agenda de Boteco"
-        width={811}
-        height={582}
-        priority
-        className="h-auto w-28"
-      />
+      <Image src={logo} alt="Agenda de Boteco" priority className="h-auto w-28" />
 
       <div className="flex flex-col gap-3">
         <h1 className="font-[family-name:var(--font-heading)] text-[32px] text-foreground">

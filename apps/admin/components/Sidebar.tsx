@@ -5,6 +5,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
+import logo from '@/public/logo.png';
+
 const NAV = [
   { href: '/', label: 'Dashboard' },
   { href: '/estabelecimentos', label: 'Estabelecimentos' },
@@ -18,7 +20,7 @@ export function Sidebar() {
   return (
     <aside className="flex w-60 shrink-0 flex-col border-r border-border bg-surface">
       <div className="flex items-center gap-2 px-5 py-6">
-        <Image src="/logo.png" alt="Agenda de Boteco" width={811} height={582} className="h-auto w-28" />
+        <Image src={logo} alt="Agenda de Boteco" className="h-auto w-28" />
         <span className="font-[family-name:var(--font-heading)] text-[14px] font-bold text-muted-foreground">
           Admin
         </span>
