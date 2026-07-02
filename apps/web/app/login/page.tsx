@@ -6,6 +6,7 @@ import {
   useAuthStore,
   verifyEmailOtp,
 } from '@agenda/core';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
@@ -99,9 +100,14 @@ export default function LoginPage() {
   return (
     <main className="flex min-h-dvh flex-col justify-end bg-[linear-gradient(160deg,#1A122B,#0F0F0F)] p-6">
       <div className="flex flex-col gap-5">
-        <div className="h-16 w-16 rounded-xl bg-primary/20 text-center text-[28px] leading-[64px]">
-          🍺
-        </div>
+        <Image
+          src="/logo.png"
+          alt="Agenda de Boteco"
+          width={811}
+          height={582}
+          priority
+          className="h-auto w-40"
+        />
 
         <div className="flex flex-col gap-2">
           <h1 className="font-[family-name:var(--font-heading)] text-[26px] text-foreground">

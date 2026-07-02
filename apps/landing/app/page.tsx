@@ -1,3 +1,5 @@
+import Image from 'next/image';
+
 import { DownloadButtons } from '@/components/DownloadButtons';
 
 export default function LandingPage() {
@@ -5,12 +7,14 @@ export default function LandingPage() {
     <main className="flex min-h-dvh flex-col bg-[linear-gradient(160deg,#1A122B,#0F0F0F)]">
       <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col items-center justify-center gap-8 px-6 py-16 text-center">
         <div className="flex flex-col items-center gap-4">
-          <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-primary/20 text-[40px]">
-            🍺
-          </div>
-          <h1 className="font-[family-name:var(--font-heading)] text-[40px] font-bold leading-tight text-foreground">
-            Agenda de <span className="text-primary">Boteco</span>
-          </h1>
+          <Image
+            src="/logo.png"
+            alt="Agenda de Boteco"
+            width={811}
+            height={582}
+            priority
+            className="h-auto w-[min(280px,70vw)] min-w-[150px]"
+          />
           <p className="max-w-md text-[16px] leading-6 text-muted-foreground">
             Os melhores eventos e bares da sua cidade, sempre à mão. Baixe o app e
             descubra o que rola na noite.

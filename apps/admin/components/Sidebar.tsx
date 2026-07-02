@@ -1,6 +1,7 @@
 'use client';
 
 import { signOut } from '@agenda/core';
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -17,9 +18,9 @@ export function Sidebar() {
   return (
     <aside className="flex w-60 shrink-0 flex-col border-r border-border bg-surface">
       <div className="flex items-center gap-2 px-5 py-6">
-        <span className="text-[24px]">🍺</span>
-        <span className="font-[family-name:var(--font-heading)] text-[16px] font-bold text-foreground">
-          Agenda Admin
+        <Image src="/logo.png" alt="Agenda de Boteco" width={811} height={582} className="h-auto w-28" />
+        <span className="font-[family-name:var(--font-heading)] text-[14px] font-bold text-muted-foreground">
+          Admin
         </span>
       </div>
 

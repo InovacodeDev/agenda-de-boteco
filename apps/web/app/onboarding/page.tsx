@@ -5,6 +5,7 @@ import {
   useCitiesQuery,
   usePreferencesStore,
 } from '@agenda/core';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
@@ -76,9 +77,14 @@ export default function OnboardingPage() {
 
   return (
     <main className="flex min-h-dvh flex-col gap-6 bg-[linear-gradient(160deg,#1A122B,#0F0F0F)] p-6">
-      <div className="h-10 w-10 rounded-lg bg-primary/20 text-center text-[20px] leading-[40px]">
-        🍺
-      </div>
+      <Image
+        src="/logo.png"
+        alt="Agenda de Boteco"
+        width={811}
+        height={582}
+        priority
+        className="h-auto w-28"
+      />
 
       <div className="flex flex-col gap-3">
         <h1 className="font-[family-name:var(--font-heading)] text-[32px] text-foreground">
