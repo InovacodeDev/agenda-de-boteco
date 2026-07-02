@@ -1,4 +1,5 @@
 export * from './config/features';
+export * from './config/stores';
 export * from './data';
 export * from './platform/storage';
 export * from './queries';
@@ -20,6 +21,7 @@ export * from './utils/format';
 export * from './utils/geo';
 export * from './utils/images';
 export * from './utils/links';
+export * from './utils/platform';
 export * from './utils/pressGuard';
 export * from './utils/responsiveType';
 export * from './utils/slug';
