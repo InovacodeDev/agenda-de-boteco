@@ -2,6 +2,12 @@ import Image from 'next/image';
 
 import { DownloadButtons } from '@/components/DownloadButtons';
 
+// Em produção os apps vivem sob /app e /admin no mesmo domínio (rewrites do
+// vercel.json), então o path relativo basta. Em dev, apontar para as URLs dos
+// apps rodando em portas próprias via env (o basePath deles já inclui /app|/admin).
+const WEB_BASE = process.env.NEXT_PUBLIC_WEB_URL ?? '';
+const ADMIN_BASE = process.env.NEXT_PUBLIC_ADMIN_URL ?? '';
+
 export default function LandingPage() {
   return (
     <main className="flex min-h-dvh flex-col bg-[linear-gradient(160deg,#1A122B,#0F0F0F)]">
@@ -24,7 +30,7 @@ export default function LandingPage() {
         <DownloadButtons />
 
         <a
-          href="/app"
+          href={`${WEB_BASE}/app`}
           className="text-[14px] font-semibold text-primary underline-offset-4 hover:underline"
         >
           Entrar no app web →
@@ -34,11 +40,11 @@ export default function LandingPage() {
       <footer className="flex flex-col items-center gap-2 px-6 pb-8 text-center">
         <p className="text-[12px] text-muted-foreground">
           © 2026 Agenda de Boteco ·{' '}
-          <a href="/app/privacidade" className="hover:text-foreground">
+          <a href={`${WEB_BASE}/app/privacidade`} className="hover:text-foreground">
             Privacidade
           </a>
         </p>
-        <a href="/admin" className="text-[12px] text-muted-foreground hover:text-foreground">
+        <a href={`${ADMIN_BASE}/admin`} className="text-[12px] text-muted-foreground hover:text-foreground">
           Painel admin
         </a>
       </footer>
