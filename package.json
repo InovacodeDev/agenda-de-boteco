@@ -9,6 +9,9 @@
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
     "dev": "turbo run dev",
+    "dev:web": "pnpm --filter @agenda/web dev",
+    "dev:admin": "pnpm --filter @agenda/admin dev",
+    "dev:mobile": "pnpm --filter @agenda/mobile dev",
     "run:android": "cd apps/mobile && REACT_NATIVE_PACKAGER_HOSTNAME=192.168.68.59 npx expo run:android --port 8081"
   },
   "devDependencies": {
