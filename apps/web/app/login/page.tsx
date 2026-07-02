@@ -100,7 +100,7 @@ export default function LoginPage() {
 
   return (
     <main className="flex min-h-dvh flex-col justify-end bg-[linear-gradient(160deg,#1A122B,#0F0F0F)] p-6">
-      <div className="flex flex-col gap-5">
+      <div className="mx-auto flex w-full max-w-[630px] flex-col gap-5">
         <Image src={logo} alt="Agenda de Boteco" priority className="h-auto w-40" />
 
         <div className="flex flex-col gap-2">
