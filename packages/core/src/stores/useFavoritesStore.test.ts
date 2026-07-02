@@ -126,6 +126,27 @@ describe('useFavoritesStore', () => {
     expect(mockAddServerFavorite).not.toHaveBeenCalledWith('userX', { type: 'event', id: 'ev1' });
   });
 
+  it('mergeLocalIntoServer hidrata o estado local com favoritos do servidor', async () => {
+    mockFetchServerFavorites.mockResolvedValueOnce([
+      { type: 'event', id: 'ev-server' },
+      { type: 'establishment', id: 'es-server' },
+    ]);
+    useFavoritesStore.setState({ eventIds: [], establishmentIds: [], pendingOps: [] });
+    await useFavoritesStore.getState().mergeLocalIntoServer('userX');
+    expect(useFavoritesStore.getState().eventIds).toEqual(['ev-server']);
+    expect(useFavoritesStore.getState().establishmentIds).toEqual(['es-server']);
+  });
+
+  it('mergeLocalIntoServer une servidor e local sem duplicar', async () => {
+    mockFetchServerFavorites.mockResolvedValueOnce([
+      { type: 'event', id: 'ev1' },
+      { type: 'event', id: 'ev-server' },
+    ]);
+    useFavoritesStore.setState({ eventIds: ['ev1', 'ev2'], establishmentIds: [], pendingOps: [] });
+    await useFavoritesStore.getState().mergeLocalIntoServer('userX');
+    expect(useFavoritesStore.getState().eventIds).toEqual(['ev1', 'ev2', 'ev-server']);
+  });
+
   it('flushQueue preserva ops enfileiradas durante o flush (C1)', async () => {
     mockAddServerFavorite.mockImplementationOnce(async () => {
       useFavoritesStore.getState().toggleEstablishment('es-novo');
