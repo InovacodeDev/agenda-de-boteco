@@ -60,6 +60,7 @@ export * from './services/favorites';
 export * from './services/proximity';
 export * from './services/queryKeys';
 export * from './services/realtime';
+export * from './services/storage';
 export * from './stores/useAuthStore';
 export * from './stores/useFavoritesStore';
 export * from './stores/useFiltersStore';
