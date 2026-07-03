@@ -3,6 +3,7 @@
 import {
   type AppNotification,
   deleteNotification,
+  NOTIFICATION_TYPE_LABELS,
   type NotificationType,
   type NotificationWriteInput,
   notificationWriteSchema,
@@ -19,7 +20,7 @@ import { type Column,DataTable } from '@/components/ui/DataTable';
 import { Field } from '@/components/ui/Field';
 import { Modal } from '@/components/ui/Modal';
 import { PageHeader } from '@/components/ui/PageHeader';
-import { INPUT_CLASS } from '@/components/ui/styles';
+import { Select } from '@/components/ui/Select';
 import { TextArea } from '@/components/ui/TextArea';
 import { TextInput } from '@/components/ui/TextInput';
 import { issuesToErrors } from '@/lib/formErrors';
@@ -121,7 +122,7 @@ export default function AvisosPage() {
 
   const columns: Column<AppNotification>[] = [
     { key: 'title', header: 'Título', render: (r) => r.title },
-    { key: 'type', header: 'Tipo', render: (r) => r.type },
+    { key: 'type', header: 'Tipo', render: (r) => NOTIFICATION_TYPE_LABELS[r.type] },
     {
       key: 'created_at',
       header: 'Criado em',
@@ -152,32 +153,49 @@ export default function AvisosPage() {
         title={editingId ? 'Editar aviso' : 'Novo aviso'}
         open={open}
         onClose={() => setOpen(false)}
+        footer={
+          <div className="flex flex-col gap-3">
+            {submitError ? (
+              <p className="text-[13px] text-destructive">{submitError}</p>
+            ) : null}
+            <div className="flex justify-end gap-2">
+              <Button variant="ghost" onClick={() => setOpen(false)}>
+                Cancelar
+              </Button>
+              <Button disabled={saving} onClick={() => void handleSubmit()}>
+                {saving ? 'Salvando…' : 'Salvar'}
+              </Button>
+            </div>
+          </div>
+        }
       >
-        <div className="flex flex-col gap-4">
-          <Field label="Título" error={errors.title}>
-            <TextInput value={form.title} onChange={(e) => set('title', e.target.value)} />
-          </Field>
-          <Field label="Mensagem" error={errors.body}>
-            <TextArea value={form.body} onChange={(e) => set('body', e.target.value)} />
-          </Field>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="sm:col-span-2 lg:col-span-3">
+            <Field label="Título" error={errors.title}>
+              <TextInput value={form.title} onChange={(e) => set('title', e.target.value)} />
+            </Field>
+          </div>
+          <div className="sm:col-span-2 lg:col-span-3">
+            <Field label="Mensagem" error={errors.body}>
+              <TextArea value={form.body} onChange={(e) => set('body', e.target.value)} />
+            </Field>
+          </div>
           <Field label="Tipo" error={errors.type}>
-            <select
+            <Select
               value={form.type}
               onChange={(e) => set('type', e.target.value as NotificationType)}
-              className={INPUT_CLASS}
             >
               {TYPES.map((t) => (
                 <option key={t} value={t}>
-                  {t}
+                  {NOTIFICATION_TYPE_LABELS[t]}
                 </option>
               ))}
-            </select>
+            </Select>
           </Field>
           <Field label="Evento (opcional)" error={errors.event_id}>
-            <select
+            <Select
               value={form.event_id}
               onChange={(e) => set('event_id', e.target.value)}
-              className={INPUT_CLASS}
             >
               <option value="">Nenhum</option>
               {(events.data ?? []).map((e) => (
@@ -185,13 +203,12 @@ export default function AvisosPage() {
                   {e.name}
                 </option>
               ))}
-            </select>
+            </Select>
           </Field>
           <Field label="Estabelecimento (opcional)" error={errors.establishment_id}>
-            <select
+            <Select
               value={form.establishment_id}
               onChange={(e) => set('establishment_id', e.target.value)}
-              className={INPUT_CLASS}
             >
               <option value="">Nenhum</option>
               {(establishments.data ?? []).map((e) => (
@@ -199,21 +216,8 @@ export default function AvisosPage() {
                   {e.name}
                 </option>
               ))}
-            </select>
+            </Select>
           </Field>
-        </div>
-
-        {submitError ? (
-          <p className="mt-4 text-[13px] text-destructive">{submitError}</p>
-        ) : null}
-
-        <div className="mt-6 flex justify-end gap-2">
-          <Button variant="ghost" onClick={() => setOpen(false)}>
-            Cancelar
-          </Button>
-          <Button disabled={saving} onClick={() => void handleSubmit()}>
-            {saving ? 'Salvando…' : 'Salvar'}
-          </Button>
         </div>
       </Modal>
     </div>

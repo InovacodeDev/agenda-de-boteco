@@ -6,6 +6,7 @@ import {
   type EstablishmentWriteInput,
   establishmentWriteSchema,
   type MenuItem,
+  PRICE_RANGE_LABELS,
   type PriceRange,
   upsertEstablishment,
   useCitiesQuery,
@@ -19,7 +20,7 @@ import { type Column,DataTable } from '@/components/ui/DataTable';
 import { Field } from '@/components/ui/Field';
 import { Modal } from '@/components/ui/Modal';
 import { PageHeader } from '@/components/ui/PageHeader';
-import { INPUT_CLASS } from '@/components/ui/styles';
+import { Select } from '@/components/ui/Select';
 import { TextArea } from '@/components/ui/TextArea';
 import { TextInput } from '@/components/ui/TextInput';
 import { issuesToErrors } from '@/lib/formErrors';
@@ -192,7 +193,7 @@ export default function EstabelecimentosPage() {
     { key: 'name', header: 'Nome', render: (r) => r.name },
     { key: 'neighborhood', header: 'Bairro', render: (r) => r.neighborhood },
     { key: 'city', header: 'Cidade', render: (r) => cityName(r.city_id) },
-    { key: 'price', header: 'Faixa', render: (r) => r.price_range },
+    { key: 'price', header: 'Faixa', render: (r) => PRICE_RANGE_LABELS[r.price_range] },
   ];
 
   return (
@@ -218,16 +219,30 @@ export default function EstabelecimentosPage() {
         title={editingId ? 'Editar estabelecimento' : 'Novo estabelecimento'}
         open={open}
         onClose={() => setOpen(false)}
+        footer={
+          <div className="flex flex-col gap-3">
+            {submitError ? (
+              <p className="text-[13px] text-destructive">{submitError}</p>
+            ) : null}
+            <div className="flex justify-end gap-2">
+              <Button variant="ghost" onClick={() => setOpen(false)}>
+                Cancelar
+              </Button>
+              <Button disabled={saving} onClick={() => void handleSubmit()}>
+                {saving ? 'Salvando…' : 'Salvar'}
+              </Button>
+            </div>
+          </div>
+        }
       >
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <Field label="Nome" error={errors.name}>
             <TextInput value={form.name} onChange={(e) => set('name', e.target.value)} />
           </Field>
           <Field label="Cidade" error={errors.city_id}>
-            <select
+            <Select
               value={form.city_id}
               onChange={(e) => set('city_id', e.target.value)}
-              className={INPUT_CLASS}
             >
               <option value="">Selecione…</option>
               {(cities.data ?? []).map((c) => (
@@ -235,7 +250,7 @@ export default function EstabelecimentosPage() {
                   {c.name}
                 </option>
               ))}
-            </select>
+            </Select>
           </Field>
           <Field label="Bairro" error={errors.neighborhood}>
             <TextInput
@@ -285,19 +300,18 @@ export default function EstabelecimentosPage() {
             />
           </Field>
           <Field label="Faixa de preço" error={errors.price_range}>
-            <select
+            <Select
               value={form.price_range}
               onChange={(e) => set('price_range', e.target.value as PriceRange)}
-              className={INPUT_CLASS}
             >
               {PRICE_RANGES.map((p) => (
                 <option key={p} value={p}>
-                  {p}
+                  {PRICE_RANGE_LABELS[p]}
                 </option>
               ))}
-            </select>
+            </Select>
           </Field>
-          <div className="sm:col-span-2">
+          <div className="sm:col-span-2 lg:col-span-3">
             <Field label="Descrição" error={errors.description}>
               <TextArea
                 value={form.description}
@@ -305,7 +319,7 @@ export default function EstabelecimentosPage() {
               />
             </Field>
           </div>
-          <div className="sm:col-span-2">
+          <div className="sm:col-span-2 lg:col-span-3">
             <Field label="Ambiente" error={errors.ambiance}>
               <TextInput
                 value={form.ambiance}
@@ -313,7 +327,7 @@ export default function EstabelecimentosPage() {
               />
             </Field>
           </div>
-          <div className="sm:col-span-2">
+          <div className="sm:col-span-2 lg:col-span-3">
             <Field label="Destaques (um por linha)" error={errors.highlights}>
               <TextArea
                 value={form.highlights}
@@ -321,7 +335,7 @@ export default function EstabelecimentosPage() {
               />
             </Field>
           </div>
-          <div className="sm:col-span-2">
+          <div className="sm:col-span-2 lg:col-span-3">
             <Field label="Cardápio (Nome | preço, um por linha)" error={errors.menu_items}>
               <TextArea
                 value={form.menu_items}
@@ -330,19 +344,6 @@ export default function EstabelecimentosPage() {
               />
             </Field>
           </div>
-        </div>
-
-        {submitError ? (
-          <p className="mt-4 text-[13px] text-destructive">{submitError}</p>
-        ) : null}
-
-        <div className="mt-6 flex justify-end gap-2">
-          <Button variant="ghost" onClick={() => setOpen(false)}>
-            Cancelar
-          </Button>
-          <Button disabled={saving} onClick={() => void handleSubmit()}>
-            {saving ? 'Salvando…' : 'Salvar'}
-          </Button>
         </div>
       </Modal>
     </div>

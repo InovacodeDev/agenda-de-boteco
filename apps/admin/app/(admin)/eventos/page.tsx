@@ -18,7 +18,7 @@ import { type Column,DataTable } from '@/components/ui/DataTable';
 import { Field } from '@/components/ui/Field';
 import { Modal } from '@/components/ui/Modal';
 import { PageHeader } from '@/components/ui/PageHeader';
-import { INPUT_CLASS } from '@/components/ui/styles';
+import { Select } from '@/components/ui/Select';
 import { TextArea } from '@/components/ui/TextArea';
 import { TextInput } from '@/components/ui/TextInput';
 import { issuesToErrors } from '@/lib/formErrors';
@@ -215,8 +215,23 @@ export default function EventosPage() {
         title={editingId ? 'Editar evento' : 'Novo evento'}
         open={open}
         onClose={() => setOpen(false)}
+        footer={
+          <div className="flex flex-col gap-3">
+            {submitError ? (
+              <p className="text-[13px] text-destructive">{submitError}</p>
+            ) : null}
+            <div className="flex justify-end gap-2">
+              <Button variant="ghost" onClick={() => setOpen(false)}>
+                Cancelar
+              </Button>
+              <Button disabled={saving} onClick={() => void handleSubmit()}>
+                {saving ? 'Salvando…' : 'Salvar'}
+              </Button>
+            </div>
+          </div>
+        }
       >
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <Field label="Nome" error={errors.name}>
             <TextInput value={form.name} onChange={(e) => set('name', e.target.value)} />
           </Field>
@@ -227,10 +242,9 @@ export default function EventosPage() {
             />
           </Field>
           <Field label="Estabelecimento" error={errors.establishment_id}>
-            <select
+            <Select
               value={form.establishment_id}
               onChange={(e) => set('establishment_id', e.target.value)}
-              className={INPUT_CLASS}
             >
               <option value="">Selecione…</option>
               {(establishments.data ?? []).map((e) => (
@@ -238,7 +252,7 @@ export default function EventosPage() {
                   {e.name}
                 </option>
               ))}
-            </select>
+            </Select>
           </Field>
           <Field label="Couvert (R$)" error={errors.cover_charge}>
             <TextInput
@@ -274,7 +288,7 @@ export default function EventosPage() {
           <Field label="Promo (opcional)" error={errors.promo}>
             <TextInput value={form.promo} onChange={(e) => set('promo', e.target.value)} />
           </Field>
-          <div className="sm:col-span-2">
+          <div className="sm:col-span-2 lg:col-span-3">
             <Field label="Descrição" error={errors.description}>
               <TextArea
                 value={form.description}
@@ -282,7 +296,7 @@ export default function EventosPage() {
               />
             </Field>
           </div>
-          <div className="sm:col-span-2">
+          <div className="sm:col-span-2 lg:col-span-3">
             <Field label="Fotos (uma URL por linha)" error={errors.photo_urls}>
               <TextArea
                 value={form.photo_urls}
@@ -290,7 +304,7 @@ export default function EventosPage() {
               />
             </Field>
           </div>
-          <div className="sm:col-span-2">
+          <div className="sm:col-span-2 lg:col-span-3">
             <Field label="Estilos musicais" error={errors.music_style_ids}>
               <div className="flex flex-wrap gap-2 pt-1">
                 {(musicStyles.data ?? []).map((s) => {
@@ -319,19 +333,6 @@ export default function EventosPage() {
               </div>
             </Field>
           </div>
-        </div>
-
-        {submitError ? (
-          <p className="mt-4 text-[13px] text-destructive">{submitError}</p>
-        ) : null}
-
-        <div className="mt-6 flex justify-end gap-2">
-          <Button variant="ghost" onClick={() => setOpen(false)}>
-            Cancelar
-          </Button>
-          <Button disabled={saving} onClick={() => void handleSubmit()}>
-            {saving ? 'Salvando…' : 'Salvar'}
-          </Button>
         </div>
       </Modal>
     </div>

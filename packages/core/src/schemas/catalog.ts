@@ -116,3 +116,19 @@ export type AppNotification = z.infer<typeof notificationSchema>;
 export type EstablishmentWriteInput = z.infer<typeof establishmentWriteSchema>;
 export type EventWriteInput = z.infer<typeof eventWriteSchema>;
 export type NotificationWriteInput = z.infer<typeof notificationWriteSchema>;
+
+// Labels amigáveis para os enums — o usuário nunca vê o valor cru.
+// Ficam junto do schema (fonte única) para mobile/web/admin reusarem.
+export const NOTIFICATION_TYPE_LABELS: Record<NotificationType, string> = {
+  style: 'Estilo musical',
+  city: 'Cidade',
+  favorite: 'Favorito',
+  promo: 'Promoção',
+};
+
+export const PRICE_RANGE_LABELS: Record<PriceRange, string> = {
+  $: '$ · Econômico',
+  $$: '$$ · Moderado',
+  $$$: '$$$ · Caro',
+  $$$$: '$$$$ · Premium',
+};
