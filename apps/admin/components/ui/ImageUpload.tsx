@@ -30,7 +30,6 @@ function Dropzone({
   busy: boolean;
   label: string;
 }) {
-  const inputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
 
   const pick = (list: FileList | null) => {
@@ -38,17 +37,11 @@ function Dropzone({
     onFiles(Array.from(list));
   };
 
+  // <label> nativo: clicar abre o seletor uma única vez, sem .click()
+  // programático (que reabria o diálogo duas vezes por reborbulhamento do
+  // clique do input aninhado). O label também é acessível por teclado por padrão.
   return (
-    <div
-      role="button"
-      tabIndex={0}
-      onClick={() => inputRef.current?.click()}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          inputRef.current?.click();
-        }
-      }}
+    <label
       onDragOver={(e) => {
         e.preventDefault();
         setDragging(true);
@@ -66,7 +59,6 @@ function Dropzone({
       }`}
     >
       <input
-        ref={inputRef}
         type="file"
         accept="image/*"
         multiple={multiple}
@@ -82,7 +74,7 @@ function Dropzone({
       <span className="text-[12px] text-muted-foreground">
         Arraste e solte ou clique para escolher · PNG, JPG, WebP até 8MB
       </span>
-    </div>
+    </label>
   );
 }
 
@@ -234,6 +226,10 @@ export function ImageUploadMulti({
 
   const handleFiles = useCallback(
     async (files: File[]) => {
+      // Acumula sobre o value atual: enviar várias no mesmo lote encadeia os
+      // onChange (evita que cada upload sobrescreva o value do closure e só a
+      // última foto sobreviva).
+      let acc = [...value];
       for (const file of files) {
         const err = validate(file);
         const preview = URL.createObjectURL(file);
@@ -245,7 +241,8 @@ export function ImageUploadMulti({
         setUploading((u) => [...u, { id, preview }]);
         try {
           const url = await uploadImage(file, { pathPrefix });
-          onChange([...value, url]);
+          acc = [...acc, url];
+          onChange(acc);
         } catch (e: unknown) {
           setUploading((u) =>
             u.map((x) =>
@@ -259,7 +256,6 @@ export function ImageUploadMulti({
         setUploading((u) => u.filter((x) => x.id !== id));
       }
     },
-    // value é lido no momento do append; o closure é recriado a cada render.
     [onChange, pathPrefix, value],
   );
 
