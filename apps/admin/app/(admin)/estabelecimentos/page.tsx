@@ -5,6 +5,7 @@ import {
   type Establishment,
   type EstablishmentWriteInput,
   establishmentWriteSchema,
+  maskPhoneBR,
   type MenuItem,
   PRICE_RANGE_LABELS,
   type PriceRange,
@@ -80,7 +81,7 @@ function toForm(e: Establishment): FormState {
     city_id: e.city_id,
     lat: String(e.lat),
     lng: String(e.lng),
-    whatsapp: e.whatsapp,
+    whatsapp: maskPhoneBR(e.whatsapp),
     instagram: e.instagram ?? '',
     opening_hours: e.opening_hours,
     menu_items: e.menu_items.map((m) => `${m.name} | ${m.price}`).join('\n'),
@@ -283,7 +284,12 @@ export default function EstabelecimentosPage() {
             <ImageUpload value={form.cover_url} onChange={(url) => set('cover_url', url)} />
           </Field>
           <Field label="WhatsApp" error={errors.whatsapp}>
-            <TextInput value={form.whatsapp} onChange={(e) => set('whatsapp', e.target.value)} />
+            <TextInput
+              value={form.whatsapp}
+              inputMode="numeric"
+              placeholder="(11) 98765-4321"
+              onChange={(e) => set('whatsapp', maskPhoneBR(e.target.value))}
+            />
           </Field>
           <Field label="Instagram (opcional)" error={errors.instagram}>
             <TextInput

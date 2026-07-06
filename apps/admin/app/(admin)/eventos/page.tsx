@@ -1,10 +1,13 @@
 'use client';
 
 import {
+  currencyToMask,
   deleteEvent,
   type Event,
   type EventWriteInput,
   eventWriteSchema,
+  maskCurrencyBR,
+  parseCurrencyBR,
   upsertEvent,
   useEstablishmentsQuery,
   useEventsQuery,
@@ -66,7 +69,7 @@ const EMPTY: FormState = {
   establishment_id: '',
   starts_at: '',
   ends_at: '',
-  cover_charge: '0',
+  cover_charge: '',
   courtesy: '',
   promo: '',
 };
@@ -82,7 +85,7 @@ function toForm(e: Event): FormState {
     establishment_id: e.establishment_id,
     starts_at: isoToLocal(e.starts_at),
     ends_at: isoToLocal(e.ends_at),
-    cover_charge: String(e.cover_charge),
+    cover_charge: currencyToMask(e.cover_charge),
     courtesy: e.courtesy ?? '',
     promo: e.promo ?? '',
   };
@@ -151,7 +154,7 @@ export default function EventosPage() {
       establishment_id: form.establishment_id,
       starts_at: localToIso(form.starts_at),
       ends_at: localToIso(form.ends_at),
-      cover_charge: Number(form.cover_charge),
+      cover_charge: parseCurrencyBR(form.cover_charge),
       courtesy: form.courtesy || undefined,
       promo: form.promo || undefined,
     };
@@ -250,10 +253,10 @@ export default function EventosPage() {
           </Field>
           <Field label="Couvert (R$)" error={errors.cover_charge}>
             <TextInput
-              type="number"
-              min={0}
+              inputMode="numeric"
+              placeholder="R$ 0,00"
               value={form.cover_charge}
-              onChange={(e) => set('cover_charge', e.target.value)}
+              onChange={(e) => set('cover_charge', maskCurrencyBR(e.target.value))}
             />
           </Field>
           <Field label="Início" error={errors.starts_at}>
