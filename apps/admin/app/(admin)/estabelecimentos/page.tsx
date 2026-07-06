@@ -18,6 +18,7 @@ import { useMemo, useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { type Column,DataTable } from '@/components/ui/DataTable';
 import { Field } from '@/components/ui/Field';
+import { ImageUpload } from '@/components/ui/ImageUpload';
 import { Modal } from '@/components/ui/Modal';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Select } from '@/components/ui/Select';
@@ -275,14 +276,11 @@ export default function EstabelecimentosPage() {
               onChange={(e) => set('lng', e.target.value)}
             />
           </Field>
-          <Field label="Logo URL" error={errors.logo_url}>
-            <TextInput value={form.logo_url} onChange={(e) => set('logo_url', e.target.value)} />
+          <Field label="Logo" error={errors.logo_url}>
+            <ImageUpload value={form.logo_url} onChange={(url) => set('logo_url', url)} />
           </Field>
-          <Field label="Capa URL" error={errors.cover_url}>
-            <TextInput
-              value={form.cover_url}
-              onChange={(e) => set('cover_url', e.target.value)}
-            />
+          <Field label="Capa" error={errors.cover_url}>
+            <ImageUpload value={form.cover_url} onChange={(url) => set('cover_url', url)} />
           </Field>
           <Field label="WhatsApp" error={errors.whatsapp}>
             <TextInput value={form.whatsapp} onChange={(e) => set('whatsapp', e.target.value)} />

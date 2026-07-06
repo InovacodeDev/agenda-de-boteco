@@ -16,6 +16,7 @@ import { useMemo, useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { type Column,DataTable } from '@/components/ui/DataTable';
 import { Field } from '@/components/ui/Field';
+import { ImageUpload, ImageUploadMulti } from '@/components/ui/ImageUpload';
 import { Modal } from '@/components/ui/Modal';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Select } from '@/components/ui/Select';
@@ -45,7 +46,7 @@ type FormState = {
   attraction: string;
   description: string;
   banner_url: string;
-  photo_urls: string; // uma URL por linha
+  photo_urls: string[];
   music_style_ids: string[];
   establishment_id: string;
   starts_at: string; // datetime-local
@@ -60,7 +61,7 @@ const EMPTY: FormState = {
   attraction: '',
   description: '',
   banner_url: '',
-  photo_urls: '',
+  photo_urls: [],
   music_style_ids: [],
   establishment_id: '',
   starts_at: '',
@@ -76,7 +77,7 @@ function toForm(e: Event): FormState {
     attraction: e.attraction,
     description: e.description,
     banner_url: e.banner_url,
-    photo_urls: e.photo_urls.join('\n'),
+    photo_urls: e.photo_urls,
     music_style_ids: e.music_style_ids,
     establishment_id: e.establishment_id,
     starts_at: isoToLocal(e.starts_at),
@@ -85,13 +86,6 @@ function toForm(e: Event): FormState {
     courtesy: e.courtesy ?? '',
     promo: e.promo ?? '',
   };
-}
-
-function lines(raw: string): string[] {
-  return raw
-    .split('\n')
-    .map((s) => s.trim())
-    .filter(Boolean);
 }
 
 export default function EventosPage() {
@@ -152,7 +146,7 @@ export default function EventosPage() {
       attraction: form.attraction,
       description: form.description,
       banner_url: form.banner_url,
-      photo_urls: lines(form.photo_urls),
+      photo_urls: form.photo_urls,
       music_style_ids: form.music_style_ids,
       establishment_id: form.establishment_id,
       starts_at: localToIso(form.starts_at),
@@ -276,10 +270,11 @@ export default function EventosPage() {
               onChange={(e) => set('ends_at', e.target.value)}
             />
           </Field>
-          <Field label="Banner URL" error={errors.banner_url}>
-            <TextInput
+          <Field label="Banner" error={errors.banner_url}>
+            <ImageUpload
               value={form.banner_url}
-              onChange={(e) => set('banner_url', e.target.value)}
+              onChange={(url) => set('banner_url', url)}
+              pathPrefix="events"
             />
           </Field>
           <Field label="Cortesia (opcional)" error={errors.courtesy}>
@@ -297,10 +292,11 @@ export default function EventosPage() {
             </Field>
           </div>
           <div className="sm:col-span-2 lg:col-span-3">
-            <Field label="Fotos (uma URL por linha)" error={errors.photo_urls}>
-              <TextArea
+            <Field label="Fotos" error={errors.photo_urls}>
+              <ImageUploadMulti
                 value={form.photo_urls}
-                onChange={(e) => set('photo_urls', e.target.value)}
+                onChange={(urls) => set('photo_urls', urls)}
+                pathPrefix="events"
               />
             </Field>
           </div>
