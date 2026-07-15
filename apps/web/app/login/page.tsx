@@ -138,7 +138,7 @@ export default function LoginPage() {
         <div className="flex flex-col gap-3">
           <button
             type="button"
-            disabled={unavailable || busy}
+            disabled={unavailable || busy || emailStep !== 'hidden'}
             onClick={() => handleProvider('google')}
             className={`${BTN_BASE} bg-foreground text-background`}
           >
@@ -148,7 +148,7 @@ export default function LoginPage() {
           {platform !== 'android' ? (
             <button
               type="button"
-              disabled={unavailable || busy}
+              disabled={unavailable || busy || emailStep !== 'hidden'}
               onClick={() => handleProvider('apple')}
               className={`${BTN_BASE} border-border text-foreground border bg-transparent`}
             >

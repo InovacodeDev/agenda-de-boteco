@@ -142,7 +142,7 @@ export default function LoginScreen() {
                 label="Continuar com Google"
                 variant="white"
                 fullWidth
-                disabled={unavailable || busy}
+                disabled={unavailable || busy || emailStep !== 'hidden'}
                 style={{ flex: 1, flexDirection: 'row' }}
                 onPress={() => handleProvider('google')}
                 icon={<Icon name="google" size={18} />}
@@ -152,7 +152,7 @@ export default function LoginScreen() {
                   label="Continuar com Apple"
                   variant="outline"
                   fullWidth
-                  disabled={unavailable || busy}
+                  disabled={unavailable || busy || emailStep !== 'hidden'}
                   style={{ flex: 1, flexDirection: 'row' }}
                   onPress={() => handleProvider('apple')}
                   icon={<Icon name="apple" color={colors.foreground} size={16} />}
