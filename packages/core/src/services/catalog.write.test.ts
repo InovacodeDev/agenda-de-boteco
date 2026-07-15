@@ -106,6 +106,7 @@ const ESTABLISHMENT_INPUT = {
   price_range: '$$' as const,
   ambiance: 'Animado',
   highlights: ['ao vivo'],
+  menu_photo_urls: [],
 };
 
 const ESTABLISHMENT_DERIVED = { rating_avg: 0, rating_count: 0 };

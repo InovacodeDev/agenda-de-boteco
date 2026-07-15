@@ -45,7 +45,6 @@ function RealtimeBridge() {
 }
 
 export default function RootLayout() {
-  const hasOnboarded = usePreferencesStore((state) => state.hasOnboarded);
   const hasHydrated = usePreferencesStore((state) => state.hasHydrated);
   const initializeAuth = useAuthStore((state) => state.initialize);
 
@@ -146,26 +145,22 @@ export default function RootLayout() {
               contentStyle: { backgroundColor: colors.background },
             }}
           >
-            <Stack.Protected guard={hasOnboarded}>
-              <Stack.Screen name="(tabs)" />
-              <Stack.Screen name="event/[id]" />
-              <Stack.Screen name="establishment/[id]" />
-              <Stack.Screen name="city" />
-              <Stack.Screen name="login" />
-              <Stack.Screen
-                name="filters"
-                options={{
-                  presentation: 'formSheet',
-                  sheetAllowedDetents: [0.92],
-                  sheetGrabberVisible: true,
-                  sheetCornerRadius: 24,
-                  contentStyle: { backgroundColor: colors.popover },
-                }}
-              />
-            </Stack.Protected>
-            <Stack.Protected guard={!hasOnboarded}>
-              <Stack.Screen name="onboarding" />
-            </Stack.Protected>
+            <Stack.Screen name="(tabs)" />
+            <Stack.Screen name="event/[id]" />
+            <Stack.Screen name="establishment/[id]" />
+            <Stack.Screen name="city" />
+            <Stack.Screen name="login" />
+            <Stack.Screen
+              name="filters"
+              options={{
+                presentation: 'formSheet',
+                sheetAllowedDetents: [0.92],
+                sheetGrabberVisible: true,
+                sheetCornerRadius: 24,
+                contentStyle: { backgroundColor: colors.popover },
+                gestureEnabled: false,
+              }}
+            />
             {/* Rotas públicas: acessíveis sem onboarding (URLs exigidas pelas lojas + crawler). */}
             <Stack.Screen name="privacidade" />
             <Stack.Screen name="excluir-conta" />

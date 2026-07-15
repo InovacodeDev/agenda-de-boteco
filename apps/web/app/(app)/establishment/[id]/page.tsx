@@ -65,6 +65,7 @@ function EstablishmentDetailContent() {
   const params = useParams<{ id: string }>();
   const id = params?.id ?? '';
   const [activeTab, setActiveTab] = useState(0);
+  const [activePhotoUrl, setActivePhotoUrl] = useState<string | null>(null);
 
   const establishmentQuery = useEstablishmentQuery(id);
   const establishment = establishmentQuery.data;
@@ -204,16 +205,72 @@ function EstablishmentDetailContent() {
         ) : null}
 
         {activeTab === 2 ? (
-          <div className="flex flex-col gap-3">
-            {establishment.menu_items.length === 0 ? (
-              <p className="text-[14px] font-[family-name:var(--font-body)] text-muted-foreground">
-                Cardápio não informado.
-              </p>
-            ) : (
-              establishment.menu_items.map((item) => (
-                <EstablishmentDetailMenuItem key={item.name} item={item} />
-              ))
-            )}
+          <div className="flex flex-col gap-6">
+            {establishment.menu_pdf_url ? (
+              <div className="flex flex-col gap-2">
+                <span className="text-[14px] font-[family-name:var(--font-body)] font-semibold text-foreground">Cardápio Digital</span>
+                <a
+                  href={establishment.menu_pdf_url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex h-11 items-center justify-center gap-2 rounded-full border border-border bg-surface-elevated text-[14px] font-[family-name:var(--font-body)] font-semibold text-foreground transition-opacity hover:opacity-80"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    width={16}
+                    height={16}
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
+                    <polyline points="14 2 14 8 20 8" />
+                  </svg>
+                  Visualizar/Baixar Cardápio (PDF)
+                </a>
+              </div>
+            ) : null}
+
+            {establishment.menu_photo_urls && establishment.menu_photo_urls.length > 0 ? (
+              <div className="flex flex-col gap-2">
+                <span className="text-[14px] font-[family-name:var(--font-body)] font-semibold text-foreground">Fotos do Cardápio</span>
+                <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin">
+                  {establishment.menu_photo_urls.map((photoUrl) => (
+                    <button
+                      key={photoUrl}
+                      type="button"
+                      onClick={() => setActivePhotoUrl(photoUrl)}
+                      className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl border border-border hover:opacity-90 animate-fade-in"
+                    >
+                      <img
+                        src={photoUrl}
+                        alt="Foto do cardápio"
+                        className="h-full w-full object-cover"
+                      />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+
+            <div className="flex flex-col gap-3">
+              <span className="text-[14px] font-[family-name:var(--font-body)] font-semibold text-foreground">Itens do Cardápio</span>
+              {establishment.menu_items.length === 0 && !establishment.menu_pdf_url && (!establishment.menu_photo_urls || establishment.menu_photo_urls.length === 0) ? (
+                <p className="text-[14px] font-[family-name:var(--font-body)] text-muted-foreground">
+                  Cardápio não informado.
+                </p>
+              ) : establishment.menu_items.length === 0 ? (
+                <p className="text-[13px] font-[family-name:var(--font-body)] text-muted-foreground">
+                  Nenhum prato/bebida avulso listado.
+                </p>
+              ) : (
+                establishment.menu_items.map((item) => (
+                  <EstablishmentDetailMenuItem key={item.name} item={item} />
+                ))
+              )}
+            </div>
           </div>
         ) : null}
 
@@ -246,6 +303,61 @@ function EstablishmentDetailContent() {
           </a>
         </div>
       </div>
+
+      {activePhotoUrl ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4">
+          <button
+            type="button"
+            onClick={() => setActivePhotoUrl(null)}
+            className="absolute right-6 top-6 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition-opacity hover:opacity-80"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              width={20}
+              height={20}
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+
+          <img
+            src={activePhotoUrl}
+            alt="Foto do cardápio ampliada"
+            className="max-h-[80vh] max-w-full object-contain"
+          />
+
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2">
+            <a
+              href={activePhotoUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="flex h-11 items-center justify-center gap-2 rounded-full bg-primary px-6 text-[14px] font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                width={16}
+                height={16}
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" />
+              </svg>
+              Baixar Foto
+            </a>
+          </div>
+        </div>
+      ) : null}
     </section>
   );
 }

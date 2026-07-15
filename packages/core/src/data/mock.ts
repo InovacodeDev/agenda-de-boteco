@@ -63,6 +63,11 @@ export const ESTABLISHMENTS: Establishment[] = [
     rating_avg: 4.7,
     rating_count: 312,
     highlights: ['Chope gelado', 'Pet friendly', 'Roda de samba', 'Mesa na calçada'],
+    menu_pdf_url: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
+    menu_photo_urls: [
+      'https://images.unsplash.com/photo-1563245372-f21724e3856d?auto=format&fit=crop&w=600&q=85',
+      'https://images.unsplash.com/photo-1572116469696-31de0f17cc34?auto=format&fit=crop&w=600&q=85',
+    ],
   },
   {
     id: 'e2',
@@ -88,6 +93,7 @@ export const ESTABLISHMENTS: Establishment[] = [
     rating_avg: 4.5,
     rating_count: 198,
     highlights: ['Cervejas artesanais', 'Mesa de sinuca', 'Banda ao vivo', 'Late night'],
+    menu_photo_urls: [],
   },
   {
     id: 'e3',
@@ -110,6 +116,7 @@ export const ESTABLISHMENTS: Establishment[] = [
     rating_avg: 4.3,
     rating_count: 421,
     highlights: ['Pista grande', 'Open de chope', 'Camarote', 'Estacionamento'],
+    menu_photo_urls: [],
   },
   {
     id: 'e4',
@@ -132,6 +139,7 @@ export const ESTABLISHMENTS: Establishment[] = [
     rating_avg: 4.8,
     rating_count: 156,
     highlights: ['Acústico', 'Cardápio autoral', 'Reservas', 'Wine bar'],
+    menu_photo_urls: [],
   },
   {
     id: 'e5',
@@ -154,6 +162,7 @@ export const ESTABLISHMENTS: Establishment[] = [
     rating_avg: 4.6,
     rating_count: 587,
     highlights: ['Happy hour 16-19h', 'Música ao vivo', 'Pet friendly'],
+    menu_photo_urls: [],
   },
   {
     id: 'e6',
@@ -176,6 +185,7 @@ export const ESTABLISHMENTS: Establishment[] = [
     rating_avg: 4.4,
     rating_count: 1023,
     highlights: ['Roda de samba', 'Pista', 'Caipirinha autoral'],
+    menu_photo_urls: [],
   },
   {
     id: 'e7',
@@ -197,6 +207,7 @@ export const ESTABLISHMENTS: Establishment[] = [
     rating_avg: 4.5,
     rating_count: 287,
     highlights: ['Aulas de forró', 'Trio pé de serra'],
+    menu_photo_urls: [],
   },
   {
     id: 'e8',
@@ -218,6 +229,7 @@ export const ESTABLISHMENTS: Establishment[] = [
     rating_avg: 4.6,
     rating_count: 754,
     highlights: ['Sound system', 'DJ residente', 'Open bar'],
+    menu_photo_urls: [],
   },
 ];
 

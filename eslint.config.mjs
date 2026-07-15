@@ -34,6 +34,7 @@ export default tseslint.config(
       '**/*.config.cjs',
       'expo-env.d.ts',
       '**/next-env.d.ts',
+      '**/*.d.ts',
     ],
   },
 

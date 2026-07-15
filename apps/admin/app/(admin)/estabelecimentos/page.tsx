@@ -19,9 +19,10 @@ import { useMemo, useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { type Column,DataTable } from '@/components/ui/DataTable';
 import { Field } from '@/components/ui/Field';
-import { ImageUpload } from '@/components/ui/ImageUpload';
+import { ImageUpload, ImageUploadMulti } from '@/components/ui/ImageUpload';
 import { Modal } from '@/components/ui/Modal';
 import { PageHeader } from '@/components/ui/PageHeader';
+import { PdfUpload } from '@/components/ui/PdfUpload';
 import { Select } from '@/components/ui/Select';
 import { TextArea } from '@/components/ui/TextArea';
 import { TextInput } from '@/components/ui/TextInput';
@@ -29,9 +30,6 @@ import { issuesToErrors } from '@/lib/formErrors';
 
 const PRICE_RANGES: PriceRange[] = ['$', '$$', '$$$', '$$$$'];
 
-// ponytail: form em string-only; converte para os tipos do schema no submit.
-// menu_items e highlights como textarea (uma linha = um item) — editor de
-// linhas dedicado seria over-engineering para um painel admin interno.
 type FormState = {
   name: string;
   description: string;
@@ -49,6 +47,8 @@ type FormState = {
   price_range: PriceRange;
   ambiance: string;
   highlights: string; // um por linha
+  menu_pdf_url: string;
+  menu_photo_urls: string[];
 };
 
 const EMPTY: FormState = {
@@ -68,6 +68,8 @@ const EMPTY: FormState = {
   price_range: '$$',
   ambiance: '',
   highlights: '',
+  menu_pdf_url: '',
+  menu_photo_urls: [],
 };
 
 function toForm(e: Establishment): FormState {
@@ -88,6 +90,8 @@ function toForm(e: Establishment): FormState {
     price_range: e.price_range,
     ambiance: e.ambiance,
     highlights: e.highlights.join('\n'),
+    menu_pdf_url: e.menu_pdf_url ?? '',
+    menu_photo_urls: e.menu_photo_urls ?? [],
   };
 }
 
@@ -170,6 +174,8 @@ export default function EstabelecimentosPage() {
       price_range: form.price_range,
       ambiance: form.ambiance,
       highlights: lines(form.highlights),
+      menu_pdf_url: form.menu_pdf_url || null,
+      menu_photo_urls: form.menu_photo_urls || [],
     };
 
     const result = establishmentWriteSchema.safeParse(candidate);
@@ -346,6 +352,16 @@ export default function EstabelecimentosPage() {
                 placeholder="Chopp | 12.50"
                 onChange={(e) => set('menu_items', e.target.value)}
               />
+            </Field>
+          </div>
+          <div className="sm:col-span-2 lg:col-span-3">
+            <Field label="Cardápio em PDF (opcional)" error={errors.menu_pdf_url}>
+              <PdfUpload value={form.menu_pdf_url} onChange={(url) => set('menu_pdf_url', url)} />
+            </Field>
+          </div>
+          <div className="sm:col-span-2 lg:col-span-3">
+            <Field label="Fotos do Cardápio (opcional)" error={errors.menu_photo_urls}>
+              <ImageUploadMulti value={form.menu_photo_urls} onChange={(urls) => set('menu_photo_urls', urls)} pathPrefix="menus" />
             </Field>
           </div>
         </div>

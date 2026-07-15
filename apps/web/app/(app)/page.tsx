@@ -3,6 +3,7 @@
 import {
   applyEventFilters,
   indexById,
+  type LatLng,
   musicStylesForEvent,
   normalizeText,
   resolveNearbyOrigin,
@@ -13,7 +14,7 @@ import {
   useMusicStylesQuery,
   useNearbyEstablishments,
 } from '@agenda/core';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { EstablishmentCard } from '@/components/establishment/EstablishmentCard';
 import { EventCard } from '@/components/event/EventCard';
@@ -29,6 +30,21 @@ export default function FeedPage() {
   const [activeTab, setActiveTab] = useState(0); // 0 = Eventos, 1 = Bares
   const [barQuery, setBarQuery] = useState('');
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
+  const [userCoords, setUserCoords] = useState<LatLng | null>(null);
+
+  useEffect(() => {
+    if (!navigator.geolocation) return;
+    const watchId = navigator.geolocation.watchPosition(
+      (pos) => {
+        queueMicrotask(() => {
+          setUserCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        });
+      },
+      () => {},
+      { enableHighAccuracy: true }
+    );
+    return () => navigator.geolocation.clearWatch(watchId);
+  }, []);
 
   const filters = useFiltersStore((state) => state.filters);
   const setQuery = useFiltersStore((state) => state.setQuery);
@@ -48,7 +64,7 @@ export default function FeedPage() {
 
   // ponytail: geolocalização web fica para a tela de filtros/Fase 2 — sem GPS,
   // a origem do "Perto de mim" é o centro da cidade (resolveNearbyOrigin idle).
-  const nearbyOrigin = filters.nearMe && city ? resolveNearbyOrigin(null, 'idle', city) : null;
+  const nearbyOrigin = filters.nearMe && city ? resolveNearbyOrigin(userCoords, userCoords ? 'granted' : 'idle', city) : null;
   const { data: nearby } = useNearbyEstablishments({
     origin: nearbyOrigin,
     radiusKm: filters.maxDistanceKm,
@@ -136,6 +152,7 @@ export default function FeedPage() {
                   event={event}
                   establishment={establishmentsById[event.establishment_id]}
                   styles={musicStylesForEvent(event, stylesById)}
+                  userCoords={userCoords}
                 />
               ))}
             </div>

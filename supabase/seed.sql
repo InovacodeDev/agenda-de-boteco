@@ -207,6 +207,16 @@ VALUES
   )
 ON CONFLICT (id) DO NOTHING;
 
+-- Seed cardápio para Boteco do Zé
+UPDATE public.establishments
+SET
+  menu_pdf_url = 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
+  menu_photo_urls = ARRAY[
+    'https://images.unsplash.com/photo-1563245372-f21724e3856d?auto=format&fit=crop&w=600&q=85',
+    'https://images.unsplash.com/photo-1572116469696-31de0f17cc34?auto=format&fit=crop&w=600&q=85'
+  ]
+WHERE id = 'e1';
+
 -- 12 events
 INSERT INTO public.events
   (id, name, attraction, description, banner_url, music_style_ids, establishment_id, starts_at, ends_at, cover_charge, courtesy, promo)

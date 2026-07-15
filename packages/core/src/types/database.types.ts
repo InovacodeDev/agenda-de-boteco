@@ -102,6 +102,8 @@ export type Database = {
           rating_count: number
           slug: string | null
           whatsapp: string
+          menu_pdf_url: string | null
+          menu_photo_urls: string[]
         }
         Insert: {
           address: string
@@ -125,6 +127,8 @@ export type Database = {
           rating_count?: number
           slug?: string | null
           whatsapp: string
+          menu_pdf_url?: string | null
+          menu_photo_urls?: string[]
         }
         Update: {
           address?: string
@@ -148,6 +152,8 @@ export type Database = {
           rating_count?: number
           slug?: string | null
           whatsapp?: string
+          menu_pdf_url?: string | null
+          menu_photo_urls?: string[]
         }
         Relationships: [
           {

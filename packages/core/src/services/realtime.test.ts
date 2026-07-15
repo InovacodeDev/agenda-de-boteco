@@ -33,20 +33,28 @@ interface OnCall {
 
 interface FakeChannel {
   on: jest.Mock<FakeChannel, [string, OnFilter, PostgresChangesHandler]>;
-  subscribe: jest.Mock<FakeChannel, []>;
+  subscribe: jest.Mock<FakeChannel, [(status: string, error?: Error) => void]>;
   onCalls: OnCall[];
+  triggerStatus: (status: string, error?: Error) => void;
 }
 
 /** Canal fake encadeável que registra as chamadas de `.on`/`.subscribe`. */
 function makeFakeChannel(): FakeChannel {
   const onCalls: OnCall[] = [];
+  let subscribeCallback: ((status: string, error?: Error) => void) | null = null;
   const channel: FakeChannel = {
     on: jest.fn((type, filter, handler) => {
       onCalls.push({ type, filter, handler });
       return channel;
     }),
-    subscribe: jest.fn(() => channel),
+    subscribe: jest.fn((cb) => {
+      subscribeCallback = cb;
+      return channel;
+    }),
     onCalls,
+    triggerStatus: (status, error) => {
+      subscribeCallback?.(status, error);
+    },
   };
   return channel;
 }
@@ -155,5 +163,23 @@ describe('subscribeToCatalogChanges', () => {
 
     expect(removeChannel).toHaveBeenCalledTimes(1);
     expect(removeChannel).toHaveBeenCalledWith(getChannel());
+  });
+
+  it('não avisa console.warn quando o status é CLOSED ou SUBSCRIBED, mas avisa para CHANNEL_ERROR', () => {
+    const { client, getChannel } = makeFakeClient();
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+
+    subscribeToCatalogChanges(client, () => undefined);
+
+    getChannel().triggerStatus('SUBSCRIBED');
+    expect(warnSpy).not.toHaveBeenCalled();
+
+    getChannel().triggerStatus('CLOSED');
+    expect(warnSpy).not.toHaveBeenCalled();
+
+    getChannel().triggerStatus('CHANNEL_ERROR', new Error('test'));
+    expect(warnSpy).toHaveBeenCalledWith('[realtime] canal catalog-changes: CHANNEL_ERROR', expect.any(Error));
+
+    warnSpy.mockRestore();
   });
 });
