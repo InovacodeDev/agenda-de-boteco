@@ -6,16 +6,13 @@ import {
   useAuthStore,
   verifyEmailOtp,
 } from '@agenda/core';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-import {
-  AppleIcon,
-  EnvelopeIcon,
-  GoogleIcon,
-  InfoIcon,
-} from '@/components/auth/icons';
+import { AppleIcon, EnvelopeIcon, GoogleIcon, InfoIcon } from '@/components/auth/icons';
 import { getSupabase } from '@/lib/supabase';
+import logo from '@/public/logo.png';
 
 type EmailStep = 'hidden' | 'editing' | 'sent';
 
@@ -98,30 +95,26 @@ export default function LoginPage() {
 
   return (
     <main className="flex min-h-dvh flex-col justify-end bg-[linear-gradient(160deg,#1A122B,#0F0F0F)] p-6">
-      <div className="flex flex-col gap-5">
-        <div className="h-16 w-16 rounded-xl bg-primary/20 text-center text-[28px] leading-[64px]">
-          🍺
-        </div>
+      <div className="mx-auto flex w-full max-w-157.5 flex-col gap-5">
+        <Image src={logo} alt="Agenda de Boteco" priority className="h-auto w-40" />
 
         <div className="flex flex-col gap-2">
-          <h1 className="font-[family-name:var(--font-heading)] text-[26px] text-foreground">
-            Entre para curtir mais
-          </h1>
-          <p className="text-[14px] leading-5 text-muted-foreground">
+          <h1 className="font-heading text-foreground text-[26px]">Entre para curtir mais</h1>
+          <p className="text-muted-foreground text-[14px] leading-5">
             Salve favoritos, avalie bares e receba avisos dos seus lugares favoritos.
           </p>
         </div>
 
         {unavailable ? (
-          <div className="flex items-start gap-2.5 rounded-2xl border border-border bg-surface/80 p-4">
+          <div className="border-border bg-surface/80 flex items-start gap-2.5 rounded-2xl border p-4">
             <span className="text-accent">
               <InfoIcon size={18} />
             </span>
             <div className="flex flex-1 flex-col gap-1">
-              <p className="text-[14px] font-semibold text-foreground">
+              <p className="text-foreground text-[14px] font-semibold">
                 Login indisponível no momento
               </p>
-              <p className="text-[13px] leading-5 text-muted-foreground">
+              <p className="text-muted-foreground text-[13px] leading-5">
                 Estamos finalizando a configuração das contas. Você já pode explorar a agenda
                 normalmente — favoritar e avaliar liberam assim que o login estiver no ar.
               </p>
@@ -129,9 +122,7 @@ export default function LoginPage() {
           </div>
         ) : null}
 
-        {errorMessage ? (
-          <p className="text-[13px] text-destructive">{errorMessage}</p>
-        ) : null}
+        {errorMessage ? <p className="text-destructive text-[13px]">{errorMessage}</p> : null}
 
         <div className="flex flex-col gap-3">
           <button
@@ -147,7 +138,7 @@ export default function LoginPage() {
             type="button"
             disabled={unavailable || busy}
             onClick={() => handleProvider('apple')}
-            className={`${BTN_BASE} border border-border bg-transparent text-foreground`}
+            className={`${BTN_BASE} border-border text-foreground border bg-transparent`}
           >
             <AppleIcon size={16} />
             Continuar com Apple
@@ -177,7 +168,7 @@ export default function LoginPage() {
             </div>
           ) : emailStep === 'sent' ? (
             <div className="flex flex-col gap-3">
-              <p className="text-center text-[13px] text-muted-foreground">
+              <p className="text-muted-foreground text-center text-[13px]">
                 Enviamos um código de acesso para {email.trim()}. Insira-o abaixo:
               </p>
               <input
@@ -205,7 +196,7 @@ export default function LoginPage() {
                   setEmailStep('editing');
                   setOtpToken('');
                 }}
-                className={`${BTN_BASE} border border-border bg-background text-foreground`}
+                className={`${BTN_BASE} border-border bg-background text-foreground border`}
               >
                 Alterar e-mail
               </button>
@@ -215,7 +206,7 @@ export default function LoginPage() {
               type="button"
               disabled={unavailable || busy}
               onClick={handleEmail}
-              className={`${BTN_BASE} border border-border bg-transparent text-foreground`}
+              className={`${BTN_BASE} border-border text-foreground border bg-transparent`}
             >
               <EnvelopeIcon size={16} />
               Continuar com e-mail
@@ -223,7 +214,7 @@ export default function LoginPage() {
           )}
         </div>
 
-        <p className="text-center text-[12px] text-muted-foreground">
+        <p className="text-muted-foreground text-center text-[12px]">
           Ao continuar, você aceita os termos do Agenda de Boteco.
         </p>
       </div>

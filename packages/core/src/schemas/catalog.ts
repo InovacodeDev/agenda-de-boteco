@@ -88,6 +88,22 @@ export const notificationSchema = z.object({
   establishment_id: z.string().optional(),
 });
 
+/**
+ * Schemas de input para escrita (admin). Derivam dos schemas de leitura via
+ * .omit()/.partial() — não redefinem campos, então mudanças no schema base
+ * propagam automaticamente. Campos derivados (gerados por default/trigger do
+ * banco) ficam de fora; o id é opcional (gerado no cliente quando ausente).
+ */
+export const establishmentWriteSchema = establishmentSchema
+  .omit({ rating_avg: true, rating_count: true })
+  .partial({ id: true });
+
+export const eventWriteSchema = eventSchema.partial({ id: true });
+
+export const notificationWriteSchema = notificationSchema
+  .omit({ created_at: true, read: true })
+  .partial({ id: true });
+
 export type MusicStyle = z.infer<typeof musicStyleSchema>;
 export type City = z.infer<typeof citySchema>;
 export type MenuItem = z.infer<typeof menuItemSchema>;
@@ -97,3 +113,22 @@ export type Event = z.infer<typeof eventSchema>;
 export type EventAttraction = z.infer<typeof eventAttractionSchema>;
 export type NotificationType = z.infer<typeof notificationTypeSchema>;
 export type AppNotification = z.infer<typeof notificationSchema>;
+export type EstablishmentWriteInput = z.infer<typeof establishmentWriteSchema>;
+export type EventWriteInput = z.infer<typeof eventWriteSchema>;
+export type NotificationWriteInput = z.infer<typeof notificationWriteSchema>;
+
+// Labels amigáveis para os enums — o usuário nunca vê o valor cru.
+// Ficam junto do schema (fonte única) para mobile/web/admin reusarem.
+export const NOTIFICATION_TYPE_LABELS: Record<NotificationType, string> = {
+  style: 'Estilo musical',
+  city: 'Cidade',
+  favorite: 'Favorito',
+  promo: 'Promoção',
+};
+
+export const PRICE_RANGE_LABELS: Record<PriceRange, string> = {
+  $: '$ · Econômico',
+  $$: '$$ · Moderado',
+  $$$: '$$$ · Caro',
+  $$$$: '$$$$ · Premium',
+};

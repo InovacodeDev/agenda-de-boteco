@@ -150,6 +150,35 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
   }
 }
 
+/**
+ * Lê profiles.is_admin do usuário logado. RLS deixa cada um ler só o próprio
+ * perfil; sem client/sessão retorna false. Usado pelo painel admin como guard.
+ */
+export async function isCurrentUserAdmin(): Promise<boolean> {
+  const client = getConfiguredSupabase();
+  if (!client) {
+    return false;
+  }
+  try {
+    const { data: sessionData } = await client.auth.getSession();
+    const userId = sessionData.session?.user?.id;
+    if (!userId) {
+      return false;
+    }
+    const { data, error } = await client
+      .from('profiles')
+      .select('is_admin')
+      .eq('id', userId)
+      .maybeSingle();
+    if (error) {
+      throw error;
+    }
+    return data?.is_admin === true;
+  } catch (error) {
+    return handleServiceError(error, { method: 'auth.isCurrentUserAdmin' });
+  }
+}
+
 /** Observa mudanças de sessão; retorna função de unsubscribe */
 export function onAuthUserChange(callback: (user: AuthUser | null) => void): () => void {
   const client = getConfiguredSupabase();

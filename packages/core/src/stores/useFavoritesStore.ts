@@ -28,6 +28,12 @@ function toggleId(ids: string[], id: string): string[] {
   return ids.includes(id) ? ids.filter((current) => current !== id) : [...ids, id];
 }
 
+/** União preservando a ordem local; adiciona só os ids ainda ausentes. */
+function mergeIds(local: string[], incoming: string[]): string[] {
+  const known = new Set(local);
+  return [...local, ...incoming.filter((id) => !known.has(id))];
+}
+
 export const useFavoritesStore = create<FavoritesState>()(
   persist(
     (set, get) => ({
@@ -89,7 +95,17 @@ export const useFavoritesStore = create<FavoritesState>()(
             await addServerFavorite(userId, target);
           }
         }
-        set({ pendingOps: [] });
+        set((state) => ({
+          eventIds: mergeIds(
+            state.eventIds,
+            server.filter((t) => t.type === 'event').map((t) => t.id),
+          ),
+          establishmentIds: mergeIds(
+            state.establishmentIds,
+            server.filter((t) => t.type === 'establishment').map((t) => t.id),
+          ),
+          pendingOps: [],
+        }));
       },
     }),
     {

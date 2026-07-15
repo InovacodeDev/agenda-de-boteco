@@ -1,10 +1,12 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 import { useUnreadCount } from '@/hooks/useUnreadCount';
 import { cn } from '@/lib/cn';
+import logo from '@/public/logo.png';
 
 import { NavIcon } from './icons';
 import { NavBadge } from './NavBadge';
@@ -15,13 +17,10 @@ export function Sidebar() {
   const unreadCount = useUnreadCount();
 
   return (
-    <aside className="hidden w-[245px] shrink-0 border-r border-border bg-popover md:flex md:flex-col">
+    <aside className="hidden w-61.25 shrink-0 border-r border-border bg-popover md:flex md:flex-col">
       <div className="sticky top-0 flex h-screen flex-col gap-6 px-4 py-8">
-        <Link
-          href="/"
-          className="px-2 font-[family-name:var(--font-heading)] text-xl font-bold text-primary"
-        >
-          Agenda de Boteco
+        <Link href="/" className="px-2" aria-label="Agenda de Boteco">
+          <Image src={logo} alt="Agenda de Boteco" priority className="h-auto w-40" />
         </Link>
 
         <nav aria-label="Navegação principal" className="flex flex-col gap-1">

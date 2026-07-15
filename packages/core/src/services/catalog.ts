@@ -20,13 +20,16 @@ import {
   citySchema,
   type Establishment,
   establishmentSchema,
+  type EstablishmentWriteInput,
   type Event,
   type EventAttraction,
   eventAttractionSchema,
   eventSchema,
+  type EventWriteInput,
   type MusicStyle,
   musicStyleSchema,
   notificationSchema,
+  type NotificationWriteInput,
 } from '../schemas';
 import { getConfiguredSupabase } from '../supabase/client';
 import { handleServiceError } from '../utils/errors';
@@ -189,6 +192,91 @@ export async function listNotifications(): Promise<AppNotification[]> {
     return await coreQueries.listNotifications(client);
   } catch (error) {
     return handleServiceError(error, { method: 'catalog.listNotifications' });
+  }
+}
+
+// --- Escrita (admin) -------------------------------------------------------
+// Diferente da leitura: escrita EXIGE Supabase. Sem client configurado, lança
+// erro — não há mock de escrita.
+
+function requireSupabase() {
+  const client = getConfiguredSupabase();
+  if (client === null) {
+    throw new Error('Supabase não configurado: escrita indisponível');
+  }
+  return client;
+}
+
+export async function upsertEstablishment(
+  input: EstablishmentWriteInput,
+): Promise<Establishment> {
+  const client = requireSupabase();
+  try {
+    return await coreQueries.upsertEstablishment(client, input);
+  } catch (error) {
+    return handleServiceError(error, {
+      method: 'catalog.upsertEstablishment',
+      args: { id: input.id, name: input.name },
+    });
+  }
+}
+
+export async function deleteEstablishment(id: string): Promise<void> {
+  const client = requireSupabase();
+  try {
+    await coreQueries.deleteEstablishment(client, id);
+  } catch (error) {
+    handleServiceError(error, {
+      method: 'catalog.deleteEstablishment',
+      args: { id },
+    });
+  }
+}
+
+export async function upsertEvent(input: EventWriteInput): Promise<Event> {
+  const client = requireSupabase();
+  try {
+    return await coreQueries.upsertEvent(client, input);
+  } catch (error) {
+    return handleServiceError(error, {
+      method: 'catalog.upsertEvent',
+      args: { id: input.id, name: input.name },
+    });
+  }
+}
+
+export async function deleteEvent(id: string): Promise<void> {
+  const client = requireSupabase();
+  try {
+    await coreQueries.deleteEvent(client, id);
+  } catch (error) {
+    handleServiceError(error, { method: 'catalog.deleteEvent', args: { id } });
+  }
+}
+
+export async function upsertNotification(
+  input: NotificationWriteInput,
+): Promise<AppNotification> {
+  const client = requireSupabase();
+  try {
+    return await coreQueries.upsertNotification(client, input);
+  } catch (error) {
+    return handleServiceError(error, {
+      method: 'catalog.upsertNotification',
+      args: { id: input.id, title: input.title },
+    });
+  }
+}
+
+export async function deleteNotification(id: string): Promise<void> {
+  const client = requireSupabase();
+  try {
+    await coreQueries.deleteNotification(client, id);
+  } catch (error) {
+    handleServiceError(error, {
+      method: 'catalog.deleteNotification',
+      args: { id },
+    });
   }
 }
 

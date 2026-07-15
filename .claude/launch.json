@@ -12,6 +12,18 @@
       "runtimeExecutable": "pnpm",
       "runtimeArgs": ["--filter", "@agenda/web", "dev"],
       "port": 8088
+    },
+    {
+      "name": "agenda-admin",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter", "@agenda/admin", "dev"],
+      "port": 8089
+    },
+    {
+      "name": "agenda-landing",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter", "@agenda/landing", "dev"],
+      "port": 8087
     }
   ]
 }

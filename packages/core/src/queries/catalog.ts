@@ -6,16 +6,23 @@ import {
   citySchema,
   type Establishment,
   establishmentSchema,
+  type EstablishmentWriteInput,
+  establishmentWriteSchema,
   type Event,
   type EventAttraction,
   eventAttractionSchema,
   eventSchema,
+  type EventWriteInput,
+  eventWriteSchema,
   menuItemSchema,
   type MusicStyle,
   musicStyleSchema,
   notificationSchema,
+  type NotificationWriteInput,
+  notificationWriteSchema,
 } from '../schemas/catalog';
 import type { Database, Json } from '../types';
+import { slugify } from '../utils/slug';
 
 type CityRow = Database['public']['Tables']['cities']['Row'];
 /** `location` (geography/unknown) nunca é selecionado — fica fora do mapper. */
@@ -48,6 +55,18 @@ function eventsFrom(client: SupabaseClient<Database>) {
 // Helper: acessa a tabela 'event_attractions', ainda ausente em database.types.ts.
 function attractionsFrom(client: SupabaseClient<Database>) {
   return (client as SupabaseClient).from('event_attractions');
+}
+
+// Helper: acessa 'establishments' sem validação de colunas pelo supabase-js,
+// usado nos writes (a row de insert omite location/rating_*, gerados no banco).
+function establishmentsFrom(client: SupabaseClient<Database>) {
+  return (client as SupabaseClient).from('establishments');
+}
+
+// Helper: acessa 'notifications' sem validação de colunas (insert omite
+// created_at/read, com default no banco).
+function notificationsFrom(client: SupabaseClient<Database>) {
+  return (client as SupabaseClient).from('notifications');
 }
 
 function nullToUndefined<T>(value: T | null): T | undefined {
@@ -247,4 +266,79 @@ export async function listNotifications(
     .order('created_at', { ascending: false });
   if (error) throw error;
   return (data ?? []).map(mapNotification);
+}
+
+// --- Escrita (admin) -------------------------------------------------------
+// location e rating_* não são enviados: o banco gera via trigger/default.
+// id e slug são derivados de name/title quando ausentes (catálogo nasce do admin).
+
+export async function upsertEstablishment(
+  client: SupabaseClient<Database>,
+  input: EstablishmentWriteInput,
+): Promise<Establishment> {
+  const parsed = establishmentWriteSchema.parse(input);
+  const id = parsed.id ?? slugify(parsed.name);
+  const slug = parsed.slug ?? slugify(parsed.name);
+  const row = { ...parsed, id, slug };
+  const { data, error } = await establishmentsFrom(client)
+    .upsert(row)
+    .select(ESTABLISHMENT_COLUMNS)
+    .single();
+  if (error) throw error;
+  return mapEstablishment(data as EstablishmentRow);
+}
+
+export async function deleteEstablishment(
+  client: SupabaseClient<Database>,
+  id: string,
+): Promise<void> {
+  const { error } = await client.from('establishments').delete().eq('id', id);
+  if (error) throw error;
+}
+
+export async function upsertEvent(
+  client: SupabaseClient<Database>,
+  input: EventWriteInput,
+): Promise<Event> {
+  const parsed = eventWriteSchema.parse(input);
+  const id = parsed.id ?? slugify(parsed.name);
+  const slug = parsed.slug ?? slugify(parsed.name);
+  const row = { ...parsed, id, slug };
+  const { data, error } = await eventsFrom(client)
+    .upsert(row)
+    .select(EVENT_COLUMNS)
+    .single();
+  if (error) throw error;
+  return mapEvent(data as EventRow);
+}
+
+export async function deleteEvent(
+  client: SupabaseClient<Database>,
+  id: string,
+): Promise<void> {
+  const { error } = await eventsFrom(client).delete().eq('id', id);
+  if (error) throw error;
+}
+
+export async function upsertNotification(
+  client: SupabaseClient<Database>,
+  input: NotificationWriteInput,
+): Promise<AppNotification> {
+  const parsed = notificationWriteSchema.parse(input);
+  const id = parsed.id ?? slugify(parsed.title);
+  const row = { ...parsed, id };
+  const { data, error } = await notificationsFrom(client)
+    .upsert(row)
+    .select(NOTIFICATION_COLUMNS)
+    .single();
+  if (error) throw error;
+  return mapNotification(data as NotificationRow);
+}
+
+export async function deleteNotification(
+  client: SupabaseClient<Database>,
+  id: string,
+): Promise<void> {
+  const { error } = await notificationsFrom(client).delete().eq('id', id);
+  if (error) throw error;
 }

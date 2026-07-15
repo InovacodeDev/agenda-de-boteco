@@ -34,6 +34,24 @@ export type Database = {
   }
   public: {
     Tables: {
+      account_deletion_queue: {
+        Row: {
+          processed_at: string | null
+          requested_at: string
+          user_id: string
+        }
+        Insert: {
+          processed_at?: string | null
+          requested_at?: string
+          user_id: string
+        }
+        Update: {
+          processed_at?: string | null
+          requested_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       cities: {
         Row: {
           id: string
@@ -141,6 +159,35 @@ export type Database = {
           },
         ]
       }
+      event_attractions: {
+        Row: {
+          event_id: string
+          id: string
+          name: string
+          position: number
+        }
+        Insert: {
+          event_id: string
+          id: string
+          name: string
+          position?: number
+        }
+        Update: {
+          event_id?: string
+          id?: string
+          name?: string
+          position?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_attractions_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       events: {
         Row: {
           attraction: string
@@ -153,6 +200,7 @@ export type Database = {
           id: string
           music_style_ids: string[]
           name: string
+          photo_urls: string[]
           promo: string | null
           slug: string | null
           starts_at: string
@@ -168,6 +216,7 @@ export type Database = {
           id: string
           music_style_ids?: string[]
           name: string
+          photo_urls?: string[]
           promo?: string | null
           slug?: string | null
           starts_at: string
@@ -183,6 +232,7 @@ export type Database = {
           id?: string
           music_style_ids?: string[]
           name?: string
+          photo_urls?: string[]
           promo?: string | null
           slug?: string | null
           starts_at?: string
@@ -263,6 +313,27 @@ export type Database = {
           },
         ]
       }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string | null
+          id: string
+          is_admin: boolean
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          id: string
+          is_admin?: boolean
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_admin?: boolean
+        }
+        Relationships: []
+      }
       spatial_ref_sys: {
         Row: {
           auth_name: string | null
@@ -284,6 +355,27 @@ export type Database = {
           proj4text?: string | null
           srid?: number
           srtext?: string | null
+        }
+        Relationships: []
+      }
+      user_favorites: {
+        Row: {
+          created_at: string
+          target_id: string
+          target_type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          target_id: string
+          target_type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          target_id?: string
+          target_type?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -592,6 +684,7 @@ export type Database = {
       }
       geomfromewkt: { Args: { "": string }; Returns: unknown }
       gettransactionid: { Args: never; Returns: unknown }
+      is_admin: { Args: never; Returns: boolean }
       longtransactionsenabled: { Args: never; Returns: boolean }
       nearby_establishments: {
         Args: {
@@ -665,6 +758,8 @@ export type Database = {
       }
       postgis_version: { Args: never; Returns: string }
       postgis_wagyu_version: { Args: never; Returns: string }
+      process_account_deletion_queue: { Args: never; Returns: number }
+      request_account_deletion: { Args: never; Returns: undefined }
       slugify: { Args: { input: string }; Returns: string }
       st_3dclosestpoint: {
         Args: { geom1: unknown; geom2: unknown }
