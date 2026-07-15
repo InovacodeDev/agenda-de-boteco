@@ -1,8 +1,20 @@
 {
   "rewrites": [
-    { "source": "/app", "destination": "https://web-agenda-de-boteco.vercel.app/app" },
-    { "source": "/app/:path*", "destination": "https://web-agenda-de-boteco.vercel.app/app/:path*" },
-    { "source": "/admin", "destination": "https://admin-agenda-de-boteco.vercel.app/admin" },
-    { "source": "/admin/:path*", "destination": "https://admin-agenda-de-boteco.vercel.app/admin/:path*" }
+    {
+      "source": "/app",
+      "destination": "https://agenda-de-boteco-web.vercel.app/app"
+    },
+    {
+      "source": "/app/:path*",
+      "destination": "https://agenda-de-boteco-web.vercel.app/app/:path*"
+    },
+    {
+      "source": "/admin",
+      "destination": "https://agenda-de-boteco-admin.vercel.app/admin"
+    },
+    {
+      "source": "/admin/:path*",
+      "destination": "https://agenda-de-boteco-admin.vercel.app/admin/:path*"
+    }
   ]
 }
