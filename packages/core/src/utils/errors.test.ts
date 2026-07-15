@@ -89,6 +89,17 @@ describe('errors utility', () => {
       expect(getFriendlyErrorMessage(err)).toContain('Código de acesso ou e-mail incorreto');
     });
 
+    it('returns friendly message for invalid grant (incorrect OTP)', () => {
+      const err = new AuthError('Invalid OTP', 400);
+      (err as unknown as { code: string }).code = 'invalid_grant';
+      expect(getFriendlyErrorMessage(err)).toContain('Código de acesso ou e-mail incorreto');
+    });
+
+    it('returns friendly message for invalid otp message', () => {
+      const err = new AuthError('invalid otp', 400);
+      expect(getFriendlyErrorMessage(err)).toContain('Código de acesso ou e-mail incorreto');
+    });
+
     it('returns friendly message for validation failed', () => {
       const err = new AuthError('validation failed', 400);
       (err as unknown as { code: string }).code = 'validation_failed';

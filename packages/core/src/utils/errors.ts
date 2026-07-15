@@ -127,10 +127,15 @@ export function getFriendlyErrorMessage(error: unknown): string {
     const code = getErrorCode(error);
     const msg = error instanceof Error ? error.message.toLowerCase() : '';
 
-    if (code === 'invalid_credentials' || msg.includes('invalid credentials')) {
+    if (
+      code === 'invalid_credentials' ||
+      code === 'invalid_grant' ||
+      msg.includes('invalid credentials') ||
+      msg.includes('invalid otp')
+    ) {
       return 'Código de acesso ou e-mail incorreto. Verifique os dados e tente novamente.';
     }
-    if (code === 'validation_failed' || msg.includes('email') || msg.includes('invalid')) {
+    if (code === 'validation_failed' || msg.includes('email') || msg.includes('invalid email')) {
       return 'O e-mail digitado parece inválido. Verifique se digitou corretamente.';
     }
     if (code === 'otp_expired' || msg.includes('expired')) {
