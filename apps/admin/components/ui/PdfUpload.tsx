@@ -3,8 +3,6 @@
 import { MAX_IMAGE_BYTES, uploadImage } from '@agenda/core';
 import { useCallback, useState } from 'react';
 
-import { INPUT_CLASS } from './styles';
-
 type PendingState = { previewName: string } | { error: string } | null;
 
 function validate(file: File): string | null {
@@ -89,7 +87,7 @@ export function PdfUpload({
             setDragging(false);
             pick(e.dataTransfer.files);
           }}
-          className={`flex min-h-[7rem] cursor-pointer flex-col items-center justify-center gap-1.5 rounded-2xl border-2 border-dashed px-4 py-6 text-center transition-colors ${
+          className={`flex min-h-28 cursor-pointer flex-col items-center justify-center gap-1.5 rounded-2xl border-2 border-dashed px-4 py-6 text-center transition-colors ${
             dragging
               ? 'border-primary bg-primary/5'
               : 'border-border bg-surface-elevated hover:border-primary/60'
@@ -104,7 +102,7 @@ export function PdfUpload({
               e.target.value = '';
             }}
           />
-          <span className="text-[13px] font-[family-name:var(--font-body)] text-foreground">
+          <span className="text-[13px] font-body text-foreground">
             {busy ? `Enviando ${(pending as { previewName: string }).previewName}…` : 'Enviar PDF do Cardápio'}
           </span>
           <span className="text-[12px] text-muted-foreground">
