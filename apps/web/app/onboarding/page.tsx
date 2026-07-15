@@ -81,7 +81,7 @@ export default function OnboardingPage() {
       <Image src={logo} alt="Agenda de Boteco" priority className="h-auto w-28" />
 
       <div className="flex flex-col gap-3">
-        <h1 className="font-[family-name:var(--font-heading)] text-[32px] text-foreground">
+        <h1 className="font-heading text-[32px] text-foreground">
           A noite começa <span className="text-primary">aqui</span>.
         </h1>
         <p className="text-[15px] leading-6 text-muted-foreground">

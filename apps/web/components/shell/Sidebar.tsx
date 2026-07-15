@@ -17,7 +17,7 @@ export function Sidebar() {
   const unreadCount = useUnreadCount();
 
   return (
-    <aside className="hidden w-[245px] shrink-0 border-r border-border bg-popover md:flex md:flex-col">
+    <aside className="hidden w-61.25 shrink-0 border-r border-border bg-popover md:flex md:flex-col">
       <div className="sticky top-0 flex h-screen flex-col gap-6 px-4 py-8">
         <Link href="/" className="px-2" aria-label="Agenda de Boteco">
           <Image src={logo} alt="Agenda de Boteco" priority className="h-auto w-40" />
