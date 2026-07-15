@@ -3,6 +3,7 @@
 import { useActiveCity, useAuthStore, useFavoritesStore } from '@agenda/core';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
 import {
   ChevronRightIcon,
@@ -84,6 +85,7 @@ function SignedInProfile() {
   const user = useAuthStore((state) => state.user);
   const signOut = useAuthStore((state) => state.signOut);
   const router = useRouter();
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const eventIds = useFavoritesStore((state) => state.eventIds);
   const establishmentIds = useFavoritesStore((state) => state.establishmentIds);
@@ -96,10 +98,12 @@ function SignedInProfile() {
   const firstLetter = name[0]?.toUpperCase() ?? 'V';
 
   const handleSignOut = () => {
-    if (window.confirm('Sair da conta? Você precisará entrar novamente para favoritar e receber avisos.')) {
-      void signOut();
-      router.push('/');
-    }
+    setShowConfirm(true);
+  };
+
+  const confirmSignOut = () => {
+    void signOut();
+    router.push('/');
   };
 
   return (
@@ -172,6 +176,35 @@ function SignedInProfile() {
           </span>
         </Link>
       </div>
+
+      {showConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-sm rounded-2xl border border-border bg-card p-6 shadow-xl animate-in fade-in zoom-in-95 duration-200">
+            <h3 className="font-[family-name:var(--font-heading)] text-lg font-bold text-foreground">
+              Sair da conta?
+            </h3>
+            <p className="mt-2 font-[family-name:var(--font-body)] text-sm text-muted-foreground">
+              Você precisará entrar novamente para favoritar e receber avisos.
+            </p>
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setShowConfirm(false)}
+                className="h-10 rounded-full border border-border bg-transparent px-5 text-sm font-semibold text-foreground hover:bg-card/50 transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={confirmSignOut}
+                className="h-10 rounded-full bg-destructive px-5 text-sm font-semibold text-white hover:opacity-90 transition-opacity"
+              >
+                Sair
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
