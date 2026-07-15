@@ -1,14 +1,16 @@
 'use client';
 
 import {
+  detectPlatform,
   getFriendlyErrorMessage,
+  type Platform,
   signInWithEmailOtp,
   useAuthStore,
   verifyEmailOtp,
 } from '@agenda/core';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
 
 import { AppleIcon, EnvelopeIcon, GoogleIcon, InfoIcon } from '@/components/auth/icons';
 import { getSupabase } from '@/lib/supabase';
@@ -22,9 +24,18 @@ const INPUT_CLASS =
 const BTN_BASE =
   'flex h-12 w-full items-center justify-center gap-2 rounded-full text-[14px] font-[family-name:var(--font-body)] font-semibold transition-opacity disabled:opacity-50 hover:opacity-90';
 
+const noopSubscribe = () => () => {};
+const getClientPlatform = (): Platform => detectPlatform(navigator.userAgent);
+const getServerPlatform = (): Platform => 'other';
+
+function usePlatform(): Platform {
+  return useSyncExternalStore(noopSubscribe, getClientPlatform, getServerPlatform);
+}
+
 export default function LoginPage() {
   const router = useRouter();
   const status = useAuthStore((state) => state.status);
+  const platform = usePlatform();
 
   const [emailStep, setEmailStep] = useState<EmailStep>('hidden');
   const [email, setEmail] = useState('');
@@ -134,15 +145,17 @@ export default function LoginPage() {
             <GoogleIcon size={18} />
             Continuar com Google
           </button>
-          <button
-            type="button"
-            disabled={unavailable || busy}
-            onClick={() => handleProvider('apple')}
-            className={`${BTN_BASE} border-border text-foreground border bg-transparent`}
-          >
-            <AppleIcon size={16} />
-            Continuar com Apple
-          </button>
+          {platform !== 'android' ? (
+            <button
+              type="button"
+              disabled={unavailable || busy}
+              onClick={() => handleProvider('apple')}
+              className={`${BTN_BASE} border-border text-foreground border bg-transparent`}
+            >
+              <AppleIcon size={16} />
+              Continuar com Apple
+            </button>
+          ) : null}
 
           {emailStep === 'editing' ? (
             <div className="flex flex-col gap-3">
