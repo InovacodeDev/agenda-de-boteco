@@ -2,7 +2,7 @@ import brandLogo from '@assets/logo.png';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { StyleSheet } from 'react-native';
+import { Platform, StyleSheet } from 'react-native';
 
 import { Screen } from '@/components/layout/Screen';
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
@@ -147,15 +147,17 @@ export default function LoginScreen() {
                 onPress={() => handleProvider('google')}
                 icon={<Icon name="google" size={18} />}
               />
-              <Button
-                label="Continuar com Apple"
-                variant="outline"
-                fullWidth
-                disabled={unavailable || busy}
-                style={{ flex: 1, flexDirection: 'row' }}
-                onPress={() => handleProvider('apple')}
-                icon={<Icon name="apple" color={colors.foreground} size={16} />}
-              />
+              {Platform.OS === 'ios' ? (
+                <Button
+                  label="Continuar com Apple"
+                  variant="outline"
+                  fullWidth
+                  disabled={unavailable || busy}
+                  style={{ flex: 1, flexDirection: 'row' }}
+                  onPress={() => handleProvider('apple')}
+                  icon={<Icon name="apple" color={colors.foreground} size={16} />}
+                />
+              ) : null}
               {emailStep === 'editing' ? (
                 <View className="gap-3">
                   <TextInput
