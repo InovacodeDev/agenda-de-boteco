@@ -1,4 +1,7 @@
 {
   "extends": "@agenda/typescript-config/base.json",
+  "compilerOptions": {
+    "types": ["jest", "node"]
+  },
   "include": ["src/**/*"]
 }

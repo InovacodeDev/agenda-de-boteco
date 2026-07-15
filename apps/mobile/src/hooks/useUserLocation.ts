@@ -1,9 +1,10 @@
+import type { LocationStatus } from '@agenda/core';
 import * as Location from 'expo-location';
 import { useCallback, useState } from 'react';
 
 import type { LatLng, ReverseGeocode } from '@/utils/geo';
 
-export type LocationStatus = 'idle' | 'loading' | 'granted' | 'denied';
+export type { LocationStatus };
 
 export interface LocationResult {
   coords: LatLng;

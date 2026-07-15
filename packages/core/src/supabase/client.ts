@@ -39,3 +39,20 @@ export function createSupabaseClient({
     },
   });
 }
+
+let getter: (() => SupabaseClient<Database> | null) | null = null;
+
+/** Cada app registra seu getter de client no bootstrap (mobile = expo-secure-store, web = localStorage). */
+export function configureSupabase(fn: () => SupabaseClient<Database> | null): void {
+  getter = fn;
+}
+
+/** Client configurado, ou null se não houver (mantém o app funcional sem login). */
+export function getConfiguredSupabase(): SupabaseClient<Database> | null {
+  return getter ? getter() : null;
+}
+
+/** Conveniência: há client configurado? */
+export function isSupabaseConfigured(): boolean {
+  return getConfiguredSupabase() !== null;
+}
