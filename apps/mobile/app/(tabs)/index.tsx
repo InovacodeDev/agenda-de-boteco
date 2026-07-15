@@ -1,4 +1,5 @@
 import { FlashList } from '@shopify/flash-list';
+import * as Location from 'expo-location';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { EstablishmentCard } from '@/components/establishment/EstablishmentCard';
@@ -14,6 +15,7 @@ import { SegmentedTabs } from '@/components/ui/SegmentedTabs';
 import { indexById, musicStylesForEvent } from '@/data/lookup';
 import type { Event } from '@/data/schemas';
 import {
+  useCitiesQuery,
   useEstablishmentsQuery,
   useEventsQuery,
   useMusicStylesQuery,
@@ -22,10 +24,11 @@ import { useActiveCity } from '@/hooks/useActiveCity';
 import { useNearbyEstablishments } from '@/hooks/useNearbyEstablishments';
 import { useUserLocation } from '@/hooks/useUserLocation';
 import { useFiltersStore } from '@/store/useFiltersStore';
+import { usePreferencesStore } from '@/store/usePreferencesStore';
 import { headingLetterSpacing } from '@/theme/typography';
 import { ScrollView, Text, View } from '@/tw';
 import { applyEventFilters, normalizeText } from '@/utils/filters';
-import { resolveNearbyOrigin } from '@/utils/geo';
+import { type LatLng, resolveCityFromLocation, resolveNearbyOrigin } from '@/utils/geo';
 
 const ItemSeparator = () => <View className="h-4" />;
 
@@ -37,6 +40,12 @@ export default function FeedScreen() {
   const setQuery = useFiltersStore((state) => state.setQuery);
   const toggleStyle = useFiltersStore((state) => state.toggleStyle);
 
+  const hasOnboarded = usePreferencesStore((state) => state.hasOnboarded);
+  const completeOnboarding = usePreferencesStore((state) => state.completeOnboarding);
+  const setCity = usePreferencesStore((state) => state.setCity);
+  const setCustomCity = usePreferencesStore((state) => state.setCustomCity);
+  const { data: cities } = useCitiesQuery();
+
   const { data: events } = useEventsQuery();
   const { data: establishments } = useEstablishmentsQuery();
   const { data: musicStyles } = useMusicStylesQuery();
@@ -44,8 +53,48 @@ export default function FeedScreen() {
   // "agora" estável por render da lista, atualizado a cada minuto
   const [now, setNow] = useState(() => new Date());
   useEffect(() => {
-    const interval = setInterval(() => setNow(new Date()), 60_000);
+    const interval = setInterval(() => {
+      queueMicrotask(() => {
+        setNow(new Date());
+      });
+    }, 60_000);
     return () => clearInterval(interval);
+  }, []);
+
+  const [liveCoords, setLiveCoords] = useState<LatLng | null>(null);
+
+  useEffect(() => {
+    let subscription: Location.LocationSubscription | null = null;
+    const startWatching = async () => {
+      const permission = await Location.getForegroundPermissionsAsync();
+      if (permission.granted) {
+        try {
+          subscription = await Location.watchPositionAsync(
+            {
+              accuracy: Location.Accuracy.Balanced,
+              timeInterval: 5000,
+              distanceInterval: 10,
+            },
+            (loc) => {
+              queueMicrotask(() => {
+                setLiveCoords({
+                  lat: loc.coords.latitude,
+                  lng: loc.coords.longitude,
+                });
+              });
+            }
+          );
+        } catch {
+          // ignore watch errors
+        }
+      }
+    };
+    startWatching();
+    return () => {
+      if (subscription) {
+        subscription.remove();
+      }
+    };
   }, []);
 
   const establishmentsById = useMemo(() => indexById(establishments ?? []), [establishments]);
@@ -58,11 +107,37 @@ export default function FeedScreen() {
   // Sem nearMe a query fica desabilitada (origin null) — zero custo.
   const { coords, status, request } = useUserLocation();
 
+  // Se o usuário nunca fez o onboarding, pede a localização no mount e
+  // configura a cidade automaticamente.
+  useEffect(() => {
+    if (!hasOnboarded) {
+      const handleFirstLaunchLocation = async () => {
+        const result = await request();
+        if (result) {
+          const { city, isCatalog } = resolveCityFromLocation(result.coords, result.geocode, cities ?? []);
+          queueMicrotask(() => {
+            if (isCatalog) {
+              setCity(city.id);
+            } else {
+              setCustomCity(city);
+            }
+          });
+        }
+        queueMicrotask(() => {
+          completeOnboarding();
+        });
+      };
+      handleFirstLaunchLocation();
+    }
+  }, [hasOnboarded, request, cities, setCity, setCustomCity, completeOnboarding]);
+
   // Pede a localização ao ligar "Perto de mim"; se negada, resolveNearbyOrigin
   // cai para o centro da cidade (a tela nunca fica vazia).
   useEffect(() => {
     if (filters.nearMe && status === 'idle') {
-      request();
+      queueMicrotask(() => {
+        request();
+      });
     }
   }, [filters.nearMe, status, request]);
 
@@ -98,6 +173,8 @@ export default function FeedScreen() {
     return scoped.filter((e) => normalizeText(e.name).includes(q));
   }, [establishments, city, barQuery]);
 
+  const userCoords = liveCoords || coords;
+
   // Estável enquanto os índices não mudam: junto com EventCard memoizado e os
   // caches de lookup, evita re-render dos cards visíveis a cada tecla da busca.
   const renderEvent = useCallback(
@@ -106,9 +183,10 @@ export default function FeedScreen() {
         event={item}
         establishment={establishmentsById[item.establishment_id]}
         styles={musicStylesForEvent(item, stylesById)}
+        userCoords={userCoords}
       />
     ),
-    [establishmentsById, stylesById],
+    [establishmentsById, stylesById, userCoords],
   );
 
   const commonHeader = useMemo(

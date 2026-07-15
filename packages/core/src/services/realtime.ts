@@ -59,7 +59,7 @@ export function subscribeToCatalogChanges(
     // silêncio (o usuário veria um catálogo defasado). Em dev, logamos o status
     // não-`SUBSCRIBED` para diagnosticar; a salvaguarda de correção continua
     // sendo o resubscribe + invalidação ao reentrar em `active` (useRealtimeSync).
-    if (!isProduction() && status !== 'SUBSCRIBED') {
+    if (!isProduction() && status !== 'SUBSCRIBED' && status !== 'CLOSED') {
       console.warn(`[realtime] canal catalog-changes: ${status}`, error);
     }
   });

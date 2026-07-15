@@ -1,6 +1,7 @@
+import { haversineDistanceKm, type LatLng } from '@agenda/core';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import { memo, type ReactNode } from 'react';
+import { memo, type ReactNode,useMemo } from 'react';
 import { StyleSheet } from 'react-native';
 
 import { GradientBadge } from '@/components/ui/GradientBadge';
@@ -34,13 +35,19 @@ export interface EventCardProps {
   event: Event;
   establishment: Establishment;
   styles: MusicStyle[];
+  userCoords?: LatLng | null;
 }
 
 /**
  * Card de evento do feed, fiel ao protótipo. Memoizado: nas listas, só
  * re-renderiza quando event/establishment/styles mudam de referência.
  */
-export const EventCard = memo(function EventCard({ event, establishment, styles }: EventCardProps) {
+export const EventCard = memo(function EventCard({
+  event,
+  establishment,
+  styles,
+  userCoords,
+}: EventCardProps) {
   const router = useRouter();
   const requireAuth = useRequireAuth();
   const isFavorite = useFavoritesStore((state) => state.eventIds.includes(event.id));
@@ -48,6 +55,18 @@ export const EventCard = memo(function EventCard({ event, establishment, styles 
 
   const badge = event.courtesy ? 'Cortesia' : event.promo ? 'Promoção' : null;
   const price = formatPrice(event.cover_charge);
+
+  const distanceText = useMemo(() => {
+    if (!userCoords) return null;
+    const dist = haversineDistanceKm(
+      { lat: establishment.lat, lng: establishment.lng },
+      userCoords,
+    );
+    if (dist < 1) {
+      return `${Math.round(dist * 1000)}m de mim`;
+    }
+    return `${dist.toFixed(1).replace('.', ',')}km de mim`;
+  }, [establishment.lat, establishment.lng, userCoords]);
 
   return (
     <GuardedPressable
@@ -110,6 +129,13 @@ export const EventCard = memo(function EventCard({ event, establishment, styles 
           </View>
         </View>
       </View>
+
+      {distanceText ? (
+        <View className="bg-surface/50 border-border flex-row items-center gap-1.5 border-b px-4 py-1.5">
+          <Icon name="location-dot" color={colors.primary} size={12} />
+          <Text className="font-body text-muted-foreground text-[12px]">{distanceText}</Text>
+        </View>
+      ) : null}
 
       <View className="bg-popover flex-row justify-between px-4 py-3">
         <View className="gap-2">

@@ -24,6 +24,7 @@ const EXT_BY_MIME: Record<string, string> = {
   'image/gif': 'gif',
   'image/avif': 'avif',
   'image/heic': 'heic',
+  'application/pdf': 'pdf',
 };
 
 function extFor(contentType: string): string {

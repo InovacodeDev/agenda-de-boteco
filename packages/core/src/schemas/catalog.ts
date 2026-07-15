@@ -43,6 +43,8 @@ export const establishmentSchema = z.object({
   rating_count: z.number().int().nonnegative(),
   highlights: z.array(z.string()),
   slug: z.string().optional(),
+  menu_pdf_url: z.string().url().nullable().optional(),
+  menu_photo_urls: z.array(z.string().url()).default([]),
 });
 
 export const eventSchema = z.object({

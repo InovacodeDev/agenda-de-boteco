@@ -1,5 +1,7 @@
+import type { City } from '@agenda/core';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { type NativeScrollEvent, type NativeSyntheticEvent } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { DateRangeField } from '@/components/filters/DateRangeField';
@@ -12,12 +14,15 @@ import { Chip } from '@/components/ui/Chip';
 import { GuardedPressable } from '@/components/ui/GuardedPressable';
 import { Icon } from '@/components/ui/Icon';
 import { useCitiesQuery, useMusicStylesQuery } from '@/hooks/queries';
+import { useUserLocation } from '@/hooks/useUserLocation';
 import { useFiltersStore } from '@/store/useFiltersStore';
 import { usePreferencesStore } from '@/store/usePreferencesStore';
 import { colors } from '@/theme/colors';
 import { ScrollView, View } from '@/tw';
+import { cn } from '@/utils/cn';
 import type { DateBucket, EventFilters, SortBy } from '@/utils/filters';
 import { DEFAULT_EVENT_FILTERS } from '@/utils/filters';
+import { resolveCityFromLocation } from '@/utils/geo';
 
 const DATE_OPTIONS: Array<{ label: string; bucket: DateBucket }> = [
   { label: 'Qualquer dia', bucket: 'any' },
@@ -43,12 +48,61 @@ export default function FiltersSheet() {
   const replaceFilters = useFiltersStore((state) => state.replaceFilters);
   const cityId = usePreferencesStore((state) => state.cityId);
   const setCity = usePreferencesStore((state) => state.setCity);
+  const setCustomCity = usePreferencesStore((state) => state.setCustomCity);
   const { data: cities } = useCitiesQuery();
   const { data: musicStyles } = useMusicStylesQuery();
 
   // estado provisório: só aplica ao tocar "Aplicar filtros"
   const [draft, setDraft] = useState<EventFilters>(storedFilters);
   const [draftCityId, setDraftCityId] = useState(cityId);
+
+  // Scroll dynamics states
+  const [scrollY, setScrollY] = useState(0);
+  const [contentHeight, setContentHeight] = useState(0);
+  const [scrollViewHeight, setScrollViewHeight] = useState(0);
+
+  const canScroll = contentHeight > scrollViewHeight;
+  const isAtMin = scrollY <= 0;
+  const isAtMax = canScroll && (scrollY + scrollViewHeight >= contentHeight - 1);
+
+  const showHeaderDivider = !isAtMin;
+  const showFooterDivider = !isAtMax;
+
+  // Current location resolution
+  const { request } = useUserLocation();
+  const [currentCity, setCurrentCity] = useState<City | null>(null);
+  const [resolvingLocation, setResolvingLocation] = useState(false);
+
+  const handleUseMyLocation = async () => {
+    setResolvingLocation(true);
+    try {
+      const result = await request();
+      if (result && cities) {
+        const { city } = resolveCityFromLocation(result.coords, result.geocode, cities);
+        queueMicrotask(() => {
+          setCurrentCity(city);
+          setDraftCityId(city.id);
+        });
+      }
+    } finally {
+      queueMicrotask(() => {
+        setResolvingLocation(false);
+      });
+    }
+  };
+
+  useEffect(() => {
+    const fetchLocation = async () => {
+      const result = await request();
+      if (result && cities) {
+        const { city } = resolveCityFromLocation(result.coords, result.geocode, cities);
+        queueMicrotask(() => {
+          setCurrentCity(city);
+        });
+      }
+    };
+    fetchLocation();
+  }, [request, cities]);
 
   const patch = (partial: Partial<EventFilters>) =>
     setDraft((current) => ({ ...current, ...partial }));
@@ -66,7 +120,11 @@ export default function FiltersSheet() {
 
   const apply = () => {
     replaceFilters(draft);
-    setCity(draftCityId);
+    if (currentCity && draftCityId === currentCity.id && currentCity.id.startsWith('geo:')) {
+      setCustomCity(currentCity);
+    } else {
+      setCity(draftCityId);
+    }
     router.back();
   };
 
@@ -86,7 +144,22 @@ export default function FiltersSheet() {
           </GuardedPressable>
         }
       />
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerClassName="gap-6 px-5 pb-5">
+      {showHeaderDivider && <View className="border-border border-b" />}
+      <ScrollView
+        className="flex-1"
+        showsVerticalScrollIndicator={false}
+        contentContainerClassName="gap-6 px-5 pb-5 pt-4"
+        scrollEventThrottle={16}
+        onScroll={(e: NativeSyntheticEvent<NativeScrollEvent>) => {
+          setScrollY(e.nativeEvent.contentOffset.y);
+        }}
+        onContentSizeChange={(_, height) => {
+          setContentHeight(height);
+        }}
+        onLayout={(e) => {
+          setScrollViewHeight(e.nativeEvent.layout.height);
+        }}
+      >
         <FilterSection title="Data">
           <View className="flex-row flex-wrap gap-2">
             {DATE_OPTIONS.map(({ label, bucket }) => (
@@ -119,14 +192,30 @@ export default function FiltersSheet() {
 
         <FilterSection title="Cidade">
           <View className="flex-row flex-wrap gap-2">
-            {(cities ?? []).map((city) => (
+            {currentCity ? (
               <Chip
-                key={city.id}
-                label={city.name}
-                selected={draftCityId === city.id}
-                onPress={() => setDraftCityId(city.id)}
+                key={currentCity.id}
+                label={`${currentCity.name} (atual)`}
+                selected={draftCityId === currentCity.id}
+                onPress={() => setDraftCityId(currentCity.id)}
               />
-            ))}
+            ) : (
+              <Chip
+                label={resolvingLocation ? 'Buscando...' : 'Minha localização'}
+                selected={false}
+                onPress={handleUseMyLocation}
+              />
+            )}
+            {(cities ?? [])
+              .filter((c) => c.id !== currentCity?.id)
+              .map((city) => (
+                <Chip
+                  key={city.id}
+                  label={city.name}
+                  selected={draftCityId === city.id}
+                  onPress={() => setDraftCityId(city.id)}
+                />
+              ))}
           </View>
         </FilterSection>
 
@@ -184,8 +273,11 @@ export default function FiltersSheet() {
       </ScrollView>
 
       <View
-        className="border-border bg-popover flex-row gap-3 border-t px-5 pt-4"
-        style={{ flex: 1, paddingBottom: insets.bottom + 32 }}
+        className={cn(
+          'bg-popover flex-row gap-3 px-5 pt-4 pb-4',
+          showFooterDivider && 'border-border border-t',
+        )}
+        style={{ paddingBottom: insets.bottom + 16 }}
       >
         <Button
           label="Limpar"

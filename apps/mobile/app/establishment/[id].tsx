@@ -1,6 +1,6 @@
 import { useLocalSearchParams } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { Linking, Share, StyleSheet } from 'react-native';
+import { Linking, Modal, Share, StyleSheet } from 'react-native';
 
 import { AgendaItem } from '@/components/establishment/AgendaItem';
 import { MenuItemRow } from '@/components/establishment/MenuItemRow';
@@ -9,6 +9,7 @@ import { Screen } from '@/components/layout/Screen';
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import { Button } from '@/components/ui/Button';
 import { CircleIconButton } from '@/components/ui/CircleIconButton';
+import { GuardedPressable } from '@/components/ui/GuardedPressable';
 import { Icon } from '@/components/ui/Icon';
 import { RatingStars } from '@/components/ui/RatingStars';
 import { SegmentedTabs } from '@/components/ui/SegmentedTabs';
@@ -51,6 +52,7 @@ function EstablishmentDetailContent() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const requireAuth = useRequireAuth();
   const [activeTab, setActiveTab] = useState(0);
+  const [activePhotoUrl, setActivePhotoUrl] = useState<string | null>(null);
 
   const establishmentQuery = useEstablishmentQuery(id ?? '');
   const establishment = establishmentQuery.data;
@@ -224,14 +226,60 @@ function EstablishmentDetailContent() {
           ) : null}
 
           {activeTab === 2 ? (
-            <View className="gap-3">
-              {establishment.menu_items.length === 0 ? (
-                <Text className="font-body text-muted-foreground text-[14px]">
-                  Cardápio não informado.
-                </Text>
-              ) : (
-                establishment.menu_items.map((item) => <MenuItemRow key={item.name} item={item} />)
-              )}
+            <View className="gap-6">
+              {establishment.menu_pdf_url ? (
+                <View className="gap-2">
+                  <Text className="font-body-semibold text-foreground text-[14px]">Cardápio Digital</Text>
+                  <Button
+                    label="Baixar Cardápio (PDF)"
+                    variant="outline"
+                    icon={<Icon name="file-pdf" color={colors.foreground} size={16} />}
+                    onPress={() => {
+                      if (establishment.menu_pdf_url) {
+                        Linking.openURL(establishment.menu_pdf_url);
+                      }
+                    }}
+                  />
+                </View>
+              ) : null}
+
+              {establishment.menu_photo_urls && establishment.menu_photo_urls.length > 0 ? (
+                <View className="gap-2">
+                  <Text className="font-body-semibold text-foreground text-[14px]">Fotos do Cardápio</Text>
+                  <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerClassName="flex-row gap-2">
+                    {establishment.menu_photo_urls.map((photoUrl) => (
+                      <GuardedPressable
+                        key={photoUrl}
+                        onPress={() => {
+                          setActivePhotoUrl(photoUrl);
+                        }}
+                        className="overflow-hidden rounded-xl border border-border"
+                      >
+                        <Image
+                          source={{ uri: photoUrl }}
+                          className="h-20 w-20"
+                          contentFit="cover"
+                        />
+                      </GuardedPressable>
+                    ))}
+                  </ScrollView>
+                </View>
+              ) : null}
+
+              <View className="gap-3">
+                <Text className="font-body-semibold text-foreground text-[14px]">Itens do Cardápio</Text>
+                {establishment.menu_items.length === 0 && !establishment.menu_pdf_url && (!establishment.menu_photo_urls || establishment.menu_photo_urls.length === 0) ? (
+                  <Text className="font-body text-muted-foreground text-[14px]">
+                    Cardápio não informado.
+                  </Text>
+                ) : establishment.menu_items.length === 0 ? (
+                  <Text className="font-body text-muted-foreground text-[13px]">
+                    Nenhum prato/bebida avulso listado.
+                  </Text>
+                ) : (
+                  establishment.menu_items.map((item) => <MenuItemRow key={item.name} item={item} />)
+                )}
+              </View>
             </View>
           ) : null}
 
@@ -269,6 +317,50 @@ function EstablishmentDetailContent() {
           }
         />
       </View>
+
+      {activePhotoUrl ? (
+        <Modal
+          visible={!!activePhotoUrl}
+          transparent={true}
+          animationType="fade"
+          onRequestClose={() => {
+            setActivePhotoUrl(null);
+          }}
+        >
+          <View className="flex-1 bg-black/95 justify-center items-center">
+            {/* Close Button */}
+            <View className="absolute top-12 right-6 z-10">
+              <CircleIconButton
+                accessibilityLabel="Fechar"
+                icon={<Icon name="xmark" color={colors.foreground} size={20} />}
+                onPress={() => {
+                  setActivePhotoUrl(null);
+                }}
+              />
+            </View>
+
+            {/* Image */}
+            <Image
+              source={{ uri: activePhotoUrl }}
+              contentFit="contain"
+              className="w-[90%] h-[70%]"
+            />
+
+            {/* Download Button */}
+            <View className="absolute bottom-12 w-[80%]">
+              <Button
+                label="Baixar Foto"
+                icon={<Icon name="download" color={colors.primaryForeground} size={16} />}
+                onPress={() => {
+                  if (activePhotoUrl) {
+                    Linking.openURL(activePhotoUrl);
+                  }
+                }}
+              />
+            </View>
+          </View>
+        </Modal>
+      ) : null}
     </Screen>
   );
 }

@@ -6,9 +6,12 @@ import {
   formatPrice,
   formatRelativeDay,
   formatTimeRange,
+  haversineDistanceKm,
+  type LatLng,
   type MusicStyle,
   useFavoritesStore,
 } from '@agenda/core';
+import { useMemo } from 'react';
 
 import { GradientBadge } from '@/components/ui/GradientBadge';
 import {
@@ -23,6 +26,7 @@ export interface EventCardProps {
   event: Event;
   establishment: Establishment;
   styles: MusicStyle[];
+  userCoords?: LatLng | null;
 }
 
 function FooterItem({
@@ -43,12 +47,29 @@ function FooterItem({
 }
 
 /** Card de evento do feed, espelha o mobile em DOM/Tailwind. */
-export function EventCard({ event, establishment, styles }: EventCardProps) {
+export function EventCard({
+  event,
+  establishment,
+  styles,
+  userCoords,
+}: EventCardProps) {
   const isFavorite = useFavoritesStore((state) => state.eventIds.includes(event.id));
   const toggleEvent = useFavoritesStore((state) => state.toggleEvent);
 
   const badge = event.courtesy ? 'Cortesia' : event.promo ? 'Promoção' : null;
   const price = formatPrice(event.cover_charge);
+
+  const distanceText = useMemo(() => {
+    if (!userCoords) return null;
+    const dist = haversineDistanceKm(
+      { lat: establishment.lat, lng: establishment.lng },
+      userCoords,
+    );
+    if (dist < 1) {
+      return `${Math.round(dist * 1000)}m de mim`;
+    }
+    return `${dist.toFixed(1).replace('.', ',')}km de mim`;
+  }, [establishment.lat, establishment.lng, userCoords]);
 
   return (
     <article className="overflow-hidden rounded-2xl bg-card">
@@ -100,6 +121,26 @@ export function EventCard({ event, establishment, styles }: EventCardProps) {
           </div>
         </div>
       </div>
+
+      {distanceText ? (
+        <div className="bg-surface/50 border-border flex items-center gap-1.5 border-b px-4 py-1.5">
+          <svg
+            viewBox="0 0 24 24"
+            width={12}
+            height={12}
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2.5}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="text-primary"
+          >
+            <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
+            <circle cx="12" cy="10" r="3" />
+          </svg>
+          <span className="font-[family-name:var(--font-body)] text-[12px] text-muted-foreground">{distanceText}</span>
+        </div>
+      ) : null}
 
       <div className="flex justify-between bg-popover px-4 py-3">
         <div className="flex flex-col gap-2">

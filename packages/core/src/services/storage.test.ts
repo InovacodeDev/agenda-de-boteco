@@ -68,6 +68,17 @@ describe('uploadImage', () => {
     );
   });
 
+  it('mapeia application/pdf para extensão pdf', async () => {
+    const { client, upload } = makeBucketClient();
+    mockGetSupabase.mockReturnValue(client);
+    await uploadImage(new Blob(['d'], { type: 'application/pdf' }), { pathPrefix: 'establishments' });
+    expect(upload).toHaveBeenCalledWith(
+      'establishments/fixed-uuid.pdf',
+      expect.anything(),
+      expect.objectContaining({ contentType: 'application/pdf' }),
+    );
+  });
+
   it('propaga erro do upload', async () => {
     const error = new Error('upload failed');
     const upload = jest.fn(() => Promise.resolve({ data: null, error }));

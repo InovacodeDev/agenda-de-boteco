@@ -19,7 +19,9 @@ import { faChevronRight } from '@fortawesome/free-solid-svg-icons/faChevronRight
 import { faCircleInfo } from '@fortawesome/free-solid-svg-icons/faCircleInfo';
 import { faClock } from '@fortawesome/free-solid-svg-icons/faClock';
 import { faComment } from '@fortawesome/free-solid-svg-icons/faComment';
+import { faDownload } from '@fortawesome/free-solid-svg-icons/faDownload';
 import { faEnvelope } from '@fortawesome/free-solid-svg-icons/faEnvelope';
+import { faFilePdf } from '@fortawesome/free-solid-svg-icons/faFilePdf';
 import { faHeart } from '@fortawesome/free-solid-svg-icons/faHeart';
 import { faHouse } from '@fortawesome/free-solid-svg-icons/faHouse';
 import { faLocationArrow } from '@fortawesome/free-solid-svg-icons/faLocationArrow';
@@ -76,6 +78,8 @@ const ICON_MAP = {
   'user': { solid: faUser, regular: faUserRegular },
   'wand-magic-sparkles': { solid: faWandMagicSparkles },
   'xmark': { solid: faXmark },
+  'file-pdf': { solid: faFilePdf },
+  'download': { solid: faDownload },
 } satisfies Record<string, IconEntry>;
 
 export type IconName = keyof typeof ICON_MAP;
