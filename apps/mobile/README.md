@@ -7,7 +7,7 @@ fiéis ao protótipo (vibe-noite.lovable.app).
 
 ```bash
 pnpm install
-pnpm --filter mobile dev        # Expo Go / web (todas as telas, exceto o mapa nativo)
+pnpm --filter mobile dev        # Expo Go / web
 ```
 
 ## Mapa (Google Maps)
