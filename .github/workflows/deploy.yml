@@ -11,10 +11,42 @@ concurrency:
   group: deploy-${{ github.ref_name }}
   cancel-in-progress: false
 
+permissions:
+  contents: write
+
 jobs:
+  version-gate:
+    name: Version Gate (tag check)
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.check.outputs.version }}
+      tag: ${{ steps.check.outputs.tag }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Ensure version is not already deployed on this channel
+        id: check
+        run: |
+          set -euo pipefail
+          version=$(jq -r '.version' apps/mobile/package.json)
+          tag="${GITHUB_REF_NAME}-v${version}"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          git fetch --tags --force
+          if git rev-parse -q --verify "refs/tags/$tag" >/dev/null; then
+            echo "::error::A versão $version já foi publicada no canal $GITHUB_REF_NAME (tag $tag existe). Bumpe apps/mobile/package.json antes de subir."
+            exit 1
+          fi
+          echo "Tag $tag ainda não existe — liberado para deploy."
+
   verify:
     name: Lint, Typecheck & Test
     runs-on: ubuntu-latest
+    needs: version-gate
 
     steps:
       - name: Checkout repository
@@ -54,7 +86,7 @@ jobs:
   deploy:
     name: Build & Deploy
     runs-on: ubuntu-latest
-    needs: verify
+    needs: [version-gate, verify]
 
     env:
       EAS_PROJECT_ID: ${{ vars.EAS_PROJECT_ID }}
@@ -105,6 +137,14 @@ jobs:
             --non-interactive \
             --no-wait \
             --json | tee "$RUNNER_TEMP/eas-build.json"
+
+      - name: Tag deployed version
+        run: |
+          set -euo pipefail
+          tag="${{ needs.version-gate.outputs.tag }}"
+          git tag "$tag"
+          git push origin "refs/tags/$tag"
+          echo "Tag $tag criada — este canal fica bloqueado até o próximo bump de versão."
 
       - name: Publish build links to summary
         if: always()
