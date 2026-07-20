@@ -51,7 +51,7 @@
     "zustand": "^5.0.14"
   },
   "scripts": {
-    "dev": "expo start",
+    "dev": "expo start --port 10002",
     "start": "expo start",
     "android": "expo run:android",
     "ios": "expo run:ios",
