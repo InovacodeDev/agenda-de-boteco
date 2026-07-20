@@ -158,6 +158,7 @@ export default function FeedScreen() {
         ? applyEventFilters(events ?? [], filters, {
             now,
             cityId: city.id,
+            cityIds: filters.cityIds,
             establishmentsById,
             nearbyEstablishmentIds,
           })
