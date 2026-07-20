@@ -222,7 +222,15 @@ export default function FiltersSheet() {
                   onPress={() => toggleDraftCity(city.id)}
                 />
               ))}
-            <Chip label="Buscar cidade" selected={false} onPress={() => router.push('/city-search')} />
+            <Chip
+              label={
+                draftCityIds.length > 0
+                  ? `Buscar cidade (${draftCityIds.length})`
+                  : 'Buscar cidade'
+              }
+              selected={draftCityIds.length > 0}
+              onPress={() => router.push('/city-search')}
+            />
           </View>
         </FilterSection>
 

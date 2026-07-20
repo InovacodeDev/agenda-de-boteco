@@ -162,8 +162,12 @@ export function FiltersSidebar({ isOpen, onClose }: FiltersSidebarProps) {
                 />
               ))}
               <Chip
-                label="Buscar cidade"
-                selected={false}
+                label={
+                  filters.cityIds.length > 0
+                    ? `Buscar cidade (${filters.cityIds.length})`
+                    : 'Buscar cidade'
+                }
+                selected={filters.cityIds.length > 0}
                 onClick={() => setIsCitySearchOpen(true)}
               />
             </div>
