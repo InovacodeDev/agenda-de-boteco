@@ -332,4 +332,37 @@ describe('applyEventFilters', () => {
       expect(result).toHaveLength(0);
     });
   });
+
+  it('cityIds vazio no contexto é idêntico ao recorte single por ctx.cityId', () => {
+    const single = applyEventFilters(EVENTS, makeFilters(), makeContext({ cityId: 'fln' }));
+    const emptyMulti = applyEventFilters(
+      EVENTS,
+      makeFilters(),
+      makeContext({ cityId: 'fln', cityIds: [] }),
+    );
+    expect(ids(emptyMulti)).toEqual(ids(single));
+  });
+
+  it('cityIds com múltiplas cidades retorna a união dos recortes single', () => {
+    const fln = applyEventFilters(EVENTS, makeFilters(), makeContext({ cityId: 'fln' }));
+    const sao = applyEventFilters(EVENTS, makeFilters(), makeContext({ cityId: 'sao' }));
+    const union = applyEventFilters(
+      EVENTS,
+      makeFilters(),
+      makeContext({ cityId: 'fln', cityIds: ['fln', 'sao'] }),
+    );
+    expect(new Set(ids(union))).toEqual(new Set([...ids(fln), ...ids(sao)]));
+    const times = union.map((e) => new Date(e.starts_at).getTime());
+    expect(times).toEqual([...times].sort((a, b) => a - b));
+  });
+
+  it('cityIds presente sobrepõe ctx.cityId', () => {
+    const sao = applyEventFilters(EVENTS, makeFilters(), makeContext({ cityId: 'sao' }));
+    const overridden = applyEventFilters(
+      EVENTS,
+      makeFilters(),
+      makeContext({ cityId: 'fln', cityIds: ['sao'] }),
+    );
+    expect(ids(overridden)).toEqual(ids(sao));
+  });
 });

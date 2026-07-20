@@ -20,6 +20,8 @@ export interface EventFilters {
   /** intervalo de datas (ISO yyyy-mm-dd local); null = sem intervalo. Precede dateBucket. */
   dateRange: { start: string; end: string } | null;
   sortBy: SortBy;
+  /** cidades selecionadas no filtro (união). Vazio = usa a cidade ativa do contexto. */
+  cityIds: string[];
 }
 
 export const DEFAULT_EVENT_FILTERS: EventFilters = {
@@ -34,11 +36,14 @@ export const DEFAULT_EVENT_FILTERS: EventFilters = {
   openNow: false,
   dateRange: null,
   sortBy: 'date',
+  cityIds: [],
 };
 
 export interface EventFilterContext {
   now: Date;
   cityId: string;
+  /** Quando presente e não-vazio, o recorte de cidade usa esta união e sobrepõe `cityId`. */
+  cityIds?: string[];
   userLocation?: { lat: number; lng: number };
   establishmentsById: Record<string, Establishment>;
   /**
@@ -114,11 +119,20 @@ export function applyEventFilters(
   // a depender da proximidade (nearMe). Cidades do catálogo seguem recortadas.
   const isVirtualCity = isVirtualCityId(ctx.cityId);
 
+  // Multi-select do filtro sobrepõe a cidade ativa quando presente e não-vazio.
+  // Precede inclusive o bypass de cidade virtual: multi-select é sempre recorte
+  // estrito de catálogo (um id `geo:` nunca casa com establishment.city_id).
+  const cityIds = ctx.cityIds && ctx.cityIds.length > 0 ? ctx.cityIds : null;
+
   return events
     .filter((event) => {
       const establishment = ctx.establishmentsById[event.establishment_id];
       if (!establishment) return false;
-      if (!isVirtualCity && establishment.city_id !== ctx.cityId) return false;
+      if (cityIds) {
+        if (!cityIds.includes(establishment.city_id)) return false;
+      } else if (!isVirtualCity && establishment.city_id !== ctx.cityId) {
+        return false;
+      }
 
       if (query) {
         const haystacks = [event.name, event.attraction, establishment.name];
