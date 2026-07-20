@@ -81,6 +81,7 @@ export default function FeedPage() {
          ? applyEventFilters(events ?? [], filters, {
             now,
             cityId: city.id,
+            cityIds: filters.cityIds,
             establishmentsById,
             nearbyEstablishmentIds,
           })
