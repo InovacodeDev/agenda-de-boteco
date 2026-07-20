@@ -159,6 +159,8 @@ export default function RootLayout() {
                 sheetCornerRadius: 24,
                 contentStyle: { backgroundColor: colors.popover },
                 gestureEnabled: false,
+                // scroll do conteúdo não arrasta/expande o sheet — só rola
+                sheetExpandsWhenScrolledToEdge: false,
               }}
             />
             {/* Rotas públicas: acessíveis sem onboarding (URLs exigidas pelas lojas + crawler). */}
