@@ -1,7 +1,7 @@
 import type { City } from '@agenda/core';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { type NativeScrollEvent, type NativeSyntheticEvent } from 'react-native';
+import { type NativeScrollEvent, type NativeSyntheticEvent, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { DateRangeField } from '@/components/filters/DateRangeField';
@@ -130,6 +130,7 @@ export default function FiltersSheet() {
 
   return (
     <View className="bg-popover flex-1">
+      {Platform.OS === 'ios' && <View className="h-2" />}
       <ScreenHeader
         title="Filtros"
         right={
