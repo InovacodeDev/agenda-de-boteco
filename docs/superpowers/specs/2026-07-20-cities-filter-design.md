@@ -31,7 +31,7 @@ Quatro ajustes pedidos, três de UI de filtros de eventos (mobile + web) e um de
 | "5 mais visitadas" | **Primeiras 5 do catálogo + atual** (não inventar telemetria; troca trivial depois) |
 | Feed x cidades selecionadas | **Filtro sobrepõe a cidade ativa** (se `cityIds` não-vazio, feed busca a união; senão, cidade ativa) |
 | Seletor de busca | Modal sobre o filtro, com **botão "Confirmar"** (seleção própria, faz merge no rascunho ao confirmar) |
-| Version Gate no CI | **CI valida + cria a tag ao final** (job `version-gate` valida em push/PR; job `tag` cria tag só em push) |
+| Version Gate no CI | **CI valida + cria a tag ao final**, mas a validação só dispara quando o diff toca `apps/mobile/` (job `version-gate` valida em push/PR só se mobile mudou; job `tag` cria tag só em push quando mobile mudou) |
 
 ## Design
 
@@ -74,12 +74,14 @@ Quatro ajustes pedidos, três de UI de filtros de eventos (mobile + web) e um de
 
 ### 4. Version Gate no `ci.yml`
 
-- `permissions: contents: write` no workflow.
-- Job `version-gate` (name "Version Gate (tag check)"): checkout `fetch-depth: 0`, lê `apps/mobile/package.json` → `version`, `tag=${GITHUB_REF_NAME}-v${version}`, falha se a tag já existe. Lógica verbatim de `deploy.yml:31-44`. Roda em push e PR (valida em ambos).
+- `permissions: contents: write` + `concurrency: ci-${{ github.ref_name }}` (serializa por branch, padrão do `deploy.yml`).
+- Job `version-gate` (name "Version Gate (tag check)"): checkout `fetch-depth: 0`, lê `apps/mobile/package.json` → `version`, `tag=${GITHUB_REF_NAME}-v${version}`. **Detecta se o diff tocou `apps/mobile/`** (PR: `origin/BASE...HEAD`; push: `before..sha`, com primeiro push tratado como mudou). Só valida a versão (falha se a tag já existe) **quando `apps/mobile/` mudou** — outras mudanças (web, docs, CI) passam sem checar versão. Expõe output `mobile_changed`.
 - Job `verify` (atual): `needs: version-gate`.
-- Job `tag` (`needs: [version-gate, verify]`, `if: github.event_name == 'push'`): cria/pusha `${branch}-v${version}`. **Não roda em PR** (PR não queima versão). Lógica de `deploy.yml:141-147`.
+- Job `tag` (`needs: [version-gate, verify]`, `if: github.event_name == 'push' && mobile_changed == 'true'`): cria/pusha `${branch}-v${version}`, **idempotente** (pula se a tag já existe; tolera corrida no push). **Não roda em PR** nem em pushes que não tocam o mobile.
 
-**Dívida conhecida:** `deploy.yml` e `ci.yml` passam a ter lógica de tag duplicada. Se o deploy voltar a rodar, ambos tentariam criar a mesma tag (o segundo falha por já existir). Como o deploy não roda hoje, não é problema agora. Deixar comentário no `ci.yml` apontando para revisitar (candidato a "mover o gate para o CI") quando o EAS voltar.
+**Por que escopado a `apps/mobile/`:** sem isso, todo PR de manutenção (doc, CI, web) contra um canal com release ativo seria bloqueado por "versão já publicada", forçando bump indevido. Escopar ao mobile (onde a versão vive) mantém a proteção onde importa sem travar o resto.
+
+**Dívida conhecida:** `deploy.yml` e `ci.yml` passam a ter lógica de tag duplicada. Se o deploy voltar a rodar, ambos tentariam criar a mesma tag (o `tag` job do CI é idempotente e tolera isso, mas ainda é duplicação). Comentário no `ci.yml` aponta para revisitar (candidato a "mover o gate para o CI") quando o EAS voltar.
 
 ## Arquivos afetados
 
