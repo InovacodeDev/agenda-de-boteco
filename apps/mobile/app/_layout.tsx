@@ -163,6 +163,16 @@ export default function RootLayout() {
                 sheetExpandsWhenScrolledToEdge: false,
               }}
             />
+            <Stack.Screen
+              name="city-search"
+              options={{
+                presentation: 'formSheet',
+                sheetAllowedDetents: [0.92],
+                sheetGrabberVisible: true,
+                sheetCornerRadius: 24,
+                contentStyle: { backgroundColor: colors.popover },
+              }}
+            />
             {/* Rotas públicas: acessíveis sem onboarding (URLs exigidas pelas lojas + crawler). */}
             <Stack.Screen name="privacidade" />
             <Stack.Screen name="excluir-conta" />

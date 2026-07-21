@@ -5,6 +5,7 @@ import {
   DEFAULT_EVENT_FILTERS,
   type EventFilterContext,
   type EventFilters,
+  hasActiveFilters,
   normalizeText,
 } from './filters';
 
@@ -331,5 +332,64 @@ describe('applyEventFilters', () => {
       );
       expect(result).toHaveLength(0);
     });
+  });
+
+  it('cityIds vazio no contexto é idêntico ao recorte single por ctx.cityId', () => {
+    const single = applyEventFilters(EVENTS, makeFilters(), makeContext({ cityId: 'fln' }));
+    const emptyMulti = applyEventFilters(
+      EVENTS,
+      makeFilters(),
+      makeContext({ cityId: 'fln', cityIds: [] }),
+    );
+    expect(ids(emptyMulti)).toEqual(ids(single));
+  });
+
+  it('cityIds com múltiplas cidades retorna a união dos recortes single', () => {
+    const fln = applyEventFilters(EVENTS, makeFilters(), makeContext({ cityId: 'fln' }));
+    const sao = applyEventFilters(EVENTS, makeFilters(), makeContext({ cityId: 'sao' }));
+    const union = applyEventFilters(
+      EVENTS,
+      makeFilters(),
+      makeContext({ cityId: 'fln', cityIds: ['fln', 'sao'] }),
+    );
+    expect(new Set(ids(union))).toEqual(new Set([...ids(fln), ...ids(sao)]));
+    const times = union.map((e) => new Date(e.starts_at).getTime());
+    expect(times).toEqual([...times].sort((a, b) => a - b));
+  });
+
+  it('cityIds presente sobrepõe ctx.cityId', () => {
+    const sao = applyEventFilters(EVENTS, makeFilters(), makeContext({ cityId: 'sao' }));
+    const overridden = applyEventFilters(
+      EVENTS,
+      makeFilters(),
+      makeContext({ cityId: 'fln', cityIds: ['sao'] }),
+    );
+    expect(ids(overridden)).toEqual(ids(sao));
+  });
+});
+
+describe('hasActiveFilters', () => {
+  it('é false com os filtros default', () => {
+    expect(hasActiveFilters(DEFAULT_EVENT_FILTERS)).toBe(false);
+  });
+
+  it('ignora query e sortBy (não acendem a badge)', () => {
+    expect(hasActiveFilters(makeFilters({ query: 'rock' }))).toBe(false);
+    expect(hasActiveFilters(makeFilters({ sortBy: 'price' }))).toBe(false);
+  });
+
+  it.each<[string, Partial<EventFilters>]>([
+    ['dateBucket', { dateBucket: 'today' }],
+    ['dateRange', { dateRange: { start: '2026-07-01', end: '2026-07-31' } }],
+    ['styleIds', { styleIds: ['rock'] }],
+    ['cityIds', { cityIds: ['sao'] }],
+    ['maxDistanceKm', { maxDistanceKm: 10 }],
+    ['minRating', { minRating: 4 }],
+    ['maxPrice', { maxPrice: 30 }],
+    ['freeOnly', { freeOnly: true }],
+    ['nearMe', { nearMe: true }],
+    ['openNow', { openNow: true }],
+  ])('é true quando %s diverge do default', (_label, override) => {
+    expect(hasActiveFilters(makeFilters(override))).toBe(true);
   });
 });

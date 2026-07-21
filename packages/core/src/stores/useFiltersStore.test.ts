@@ -84,3 +84,21 @@ describe('useFiltersStore', () => {
     expect(useFiltersStore.getState().filters).toEqual(DEFAULT_EVENT_FILTERS);
   });
 });
+
+describe('useFiltersStore cityIds', () => {
+  beforeEach(() => {
+    useFiltersStore.getState().replaceFilters(DEFAULT_EVENT_FILTERS);
+  });
+
+  it('toggleCity adiciona e remove', () => {
+    useFiltersStore.getState().toggleCity('fln');
+    expect(useFiltersStore.getState().filters.cityIds).toEqual(['fln']);
+    useFiltersStore.getState().toggleCity('fln');
+    expect(useFiltersStore.getState().filters.cityIds).toEqual([]);
+  });
+
+  it('setCityIds substitui a lista', () => {
+    useFiltersStore.getState().setCityIds(['fln', 'sao']);
+    expect(useFiltersStore.getState().filters.cityIds).toEqual(['fln', 'sao']);
+  });
+});

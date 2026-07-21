@@ -20,6 +20,8 @@ export interface FiltersState {
   toggleFreeOnly: () => void;
   toggleNearMe: () => void;
   setOpenNow: (value: boolean) => void;
+  toggleCity: (id: string) => void;
+  setCityIds: (ids: string[]) => void;
   resetFilters: () => void;
   replaceFilters: (filters: EventFilters) => void;
 }
@@ -55,6 +57,16 @@ export const useFiltersStore = create<FiltersState>()((set) => {
         filters: { ...state.filters, nearMe: !state.filters.nearMe },
       })),
     setOpenNow: (value) => patchFilters({ openNow: value }),
+    toggleCity: (id) =>
+      set((state) => ({
+        filters: {
+          ...state.filters,
+          cityIds: state.filters.cityIds.includes(id)
+            ? state.filters.cityIds.filter((cityId) => cityId !== id)
+            : [...state.filters.cityIds, id],
+        },
+      })),
+    setCityIds: (cityIds) => patchFilters({ cityIds }),
     resetFilters: () => set({ filters: DEFAULT_EVENT_FILTERS }),
     replaceFilters: (filters) => set({ filters }),
   };

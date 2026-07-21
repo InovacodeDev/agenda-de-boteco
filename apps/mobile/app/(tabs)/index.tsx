@@ -27,7 +27,7 @@ import { useFiltersStore } from '@/store/useFiltersStore';
 import { usePreferencesStore } from '@/store/usePreferencesStore';
 import { headingLetterSpacing } from '@/theme/typography';
 import { ScrollView, Text, View } from '@/tw';
-import { applyEventFilters, normalizeText } from '@/utils/filters';
+import { applyEventFilters, hasActiveFilters, normalizeText } from '@/utils/filters';
 import { type LatLng, resolveCityFromLocation, resolveNearbyOrigin } from '@/utils/geo';
 
 const ItemSeparator = () => <View className="h-4" />;
@@ -158,6 +158,7 @@ export default function FeedScreen() {
         ? applyEventFilters(events ?? [], filters, {
             now,
             cityId: city.id,
+            cityIds: filters.cityIds,
             establishmentsById,
             nearbyEstablishmentIds,
           })
@@ -206,11 +207,12 @@ export default function FeedScreen() {
         <SearchBar
           value={activeTab === 0 ? filters.query : barQuery}
           onChangeText={activeTab === 0 ? setQuery : setBarQuery}
+          hasFilters={hasActiveFilters(filters)}
         />
         <SegmentedTabs tabs={['Eventos', 'Bares']} activeIndex={activeTab} onChange={setActiveTab} />
       </View>
     ),
-    [city, filters.query, setQuery, barQuery, activeTab],
+    [city, filters, setQuery, barQuery, activeTab],
   );
 
   const eventsListHeader = useMemo(

@@ -3,10 +3,13 @@
 import {
   type DateBucket,
   type SortBy,
+  useCitiesQuery,
   useFiltersStore,
   useMusicStylesQuery,
 } from '@agenda/core';
+import { useState } from 'react';
 
+import { CitySearchModal } from '@/components/filters/CitySearchModal';
 import { DateRangeField } from '@/components/filters/DateRangeField';
 import { FilterSection } from '@/components/filters/FilterSection';
 import { FilterSlider } from '@/components/filters/FilterSlider';
@@ -73,6 +76,10 @@ export function FiltersSidebar({ isOpen, onClose }: FiltersSidebarProps) {
   const toggleNearMe = useFiltersStore((state) => state.toggleNearMe);
   const setOpenNow = useFiltersStore((state) => state.setOpenNow);
   const resetFilters = useFiltersStore((state) => state.resetFilters);
+  const toggleCity = useFiltersStore((state) => state.toggleCity);
+  const setCityIds = useFiltersStore((state) => state.setCityIds);
+  const { data: cities } = useCitiesQuery();
+  const [isCitySearchOpen, setIsCitySearchOpen] = useState(false);
 
   const { data: musicStyles } = useMusicStylesQuery();
 
@@ -141,6 +148,28 @@ export function FiltersSidebar({ isOpen, onClose }: FiltersSidebarProps) {
                   onClick={() => setSortBy(opt.value)}
                 />
               ))}
+            </div>
+          </FilterSection>
+
+          <FilterSection title="Cidade">
+            <div className="flex flex-wrap gap-2">
+              {(cities ?? []).slice(0, 5).map((city) => (
+                <Chip
+                  key={city.id}
+                  label={city.name}
+                  selected={filters.cityIds.includes(city.id)}
+                  onClick={() => toggleCity(city.id)}
+                />
+              ))}
+              <Chip
+                label={
+                  filters.cityIds.length > 0
+                    ? `Buscar cidade (${filters.cityIds.length})`
+                    : 'Buscar cidade'
+                }
+                selected={filters.cityIds.length > 0}
+                onClick={() => setIsCitySearchOpen(true)}
+              />
             </div>
           </FilterSection>
 
@@ -228,6 +257,16 @@ export function FiltersSidebar({ isOpen, onClose }: FiltersSidebarProps) {
           </button>
         </div>
       </aside>
+
+      <CitySearchModal
+        isOpen={isCitySearchOpen}
+        initialSelected={filters.cityIds}
+        onClose={() => setIsCitySearchOpen(false)}
+        onConfirm={(ids) => {
+          setCityIds(ids);
+          setIsCitySearchOpen(false);
+        }}
+      />
     </>
   );
 }

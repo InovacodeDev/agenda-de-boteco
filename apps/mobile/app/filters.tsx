@@ -1,7 +1,8 @@
 import type { City } from '@agenda/core';
+import { useCityDraftStore } from '@agenda/core';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { type NativeScrollEvent, type NativeSyntheticEvent } from 'react-native';
+import { type NativeScrollEvent, type NativeSyntheticEvent, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { DateRangeField } from '@/components/filters/DateRangeField';
@@ -16,13 +17,12 @@ import { Icon } from '@/components/ui/Icon';
 import { useCitiesQuery, useMusicStylesQuery } from '@/hooks/queries';
 import { useUserLocation } from '@/hooks/useUserLocation';
 import { useFiltersStore } from '@/store/useFiltersStore';
-import { usePreferencesStore } from '@/store/usePreferencesStore';
 import { colors } from '@/theme/colors';
 import { ScrollView, View } from '@/tw';
 import { cn } from '@/utils/cn';
 import type { DateBucket, EventFilters, SortBy } from '@/utils/filters';
 import { DEFAULT_EVENT_FILTERS } from '@/utils/filters';
-import { resolveCityFromLocation } from '@/utils/geo';
+import { isVirtualCityId, resolveCityFromLocation } from '@/utils/geo';
 
 const DATE_OPTIONS: Array<{ label: string; bucket: DateBucket }> = [
   { label: 'Qualquer dia', bucket: 'any' },
@@ -46,15 +46,20 @@ export default function FiltersSheet() {
 
   const storedFilters = useFiltersStore((state) => state.filters);
   const replaceFilters = useFiltersStore((state) => state.replaceFilters);
-  const cityId = usePreferencesStore((state) => state.cityId);
-  const setCity = usePreferencesStore((state) => state.setCity);
-  const setCustomCity = usePreferencesStore((state) => state.setCustomCity);
+  const draftCityIds = useCityDraftStore((state) => state.draftCityIds);
+  const setDraftCityIds = useCityDraftStore((state) => state.setDraftCityIds);
+  const toggleDraftCity = useCityDraftStore((state) => state.toggleDraftCity);
   const { data: cities } = useCitiesQuery();
   const { data: musicStyles } = useMusicStylesQuery();
 
   // estado provisório: só aplica ao tocar "Aplicar filtros"
   const [draft, setDraft] = useState<EventFilters>(storedFilters);
-  const [draftCityId, setDraftCityId] = useState(cityId);
+
+  useEffect(() => {
+    setDraftCityIds(storedFilters.cityIds);
+    // seeda só na montagem — a partir daí o rascunho é a fonte de verdade
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Scroll dynamics states
   const [scrollY, setScrollY] = useState(0);
@@ -81,7 +86,7 @@ export default function FiltersSheet() {
         const { city } = resolveCityFromLocation(result.coords, result.geocode, cities);
         queueMicrotask(() => {
           setCurrentCity(city);
-          setDraftCityId(city.id);
+          toggleDraftCity(city.id);
         });
       }
     } finally {
@@ -116,20 +121,17 @@ export default function FiltersSheet() {
 
   const clear = () => {
     setDraft(DEFAULT_EVENT_FILTERS);
+    setDraftCityIds([]);
   };
 
   const apply = () => {
-    replaceFilters(draft);
-    if (currentCity && draftCityId === currentCity.id && currentCity.id.startsWith('geo:')) {
-      setCustomCity(currentCity);
-    } else {
-      setCity(draftCityId);
-    }
+    replaceFilters({ ...draft, cityIds: draftCityIds });
     router.back();
   };
 
   return (
     <View className="bg-popover flex-1">
+      {Platform.OS === 'ios' && <View className="h-2" />}
       <ScreenHeader
         title="Filtros"
         right={
@@ -192,12 +194,15 @@ export default function FiltersSheet() {
 
         <FilterSection title="Cidade">
           <View className="flex-row flex-wrap gap-2">
-            {currentCity ? (
+            {/* Cidade virtual (geolocalização fora do catálogo) não entra no multi
+                — o recorte de cidadeIds é estrito de catálogo (feed vazio se marcada).
+                Cai no chip "Minha localização" em vez de prometer um filtro que não filtra. */}
+            {currentCity && !isVirtualCityId(currentCity.id) ? (
               <Chip
                 key={currentCity.id}
                 label={`${currentCity.name} (atual)`}
-                selected={draftCityId === currentCity.id}
-                onPress={() => setDraftCityId(currentCity.id)}
+                selected={draftCityIds.includes(currentCity.id)}
+                onPress={() => toggleDraftCity(currentCity.id)}
               />
             ) : (
               <Chip
@@ -208,14 +213,24 @@ export default function FiltersSheet() {
             )}
             {(cities ?? [])
               .filter((c) => c.id !== currentCity?.id)
+              .slice(0, 5)
               .map((city) => (
                 <Chip
                   key={city.id}
                   label={city.name}
-                  selected={draftCityId === city.id}
-                  onPress={() => setDraftCityId(city.id)}
+                  selected={draftCityIds.includes(city.id)}
+                  onPress={() => toggleDraftCity(city.id)}
                 />
               ))}
+            <Chip
+              label={
+                draftCityIds.length > 0
+                  ? `Buscar cidade (${draftCityIds.length})`
+                  : 'Buscar cidade'
+              }
+              selected={draftCityIds.length > 0}
+              onPress={() => router.push('/city-search')}
+            />
           </View>
         </FilterSection>
 
