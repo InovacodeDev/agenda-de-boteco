@@ -2,6 +2,7 @@
 
 import {
   applyEventFilters,
+  hasActiveFilters,
   indexById,
   type LatLng,
   musicStylesForEvent,
@@ -115,6 +116,7 @@ export default function FeedPage() {
         value={activeTab === 0 ? filters.query : barQuery}
         onChange={activeTab === 0 ? setQuery : setBarQuery}
         onOpenFilters={() => setIsFiltersOpen(true)}
+        hasFilters={hasActiveFilters(filters)}
       />
 
       <SegmentedTabs tabs={['Eventos', 'Bares']} activeIndex={activeTab} onChange={setActiveTab} />

@@ -39,6 +39,26 @@ export const DEFAULT_EVENT_FILTERS: EventFilters = {
   cityIds: [],
 };
 
+/**
+ * Indica se há algum filtro ativo que **altera o resultado** do feed — usado
+ * para a badge no ícone de filtros. Ignora `query` (já visível no campo de
+ * busca) e `sortBy` (só reordena, não filtra).
+ */
+export function hasActiveFilters(filters: EventFilters): boolean {
+  return (
+    filters.dateBucket !== DEFAULT_EVENT_FILTERS.dateBucket ||
+    filters.dateRange !== null ||
+    filters.styleIds.length > 0 ||
+    filters.cityIds.length > 0 ||
+    filters.maxDistanceKm !== DEFAULT_EVENT_FILTERS.maxDistanceKm ||
+    filters.minRating !== DEFAULT_EVENT_FILTERS.minRating ||
+    filters.maxPrice !== DEFAULT_EVENT_FILTERS.maxPrice ||
+    filters.freeOnly ||
+    filters.nearMe ||
+    filters.openNow
+  );
+}
+
 export interface EventFilterContext {
   now: Date;
   cityId: string;

@@ -5,6 +5,7 @@ import {
   DEFAULT_EVENT_FILTERS,
   type EventFilterContext,
   type EventFilters,
+  hasActiveFilters,
   normalizeText,
 } from './filters';
 
@@ -364,5 +365,31 @@ describe('applyEventFilters', () => {
       makeContext({ cityId: 'fln', cityIds: ['sao'] }),
     );
     expect(ids(overridden)).toEqual(ids(sao));
+  });
+});
+
+describe('hasActiveFilters', () => {
+  it('é false com os filtros default', () => {
+    expect(hasActiveFilters(DEFAULT_EVENT_FILTERS)).toBe(false);
+  });
+
+  it('ignora query e sortBy (não acendem a badge)', () => {
+    expect(hasActiveFilters(makeFilters({ query: 'rock' }))).toBe(false);
+    expect(hasActiveFilters(makeFilters({ sortBy: 'price' }))).toBe(false);
+  });
+
+  it.each<[string, Partial<EventFilters>]>([
+    ['dateBucket', { dateBucket: 'today' }],
+    ['dateRange', { dateRange: { start: '2026-07-01', end: '2026-07-31' } }],
+    ['styleIds', { styleIds: ['rock'] }],
+    ['cityIds', { cityIds: ['sao'] }],
+    ['maxDistanceKm', { maxDistanceKm: 10 }],
+    ['minRating', { minRating: 4 }],
+    ['maxPrice', { maxPrice: 30 }],
+    ['freeOnly', { freeOnly: true }],
+    ['nearMe', { nearMe: true }],
+    ['openNow', { openNow: true }],
+  ])('é true quando %s diverge do default', (_label, override) => {
+    expect(hasActiveFilters(makeFilters(override))).toBe(true);
   });
 });
