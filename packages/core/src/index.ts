@@ -63,7 +63,6 @@ export * from './services/queryKeys';
 export * from './services/realtime';
 export * from './services/storage';
 export * from './stores/useAuthStore';
-export * from './stores/useCityDraftStore';
 export * from './stores/useFavoritesStore';
 export * from './stores/useFiltersStore';
 export * from './stores/useNotificationsStore';
