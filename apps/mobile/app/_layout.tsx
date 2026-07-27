@@ -150,29 +150,6 @@ export default function RootLayout() {
             <Stack.Screen name="establishment/[id]" />
             <Stack.Screen name="city" />
             <Stack.Screen name="login" />
-            <Stack.Screen
-              name="filters"
-              options={{
-                presentation: 'formSheet',
-                sheetAllowedDetents: [0.92],
-                sheetGrabberVisible: true,
-                sheetCornerRadius: 24,
-                contentStyle: { backgroundColor: colors.popover },
-                gestureEnabled: false,
-                // scroll do conteúdo não arrasta/expande o sheet — só rola
-                sheetExpandsWhenScrolledToEdge: false,
-              }}
-            />
-            <Stack.Screen
-              name="city-search"
-              options={{
-                presentation: 'formSheet',
-                sheetAllowedDetents: [0.92],
-                sheetGrabberVisible: true,
-                sheetCornerRadius: 24,
-                contentStyle: { backgroundColor: colors.popover },
-              }}
-            />
             {/* Rotas públicas: acessíveis sem onboarding (URLs exigidas pelas lojas + crawler). */}
             <Stack.Screen name="privacidade" />
             <Stack.Screen name="excluir-conta" />

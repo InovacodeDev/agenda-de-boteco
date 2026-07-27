@@ -48,7 +48,6 @@ describe('mapWebPathToRoute', () => {
       for (const route of [
         '/login',
         '/onboarding',
-        '/filters',
         '/favorites',
         '/notifications',
         '/map',
@@ -83,9 +82,7 @@ describe('mapWebPathToRoute', () => {
 
   describe('query strings preservadas em rotas internas', () => {
     it('preserva a query string de um path interno conhecido', () => {
-      expect(mapWebPathToRoute('/filters?cidade=floripa')).toBe(
-        '/filters?cidade=floripa',
-      );
+      expect(mapWebPathToRoute('/city?cidade=floripa')).toBe('/city?cidade=floripa');
     });
 
     it('preserva a query string de /event/{id}', () => {
@@ -100,6 +97,11 @@ describe('mapWebPathToRoute', () => {
 
     it('mapeia segmento único desconhecido para /', () => {
       expect(mapWebPathToRoute('/desconhecido')).toBe('/');
+    });
+
+    // /filters deixou de ser rota (virou componente no feed) — cai na home.
+    it('mapeia /filters para / (não é mais rota)', () => {
+      expect(mapWebPathToRoute('/filters')).toBe('/');
     });
   });
 

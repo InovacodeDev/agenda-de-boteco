@@ -1,5 +1,3 @@
-import { useRouter } from 'expo-router';
-
 import { GuardedPressable } from '@/components/ui/GuardedPressable';
 import { Icon } from '@/components/ui/Icon';
 import { colors } from '@/theme/colors';
@@ -10,11 +8,16 @@ export interface SearchBarProps {
   onChangeText: (value: string) => void;
   /** Exibe um ponto no botão de filtros quando há filtro ativo. */
   hasFilters?: boolean;
+  onOpenFilters: () => void;
 }
 
 /** Busca do feed + botão que abre o sheet de filtros */
-export function SearchBar({ value, onChangeText, hasFilters = false }: SearchBarProps) {
-  const router = useRouter();
+export function SearchBar({
+  value,
+  onChangeText,
+  hasFilters = false,
+  onOpenFilters,
+}: SearchBarProps) {
   return (
     <View className="flex-row items-center gap-3">
       <View className="bg-surface-elevated h-12 flex-1 flex-row items-center gap-2 rounded-2xl px-4">
@@ -31,7 +34,7 @@ export function SearchBar({ value, onChangeText, hasFilters = false }: SearchBar
       <GuardedPressable
         accessibilityRole="button"
         accessibilityLabel={hasFilters ? 'Abrir filtros (filtros ativos)' : 'Abrir filtros'}
-        onPress={() => router.push('/filters')}
+        onPress={onOpenFilters}
         className="bg-surface-elevated h-12 w-12 items-center justify-center rounded-2xl active:opacity-80"
       >
         <Icon name="sliders" color={colors.foreground} size={18} />

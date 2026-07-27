@@ -8,6 +8,7 @@ import { FeedHeader } from '@/components/feed/FeedHeader';
 import { QuickFilterChips } from '@/components/feed/QuickFilterChips';
 import { SearchBar } from '@/components/feed/SearchBar';
 import { StyleCard } from '@/components/feed/StyleCard';
+import { FiltersSheet } from '@/components/filters/FiltersSheet';
 import { Screen } from '@/components/layout/Screen';
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import { SectionLabel } from '@/components/ui/SectionLabel';
@@ -35,6 +36,7 @@ const ItemSeparator = () => <View className="h-4" />;
 export default function FeedScreen() {
   const [activeTab, setActiveTab] = useState(0); // 0 = Eventos, 1 = Bares
   const [barQuery, setBarQuery] = useState('');
+  const [isFiltersOpen, setIsFiltersOpen] = useState(false);
 
   const filters = useFiltersStore((state) => state.filters);
   const setQuery = useFiltersStore((state) => state.setQuery);
@@ -208,6 +210,7 @@ export default function FeedScreen() {
           value={activeTab === 0 ? filters.query : barQuery}
           onChangeText={activeTab === 0 ? setQuery : setBarQuery}
           hasFilters={hasActiveFilters(filters)}
+          onOpenFilters={() => setIsFiltersOpen(true)}
         />
         <SegmentedTabs tabs={['Eventos', 'Bares']} activeIndex={activeTab} onChange={setActiveTab} />
       </View>
@@ -270,6 +273,7 @@ export default function FeedScreen() {
           renderItem={({ item }) => <EstablishmentCard establishment={item} />}
         />
       )}
+      <FiltersSheet visible={isFiltersOpen} onClose={() => setIsFiltersOpen(false)} />
     </Screen>
   );
 }

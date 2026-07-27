@@ -1,13 +1,18 @@
 'use client';
 
 import {
+  type City,
   type DateBucket,
+  DEFAULT_EVENT_FILTERS,
+  type EventFilters,
+  isVirtualCityId,
+  resolveCityFromLocation,
   type SortBy,
   useCitiesQuery,
   useFiltersStore,
   useMusicStylesQuery,
 } from '@agenda/core';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { CitySearchModal } from '@/components/filters/CitySearchModal';
 import { DateRangeField } from '@/components/filters/DateRangeField';
@@ -63,25 +68,74 @@ export interface FiltersSidebarProps {
 }
 
 export function FiltersSidebar({ isOpen, onClose }: FiltersSidebarProps) {
-  const filters = useFiltersStore((state) => state.filters);
-  const setQuery = useFiltersStore((state) => state.setQuery);
-  const setDateBucket = useFiltersStore((state) => state.setDateBucket);
-  const setDateRange = useFiltersStore((state) => state.setDateRange);
-  const setSortBy = useFiltersStore((state) => state.setSortBy);
-  const toggleStyle = useFiltersStore((state) => state.toggleStyle);
-  const setMaxDistanceKm = useFiltersStore((state) => state.setMaxDistanceKm);
-  const setMinRating = useFiltersStore((state) => state.setMinRating);
-  const setMaxPrice = useFiltersStore((state) => state.setMaxPrice);
-  const toggleFreeOnly = useFiltersStore((state) => state.toggleFreeOnly);
-  const toggleNearMe = useFiltersStore((state) => state.toggleNearMe);
-  const setOpenNow = useFiltersStore((state) => state.setOpenNow);
-  const resetFilters = useFiltersStore((state) => state.resetFilters);
-  const toggleCity = useFiltersStore((state) => state.toggleCity);
-  const setCityIds = useFiltersStore((state) => state.setCityIds);
+  const storedFilters = useFiltersStore((state) => state.filters);
+  const replaceFilters = useFiltersStore((state) => state.replaceFilters);
   const { data: cities } = useCitiesQuery();
+  const { data: musicStyles } = useMusicStylesQuery();
   const [isCitySearchOpen, setIsCitySearchOpen] = useState(false);
 
-  const { data: musicStyles } = useMusicStylesQuery();
+  // estado provisório: só aplica ao clicar "Aplicar"
+  const [draft, setDraft] = useState<EventFilters>(storedFilters);
+  // Re-semeia o rascunho na transição closed->open (adjusting state during
+  // render, per React docs — mesmo padrão do CitySearchModal).
+  const [wasOpen, setWasOpen] = useState(isOpen);
+  if (isOpen !== wasOpen) {
+    setWasOpen(isOpen);
+    if (isOpen) setDraft(storedFilters);
+  }
+
+  const [currentCity, setCurrentCity] = useState<City | null>(null);
+  const [resolvingLocation, setResolvingLocation] = useState(false);
+
+  useEffect(() => {
+    // com a busca de cidade aberta, Escape é dela — não fecha a sidebar atrás.
+    if (!isOpen || isCitySearchOpen) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [isOpen, isCitySearchOpen, onClose]);
+
+  const patch = (partial: Partial<EventFilters>) =>
+    setDraft((current) => ({ ...current, ...partial }));
+
+  const toggleDraftCity = (cityId: string) =>
+    patch({
+      cityIds: draft.cityIds.includes(cityId)
+        ? draft.cityIds.filter((id) => id !== cityId)
+        : [...draft.cityIds, cityId],
+    });
+
+  const toggleDraftStyle = (styleId: string) =>
+    patch({
+      styleIds: draft.styleIds.includes(styleId)
+        ? draft.styleIds.filter((id) => id !== styleId)
+        : [...draft.styleIds, styleId],
+    });
+
+  // ponytail: sem reverse geocode no web — passa geocode vazio, então só a
+  // cidade de catálogo mais próxima (<= 40 km) rende um chip selecionável;
+  // fora disso resolveCityFromLocation devolve cidade virtual, que não entra
+  // no multi-select e mantém o chip "Minha localização".
+  const handleUseMyLocation = () => {
+    if (!navigator.geolocation || !cities) return;
+    setResolvingLocation(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { city } = resolveCityFromLocation(
+          { lat: pos.coords.latitude, lng: pos.coords.longitude },
+          { city: null, uf: null },
+          cities,
+        );
+        setCurrentCity(city);
+        if (!isVirtualCityId(city.id)) toggleDraftCity(city.id);
+        setResolvingLocation(false);
+      },
+      () => setResolvingLocation(false),
+      { enableHighAccuracy: true },
+    );
+  };
 
   return (
     <>
@@ -95,7 +149,7 @@ export function FiltersSidebar({ isOpen, onClose }: FiltersSidebarProps) {
 
       <aside
         className={cn(
-          'fixed top-0 right-0 bottom-0 z-50 w-full sm:w-[440px] bg-card border-l border-border h-full flex flex-col shadow-2xl transition-transform duration-300 ease-out',
+          'fixed top-0 right-0 bottom-0 z-50 w-full sm:w-[40vw] sm:min-w-[360px] sm:max-w-[560px] bg-card border-l border-border h-full flex flex-col shadow-2xl transition-transform duration-300 ease-out',
           isOpen ? 'translate-x-0' : 'translate-x-full'
         )}
       >
@@ -114,28 +168,21 @@ export function FiltersSidebar({ isOpen, onClose }: FiltersSidebarProps) {
         </header>
 
         <div className="flex-1 overflow-y-auto px-6 py-6 flex flex-col gap-6 scrollbar-thin">
-          <FilterSection title="Busca">
-            <input
-              value={filters.query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Buscar evento, banda ou bar"
-              aria-label="Buscar evento, banda ou bar"
-              className="h-12 w-full rounded-2xl bg-surface-elevated px-4 text-[14px] font-[family-name:var(--font-body)] text-foreground placeholder:text-muted-foreground focus:outline-none"
-            />
-          </FilterSection>
-
           <FilterSection title="Data">
             <div className="flex flex-wrap gap-2">
               {DATE_OPTIONS.map(({ label, bucket }) => (
                 <Chip
                   key={bucket}
                   label={label}
-                  selected={!filters.dateRange && filters.dateBucket === bucket}
-                  onClick={() => setDateBucket(bucket)}
+                  selected={!draft.dateRange && draft.dateBucket === bucket}
+                  onClick={() => patch({ dateBucket: bucket, dateRange: null })}
                 />
               ))}
             </div>
-            <DateRangeField value={filters.dateRange} onChange={setDateRange} />
+            <DateRangeField
+              value={draft.dateRange}
+              onChange={(range) => patch({ dateRange: range, dateBucket: 'any' })}
+            />
           </FilterSection>
 
           <FilterSection title="Ordenar por">
@@ -144,8 +191,8 @@ export function FiltersSidebar({ isOpen, onClose }: FiltersSidebarProps) {
                 <Chip
                   key={opt.value}
                   label={opt.label}
-                  selected={filters.sortBy === opt.value}
-                  onClick={() => setSortBy(opt.value)}
+                  selected={draft.sortBy === opt.value}
+                  onClick={() => patch({ sortBy: opt.value })}
                 />
               ))}
             </div>
@@ -153,32 +200,52 @@ export function FiltersSidebar({ isOpen, onClose }: FiltersSidebarProps) {
 
           <FilterSection title="Cidade">
             <div className="flex flex-wrap gap-2">
-              {(cities ?? []).slice(0, 5).map((city) => (
+              {/* Cidade virtual (geolocalização fora do catálogo) não entra no multi
+                  — o recorte de cidadeIds é estrito de catálogo (feed vazio se marcada).
+                  Cai no chip "Minha localização" em vez de prometer um filtro que não filtra. */}
+              {currentCity && !isVirtualCityId(currentCity.id) ? (
                 <Chip
-                  key={city.id}
-                  label={city.name}
-                  selected={filters.cityIds.includes(city.id)}
-                  onClick={() => toggleCity(city.id)}
+                  key={currentCity.id}
+                  label={`${currentCity.name} (atual)`}
+                  selected={draft.cityIds.includes(currentCity.id)}
+                  onClick={() => toggleDraftCity(currentCity.id)}
                 />
-              ))}
+              ) : (
+                <Chip
+                  label={resolvingLocation ? 'Buscando...' : 'Minha localização'}
+                  selected={false}
+                  onClick={handleUseMyLocation}
+                />
+              )}
+              {(cities ?? [])
+                .filter((c) => c.id !== currentCity?.id)
+                .slice(0, 5)
+                .map((city) => (
+                  <Chip
+                    key={city.id}
+                    label={city.name}
+                    selected={draft.cityIds.includes(city.id)}
+                    onClick={() => toggleDraftCity(city.id)}
+                  />
+                ))}
               <Chip
                 label={
-                  filters.cityIds.length > 0
-                    ? `Buscar cidade (${filters.cityIds.length})`
+                  draft.cityIds.length > 0
+                    ? `Buscar cidade (${draft.cityIds.length})`
                     : 'Buscar cidade'
                 }
-                selected={filters.cityIds.length > 0}
+                selected={draft.cityIds.length > 0}
                 onClick={() => setIsCitySearchOpen(true)}
               />
             </div>
           </FilterSection>
 
-          <FilterSection title="Distância" trailing={`${filters.maxDistanceKm} km`}>
+          <FilterSection title="Distância" trailing={`${draft.maxDistanceKm} km`}>
             <FilterSlider
-              value={filters.maxDistanceKm}
+              value={draft.maxDistanceKm}
               minimumValue={1}
               maximumValue={50}
-              onValueChange={setMaxDistanceKm}
+              onValueChange={(value) => patch({ maxDistanceKm: value })}
             />
           </FilterSection>
 
@@ -188,69 +255,58 @@ export function FiltersSidebar({ isOpen, onClose }: FiltersSidebarProps) {
                 <Chip
                   key={style.id}
                   label={`${style.emoji} ${style.name}`}
-                  selected={filters.styleIds.includes(style.id)}
-                  onClick={() => toggleStyle(style.id)}
+                  selected={draft.styleIds.includes(style.id)}
+                  onClick={() => toggleDraftStyle(style.id)}
                 />
               ))}
             </div>
           </FilterSection>
 
-          <FilterSection title="Avaliação mínima" trailing={`${filters.minRating} ★`}>
+          <FilterSection title="Avaliação mínima" trailing={`${draft.minRating} ★`}>
             <FilterSlider
-              value={filters.minRating}
+              value={draft.minRating}
               minimumValue={0}
               maximumValue={5}
               step={0.5}
-              onValueChange={setMinRating}
+              onValueChange={(value) => patch({ minRating: value })}
             />
           </FilterSection>
 
           <FilterSection
             title="Preço máximo"
-            trailing={filters.maxPrice === null ? 'Sem limite' : `R$ ${filters.maxPrice}`}
+            trailing={draft.maxPrice === null ? 'Sem limite' : `R$ ${draft.maxPrice}`}
           >
             <FilterSlider
-              value={filters.maxPrice ?? MAX_PRICE_LIMIT}
+              value={draft.maxPrice ?? MAX_PRICE_LIMIT}
               minimumValue={0}
               maximumValue={MAX_PRICE_LIMIT}
               step={5}
-              onValueChange={(value) => setMaxPrice(value >= MAX_PRICE_LIMIT ? null : value)}
+              onValueChange={(value) => patch({ maxPrice: value >= MAX_PRICE_LIMIT ? null : value })}
             />
           </FilterSection>
 
-          <div className="flex flex-col gap-4 border-t border-border pt-6">
-            <SwitchRow
-              title="Apenas grátis"
-              subtitle="Eventos sem cobrança de entrada"
-              value={filters.freeOnly}
-              onValueChange={toggleFreeOnly}
-            />
-            <SwitchRow
-              title="Perto de mim"
-              subtitle="Dentro do raio de distância"
-              value={filters.nearMe}
-              onValueChange={toggleNearMe}
-            />
-            <SwitchRow
-              title="Aberto agora"
-              subtitle="Apenas estabelecimentos abertos"
-              value={filters.openNow}
-              onValueChange={setOpenNow}
-            />
-          </div>
+          <SwitchRow
+            title="Aberto agora"
+            subtitle="Apenas estabelecimentos abertos"
+            value={draft.openNow}
+            onValueChange={(value) => patch({ openNow: value })}
+          />
         </div>
 
         <div className="border-t border-border px-6 py-4 bg-card flex gap-3">
           <button
             type="button"
-            onClick={resetFilters}
+            onClick={() => setDraft(DEFAULT_EVENT_FILTERS)}
             className="flex-1 rounded-2xl border border-foreground/30 py-3 text-[14px] font-[family-name:var(--font-body)] font-semibold text-foreground transition-opacity hover:opacity-80"
           >
             Limpar filtros
           </button>
           <button
             type="button"
-            onClick={onClose}
+            onClick={() => {
+              replaceFilters(draft);
+              onClose();
+            }}
             className="flex-1 rounded-2xl bg-primary py-3 text-[14px] font-[family-name:var(--font-body)] font-semibold text-primary-foreground transition-opacity hover:opacity-80"
           >
             Aplicar
@@ -260,10 +316,10 @@ export function FiltersSidebar({ isOpen, onClose }: FiltersSidebarProps) {
 
       <CitySearchModal
         isOpen={isCitySearchOpen}
-        initialSelected={filters.cityIds}
+        initialSelected={draft.cityIds}
         onClose={() => setIsCitySearchOpen(false)}
         onConfirm={(ids) => {
-          setCityIds(ids);
+          patch({ cityIds: ids });
           setIsCitySearchOpen(false);
         }}
       />
