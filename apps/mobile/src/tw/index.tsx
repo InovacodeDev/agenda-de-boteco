@@ -64,6 +64,7 @@ ScrollView.displayName = 'CSS(ScrollView)';
 
 export type TextInputProps = React.ComponentProps<typeof RNTextInput> & {
   className?: string;
+  ref?: React.Ref<RNTextInput>;
 };
 
 export const TextInput = (props: TextInputProps): React.ReactElement => {

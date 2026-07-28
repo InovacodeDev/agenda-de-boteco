@@ -1,6 +1,6 @@
 import type { City } from '@agenda/core';
-import { useMemo, useState } from 'react';
-import { Modal } from 'react-native';
+import { useMemo, useRef, useState } from 'react';
+import { Modal, type TextInput as RNTextInput } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
@@ -27,6 +27,7 @@ export function CitySearchModal({
 }: CitySearchModalProps) {
   const insets = useSafeAreaInsets();
   const { data: cities } = useCitiesQuery();
+  const inputRef = useRef<RNTextInput>(null);
 
   const [selected, setSelected] = useState<string[]>(initialSelected);
   const [query, setQuery] = useState('');
@@ -50,7 +51,7 @@ export function CitySearchModal({
     const q = normalizeText(query.trim());
     const list = cities ?? [];
     if (!q) return list;
-    return list.filter((c) => normalizeText(c.name).includes(q));
+    return list.filter((c) => normalizeText(`${c.name} ${c.uf}`).includes(q));
   }, [cities, query]);
 
   return (
@@ -60,6 +61,9 @@ export function CitySearchModal({
       animationType="slide"
       onRequestClose={onClose}
       statusBarTranslucent
+      // autoFocus não sobrevive à animação de slide no Android (o Dialog nativo
+      // só aceita foco depois de apresentado). onShow é o gancho do próprio RN.
+      onShow={() => inputRef.current?.focus()}
     >
       <View className="flex-1 justify-end bg-black/50">
         <GuardedPressable
@@ -88,11 +92,14 @@ export function CitySearchModal({
           />
           <View className="px-5 pt-2">
             <TextInput
+              ref={inputRef}
               value={query}
               onChangeText={setQuery}
               placeholder="Digite o nome da cidade"
               placeholderTextColor={colors.mutedForeground}
-              autoFocus
+              autoCorrect={false}
+              autoCapitalize="none"
+              returnKeyType="search"
               className="bg-card text-foreground font-body h-12 rounded-2xl px-4 text-[14px]"
             />
           </View>

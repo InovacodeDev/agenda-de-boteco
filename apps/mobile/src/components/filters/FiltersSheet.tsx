@@ -157,7 +157,7 @@ export function FiltersSheet({ visible, onClose }: FiltersSheetProps) {
   return (
     <>
       <Modal
-        visible={visible}
+        visible={visible && !isCitySearchOpen}
         transparent
         animationType="slide"
         onRequestClose={onClose}
@@ -356,7 +356,9 @@ export function FiltersSheet({ visible, onClose }: FiltersSheetProps) {
         </View>
       </Modal>
       {/* Irmão do sheet, não aninhado: Modal dentro de Modal é instável no
-          Android. Como o de filtros continua montado, este empilha por cima. */}
+          Android. E os dois nunca ficam visíveis juntos — dois Modal abertos
+          disputam o Dialog nativo no Android (toques no de cima são engolidos)
+          e a apresentação empilhada no iOS rouba o foco do TextInput. */}
       <CitySearchModal
         visible={isCitySearchOpen}
         initialSelected={draftCityIds}
