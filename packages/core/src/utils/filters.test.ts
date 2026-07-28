@@ -7,7 +7,9 @@ import {
   type EventFilters,
   hasActiveFilters,
   normalizeText,
+  sortEstablishmentsByDistance,
 } from './filters';
+import { haversineDistanceKm } from './geo';
 
 const ESTABLISHMENTS_BY_ID: Record<string, Establishment> = Object.fromEntries(
   ESTABLISHMENTS.map((establishment) => [establishment.id, establishment]),
@@ -298,6 +300,52 @@ describe('applyEventFilters', () => {
       const byDate = applyEventFilters(EVENTS, makeFilters({ sortBy: 'date' }), makeContext());
       const byDist = applyEventFilters(EVENTS, makeFilters({ sortBy: 'distance' }), makeContext());
       expect(ids(byDist)).toEqual(ids(byDate));
+    });
+
+    it("o default do feed é 'distance'", () => {
+      expect(DEFAULT_EVENT_FILTERS.sortBy).toBe('distance');
+    });
+
+    it("'distance' com userLocation ordena os eventos do mais perto ao mais longe", () => {
+      const atBotecoDoZe = { lat: -27.5915, lng: -48.5234 };
+      const result = applyEventFilters(
+        EVENTS,
+        makeFilters({ sortBy: 'distance' }),
+        makeContext({ userLocation: atBotecoDoZe }),
+      );
+      const distances = result.map((event) => {
+        const establishment = ESTABLISHMENTS_BY_ID[event.establishment_id];
+        return haversineDistanceKm(atBotecoDoZe, {
+          lat: establishment.lat,
+          lng: establishment.lng,
+        });
+      });
+      expect(distances).toEqual([...distances].sort((a, b) => a - b));
+    });
+  });
+
+  describe('sortEstablishmentsByDistance', () => {
+    const atBotecoDoZe = { lat: -27.5915, lng: -48.5234 };
+
+    it('ordena do mais perto ao mais longe', () => {
+      const result = sortEstablishmentsByDistance(ESTABLISHMENTS, atBotecoDoZe);
+      const distances = result.map((e) =>
+        haversineDistanceKm(atBotecoDoZe, { lat: e.lat, lng: e.lng }),
+      );
+      expect(distances).toEqual([...distances].sort((a, b) => a - b));
+    });
+
+    it('sem origin preserva a ordem recebida e não muta a entrada', () => {
+      const original = [...ESTABLISHMENTS];
+      const result = sortEstablishmentsByDistance(ESTABLISHMENTS, null);
+      expect(result.map((e) => e.id)).toEqual(original.map((e) => e.id));
+      expect(ESTABLISHMENTS).toEqual(original);
+    });
+
+    it('não muta a entrada ao ordenar', () => {
+      const original = ESTABLISHMENTS.map((e) => e.id);
+      sortEstablishmentsByDistance(ESTABLISHMENTS, atBotecoDoZe);
+      expect(ESTABLISHMENTS.map((e) => e.id)).toEqual(original);
     });
   });
 
