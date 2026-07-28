@@ -2,7 +2,7 @@
 
 ## 0. 🚨 REGRAS DE OURO DA IA (DIRETRIZES INVIOLÁVEIS)
 
-1. **DIRETRIZES DE ARQUIVOS MARKDOWN (`.md`):** A IA PODE criar novos arquivos `.md` caso seja necessário para a tarefa ou planejamento. No entanto, a IA NUNCA deve editar arquivos `.md` existentes nem commitar arquivos `.md` sem a solicitação ou autorização prévia e expressa do usuário. É proibida a inclusão de comentários extensos em bloco no código sem solicitação. **Única exceção:** o arquivo de CHANGELOG da versão seguinte, descrito na Seção 8 — este é criado e editado sempre ao concluir uma tarefa, sem necessidade de nova autorização.
+1. **DIRETRIZES DE ARQUIVOS MARKDOWN (`.md`):** A IA PODE criar novos arquivos `.md` caso seja necessário para a tarefa ou planejamento. No entanto, a IA NUNCA deve editar arquivos `.md` existentes nem commitar arquivos `.md` sem a solicitação ou autorização prévia e expressa do usuário. É proibida a inclusão de comentários extensos em bloco no código sem solicitação. **Única exceção:** o arquivo de CHANGELOG da versão seguinte, descrito na Seção 8 — este é criado e editado em **todo commit** que altere código, sem necessidade de nova autorização.
 2. **PROIBIÇÃO DE NOVAS DEPENDÊNCIAS & CONSULTA À DOCUMENTAÇÃO:** A IA NUNCA deve instalar ou sugerir novos pacotes no arquivo de dependências do projeto (`package.json`) sem autorização prévia e expressa do usuário. Reutilize prioritariamente as bibliotecas e utilitários já existentes em `@agenda/core` (`lib/`, `utils/`, `services/`) e `@/lib/` / `@/utils/`. Se autorizada a instalar uma dependência nova, a IA deve **obrigatoriamente consultar a documentação oficial atualizada** da biblioteca antes de implementá-la, garantindo a aplicação das melhores práticas do ecossistema.
 3. **RESPEITO ABSOLUTO AO FLUXO DA ARQUITETURA:** Respeite rigidamente o fluxo unidirecional de dados e a separação de responsabilidades da arquitetura detectada no repositório:
    $$\text{UI (Page/Component)} \longrightarrow \text{Custom Hook (TanStack Query)} \longrightarrow \text{Repository/Service} \longrightarrow \text{httpClient / SupabaseClient} \longrightarrow \text{API / DB}$$
@@ -280,13 +280,19 @@ export type CreateEventInput = z.infer<typeof createEventSchema>;
 
 ---
 
-## 8. 📝 CHANGELOG Obrigatório ao Concluir Tarefas
+## 8. 📝 CHANGELOG Obrigatório em Cada Commit
 
-Ao finalizar qualquer tarefa solicitada, a IA **deve** registrar a mudança no CHANGELOG do projeto afetado, no mesmo commit da tarefa. Esta é a única exceção à proibição de editar `.md` (Seção 0, Regra 1) — não é necessário pedir autorização.
+**Todo commit** que altere código de um app/pacote **deve** incluir, nele mesmo, uma breve descrição da mudança no CHANGELOG da versão seguinte daquele projeto. Não é ao fim da tarefa: é a cada commit. Uma tarefa quebrada em cinco commits acrescenta bullets cinco vezes, no mesmo arquivo.
+
+Esta é a única exceção à proibição de editar `.md` (Seção 0, Regra 1) — não é necessário pedir autorização.
+
+**A IA é a única fonte deste arquivo.** Não existe geração automática: `scripts/build-mobile.bash` apenas compila e não escreve mais CHANGELOG. Se a IA não escrever, o arquivo não existe e o release sai sem notas.
+
+Commits que **não** exigem CHANGELOG (não alteram o produto): mudanças restritas a `.md`, ao próprio CHANGELOG, ou a `scripts/` e configuração de CI.
 
 ### Qual arquivo editar
 
-O CHANGELOG é **por app/pacote**, escolhido pelos diretórios que a mudança toca:
+O CHANGELOG é **por app/pacote**, escolhido pelos diretórios que o commit toca:
 
 | Mudança em | CHANGELOG a atualizar |
 |---|---|
@@ -296,33 +302,31 @@ O CHANGELOG é **por app/pacote**, escolhido pelos diretórios que a mudança to
 | `apps/landing/` | `apps/landing/CHANGELOG-<branch>-v<próxima-versão>.md` |
 | `packages/core/` | `packages/core/CHANGELOG-<branch>-v<próxima-versão>.md` |
 
-Se a tarefa toca **mais de um** app/pacote (ex.: uma correção em `packages/core` consumida por `apps/mobile`), atualize o CHANGELOG de **cada** um dos afetados, descrevendo o impacto na perspectiva daquele projeto.
+Se o commit toca **mais de um** app/pacote (ex.: uma correção em `packages/core` consumida por `apps/mobile`), atualize o CHANGELOG de **cada** um dos afetados, descrevendo o impacto na perspectiva daquele projeto.
 
 ### Qual versão usar
 
 O arquivo é sempre da **versão imediatamente posterior** à do `package.json` do projeto — nunca da versão atual, que já foi publicada. Incremente o patch, salvo instrução explícita do usuário para minor/major.
 
 ```txt
-apps/mobile/package.json → "version": "0.0.6"
+apps/mobile/package.json → "version": "0.0.7"
                         ↓
-arquivo: apps/mobile/CHANGELOG-alfa-v0.0.7.md
-heading: # Changelog 0.0.7 (alfa)
+arquivo: apps/mobile/CHANGELOG-alfa-v0.0.8.md
+heading: # Changelog 0.0.8 (alfa)
 ```
 
 **Não bumpe o `package.json`.** O CHANGELOG antecipa a versão; o bump é decisão do usuário no momento do release. No mobile a versão tem fonte única no `package.json` (o `app.config.ts` importa de lá).
 
 ### Formato
 
-O nome do arquivo e o heading seguem exatamente o padrão gerado por `scripts/build-mobile.bash`, para que o script de build e a IA nunca produzam arquivos divergentes:
-
-- Arquivo: `CHANGELOG-${branch}-v${version}.md` — `branch` é `alfa`, `beta` ou `release`
+- Arquivo: `CHANGELOG-<branch>-v<version>.md` — `branch` é `alfa`, `beta` ou `release` (a branch de canal, não a branch de trabalho)
 - Heading: `# Changelog <version> (<branch>)`
 - Corpo: bullets curtos em português (pt-BR), na perspectiva do usuário final — o conteúdo do mobile vai para a loja de apps
 
-Se o arquivo da próxima versão **já existir**, acrescente os novos bullets a ele em vez de criar outro ou sobrescrever o conteúdo existente.
+**Acrescente, nunca sobrescreva.** Se o arquivo da próxima versão já existir, adicione os novos bullets ao fim da lista, preservando os que já estão lá — eles são de commits anteriores que ainda não foram publicados. Um commit que apaga bullets alheios é infração.
 
 ```markdown
-# Changelog 0.0.7 (alfa)
+# Changelog 0.0.8 (alfa)
 
 - Busca de cidades no filtro volta a funcionar no Android e no iOS
 - Feed passa a ordenar eventos e bares pelos mais próximos de você
@@ -505,7 +509,7 @@ Abaixo estão listadas as 10 infrações bloqueantes. Qualquer alteração de c�
 
 ### 10. ❌ Modificação ou commit não autorizado de arquivos `.md` ou instalação não autorizada de dependências
 
-- **Regra:** A IA nunca deve editar arquivos `.md` existentes nem instalar novos pacotes via `package.json` sem autorização prévia e expressa do usuário. Caso autorizada a instalação, a documentação oficial da dependência deve obrigatoriamente ser consultada. **Exceção:** o CHANGELOG da versão seguinte (Seção 8) é sempre esperado no commit da tarefa — sua ausência é que constitui infração.
+- **Regra:** A IA nunca deve editar arquivos `.md` existentes nem instalar novos pacotes via `package.json` sem autorização prévia e expressa do usuário. Caso autorizada a instalação, a documentação oficial da dependência deve obrigatoriamente ser consultada. **Exceção:** o CHANGELOG da versão seguinte (Seção 8) é esperado em **todo commit** que altere código — sua ausência é que constitui infração.
 - **Prompt para Solução:** "Cancele a edição do arquivo `.md` ou a instalação do pacote e solicite a autorização expressa do usuário antes de prosseguir."
 - **Preview da Mudança (Diff):**
 
