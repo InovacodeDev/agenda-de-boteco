@@ -35,7 +35,9 @@ export const DEFAULT_EVENT_FILTERS: EventFilters = {
   nearMe: false,
   openNow: false,
   dateRange: null,
-  sortBy: 'date',
+  // Proximidade é o default do feed; sem userLocation makeComparator cai para
+  // starts_at asc, então a lista nunca fica sem ordem definida.
+  sortBy: 'distance',
   cityIds: [],
 };
 
@@ -234,4 +236,24 @@ function makeComparator(
     }
     return primary !== 0 ? primary : startsAtAsc(a, b);
   };
+}
+
+/**
+ * Ordena establishments pelos mais próximos de `origin`. Função pura: não muta
+ * a entrada. Sem `origin` devolve uma cópia na ordem recebida — a lista do feed
+ * é a mesma com ou sem permissão de GPS, só reordenada.
+ *
+ * Desempate por nome (localeCompare pt-BR) para a ordem ser estável entre
+ * renders quando dois bares estão à mesma distância.
+ */
+export function sortEstablishmentsByDistance(
+  establishments: Establishment[],
+  origin: { lat: number; lng: number } | null | undefined,
+): Establishment[] {
+  if (!origin) return [...establishments];
+  return [...establishments].sort((a, b) => {
+    const da = haversineDistanceKm(origin, { lat: a.lat, lng: a.lng });
+    const db = haversineDistanceKm(origin, { lat: b.lat, lng: b.lng });
+    return da !== db ? da - db : a.name.localeCompare(b.name, 'pt-BR');
+  });
 }

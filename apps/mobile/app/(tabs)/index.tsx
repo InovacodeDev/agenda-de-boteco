@@ -28,7 +28,12 @@ import { useFiltersStore } from '@/store/useFiltersStore';
 import { usePreferencesStore } from '@/store/usePreferencesStore';
 import { headingLetterSpacing } from '@/theme/typography';
 import { ScrollView, Text, View } from '@/tw';
-import { applyEventFilters, hasActiveFilters, normalizeText } from '@/utils/filters';
+import {
+  applyEventFilters,
+  hasActiveFilters,
+  normalizeText,
+  sortEstablishmentsByDistance,
+} from '@/utils/filters';
 import { type LatLng, resolveCityFromLocation, resolveNearbyOrigin } from '@/utils/geo';
 
 const ItemSeparator = () => <View className="h-4" />;
@@ -154,6 +159,8 @@ export default function FeedScreen() {
     [filters.nearMe, nearby],
   );
 
+  const userCoords = liveCoords || coords;
+
   const filteredEvents = useMemo(
     () =>
       city
@@ -163,20 +170,21 @@ export default function FeedScreen() {
             cityIds: filters.cityIds,
             establishmentsById,
             nearbyEstablishmentIds,
+            // Sem isso o sortBy 'distance' era no-op: makeComparator exige
+            // userLocation para medir distância e caía para starts_at.
+            userLocation: userCoords ?? undefined,
           })
         : [],
-    [events, filters, now, city, establishmentsById, nearbyEstablishmentIds],
+    [events, filters, now, city, establishmentsById, nearbyEstablishmentIds, userCoords],
   );
 
   const cityEstablishments = useMemo(() => {
     const all = establishments ?? [];
     const scoped = city ? all.filter((e) => e.city_id === city.id) : all;
     const q = normalizeText(barQuery.trim());
-    if (!q) return scoped;
-    return scoped.filter((e) => normalizeText(e.name).includes(q));
-  }, [establishments, city, barQuery]);
-
-  const userCoords = liveCoords || coords;
+    const matched = q ? scoped.filter((e) => normalizeText(e.name).includes(q)) : scoped;
+    return sortEstablishmentsByDistance(matched, userCoords);
+  }, [establishments, city, barQuery, userCoords]);
 
   // Estável enquanto os índices não mudam: junto com EventCard memoizado e os
   // caches de lookup, evita re-render dos cards visíveis a cada tecla da busca.
