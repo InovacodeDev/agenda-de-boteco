@@ -1,6 +1,7 @@
 'use client';
 
 import { type Establishment, formatRating } from '@agenda/core';
+import Link from 'next/link';
 
 import { StarIcon } from '@/components/ui/icons';
 
@@ -16,6 +17,10 @@ export function EstablishmentCard({ establishment }: EstablishmentCardProps) {
   ).split(' ');
 
   return (
+    <Link
+      href={`/establishment/${establishment.id}`}
+      className="block transition-opacity hover:opacity-90"
+    >
     <article className="flex gap-3 rounded-2xl bg-card p-3">
       {/* ponytail: <img> evita config de remotePatterns do next/image p/ logos externos */}
       <img
@@ -46,5 +51,6 @@ export function EstablishmentCard({ establishment }: EstablishmentCardProps) {
         </div>
       </div>
     </article>
+    </Link>
   );
 }

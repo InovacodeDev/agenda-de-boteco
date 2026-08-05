@@ -2,7 +2,6 @@
 
 import { FEATURES, useActiveCity, useEstablishmentsQuery } from '@agenda/core';
 import dynamic from 'next/dynamic';
-import Link from 'next/link';
 import { useMemo } from 'react';
 
 import { EstablishmentCard } from '@/components/establishment/EstablishmentCard';
@@ -43,13 +42,7 @@ function MapContent() {
 
       <div className="flex flex-col gap-3">
         {cityEstablishments.map((establishment) => (
-          <Link
-            key={establishment.id}
-            href={`/establishment/${establishment.id}`}
-            className="block transition-opacity hover:opacity-90"
-          >
-            <EstablishmentCard establishment={establishment} />
-          </Link>
+          <EstablishmentCard key={establishment.id} establishment={establishment} />
         ))}
       </div>
     </section>

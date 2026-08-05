@@ -11,6 +11,7 @@ import {
   type MusicStyle,
   useFavoritesStore,
 } from '@agenda/core';
+import Link from 'next/link';
 import { useMemo } from 'react';
 
 import { GradientBadge } from '@/components/ui/GradientBadge';
@@ -21,6 +22,7 @@ import {
   MapPinIcon,
   TicketIcon,
 } from '@/components/ui/icons';
+import { useRequireAuth } from '@/hooks/useRequireAuth';
 
 export interface EventCardProps {
   event: Event;
@@ -53,6 +55,7 @@ export function EventCard({
   styles,
   userCoords,
 }: EventCardProps) {
+  const requireAuth = useRequireAuth();
   const isFavorite = useFavoritesStore((state) => state.eventIds.includes(event.id));
   const toggleEvent = useFavoritesStore((state) => state.toggleEvent);
 
@@ -72,6 +75,7 @@ export function EventCard({
   }, [establishment.lat, establishment.lng, userCoords]);
 
   return (
+    <Link href={`/event/${event.id}`} className="block transition-opacity hover:opacity-90">
     <article className="overflow-hidden rounded-2xl bg-card">
       <div className="relative h-[340px]">
         {/* ponytail: <img> evita config de remotePatterns do next/image p/ banners externos */}
@@ -98,8 +102,11 @@ export function EventCard({
             <button
               type="button"
               aria-label={isFavorite ? 'Remover dos favoritos' : 'Favoritar evento'}
-              // ponytail: gate de auth no favoritar vem com a tela de login (Task 10)
-              onClick={() => toggleEvent(event.id)}
+              onClick={(clickEvent) => {
+                clickEvent.preventDefault();
+                clickEvent.stopPropagation();
+                requireAuth(() => toggleEvent(event.id));
+              }}
               className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-background/40 transition-opacity hover:opacity-80"
             >
               <HeartIcon
@@ -173,5 +180,6 @@ export function EventCard({
         </div>
       </div>
     </article>
+    </Link>
   );
 }

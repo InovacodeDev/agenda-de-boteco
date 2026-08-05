@@ -20,6 +20,7 @@ import { EstablishmentDetailMenuItem } from '@/components/establishment/Establis
 import { UnderConstruction } from '@/components/feedback/UnderConstruction';
 import { ClockIcon, HeartIcon, MapPinIcon, SparklesIcon, StarIcon } from '@/components/ui/icons';
 import { SegmentedTabs } from '@/components/ui/SegmentedTabs';
+import { useRequireAuth } from '@/hooks/useRequireAuth';
 
 const TABS = ['Sobre', 'Agenda', 'Cardápio', 'Reviews'];
 
@@ -83,6 +84,7 @@ function EstablishmentDetailContent() {
     establishment ? state.establishmentIds.includes(establishment.id) : false,
   );
   const toggleEstablishment = useFavoritesStore((state) => state.toggleEstablishment);
+  const requireAuth = useRequireAuth();
 
   if (establishmentQuery.isLoading) {
     return (
@@ -116,8 +118,7 @@ function EstablishmentDetailContent() {
         <button
           type="button"
           aria-label={isFavorite ? 'Remover dos favoritos' : 'Favoritar estabelecimento'}
-          // ponytail: gate de auth no favoritar vem com a tela de login (sem requireAuth na web por ora)
-          onClick={() => toggleEstablishment(establishment.id)}
+          onClick={() => requireAuth(() => toggleEstablishment(establishment.id))}
           className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-background/60 transition-opacity hover:opacity-80"
         >
           <HeartIcon
