@@ -21,6 +21,7 @@ import {
   MapPinIcon,
   TicketIcon,
 } from '@/components/ui/icons';
+import { useRequireAuth } from '@/hooks/useRequireAuth';
 
 export interface EventCardProps {
   event: Event;
@@ -53,6 +54,7 @@ export function EventCard({
   styles,
   userCoords,
 }: EventCardProps) {
+  const requireAuth = useRequireAuth();
   const isFavorite = useFavoritesStore((state) => state.eventIds.includes(event.id));
   const toggleEvent = useFavoritesStore((state) => state.toggleEvent);
 
@@ -98,8 +100,7 @@ export function EventCard({
             <button
               type="button"
               aria-label={isFavorite ? 'Remover dos favoritos' : 'Favoritar evento'}
-              // ponytail: gate de auth no favoritar vem com a tela de login (Task 10)
-              onClick={() => toggleEvent(event.id)}
+              onClick={() => requireAuth(() => toggleEvent(event.id))}
               className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-background/40 transition-opacity hover:opacity-80"
             >
               <HeartIcon

@@ -27,6 +27,7 @@ import {
   MapPinIcon,
   TicketIcon,
 } from '@/components/ui/icons';
+import { useRequireAuth } from '@/hooks/useRequireAuth';
 
 // ponytail: ícones ausentes no icons.tsx compartilhado — inline no lote p/ não tocar o shared.
 function ArrowLeftIcon({ size = 18 }: { size?: number }) {
@@ -109,6 +110,7 @@ export default function EventDetailPage() {
     event ? state.eventIds.includes(event.id) : false,
   );
   const toggleEvent = useFavoritesStore((state) => state.toggleEvent);
+  const requireAuth = useRequireAuth();
 
   const isLoading = eventQuery.isLoading || (!!event && establishmentQuery.isLoading);
 
@@ -163,8 +165,7 @@ export default function EventDetailPage() {
         <button
           type="button"
           aria-label={isFavorite ? 'Remover dos favoritos' : 'Favoritar evento'}
-          // ponytail: gate de auth no favoritar vem com a tela de login
-          onClick={() => toggleEvent(event.id)}
+          onClick={() => requireAuth(() => toggleEvent(event.id))}
           className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-background/40 transition-opacity hover:opacity-80"
         >
           <HeartIcon size={18} filled={isFavorite} className={isFavorite ? 'text-primary' : 'text-foreground'} />
