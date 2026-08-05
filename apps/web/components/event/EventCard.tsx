@@ -11,6 +11,7 @@ import {
   type MusicStyle,
   useFavoritesStore,
 } from '@agenda/core';
+import Link from 'next/link';
 import { useMemo } from 'react';
 
 import { GradientBadge } from '@/components/ui/GradientBadge';
@@ -74,6 +75,7 @@ export function EventCard({
   }, [establishment.lat, establishment.lng, userCoords]);
 
   return (
+    <Link href={`/event/${event.id}`} className="block transition-opacity hover:opacity-90">
     <article className="overflow-hidden rounded-2xl bg-card">
       <div className="relative h-[340px]">
         {/* ponytail: <img> evita config de remotePatterns do next/image p/ banners externos */}
@@ -100,7 +102,11 @@ export function EventCard({
             <button
               type="button"
               aria-label={isFavorite ? 'Remover dos favoritos' : 'Favoritar evento'}
-              onClick={() => requireAuth(() => toggleEvent(event.id))}
+              onClick={(clickEvent) => {
+                clickEvent.preventDefault();
+                clickEvent.stopPropagation();
+                requireAuth(() => toggleEvent(event.id));
+              }}
               className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-background/40 transition-opacity hover:opacity-80"
             >
               <HeartIcon
@@ -174,5 +180,6 @@ export function EventCard({
         </div>
       </div>
     </article>
+    </Link>
   );
 }
