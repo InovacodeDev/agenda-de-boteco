@@ -86,7 +86,7 @@ export type Database = {
           city_id: string
           cover_url: string
           description: string
-          highlights: string[]
+          attributes: Database["public"]["Enums"]["establishment_attribute_enum"][]
           id: string
           instagram: string | null
           lat: number
@@ -111,7 +111,7 @@ export type Database = {
           city_id: string
           cover_url: string
           description: string
-          highlights?: string[]
+          attributes?: Database["public"]["Enums"]["establishment_attribute_enum"][]
           id: string
           instagram?: string | null
           lat: number
@@ -136,7 +136,7 @@ export type Database = {
           city_id?: string
           cover_url?: string
           description?: string
-          highlights?: string[]
+          attributes?: Database["public"]["Enums"]["establishment_attribute_enum"][]
           id?: string
           instagram?: string | null
           lat?: number
@@ -706,7 +706,7 @@ export type Database = {
           cover_url: string
           description: string
           distance_km: number
-          highlights: string[]
+          attributes: Database["public"]["Enums"]["establishment_attribute_enum"][]
           id: string
           instagram: string
           lat: number
@@ -1361,6 +1361,7 @@ export type Database = {
       }
     }
     Enums: {
+      establishment_attribute_enum: "pet-friendly" | "kids-area" | "accessible-pcd" | "parking" | "outdoor-space" | "work-friendly" | "free-wifi" | "air-conditioning" | "live-music" | "dj-set" | "cozy-romantic" | "lively-party" | "scenic-view" | "live-sports" | "sports-audio-on" | "big-screen-tvs" | "national-soccer" | "international-soccer" | "other-sports" | "game-day-deals" | "cheering-environment" | "vegan-options" | "vegetarian-options" | "gluten-free-lactose-free" | "kids-menu" | "signature-cocktails" | "craft-beer" | "good-for-groups" | "great-for-dates" | "happy-hour" | "lgbtq-friendly" | "family-friendly" | "accepts-meal-voucher" | "accepts-reservations" | "free-entry" | "counter-service"
       notification_type_enum: "style" | "city" | "favorite" | "promo"
       price_range_enum: "$" | "$$" | "$$$" | "$$$$"
     }
@@ -1501,6 +1502,7 @@ export const Constants = {
   },
   public: {
     Enums: {
+      establishment_attribute_enum: ["pet-friendly", "kids-area", "accessible-pcd", "parking", "outdoor-space", "work-friendly", "free-wifi", "air-conditioning", "live-music", "dj-set", "cozy-romantic", "lively-party", "scenic-view", "live-sports", "sports-audio-on", "big-screen-tvs", "national-soccer", "international-soccer", "other-sports", "game-day-deals", "cheering-environment", "vegan-options", "vegetarian-options", "gluten-free-lactose-free", "kids-menu", "signature-cocktails", "craft-beer", "good-for-groups", "great-for-dates", "happy-hour", "lgbtq-friendly", "family-friendly", "accepts-meal-voucher", "accepts-reservations", "free-entry", "counter-service"],
       notification_type_enum: ["style", "city", "favorite", "promo"],
       price_range_enum: ["$", "$$", "$$$", "$$$$"],
     },

@@ -36,7 +36,7 @@ type NotificationRow = Database['public']['Tables']['notifications']['Row'];
 
 const CITY_COLUMNS = 'id,name,uf,lat,lng,slug';
 const ESTABLISHMENT_COLUMNS =
-  'id,name,description,logo_url,cover_url,address,neighborhood,city_id,lat,lng,whatsapp,instagram,opening_hours,menu_items,price_range,ambiance,rating_avg,rating_count,highlights,slug,menu_pdf_url,menu_photo_urls';
+  'id,name,description,logo_url,cover_url,address,neighborhood,city_id,lat,lng,whatsapp,instagram,opening_hours,menu_items,price_range,ambiance,rating_avg,rating_count,attributes,slug,menu_pdf_url,menu_photo_urls';
 // photo_urls incluído; database.types.ts ainda não tem a coluna — selects de events usam
 // (client as SupabaseClient) sem generic para contornar a validação estática do supabase-js.
 const EVENT_COLUMNS =
@@ -108,7 +108,7 @@ function mapEstablishment(row: EstablishmentRow): Establishment {
     ambiance: row.ambiance,
     rating_avg: row.rating_avg,
     rating_count: row.rating_count,
-    highlights: row.highlights,
+    attributes: row.attributes,
     slug: nullToUndefined(row.slug),
     menu_pdf_url: nullToUndefined(row.menu_pdf_url),
     menu_photo_urls: row.menu_photo_urls,

@@ -62,7 +62,7 @@ export const ESTABLISHMENTS: Establishment[] = [
     ambiance: 'Boteco',
     rating_avg: 4.7,
     rating_count: 312,
-    highlights: ['Chope gelado', 'Pet friendly', 'Roda de samba', 'Mesa na calçada'],
+    attributes: ['pet-friendly', 'outdoor-space', 'live-music', 'craft-beer', 'good-for-groups', 'accepts-meal-voucher'],
     menu_pdf_url: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
     menu_photo_urls: [
       'https://images.unsplash.com/photo-1563245372-f21724e3856d?auto=format&fit=crop&w=600&q=85',
@@ -92,7 +92,7 @@ export const ESTABLISHMENTS: Establishment[] = [
     ambiance: 'Pub',
     rating_avg: 4.5,
     rating_count: 198,
-    highlights: ['Cervejas artesanais', 'Mesa de sinuca', 'Banda ao vivo', 'Late night'],
+    attributes: ['craft-beer', 'live-music', 'live-sports', 'big-screen-tvs', 'good-for-groups', 'free-wifi'],
     menu_photo_urls: [],
   },
   {
@@ -115,7 +115,7 @@ export const ESTABLISHMENTS: Establishment[] = [
     ambiance: 'Bar',
     rating_avg: 4.3,
     rating_count: 421,
-    highlights: ['Pista grande', 'Open de chope', 'Camarote', 'Estacionamento'],
+    attributes: ['lively-party', 'dj-set', 'parking', 'good-for-groups', 'air-conditioning'],
     menu_photo_urls: [],
   },
   {
@@ -138,7 +138,7 @@ export const ESTABLISHMENTS: Establishment[] = [
     ambiance: 'Lounge',
     rating_avg: 4.8,
     rating_count: 156,
-    highlights: ['Acústico', 'Cardápio autoral', 'Reservas', 'Wine bar'],
+    attributes: ['live-music', 'cozy-romantic', 'great-for-dates', 'accepts-reservations', 'signature-cocktails', 'vegetarian-options'],
     menu_photo_urls: [],
   },
   {
@@ -161,7 +161,7 @@ export const ESTABLISHMENTS: Establishment[] = [
     ambiance: 'Choperia',
     rating_avg: 4.6,
     rating_count: 587,
-    highlights: ['Happy hour 16-19h', 'Música ao vivo', 'Pet friendly'],
+    attributes: ['happy-hour', 'live-music', 'pet-friendly', 'outdoor-space', 'kids-area', 'family-friendly'],
     menu_photo_urls: [],
   },
   {
@@ -184,7 +184,7 @@ export const ESTABLISHMENTS: Establishment[] = [
     ambiance: 'Bar',
     rating_avg: 4.4,
     rating_count: 1023,
-    highlights: ['Roda de samba', 'Pista', 'Caipirinha autoral'],
+    attributes: ['live-music', 'lively-party', 'signature-cocktails', 'lgbtq-friendly', 'counter-service'],
     menu_photo_urls: [],
   },
   {
@@ -206,7 +206,7 @@ export const ESTABLISHMENTS: Establishment[] = [
     ambiance: 'Bar',
     rating_avg: 4.5,
     rating_count: 287,
-    highlights: ['Aulas de forró', 'Trio pé de serra'],
+    attributes: ['live-music', 'good-for-groups', 'accessible-pcd', 'free-entry'],
     menu_photo_urls: [],
   },
   {
@@ -228,7 +228,7 @@ export const ESTABLISHMENTS: Establishment[] = [
     ambiance: 'Lounge',
     rating_avg: 4.6,
     rating_count: 754,
-    highlights: ['Sound system', 'DJ residente', 'Open bar'],
+    attributes: ['dj-set', 'lively-party', 'scenic-view', 'signature-cocktails', 'lgbtq-friendly'],
     menu_photo_urls: [],
   },
 ];

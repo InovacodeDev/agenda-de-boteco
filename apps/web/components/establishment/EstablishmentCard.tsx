@@ -1,13 +1,16 @@
 'use client';
 
-import { type Establishment, formatRating } from '@agenda/core';
+import { type Establishment, formatRating, getAttributeMeta } from '@agenda/core';
 import Link from 'next/link';
 
-import { StarIcon } from '@/components/ui/icons';
+import { AttributeIcon, StarIcon } from '@/components/ui/icons';
 
 export interface EstablishmentCardProps {
   establishment: Establishment;
 }
+
+/** Atributos mostrados no card; o resto fica para a tela de detalhe. */
+const MAX_CARD_ATTRIBUTES = 3;
 
 /** Card compacto de bar (aba Bares), espelha o mobile. */
 export function EstablishmentCard({ establishment }: EstablishmentCardProps) {
@@ -49,6 +52,23 @@ export function EstablishmentCard({ establishment }: EstablishmentCardProps) {
             {establishment.neighborhood}
           </span>
         </div>
+        {establishment.attributes.length > 0 ? (
+          <div className="flex flex-wrap gap-1 pt-0.5">
+            {establishment.attributes.slice(0, MAX_CARD_ATTRIBUTES).map((attributeId) => {
+              const meta = getAttributeMeta(attributeId);
+              return (
+                <span
+                  key={attributeId}
+                  title={meta.description}
+                  className="flex items-center gap-1 rounded-full bg-surface-elevated px-2 py-0.5 text-[10px] font-[family-name:var(--font-body)] text-muted-foreground"
+                >
+                  <AttributeIcon icon={meta.icon} size={10} />
+                  {meta.label}
+                </span>
+              );
+            })}
+          </div>
+        ) : null}
       </div>
     </article>
     </Link>

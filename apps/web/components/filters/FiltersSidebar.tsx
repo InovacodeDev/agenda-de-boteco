@@ -4,8 +4,10 @@ import {
   type City,
   type DateBucket,
   DEFAULT_EVENT_FILTERS,
+  type EstablishmentAttribute,
   type EventFilters,
   isVirtualCityId,
+  QUICK_ATTRIBUTE_METAS,
   resolveCityFromLocation,
   type SortBy,
   useCitiesQuery,
@@ -14,12 +16,13 @@ import {
 } from '@agenda/core';
 import { useEffect, useState } from 'react';
 
+import { AttributeSearchModal } from '@/components/filters/AttributeSearchModal';
 import { CitySearchModal } from '@/components/filters/CitySearchModal';
 import { DateRangeField } from '@/components/filters/DateRangeField';
 import { FilterSection } from '@/components/filters/FilterSection';
 import { FilterSlider } from '@/components/filters/FilterSlider';
 import { SwitchRow } from '@/components/filters/SwitchRow';
-import { XIcon } from '@/components/ui/icons';
+import { InfoIcon, XIcon } from '@/components/ui/icons';
 import { cn } from '@/lib/cn';
 
 const DATE_OPTIONS: Array<{ label: string; bucket: DateBucket }> = [
@@ -42,16 +45,20 @@ function Chip({
   label,
   selected,
   onClick,
+  title,
 }: {
   label: string;
   selected: boolean;
   onClick: () => void;
+  /** Tooltip nativa — usada pelos chips de atributo para explicar o que filtram. */
+  title?: string;
 }) {
   return (
     <button
       type="button"
       aria-pressed={selected}
       onClick={onClick}
+      title={title}
       className={cn(
         'h-9 shrink-0 whitespace-nowrap rounded-full px-4 text-[13px] font-[family-name:var(--font-body)] font-medium transition-colors',
         selected ? 'bg-primary text-primary-foreground' : 'bg-surface-elevated text-muted-foreground',
@@ -73,6 +80,7 @@ export function FiltersSidebar({ isOpen, onClose }: FiltersSidebarProps) {
   const { data: cities } = useCitiesQuery();
   const { data: musicStyles } = useMusicStylesQuery();
   const [isCitySearchOpen, setIsCitySearchOpen] = useState(false);
+  const [isAttributeSearchOpen, setIsAttributeSearchOpen] = useState(false);
 
   // estado provisório: só aplica ao clicar "Aplicar"
   const [draft, setDraft] = useState<EventFilters>(storedFilters);
@@ -88,14 +96,14 @@ export function FiltersSidebar({ isOpen, onClose }: FiltersSidebarProps) {
   const [resolvingLocation, setResolvingLocation] = useState(false);
 
   useEffect(() => {
-    // com a busca de cidade aberta, Escape é dela — não fecha a sidebar atrás.
-    if (!isOpen || isCitySearchOpen) return;
+    // com uma busca aberta (cidade/atributo), Escape é dela — não fecha a sidebar atrás.
+    if (!isOpen || isCitySearchOpen || isAttributeSearchOpen) return;
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') onClose();
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [isOpen, isCitySearchOpen, onClose]);
+  }, [isOpen, isCitySearchOpen, isAttributeSearchOpen, onClose]);
 
   const patch = (partial: Partial<EventFilters>) =>
     setDraft((current) => ({ ...current, ...partial }));
@@ -105,6 +113,13 @@ export function FiltersSidebar({ isOpen, onClose }: FiltersSidebarProps) {
       cityIds: draft.cityIds.includes(cityId)
         ? draft.cityIds.filter((id) => id !== cityId)
         : [...draft.cityIds, cityId],
+    });
+
+  const toggleDraftAttribute = (attributeId: EstablishmentAttribute) =>
+    patch({
+      attributeIds: draft.attributeIds.includes(attributeId)
+        ? draft.attributeIds.filter((id) => id !== attributeId)
+        : [...draft.attributeIds, attributeId],
     });
 
   const toggleDraftStyle = (styleId: string) =>
@@ -262,6 +277,35 @@ export function FiltersSidebar({ isOpen, onClose }: FiltersSidebarProps) {
             </div>
           </FilterSection>
 
+          <FilterSection title="Atributos">
+            {/* Legenda sempre visível: o combinador é E, não OU — sem ela o usuário
+                lê "Pet Friendly + Área Kids" como união e estranha o feed vazio. */}
+            <p className="flex items-center gap-1.5 text-[11px] font-[family-name:var(--font-body)] text-muted-foreground">
+              <InfoIcon size={12} className="shrink-0" />
+              Mostra apenas bares com todos os selecionados
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {QUICK_ATTRIBUTE_METAS.map((meta) => (
+                <Chip
+                  key={meta.id}
+                  label={meta.label}
+                  title={meta.description}
+                  selected={draft.attributeIds.includes(meta.id)}
+                  onClick={() => toggleDraftAttribute(meta.id)}
+                />
+              ))}
+              <Chip
+                label={
+                  draft.attributeIds.length > 0
+                    ? `Buscar atributo (${draft.attributeIds.length})`
+                    : 'Buscar atributo'
+                }
+                selected={draft.attributeIds.length > 0}
+                onClick={() => setIsAttributeSearchOpen(true)}
+              />
+            </div>
+          </FilterSection>
+
           <FilterSection title="Avaliação mínima" trailing={`${draft.minRating} ★`}>
             <FilterSlider
               value={draft.minRating}
@@ -321,6 +365,16 @@ export function FiltersSidebar({ isOpen, onClose }: FiltersSidebarProps) {
         onConfirm={(ids) => {
           patch({ cityIds: ids });
           setIsCitySearchOpen(false);
+        }}
+      />
+
+      <AttributeSearchModal
+        isOpen={isAttributeSearchOpen}
+        initialSelected={draft.attributeIds}
+        onClose={() => setIsAttributeSearchOpen(false)}
+        onConfirm={(ids) => {
+          patch({ attributeIds: ids });
+          setIsAttributeSearchOpen(false);
         }}
       />
     </>

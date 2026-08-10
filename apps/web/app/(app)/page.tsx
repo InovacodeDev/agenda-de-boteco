@@ -1,12 +1,12 @@
 'use client';
 
 import {
+  applyEstablishmentFilters,
   applyEventFilters,
   hasActiveFilters,
   indexById,
   type LatLng,
   musicStylesForEvent,
-  normalizeText,
   resolveNearbyOrigin,
   useActiveCity,
   useEstablishmentsQuery,
@@ -90,13 +90,17 @@ export default function FeedPage() {
     [events, filters, now, city, establishmentsById, nearbyEstablishmentIds],
   );
 
-  const cityEstablishments = useMemo(() => {
-    const all = establishments ?? [];
-    const scoped = city ? all.filter((e) => e.city_id === city.id) : all;
-    const q = normalizeText(barQuery.trim());
-    if (!q) return scoped;
-    return scoped.filter((e) => normalizeText(e.name).includes(q));
-  }, [establishments, city, barQuery]);
+  const cityEstablishments = useMemo(
+    () =>
+      applyEstablishmentFilters(establishments ?? [], {
+        query: barQuery,
+        cityId: city?.id,
+        cityIds: filters.cityIds,
+        attributeIds: filters.attributeIds,
+        origin: userCoords,
+      }),
+    [establishments, city, barQuery, filters.cityIds, filters.attributeIds, userCoords],
+  );
 
   const isLoading =
     events === undefined || establishments === undefined || musicStyles === undefined;
@@ -161,16 +165,22 @@ export default function FeedPage() {
             </div>
           )}
         </>
-      ) : isLoading ? (
-        <FeedLoading />
-      ) : cityEstablishments.length === 0 ? (
-        <EmptyState message="Nenhum bar encontrado." />
       ) : (
-        <div className="flex flex-col gap-3">
-          {cityEstablishments.map((establishment) => (
-            <EstablishmentCard key={establishment.id} establishment={establishment} />
-          ))}
-        </div>
+        <>
+          <QuickFilterChips showEventFilters={false} />
+
+          {isLoading ? (
+            <FeedLoading />
+          ) : cityEstablishments.length === 0 ? (
+            <EmptyState message="Nenhum bar encontrado." />
+          ) : (
+            <div className="flex flex-col gap-3">
+              {cityEstablishments.map((establishment) => (
+                <EstablishmentCard key={establishment.id} establishment={establishment} />
+              ))}
+            </div>
+          )}
+        </>
       )}
 
       <FiltersSidebar isOpen={isFiltersOpen} onClose={() => setIsFiltersOpen(false)} />

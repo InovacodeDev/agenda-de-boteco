@@ -22,6 +22,50 @@ export const menuItemSchema = z.object({
 
 export const priceRangeSchema = z.enum(['$', '$$', '$$$', '$$$$']);
 
+/**
+ * Atributos do estabelecimento. Espelha o enum `establishment_attribute_enum`
+ * do banco — a ordem e os rótulos de exibição ficam em
+ * `data/establishment-attributes.ts` (ESTABLISHMENT_ATTRIBUTES).
+ */
+export const establishmentAttributeSchema = z.enum([
+  'pet-friendly',
+  'kids-area',
+  'accessible-pcd',
+  'parking',
+  'outdoor-space',
+  'work-friendly',
+  'free-wifi',
+  'air-conditioning',
+  'live-music',
+  'dj-set',
+  'cozy-romantic',
+  'lively-party',
+  'scenic-view',
+  'live-sports',
+  'sports-audio-on',
+  'big-screen-tvs',
+  'national-soccer',
+  'international-soccer',
+  'other-sports',
+  'game-day-deals',
+  'cheering-environment',
+  'vegan-options',
+  'vegetarian-options',
+  'gluten-free-lactose-free',
+  'kids-menu',
+  'signature-cocktails',
+  'craft-beer',
+  'good-for-groups',
+  'great-for-dates',
+  'happy-hour',
+  'lgbtq-friendly',
+  'family-friendly',
+  'accepts-meal-voucher',
+  'accepts-reservations',
+  'free-entry',
+  'counter-service',
+]);
+
 export const establishmentSchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -41,7 +85,7 @@ export const establishmentSchema = z.object({
   ambiance: z.string(),
   rating_avg: z.number().min(0).max(5),
   rating_count: z.number().int().nonnegative(),
-  highlights: z.array(z.string()),
+  attributes: z.array(establishmentAttributeSchema).default([]),
   slug: z.string().optional(),
   menu_pdf_url: z.string().url().nullable().optional(),
   menu_photo_urls: z.array(z.string().url()).default([]),
@@ -110,6 +154,7 @@ export type MusicStyle = z.infer<typeof musicStyleSchema>;
 export type City = z.infer<typeof citySchema>;
 export type MenuItem = z.infer<typeof menuItemSchema>;
 export type PriceRange = z.infer<typeof priceRangeSchema>;
+export type EstablishmentAttribute = z.infer<typeof establishmentAttributeSchema>;
 export type Establishment = z.infer<typeof establishmentSchema>;
 export type Event = z.infer<typeof eventSchema>;
 export type EventAttraction = z.infer<typeof eventAttractionSchema>;

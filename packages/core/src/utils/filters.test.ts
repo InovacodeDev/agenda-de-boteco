@@ -1,11 +1,13 @@
 import { ESTABLISHMENTS, EVENTS } from '../data';
 import type { Establishment, Event } from '../schemas';
 import {
+  applyEstablishmentFilters,
   applyEventFilters,
   DEFAULT_EVENT_FILTERS,
   type EventFilterContext,
   type EventFilters,
   hasActiveFilters,
+  matchesAttributes,
   normalizeText,
   sortEstablishmentsByDistance,
 } from './filters';
@@ -431,6 +433,7 @@ describe('hasActiveFilters', () => {
     ['dateRange', { dateRange: { start: '2026-07-01', end: '2026-07-31' } }],
     ['styleIds', { styleIds: ['rock'] }],
     ['cityIds', { cityIds: ['sao'] }],
+    ['attributeIds', { attributeIds: ['pet-friendly' as const] }],
     ['maxDistanceKm', { maxDistanceKm: 10 }],
     ['minRating', { minRating: 4 }],
     ['maxPrice', { maxPrice: 30 }],
@@ -439,5 +442,126 @@ describe('hasActiveFilters', () => {
     ['openNow', { openNow: true }],
   ])('é true quando %s diverge do default', (_label, override) => {
     expect(hasActiveFilters(makeFilters(override))).toBe(true);
+  });
+});
+
+describe('matchesAttributes', () => {
+  const e1 = ESTABLISHMENTS_BY_ID.e1;
+
+  it('lista vazia passa qualquer estabelecimento', () => {
+    expect(matchesAttributes(e1, [])).toBe(true);
+  });
+
+  it('true quando o estabelecimento tem o atributo exigido', () => {
+    expect(matchesAttributes(e1, ['pet-friendly'])).toBe(true);
+  });
+
+  it('false quando falta o atributo exigido', () => {
+    expect(matchesAttributes(e1, ['kids-area'])).toBe(false);
+  });
+
+  it('combina em E: exige TODOS os atributos, não qualquer um', () => {
+    // e1 tem pet-friendly e outdoor-space, mas não kids-area.
+    expect(matchesAttributes(e1, ['pet-friendly', 'outdoor-space'])).toBe(true);
+    expect(matchesAttributes(e1, ['pet-friendly', 'kids-area'])).toBe(false);
+  });
+});
+
+describe('applyEventFilters + attributeIds', () => {
+  it('mantém apenas eventos de bares com o atributo', () => {
+    const result = applyEventFilters(
+      EVENTS,
+      makeFilters({ attributeIds: ['pet-friendly'] }),
+      makeContext(),
+    );
+    const establishmentIds = new Set(result.map((event) => event.establishment_id));
+    expect(result.length).toBeGreaterThan(0);
+    for (const id of establishmentIds) {
+      expect(ESTABLISHMENTS_BY_ID[id].attributes).toContain('pet-friendly');
+    }
+  });
+
+  it('AND entre atributos: combinação sem bar em fln zera o feed', () => {
+    // Em fln nenhum bar tem pet-friendly E kids-area — com OR sobrariam eventos.
+    const result = applyEventFilters(
+      EVENTS,
+      makeFilters({ attributeIds: ['pet-friendly', 'kids-area'] }),
+      makeContext(),
+    );
+    expect(result).toHaveLength(0);
+  });
+
+  it('atributos vazios não alteram o resultado default', () => {
+    const withEmpty = applyEventFilters(
+      EVENTS,
+      makeFilters({ attributeIds: [] }),
+      makeContext(),
+    );
+    const baseline = applyEventFilters(EVENTS, makeFilters(), makeContext());
+    expect(ids(withEmpty)).toEqual(ids(baseline));
+  });
+});
+
+describe('applyEstablishmentFilters', () => {
+  it('sem params devolve todos, sem mutar a entrada', () => {
+    const original = [...ESTABLISHMENTS];
+    const result = applyEstablishmentFilters(ESTABLISHMENTS, {});
+    expect(result).toHaveLength(ESTABLISHMENTS.length);
+    expect(ESTABLISHMENTS).toEqual(original);
+  });
+
+  it('recorta pela cidade ativa', () => {
+    const result = applyEstablishmentFilters(ESTABLISHMENTS, { cityId: 'fln' });
+    expect(result.length).toBeGreaterThan(0);
+    expect(result.every((e) => e.city_id === 'fln')).toBe(true);
+  });
+
+  it('cityIds sobrepõe a cidade ativa (união)', () => {
+    const result = applyEstablishmentFilters(ESTABLISHMENTS, {
+      cityId: 'fln',
+      cityIds: ['sao', 'rio'],
+    });
+    expect(result.length).toBeGreaterThan(0);
+    expect(result.every((e) => e.city_id === 'sao' || e.city_id === 'rio')).toBe(true);
+  });
+
+  it('cidade virtual não recorta (usuário fora do catálogo vê todos)', () => {
+    const result = applyEstablishmentFilters(ESTABLISHMENTS, {
+      cityId: 'geo:-27.5,-48.5',
+    });
+    expect(result).toHaveLength(ESTABLISHMENTS.length);
+  });
+
+  it('busca por nome ignora acento e caixa', () => {
+    const target = ESTABLISHMENTS[0];
+    const result = applyEstablishmentFilters(ESTABLISHMENTS, {
+      query: target.name.toUpperCase(),
+    });
+    expect(result.map((e) => e.id)).toContain(target.id);
+  });
+
+  it('filtra por atributos combinados em E', () => {
+    const result = applyEstablishmentFilters(ESTABLISHMENTS, {
+      attributeIds: ['pet-friendly', 'kids-area'],
+    });
+    expect(result.length).toBeGreaterThan(0);
+    for (const establishment of result) {
+      expect(establishment.attributes).toContain('pet-friendly');
+      expect(establishment.attributes).toContain('kids-area');
+    }
+
+    const orWouldMatch = ESTABLISHMENTS.filter(
+      (e) => e.attributes.includes('pet-friendly') || e.attributes.includes('kids-area'),
+    );
+    expect(result.length).toBeLessThan(orWouldMatch.length);
+  });
+
+  it('ordena por proximidade quando origin é informado', () => {
+    const origin = { lat: -27.5954, lng: -48.548 };
+    const result = applyEstablishmentFilters(ESTABLISHMENTS, { cityId: 'fln', origin });
+    const distances = result.map((e) =>
+      haversineDistanceKm(origin, { lat: e.lat, lng: e.lng }),
+    );
+    expect(distances).toEqual([...distances].sort((a, b) => a - b));
   });
 });

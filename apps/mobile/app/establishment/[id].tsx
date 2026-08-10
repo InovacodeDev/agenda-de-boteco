@@ -11,10 +11,11 @@ import { Button } from '@/components/ui/Button';
 import { CircleIconButton } from '@/components/ui/CircleIconButton';
 import { GuardedPressable } from '@/components/ui/GuardedPressable';
 import { Icon } from '@/components/ui/Icon';
+import { isIconName } from '@/components/ui/iconMap';
 import { RatingStars } from '@/components/ui/RatingStars';
 import { SegmentedTabs } from '@/components/ui/SegmentedTabs';
 import { FEATURES } from '@/config/features';
-import { indexById, musicStylesForEvent } from '@/data/lookup';
+import { getAttributeMeta, indexById, musicStylesForEvent } from '@/data/lookup';
 import {
   useEstablishmentQuery,
   useEventsByEstablishmentQuery,
@@ -174,11 +175,24 @@ function EstablishmentDetailContent() {
           </Text>
 
           <View className="flex-row flex-wrap gap-2">
-            {establishment.highlights.map((highlight) => (
-              <View key={highlight} className="bg-surface-elevated rounded-full px-3 py-1.5">
-                <Text className="font-body text-foreground text-[12px]">{highlight}</Text>
-              </View>
-            ))}
+            {establishment.attributes.map((attributeId) => {
+              const meta = getAttributeMeta(attributeId);
+              return (
+                <View
+                  key={attributeId}
+                  // Sem hover no mobile: a descrição do atributo vira rótulo de
+                  // acessibilidade, o equivalente da tooltip do web.
+                  accessible
+                  accessibilityLabel={`${meta.label}. ${meta.description}`}
+                  className="bg-surface-elevated flex-row items-center gap-1.5 rounded-full px-3 py-1.5"
+                >
+                  {isIconName(meta.icon) ? (
+                    <Icon name={meta.icon} color={colors.primary} size={13} />
+                  ) : null}
+                  <Text className="font-body text-foreground text-[12px]">{meta.label}</Text>
+                </View>
+              );
+            })}
           </View>
 
           <SegmentedTabs tabs={TABS} activeIndex={activeTab} onChange={setActiveTab} />

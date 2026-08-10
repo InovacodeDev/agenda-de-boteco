@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 
+import type { EstablishmentAttribute } from '../schemas/catalog';
 import {
   type DateBucket,
   DEFAULT_EVENT_FILTERS,
@@ -22,6 +23,8 @@ export interface FiltersState {
   setOpenNow: (value: boolean) => void;
   toggleCity: (id: string) => void;
   setCityIds: (ids: string[]) => void;
+  toggleAttribute: (id: EstablishmentAttribute) => void;
+  setAttributeIds: (ids: EstablishmentAttribute[]) => void;
   resetFilters: () => void;
   replaceFilters: (filters: EventFilters) => void;
 }
@@ -67,6 +70,16 @@ export const useFiltersStore = create<FiltersState>()((set) => {
         },
       })),
     setCityIds: (cityIds) => patchFilters({ cityIds }),
+    toggleAttribute: (id) =>
+      set((state) => ({
+        filters: {
+          ...state.filters,
+          attributeIds: state.filters.attributeIds.includes(id)
+            ? state.filters.attributeIds.filter((attrId) => attrId !== id)
+            : [...state.filters.attributeIds, id],
+        },
+      })),
+    setAttributeIds: (attributeIds) => patchFilters({ attributeIds }),
     resetFilters: () => set({ filters: DEFAULT_EVENT_FILTERS }),
     replaceFilters: (filters) => set({ filters }),
   };

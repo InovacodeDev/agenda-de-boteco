@@ -35,7 +35,7 @@ ON CONFLICT (id) DO NOTHING;
 
 -- 8 establishments
 INSERT INTO public.establishments
-  (id, name, description, logo_url, cover_url, address, neighborhood, city_id, lat, lng, whatsapp, instagram, opening_hours, menu_items, price_range, ambiance, rating_avg, rating_count, highlights)
+  (id, name, description, logo_url, cover_url, address, neighborhood, city_id, lat, lng, whatsapp, instagram, opening_hours, menu_items, price_range, ambiance, rating_avg, rating_count, attributes)
 VALUES
   (
     'e1',
@@ -56,7 +56,7 @@ VALUES
     'Boteco',
     4.7,
     312,
-    ARRAY['Chope gelado', 'Pet friendly', 'Roda de samba', 'Mesa na calçada']
+    ARRAY['pet-friendly', 'outdoor-space', 'live-music', 'craft-beer', 'good-for-groups', 'accepts-meal-voucher']::public.establishment_attribute_enum[]
   ),
   (
     'e2',
@@ -77,7 +77,7 @@ VALUES
     'Pub',
     4.5,
     198,
-    ARRAY['Cervejas artesanais', 'Mesa de sinuca', 'Banda ao vivo', 'Late night']
+    ARRAY['craft-beer', 'live-music', 'live-sports', 'big-screen-tvs', 'good-for-groups', 'free-wifi']::public.establishment_attribute_enum[]
   ),
   (
     'e3',
@@ -98,7 +98,7 @@ VALUES
     'Bar',
     4.3,
     421,
-    ARRAY['Pista grande', 'Open de chope', 'Camarote', 'Estacionamento']
+    ARRAY['lively-party', 'dj-set', 'parking', 'good-for-groups', 'air-conditioning']::public.establishment_attribute_enum[]
   ),
   (
     'e4',
@@ -119,7 +119,7 @@ VALUES
     'Lounge',
     4.8,
     156,
-    ARRAY['Acústico', 'Cardápio autoral', 'Reservas', 'Wine bar']
+    ARRAY['live-music', 'cozy-romantic', 'great-for-dates', 'accepts-reservations', 'signature-cocktails', 'vegetarian-options']::public.establishment_attribute_enum[]
   ),
   (
     'e5',
@@ -140,7 +140,7 @@ VALUES
     'Choperia',
     4.6,
     587,
-    ARRAY['Happy hour 16-19h', 'Música ao vivo', 'Pet friendly']
+    ARRAY['happy-hour', 'live-music', 'pet-friendly', 'outdoor-space', 'kids-area', 'family-friendly']::public.establishment_attribute_enum[]
   ),
   (
     'e6',
@@ -161,7 +161,7 @@ VALUES
     'Bar',
     4.4,
     1023,
-    ARRAY['Roda de samba', 'Pista', 'Caipirinha autoral']
+    ARRAY['live-music', 'lively-party', 'signature-cocktails', 'lgbtq-friendly', 'counter-service']::public.establishment_attribute_enum[]
   ),
   (
     'e7',
@@ -182,7 +182,7 @@ VALUES
     'Bar',
     4.5,
     287,
-    ARRAY['Aulas de forró', 'Trio pé de serra']
+    ARRAY['live-music', 'good-for-groups', 'accessible-pcd', 'free-entry']::public.establishment_attribute_enum[]
   ),
   (
     'e8',
@@ -203,7 +203,7 @@ VALUES
     'Lounge',
     4.6,
     754,
-    ARRAY['Sound system', 'DJ residente', 'Open bar']
+    ARRAY['dj-set', 'lively-party', 'scenic-view', 'signature-cocktails', 'lgbtq-friendly']::public.establishment_attribute_enum[]
   )
 ON CONFLICT (id) DO NOTHING;
 

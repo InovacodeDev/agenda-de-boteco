@@ -231,7 +231,7 @@ const establishmentRows: Row[] = ESTABLISHMENTS.map((establishment) => ({
   ambiance: establishment.ambiance,
   rating_avg: establishment.rating_avg,
   rating_count: establishment.rating_count,
-  highlights: establishment.highlights,
+  attributes: establishment.attributes,
   slug: optionalToNull(establishment.slug),
 }));
 

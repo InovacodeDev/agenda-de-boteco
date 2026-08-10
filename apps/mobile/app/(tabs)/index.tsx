@@ -28,12 +28,7 @@ import { useFiltersStore } from '@/store/useFiltersStore';
 import { usePreferencesStore } from '@/store/usePreferencesStore';
 import { headingLetterSpacing } from '@/theme/typography';
 import { ScrollView, Text, View } from '@/tw';
-import {
-  applyEventFilters,
-  hasActiveFilters,
-  normalizeText,
-  sortEstablishmentsByDistance,
-} from '@/utils/filters';
+import { applyEstablishmentFilters, applyEventFilters, hasActiveFilters } from '@/utils/filters';
 import { type LatLng, resolveCityFromLocation, resolveNearbyOrigin } from '@/utils/geo';
 
 const ItemSeparator = () => <View className="h-4" />;
@@ -178,13 +173,17 @@ export default function FeedScreen() {
     [events, filters, now, city, establishmentsById, nearbyEstablishmentIds, userCoords],
   );
 
-  const cityEstablishments = useMemo(() => {
-    const all = establishments ?? [];
-    const scoped = city ? all.filter((e) => e.city_id === city.id) : all;
-    const q = normalizeText(barQuery.trim());
-    const matched = q ? scoped.filter((e) => normalizeText(e.name).includes(q)) : scoped;
-    return sortEstablishmentsByDistance(matched, userCoords);
-  }, [establishments, city, barQuery, userCoords]);
+  const cityEstablishments = useMemo(
+    () =>
+      applyEstablishmentFilters(establishments ?? [], {
+        query: barQuery,
+        cityId: city?.id,
+        cityIds: filters.cityIds,
+        attributeIds: filters.attributeIds,
+        origin: userCoords,
+      }),
+    [establishments, city, barQuery, filters.cityIds, filters.attributeIds, userCoords],
+  );
 
   // Estável enquanto os índices não mudam: junto com EventCard memoizado e os
   // caches de lookup, evita re-render dos cards visíveis a cada tecla da busca.
@@ -224,6 +223,21 @@ export default function FeedScreen() {
       </View>
     ),
     [city, filters, setQuery, barQuery, activeTab],
+  );
+
+  const barsListHeader = useMemo(
+    () => (
+      <View>
+        {commonHeader}
+        <View className="gap-4 pb-4">
+          <QuickFilterChips showEventFilters={false} />
+          <SectionLabel>
+            {`${cityEstablishments.length} ${cityEstablishments.length === 1 ? 'bar encontrado' : 'bares encontrados'}`}
+          </SectionLabel>
+        </View>
+      </View>
+    ),
+    [commonHeader, cityEstablishments.length],
   );
 
   const eventsListHeader = useMemo(
@@ -277,7 +291,7 @@ export default function FeedScreen() {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 24 }}
           ItemSeparatorComponent={() => <View className="h-3" />}
-          ListHeaderComponent={commonHeader}
+          ListHeaderComponent={barsListHeader}
           renderItem={({ item }) => <EstablishmentCard establishment={item} />}
         />
       )}
