@@ -21,6 +21,7 @@ import { type ReactNode, useMemo } from 'react';
 import { EventDetailCarousel } from '@/components/event/EventDetailCarousel';
 import { GradientBadge } from '@/components/ui/GradientBadge';
 import {
+  ArrowLeftIcon,
   CalendarIcon,
   ClockIcon,
   HeartIcon,
@@ -29,14 +30,7 @@ import {
 } from '@/components/ui/icons';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 
-// ponytail: ícones ausentes no icons.tsx compartilhado — inline no lote p/ não tocar o shared.
-function ArrowLeftIcon({ size = 18 }: { size?: number }) {
-  return (
-    <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M19 12H5M12 19l-7-7 7-7" />
-    </svg>
-  );
-}
+// ponytail: ícone ausente no icons.tsx compartilhado — inline p/ não tocar o shared.
 function NavIcon({ size = 16 }: { size?: number }) {
   return (
     <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -160,7 +154,7 @@ export default function EventDetailPage() {
           onClick={() => router.back()}
           className="absolute left-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-background/40 text-foreground transition-opacity hover:opacity-80"
         >
-          <ArrowLeftIcon />
+          <ArrowLeftIcon size={18} />
         </button>
         <button
           type="button"

@@ -13,13 +13,14 @@ import {
   useFavoritesStore,
   useMusicStylesQuery,
 } from '@agenda/core';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 
 import { EstablishmentDetailAgendaItem } from '@/components/establishment/EstablishmentDetailAgendaItem';
 import { EstablishmentDetailMenuItem } from '@/components/establishment/EstablishmentDetailMenuItem';
 import { UnderConstruction } from '@/components/feedback/UnderConstruction';
 import {
+  ArrowLeftIcon,
   AttributeIcon,
   ClockIcon,
   HeartIcon,
@@ -72,6 +73,7 @@ function AboutCard({
 
 function EstablishmentDetailContent() {
   const params = useParams<{ id: string }>();
+  const router = useRouter();
   const id = params?.id ?? '';
   const [activeTab, setActiveTab] = useState(0);
   const [activePhotoUrl, setActivePhotoUrl] = useState<string | null>(null);
@@ -125,6 +127,14 @@ function EstablishmentDetailContent() {
         />
         <button
           type="button"
+          aria-label="Voltar"
+          onClick={() => router.back()}
+          className="absolute left-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-background/60 text-foreground transition-opacity hover:opacity-80"
+        >
+          <ArrowLeftIcon size={18} />
+        </button>
+        <button
+          type="button"
           aria-label={isFavorite ? 'Remover dos favoritos' : 'Favoritar estabelecimento'}
           onClick={() => requireAuth(() => toggleEstablishment(establishment.id))}
           className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-background/60 transition-opacity hover:opacity-80"
@@ -138,7 +148,8 @@ function EstablishmentDetailContent() {
       </div>
 
       <div className="flex flex-col gap-4 pt-4">
-        <div className="-mt-14 flex items-end gap-3">
+        {/* z-10: a logo sobe sobre a capa, que vem antes no fluxo e a cobriria. */}
+        <div className="relative z-10 -mt-14 flex items-end gap-3">
           <img
             src={establishment.logo_url}
             alt={`Logo ${establishment.name}`}

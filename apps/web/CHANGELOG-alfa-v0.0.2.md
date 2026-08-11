@@ -12,3 +12,6 @@
 - Ícones do site renovados com um traço mais leve e uniforme
 - Corrigida tela em branco ao abrir o site para quem já tinha visitado antes da última atualização
 - Passamos a medir de forma anônima quais páginas são mais visitadas, para melhorar o site
+- Ao abrir um evento ou bar, o menu continua destacando a seção de onde você veio (Feed, Favoritos, Avisos ou Mapa)
+- Corrigida a foto de capa do bar, que aparecia por cima da logo e escondia parte das informações
+- Tela de detalhes do bar agora tem botão de voltar no topo

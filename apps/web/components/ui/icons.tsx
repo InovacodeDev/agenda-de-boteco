@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  ArrowLeftIcon as PhArrowLeftIcon,
   BabyIcon,
   BeerSteinIcon,
   CalendarBlankIcon,
@@ -88,6 +89,10 @@ export function ClockIcon({ size = 16, className }: IconProps) {
 
 export function TicketIcon({ size = 16, className }: IconProps) {
   return <PhTicketIcon size={size} className={className} />;
+}
+
+export function ArrowLeftIcon({ size = 16, className }: IconProps) {
+  return <PhArrowLeftIcon size={size} className={className} />;
 }
 
 /** Estrela de avaliação: sempre preenchida (indicador, não estado alternável). */
