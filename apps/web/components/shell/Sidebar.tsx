@@ -2,7 +2,6 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 
 import { useUnreadCount } from '@/hooks/useUnreadCount';
 import { cn } from '@/lib/cn';
@@ -11,9 +10,10 @@ import logo from '@/public/logo.png';
 import { NavIcon } from './icons';
 import { NavBadge } from './NavBadge';
 import { isActive, NAV_ITEMS } from './navItems';
+import { useNavPathname } from './useNavPathname';
 
 export function Sidebar() {
-  const pathname = usePathname();
+  const pathname = useNavPathname();
   const unreadCount = useUnreadCount();
 
   return (

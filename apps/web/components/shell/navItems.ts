@@ -16,6 +16,13 @@ export const NAV_ITEMS: NavItem[] = [
   { label: 'Perfil', href: '/perfil', icon: 'user', enabled: true },
 ];
 
+/** Rotas de detalhe não têm item próprio: herdam o destaque da aba de onde foram abertas. */
+const DETAIL_ROUTE_PREFIXES = ['/event/', '/establishment/'];
+
+export function isDetailRoute(pathname: string): boolean {
+  return DETAIL_ROUTE_PREFIXES.some((prefix) => pathname.startsWith(prefix));
+}
+
 /** '/' casa exato; demais rotas casam por prefixo. */
 export function isActive(href: string, pathname: string): boolean {
   return href === '/' ? pathname === '/' : pathname === href || pathname.startsWith(`${href}/`);

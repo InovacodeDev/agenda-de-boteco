@@ -1,16 +1,16 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 
 import { useUnreadCount } from '@/hooks/useUnreadCount';
 import { cn } from '@/lib/cn';
 
 import { NavIcon } from './icons';
 import { isActive, NAV_ITEMS } from './navItems';
+import { useNavPathname } from './useNavPathname';
 
 export function BottomNav() {
-  const pathname = usePathname();
+  const pathname = useNavPathname();
   const unreadCount = useUnreadCount();
 
   return (
