@@ -37,11 +37,8 @@ jobs:
           echo "version=$version" >> "$GITHUB_OUTPUT"
           echo "tag=$tag" >> "$GITHUB_OUTPUT"
           git fetch --tags --force
-          if git rev-parse -q --verify "refs/tags/$tag" >/dev/null; then
-            echo "::error::A versão $version já foi publicada no canal $GITHUB_REF_NAME (tag $tag existe). Bumpe apps/mobile/package.json antes de subir."
-            exit 1
-          fi
-          echo "Tag $tag ainda não existe — liberado para deploy."
+          # Mesma regra do ci.yml: alfa aceita patch, beta/release exigem minor.
+          bash scripts/check-channel-version.bash "${GITHUB_REF_NAME}" "$version"
 
   verify:
     name: Lint, Typecheck & Test
