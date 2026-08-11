@@ -33,7 +33,9 @@ jobs:
         run: |
           set -euo pipefail
           version=$(jq -r '.version' apps/mobile/package.json)
-          tag="${GITHUB_REF_NAME}-v${version}"
+          # Em pull_request, GITHUB_REF_NAME é "42/merge" — o canal é a branch base.
+          channel="${GITHUB_BASE_REF:-$GITHUB_REF_NAME}"
+          tag="${channel}-v${version}"
           echo "version=$version" >> "$GITHUB_OUTPUT"
           echo "tag=$tag" >> "$GITHUB_OUTPUT"
 
