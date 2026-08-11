@@ -341,7 +341,7 @@ export default function EstabelecimentosPage() {
             </Field>
           </div>
           <div className="sm:col-span-2 lg:col-span-3">
-            <Field label="Atributos" error={errors.attributes}>
+            <Field label="Diferenciais" error={errors.attributes}>
               <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2 lg:grid-cols-3">
                 {ESTABLISHMENT_ATTRIBUTES.map((attribute) => (
                   <label

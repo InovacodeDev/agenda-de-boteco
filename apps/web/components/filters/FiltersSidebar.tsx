@@ -277,7 +277,7 @@ export function FiltersSidebar({ isOpen, onClose }: FiltersSidebarProps) {
             </div>
           </FilterSection>
 
-          <FilterSection title="Atributos">
+          <FilterSection title="Diferenciais">
             {/* Legenda sempre visível: o combinador é E, não OU — sem ela o usuário
                 lê "Pet Friendly + Área Kids" como união e estranha o feed vazio. */}
             <p className="flex items-center gap-1.5 text-[11px] font-[family-name:var(--font-body)] text-muted-foreground">
@@ -297,8 +297,8 @@ export function FiltersSidebar({ isOpen, onClose }: FiltersSidebarProps) {
               <Chip
                 label={
                   draft.attributeIds.length > 0
-                    ? `Buscar atributo (${draft.attributeIds.length})`
-                    : 'Buscar atributo'
+                    ? `Buscar diferencial (${draft.attributeIds.length})`
+                    : 'Buscar diferencial'
                 }
                 selected={draft.attributeIds.length > 0}
                 onClick={() => setIsAttributeSearchOpen(true)}

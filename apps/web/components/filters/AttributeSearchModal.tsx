@@ -58,12 +58,12 @@ export function AttributeSearchModal({
       <div className="relative z-10 flex max-h-[80vh] w-full max-w-md flex-col rounded-2xl border border-border bg-card shadow-2xl">
         <header className="flex items-center justify-between border-b border-border px-5 py-4">
           <h3 className="text-[16px] font-[family-name:var(--font-heading)] font-bold text-foreground">
-            Buscar atributo
+            Buscar diferencial
           </h3>
           <button
             type="button"
             onClick={onClose}
-            aria-label="Fechar busca de atributo"
+            aria-label="Fechar busca de diferencial"
             className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-elevated text-foreground transition-opacity hover:opacity-80"
           >
             <XIcon size={16} />
@@ -73,8 +73,8 @@ export function AttributeSearchModal({
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Digite o nome do atributo"
-            aria-label="Buscar atributo"
+            placeholder="Digite o nome do diferencial"
+            aria-label="Buscar diferencial"
             autoFocus
             className="h-11 w-full rounded-2xl bg-surface-elevated px-4 text-[14px] font-[family-name:var(--font-body)] text-foreground placeholder:text-muted-foreground focus:outline-none"
           />
@@ -110,7 +110,7 @@ export function AttributeSearchModal({
           })}
           {results.length === 0 ? (
             <p className="text-center text-[13px] text-muted-foreground">
-              Nenhum atributo encontrado.
+              Nenhum diferencial encontrado.
             </p>
           ) : null}
         </div>

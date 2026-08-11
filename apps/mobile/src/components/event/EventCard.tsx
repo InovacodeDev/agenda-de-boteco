@@ -1,9 +1,10 @@
 import { haversineDistanceKm, type LatLng } from '@agenda/core';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import { memo, type ReactNode,useMemo } from 'react';
+import { memo, type ReactNode, useMemo } from 'react';
 import { StyleSheet } from 'react-native';
 
+import { AttributeChips } from '@/components/ui/AttributeChips';
 import { GradientBadge } from '@/components/ui/GradientBadge';
 import { GuardedPressable } from '@/components/ui/GuardedPressable';
 import { Icon } from '@/components/ui/Icon';
@@ -37,6 +38,9 @@ export interface EventCardProps {
   styles: MusicStyle[];
   userCoords?: LatLng | null;
 }
+
+/** Teto de chips no card; o resto fica para a tela de detalhe do bar. */
+const MAX_CARD_ATTRIBUTES = 3;
 
 /**
  * Card de evento do feed, fiel ao protótipo. Memoizado: nas listas, só
@@ -139,7 +143,9 @@ export const EventCard = memo(function EventCard({
 
       <View className="bg-popover flex-row justify-between px-4 py-3">
         <View className="gap-2">
-          <FooterItem icon={<Icon name="calendar" variant="regular" color={colors.primary} size={14} />}>
+          <FooterItem
+            icon={<Icon name="calendar" variant="regular" color={colors.primary} size={14} />}
+          >
             <Text className="font-body text-foreground text-[13px]">
               {formatRelativeDay(event.starts_at)}
             </Text>
@@ -151,7 +157,9 @@ export const EventCard = memo(function EventCard({
           </FooterItem>
         </View>
         <View className="items-end gap-2">
-          <FooterItem icon={<Icon name="clock" variant="regular" color={colors.primary} size={14} />}>
+          <FooterItem
+            icon={<Icon name="clock" variant="regular" color={colors.primary} size={14} />}
+          >
             <Text className="font-body text-foreground text-[13px]">
               {formatTimeRange(event.starts_at, event.ends_at)}
             </Text>
@@ -161,6 +169,14 @@ export const EventCard = memo(function EventCard({
           </FooterItem>
         </View>
       </View>
+
+      {/* Diferenciais são do bar, não do evento: o card já recebe o
+          establishment, então não custa consulta extra. */}
+      {establishment.attributes.length > 0 ? (
+        <View className="bg-popover border-border border-t px-4 pt-2.5 pb-3">
+          <AttributeChips attributes={establishment.attributes} max={MAX_CARD_ATTRIBUTES} />
+        </View>
+      ) : null}
     </GuardedPressable>
   );
 });

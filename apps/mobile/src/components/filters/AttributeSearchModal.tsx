@@ -71,7 +71,7 @@ export function AttributeSearchModal({
       <View className="flex-1 justify-end bg-black/50">
         <GuardedPressable
           accessibilityRole="button"
-          accessibilityLabel="Fechar busca de atributo"
+          accessibilityLabel="Fechar busca de diferencial"
           onPress={onClose}
           className="flex-1"
         />
@@ -80,11 +80,11 @@ export function AttributeSearchModal({
             <View className="bg-muted-foreground/40 h-1 w-9 rounded-full" />
           </View>
           <ScreenHeader
-            title="Buscar atributo"
+            title="Buscar diferencial"
             right={
               <GuardedPressable
                 accessibilityRole="button"
-                accessibilityLabel="Fechar busca de atributo"
+                accessibilityLabel="Fechar busca de diferencial"
                 onPress={onClose}
                 hitSlop={8}
                 className="active:opacity-80"
@@ -98,7 +98,7 @@ export function AttributeSearchModal({
               ref={inputRef}
               value={query}
               onChangeText={setQuery}
-              placeholder="Digite o nome do atributo"
+              placeholder="Digite o nome do diferencial"
               placeholderTextColor={colors.mutedForeground}
               autoCorrect={false}
               autoCapitalize="none"
@@ -143,7 +143,7 @@ export function AttributeSearchModal({
             })}
             {results.length === 0 ? (
               <Text className="font-body text-muted-foreground text-center text-[13px]">
-                Nenhum atributo encontrado.
+                Nenhum diferencial encontrado.
               </Text>
             ) : null}
           </ScrollView>

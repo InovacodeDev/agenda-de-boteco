@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
 import { memo } from 'react';
 
+import { AttributeChips } from '@/components/ui/AttributeChips';
 import { GuardedPressable } from '@/components/ui/GuardedPressable';
 import { RatingStars } from '@/components/ui/RatingStars';
 import type { Establishment } from '@/data/schemas';
@@ -9,6 +10,9 @@ import { Image, Text, View } from '@/tw';
 export interface EstablishmentCardProps {
   establishment: Establishment;
 }
+
+/** Teto de chips no card; o resto fica para a tela de detalhe. */
+const MAX_CARD_ATTRIBUTES = 3;
 
 /** Card compacto de bar (Favoritos, carrossel do mapa). Memoizado para listas. */
 export const EstablishmentCard = memo(function EstablishmentCard({
@@ -42,6 +46,7 @@ export const EstablishmentCard = memo(function EstablishmentCard({
             {establishment.neighborhood}
           </Text>
         </View>
+        <AttributeChips attributes={establishment.attributes} max={MAX_CARD_ATTRIBUTES} />
       </View>
     </GuardedPressable>
   );

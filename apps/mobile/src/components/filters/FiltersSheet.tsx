@@ -311,7 +311,7 @@ export function FiltersSheet({ visible, onClose }: FiltersSheetProps) {
                 </View>
               </FilterSection>
 
-              <FilterSection title="Atributos">
+              <FilterSection title="Diferenciais">
                 {/* Legenda dentro da seção (e não como prop do FilterSection): o
                     filtro é E, não OU, e sem hover no mobile o aviso precisa
                     estar sempre visível. */}
@@ -333,8 +333,8 @@ export function FiltersSheet({ visible, onClose }: FiltersSheetProps) {
                   <Chip
                     label={
                       draftAttributeIds.length > 0
-                        ? `Buscar atributo (${draftAttributeIds.length})`
-                        : 'Buscar atributo'
+                        ? `Buscar diferencial (${draftAttributeIds.length})`
+                        : 'Buscar diferencial'
                     }
                     selected={draftAttributeIds.length > 0}
                     onPress={() => setIsAttributeSearchOpen(true)}

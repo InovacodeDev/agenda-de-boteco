@@ -14,6 +14,7 @@ import {
 import Link from 'next/link';
 import { useMemo } from 'react';
 
+import { AttributeChips } from '@/components/ui/AttributeChips';
 import { GradientBadge } from '@/components/ui/GradientBadge';
 import {
   CalendarIcon,
@@ -23,6 +24,9 @@ import {
   TicketIcon,
 } from '@/components/ui/icons';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
+
+/** Teto de chips no card; o resto fica para a tela de detalhe do bar. */
+const MAX_CARD_ATTRIBUTES = 3;
 
 export interface EventCardProps {
   event: Event;
@@ -179,6 +183,14 @@ export function EventCard({
           </FooterItem>
         </div>
       </div>
+
+      {/* Diferenciais são do bar, não do evento: o card já recebe o
+          establishment, então não custa consulta extra. */}
+      {establishment.attributes.length > 0 ? (
+        <div className="border-border bg-popover border-t px-4 pt-2.5 pb-3">
+          <AttributeChips attributes={establishment.attributes} max={MAX_CARD_ATTRIBUTES} />
+        </div>
+      ) : null}
     </article>
     </Link>
   );
