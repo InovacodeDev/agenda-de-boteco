@@ -17,11 +17,8 @@ export interface EstablishmentCardProps {
   establishment: Establishment;
 }
 
-/**
- * Teto de chips no card; o resto fica para a tela de detalhe. Menor que o do
- * card de evento porque aqui o semáforo divide a mesma linha estreita.
- */
-const MAX_CARD_ATTRIBUTES = 2;
+/** Teto de chips no card; o resto fica para a tela de detalhe. */
+const MAX_CARD_ATTRIBUTES = 3;
 
 /** Card compacto de bar (aba Bares), espelha o mobile. */
 export function EstablishmentCard({ establishment }: EstablishmentCardProps) {
@@ -46,9 +43,14 @@ export function EstablishmentCard({ establishment }: EstablishmentCardProps) {
         className="h-20 w-20 shrink-0 rounded-xl object-cover"
       />
       <div className="flex flex-1 flex-col justify-center gap-0.5">
-        <p className="text-[11px] font-[family-name:var(--font-body)] text-muted-foreground">
-          {establishment.ambiance} · {establishment.price_range}
-        </p>
+        {/* Semáforo no topo: embaixo, junto dos chips, ele quebrava para uma
+            segunda linha quando os diferenciais eram longos. */}
+        <div className="flex items-center justify-between gap-2">
+          <p className="truncate text-[11px] font-[family-name:var(--font-body)] text-muted-foreground">
+            {establishment.ambiance} · {establishment.price_range}
+          </p>
+          <StatusLightBadge light={statusLight} />
+        </div>
         <div className="flex items-center gap-2">
           <p className="truncate text-[15px] font-[family-name:var(--font-body)] font-semibold text-foreground">
             {establishment.name}
@@ -82,12 +84,10 @@ export function EstablishmentCard({ establishment }: EstablishmentCardProps) {
             {establishment.neighborhood}
           </span>
         </div>
-        {/* Semáforo ancorado no extremo direito da linha dos diferenciais. */}
-        <div className="flex items-center justify-between gap-2 pt-0.5">
-          <div className="min-w-0 flex-1 empty:hidden">
-            <AttributeChips attributes={establishment.attributes} max={MAX_CARD_ATTRIBUTES} />
-          </div>
-          <StatusLightBadge light={statusLight} />
+        {/* empty:hidden: sem diferenciais o AttributeChips não renderiza nada e o
+            pt-0.5 deixaria um respiro morto no card. */}
+        <div className="pt-0.5 empty:hidden">
+          <AttributeChips attributes={establishment.attributes} max={MAX_CARD_ATTRIBUTES} />
         </div>
       </div>
     </article>

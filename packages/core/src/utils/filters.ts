@@ -264,6 +264,29 @@ function makeComparator(
   };
 }
 
+/**
+ * Ordenação da aba "Bares".
+ * - `eventToday`: quem tem evento hoje primeiro (default do feed)
+ * - `eventWeek`: quem tem evento nos próximos 7 dias primeiro
+ * - `distance`: só proximidade
+ */
+export type EstablishmentSortBy = 'eventToday' | 'eventWeek' | 'distance';
+
+export const DEFAULT_ESTABLISHMENT_SORT: EstablishmentSortBy = 'eventToday';
+
+/** Opções do seletor de ordenação da aba Bares, na ordem de exibição. */
+export const ESTABLISHMENT_SORT_OPTIONS = [
+  'eventToday',
+  'eventWeek',
+  'distance',
+] as const satisfies readonly EstablishmentSortBy[];
+
+export const ESTABLISHMENT_SORT_LABELS: Record<EstablishmentSortBy, string> = {
+  eventToday: 'Evento hoje',
+  eventWeek: 'Na semana',
+  distance: 'Mais perto',
+};
+
 export interface EstablishmentFilterParams {
   /** Busca por nome (normalizada: sem acento, case-insensitive). */
   query?: string;
@@ -275,6 +298,42 @@ export interface EstablishmentFilterParams {
   attributeIds?: readonly EstablishmentAttribute[];
   /** Presente = ordena por proximidade; ausente = mantém a ordem recebida. */
   origin?: { lat: number; lng: number } | null;
+  /** Critério de ordenação; default `eventToday`. */
+  sortBy?: EstablishmentSortBy;
+  /**
+   * Eventos do catálogo, para as ordenações por agenda. Ausente ou vazio faz
+   * `eventToday`/`eventWeek` degradarem para proximidade — sem agenda não há
+   * como separar quem tem evento de quem não tem.
+   */
+  events?: readonly Event[];
+  /** Base temporal das ordenações por agenda; default `new Date()`. */
+  now?: Date;
+}
+
+const DAY_MS = 86_400_000;
+
+/**
+ * Ids dos establishments com pelo menos um evento visível dentro da janela de
+ * `days` dias a partir de hoje (00h local). Eventos já encerrados não contam —
+ * mesmo critério que os tira do feed.
+ */
+function establishmentIdsWithEventWithin(
+  events: readonly Event[],
+  days: number,
+  now: Date,
+): Set<string> {
+  const startOfToday = new Date(now);
+  startOfToday.setHours(0, 0, 0, 0);
+  const limit = startOfToday.getTime() + days * DAY_MS;
+
+  const ids = new Set<string>();
+  for (const event of events) {
+    if (!isEventVisibleInFeed(event.ends_at, now)) continue;
+    const startsAt = new Date(event.starts_at).getTime();
+    if (Number.isNaN(startsAt) || startsAt >= limit) continue;
+    ids.add(event.establishment_id);
+  }
+  return ids;
 }
 
 /**
@@ -307,7 +366,28 @@ export function applyEstablishmentFilters(
     return true;
   });
 
-  return sortEstablishmentsByDistance(filtered, params.origin);
+  const byDistance = sortEstablishmentsByDistance(filtered, params.origin);
+
+  const sortBy = params.sortBy ?? DEFAULT_ESTABLISHMENT_SORT;
+  if (sortBy === 'distance') return byDistance;
+
+  const events = params.events ?? [];
+  if (events.length === 0) return byDistance;
+
+  // Parte a lista em dois grupos preservando a ordem por proximidade dentro de
+  // cada um — sort estável faria o mesmo, mas o particionamento deixa a regra
+  // explícita: agenda decide o grupo, distância decide a posição.
+  const withEvent = establishmentIdsWithEventWithin(
+    events,
+    sortBy === 'eventToday' ? 1 : 7,
+    params.now ?? new Date(),
+  );
+  const featured: Establishment[] = [];
+  const rest: Establishment[] = [];
+  for (const establishment of byDistance) {
+    (withEvent.has(establishment.id) ? featured : rest).push(establishment);
+  }
+  return [...featured, ...rest];
 }
 
 /**

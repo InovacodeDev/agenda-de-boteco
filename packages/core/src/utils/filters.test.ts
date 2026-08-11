@@ -558,10 +558,133 @@ describe('applyEstablishmentFilters', () => {
 
   it('ordena por proximidade quando origin é informado', () => {
     const origin = { lat: -27.5954, lng: -48.548 };
-    const result = applyEstablishmentFilters(ESTABLISHMENTS, { cityId: 'fln', origin });
+    const result = applyEstablishmentFilters(ESTABLISHMENTS, {
+      cityId: 'fln',
+      origin,
+      sortBy: 'distance',
+    });
     const distances = result.map((e) =>
       haversineDistanceKm(origin, { lat: e.lat, lng: e.lng }),
     );
     expect(distances).toEqual([...distances].sort((a, b) => a - b));
+  });
+});
+
+describe('applyEstablishmentFilters + ordenação por agenda', () => {
+  const FLN = ESTABLISHMENTS.filter((e) => e.city_id === 'fln');
+
+  /** Evento sintético num bar, com início deslocado em dias a partir de NOW. */
+  function eventAt(establishmentId: string, daysFromNow: number): Event {
+    const starts = new Date(NOW);
+    starts.setDate(starts.getDate() + daysFromNow);
+    starts.setHours(21, 0, 0, 0);
+    const ends = new Date(starts);
+    ends.setHours(23, 0, 0, 0);
+    return {
+      ...EVENTS[0],
+      id: `synthetic-${establishmentId}-${daysFromNow}`,
+      establishment_id: establishmentId,
+      starts_at: starts.toISOString(),
+      ends_at: ends.toISOString(),
+    };
+  }
+
+  it('eventToday coloca bares com evento hoje na frente', () => {
+    const target = FLN[FLN.length - 1];
+    const result = applyEstablishmentFilters(FLN, {
+      cityId: 'fln',
+      sortBy: 'eventToday',
+      events: [eventAt(target.id, 0)],
+      now: NOW,
+    });
+    expect(result[0].id).toBe(target.id);
+  });
+
+  it('eventToday ignora evento de amanhã', () => {
+    const target = FLN[FLN.length - 1];
+    const result = applyEstablishmentFilters(FLN, {
+      cityId: 'fln',
+      sortBy: 'eventToday',
+      events: [eventAt(target.id, 1)],
+      now: NOW,
+    });
+    expect(result[0].id).not.toBe(target.id);
+  });
+
+  it('eventWeek alcança evento dentro dos próximos 7 dias', () => {
+    const target = FLN[FLN.length - 1];
+    const result = applyEstablishmentFilters(FLN, {
+      cityId: 'fln',
+      sortBy: 'eventWeek',
+      events: [eventAt(target.id, 3)],
+      now: NOW,
+    });
+    expect(result[0].id).toBe(target.id);
+  });
+
+  it('eventWeek não alcança evento além dos 7 dias', () => {
+    const target = FLN[FLN.length - 1];
+    const result = applyEstablishmentFilters(FLN, {
+      cityId: 'fln',
+      sortBy: 'eventWeek',
+      events: [eventAt(target.id, 9)],
+      now: NOW,
+    });
+    expect(result[0].id).not.toBe(target.id);
+  });
+
+  it('evento já encerrado não promove o bar', () => {
+    const target = FLN[FLN.length - 1];
+    const result = applyEstablishmentFilters(FLN, {
+      cityId: 'fln',
+      sortBy: 'eventToday',
+      events: [eventAt(target.id, -3)],
+      now: NOW,
+    });
+    expect(result[0].id).not.toBe(target.id);
+  });
+
+  it('sem eventos degrada para proximidade em vez de embaralhar', () => {
+    const origin = { lat: -27.5954, lng: -48.548 };
+    const byDistance = applyEstablishmentFilters(FLN, {
+      cityId: 'fln',
+      origin,
+      sortBy: 'distance',
+    });
+    const byAgenda = applyEstablishmentFilters(FLN, {
+      cityId: 'fln',
+      origin,
+      sortBy: 'eventToday',
+      events: [],
+      now: NOW,
+    });
+    expect(byAgenda.map((e) => e.id)).toEqual(byDistance.map((e) => e.id));
+  });
+
+  it('dentro do grupo com evento, mantém a ordem por proximidade', () => {
+    const origin = { lat: -27.5954, lng: -48.548 };
+    const withEvents = FLN.slice(0, 2);
+    const result = applyEstablishmentFilters(FLN, {
+      cityId: 'fln',
+      origin,
+      sortBy: 'eventToday',
+      events: withEvents.map((e) => eventAt(e.id, 0)),
+      now: NOW,
+    });
+    const head = result.slice(0, 2);
+    const distances = head.map((e) => haversineDistanceKm(origin, { lat: e.lat, lng: e.lng }));
+    expect(distances).toEqual([...distances].sort((a, b) => a - b));
+    expect(head.map((e) => e.id).sort()).toEqual(withEvents.map((e) => e.id).sort());
+  });
+
+  it('não muta a lista de entrada', () => {
+    const original = [...FLN];
+    applyEstablishmentFilters(FLN, {
+      cityId: 'fln',
+      sortBy: 'eventToday',
+      events: [eventAt(FLN[0].id, 0)],
+      now: NOW,
+    });
+    expect(FLN).toEqual(original);
   });
 });

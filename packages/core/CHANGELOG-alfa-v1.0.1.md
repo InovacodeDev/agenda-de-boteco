@@ -10,3 +10,4 @@
 - Lista de eventos volta a carregar mesmo quando o link do Instagram de um evento está preenchido em formato inválido
 - Novo cálculo de status de eventos e bares (falta pouco, acontecendo agora, encerrado, aberto, fecha em breve), compartilhado entre app e site
 - Eventos encerrados deixam de aparecer no feed a partir do dia seguinte ao término
+- Nova ordenação de bares por agenda (evento hoje, evento na semana) ou proximidade, compartilhada entre app e site

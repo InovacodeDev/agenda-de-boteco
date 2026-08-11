@@ -28,7 +28,15 @@ import { useFiltersStore } from '@/store/useFiltersStore';
 import { usePreferencesStore } from '@/store/usePreferencesStore';
 import { headingLetterSpacing } from '@/theme/typography';
 import { ScrollView, Text, View } from '@/tw';
-import { applyEstablishmentFilters, applyEventFilters, hasActiveFilters } from '@/utils/filters';
+import {
+  applyEstablishmentFilters,
+  applyEventFilters,
+  DEFAULT_ESTABLISHMENT_SORT,
+  ESTABLISHMENT_SORT_LABELS,
+  ESTABLISHMENT_SORT_OPTIONS,
+  type EstablishmentSortBy,
+  hasActiveFilters,
+} from '@/utils/filters';
 import { type LatLng, resolveCityFromLocation, resolveNearbyOrigin } from '@/utils/geo';
 
 const ItemSeparator = () => <View className="h-4" />;
@@ -36,6 +44,7 @@ const ItemSeparator = () => <View className="h-4" />;
 export default function FeedScreen() {
   const [activeTab, setActiveTab] = useState(0); // 0 = Eventos, 1 = Bares
   const [barQuery, setBarQuery] = useState('');
+  const [barSort, setBarSort] = useState<EstablishmentSortBy>(DEFAULT_ESTABLISHMENT_SORT);
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
 
   const filters = useFiltersStore((state) => state.filters);
@@ -181,8 +190,21 @@ export default function FeedScreen() {
         cityIds: filters.cityIds,
         attributeIds: filters.attributeIds,
         origin: userCoords,
+        sortBy: barSort,
+        events: events ?? [],
+        now,
       }),
-    [establishments, city, barQuery, filters.cityIds, filters.attributeIds, userCoords],
+    [
+      establishments,
+      city,
+      barQuery,
+      filters.cityIds,
+      filters.attributeIds,
+      userCoords,
+      barSort,
+      events,
+      now,
+    ],
   );
 
   // Estável enquanto os índices não mudam: junto com EventCard memoizado e os
@@ -231,13 +253,18 @@ export default function FeedScreen() {
         {commonHeader}
         <View className="gap-4 pb-4">
           <QuickFilterChips showEventFilters={false} />
+          <SegmentedTabs
+            tabs={ESTABLISHMENT_SORT_OPTIONS.map((option) => ESTABLISHMENT_SORT_LABELS[option])}
+            activeIndex={ESTABLISHMENT_SORT_OPTIONS.indexOf(barSort)}
+            onChange={(index) => setBarSort(ESTABLISHMENT_SORT_OPTIONS[index])}
+          />
           <SectionLabel>
             {`${cityEstablishments.length} ${cityEstablishments.length === 1 ? 'bar encontrado' : 'bares encontrados'}`}
           </SectionLabel>
         </View>
       </View>
     ),
-    [commonHeader, cityEstablishments.length],
+    [commonHeader, cityEstablishments.length, barSort],
   );
 
   const eventsListHeader = useMemo(

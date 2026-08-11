@@ -17,11 +17,8 @@ export interface EstablishmentCardProps {
   establishment: Establishment;
 }
 
-/**
- * Teto de chips no card; o resto fica para a tela de detalhe. Menor que o do
- * card de evento porque aqui o semáforo divide a mesma linha estreita.
- */
-const MAX_CARD_ATTRIBUTES = 2;
+/** Teto de chips no card; o resto fica para a tela de detalhe. */
+const MAX_CARD_ATTRIBUTES = 3;
 
 /** Card compacto de bar (Favoritos, carrossel do mapa). Memoizado para listas. */
 export const EstablishmentCard = memo(function EstablishmentCard({
@@ -47,9 +44,14 @@ export const EstablishmentCard = memo(function EstablishmentCard({
         accessibilityLabel={establishment.name}
       />
       <View className="flex-1 justify-center gap-0.5">
-        <Text className="font-body text-muted-foreground text-[11px]">
-          {establishment.ambiance} · {establishment.price_range}
-        </Text>
+        {/* Semáforo no topo: embaixo, junto dos chips, ele quebrava para uma
+            segunda linha quando os diferenciais eram longos. */}
+        <View className="flex-row items-center justify-between gap-2">
+          <Text className="font-body text-muted-foreground flex-1 text-[11px]" numberOfLines={1}>
+            {establishment.ambiance} · {establishment.price_range}
+          </Text>
+          <StatusLightBadge light={statusLight} />
+        </View>
         <View className="flex-row items-center gap-2">
           <Text className="font-body-semibold text-foreground flex-shrink text-[15px]" numberOfLines={1}>
             {establishment.name}
@@ -71,12 +73,7 @@ export const EstablishmentCard = memo(function EstablishmentCard({
             {establishment.neighborhood}
           </Text>
         </View>
-        <View className="flex-row items-center justify-between gap-2">
-          <View className="flex-1">
-            <AttributeChips attributes={establishment.attributes} max={MAX_CARD_ATTRIBUTES} />
-          </View>
-          <StatusLightBadge light={statusLight} />
-        </View>
+        <AttributeChips attributes={establishment.attributes} max={MAX_CARD_ATTRIBUTES} />
       </View>
     </GuardedPressable>
   );
