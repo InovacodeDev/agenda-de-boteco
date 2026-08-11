@@ -3,6 +3,10 @@
 import {
   applyEstablishmentFilters,
   applyEventFilters,
+  DEFAULT_ESTABLISHMENT_SORT,
+  ESTABLISHMENT_SORT_LABELS,
+  ESTABLISHMENT_SORT_OPTIONS,
+  type EstablishmentSortBy,
   hasActiveFilters,
   indexById,
   type LatLng,
@@ -30,6 +34,7 @@ import { SegmentedTabs } from '@/components/ui/SegmentedTabs';
 export default function FeedPage() {
   const [activeTab, setActiveTab] = useState(0); // 0 = Eventos, 1 = Bares
   const [barQuery, setBarQuery] = useState('');
+  const [barSort, setBarSort] = useState<EstablishmentSortBy>(DEFAULT_ESTABLISHMENT_SORT);
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [userCoords, setUserCoords] = useState<LatLng | null>(null);
 
@@ -98,8 +103,27 @@ export default function FeedPage() {
         cityIds: filters.cityIds,
         attributeIds: filters.attributeIds,
         origin: userCoords,
+        maxDistanceKm: filters.maxDistanceKm,
+        minRating: filters.minRating,
+        openNow: filters.openNow,
+        sortBy: barSort,
+        events: events ?? [],
+        now,
       }),
-    [establishments, city, barQuery, filters.cityIds, filters.attributeIds, userCoords],
+    [
+      establishments,
+      city,
+      barQuery,
+      filters.cityIds,
+      filters.attributeIds,
+      filters.maxDistanceKm,
+      filters.minRating,
+      filters.openNow,
+      userCoords,
+      barSort,
+      events,
+      now,
+    ],
   );
 
   const isLoading =
@@ -169,6 +193,12 @@ export default function FeedPage() {
         <>
           <QuickFilterChips showEventFilters={false} />
 
+          <SegmentedTabs
+            tabs={ESTABLISHMENT_SORT_OPTIONS.map((option) => ESTABLISHMENT_SORT_LABELS[option])}
+            activeIndex={ESTABLISHMENT_SORT_OPTIONS.indexOf(barSort)}
+            onChange={(index) => setBarSort(ESTABLISHMENT_SORT_OPTIONS[index])}
+          />
+
           {isLoading ? (
             <FeedLoading />
           ) : cityEstablishments.length === 0 ? (
@@ -183,7 +213,11 @@ export default function FeedPage() {
         </>
       )}
 
-      <FiltersSidebar isOpen={isFiltersOpen} onClose={() => setIsFiltersOpen(false)} />
+      <FiltersSidebar
+        isOpen={isFiltersOpen}
+        onClose={() => setIsFiltersOpen(false)}
+        showEventFilters={activeTab === 0}
+      />
     </section>
   );
 }

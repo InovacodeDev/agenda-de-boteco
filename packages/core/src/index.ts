@@ -26,6 +26,7 @@ export * from './utils/platform';
 export * from './utils/pressGuard';
 export * from './utils/responsiveType';
 export * from './utils/slug';
+export * from './utils/status-light';
 // `./services/catalog` e `./queries` exportam os mesmos nomes (listEvents, etc.).
 // O re-export nomeado abaixo resolve o TS2308: a fachada async do service (com
 // fallback de mock) vence na API flat; a query layer crua segue acessível via
@@ -35,6 +36,7 @@ export * from './hooks/useActiveCity';
 export * from './hooks/useConnectivity';
 export * from './hooks/useGuardedPress';
 export * from './hooks/useNearbyEstablishments';
+export * from './hooks/useStatusLight';
 export * from './lib/queryClient';
 export * from './lib/queryPersister';
 export * from './services/auth';

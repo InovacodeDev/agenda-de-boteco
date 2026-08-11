@@ -1,6 +1,7 @@
 import type { Establishment, EstablishmentAttribute, Event } from '../schemas';
 import { isOpenNow, isWeekend } from './dates';
 import { haversineDistanceKm, isVirtualCityId } from './geo';
+import { isEventVisibleInFeed } from './status-light';
 
 export type DateBucket = 'any' | 'today' | 'tomorrow' | 'weekend';
 
@@ -22,6 +23,12 @@ export interface EventFilters {
   sortBy: SortBy;
   /** cidades selecionadas no filtro (união). Vazio = usa a cidade ativa do contexto. */
   cityIds: string[];
+  /**
+   * Inclui no feed os eventos já encerrados, que por padrão somem no dia
+   * seguinte ao término. Soma ao resultado normal — não é uma visão exclusiva
+   * de histórico.
+   */
+  includePastEvents: boolean;
   /**
    * Atributos exigidos do estabelecimento — combinados em **E**: o bar precisa
    * ter todos os marcados. Quem marca "pet friendly" + "área kids" quer levar o
@@ -45,6 +52,7 @@ export const DEFAULT_EVENT_FILTERS: EventFilters = {
   // starts_at asc, então a lista nunca fica sem ordem definida.
   sortBy: 'distance',
   cityIds: [],
+  includePastEvents: false,
   attributeIds: [],
 };
 
@@ -77,7 +85,8 @@ export function hasActiveFilters(filters: EventFilters): boolean {
     filters.maxPrice !== DEFAULT_EVENT_FILTERS.maxPrice ||
     filters.freeOnly ||
     filters.nearMe ||
-    filters.openNow
+    filters.openNow ||
+    filters.includePastEvents
   );
 }
 
@@ -168,6 +177,12 @@ export function applyEventFilters(
 
   return events
     .filter((event) => {
+      // Evento encerrado sai do feed a partir do dia seguinte ao término,
+      // salvo quando o usuário pede explicitamente para ver os passados.
+      if (!filters.includePastEvents && !isEventVisibleInFeed(event.ends_at, ctx.now)) {
+        return false;
+      }
+
       const establishment = ctx.establishmentsById[event.establishment_id];
       if (!establishment) return false;
       if (cityIds) {
@@ -260,6 +275,29 @@ function makeComparator(
   };
 }
 
+/**
+ * Ordenação da aba "Bares".
+ * - `eventToday`: quem tem evento hoje primeiro (default do feed)
+ * - `eventWeek`: quem tem evento nos próximos 7 dias primeiro
+ * - `distance`: só proximidade
+ */
+export type EstablishmentSortBy = 'eventToday' | 'eventWeek' | 'distance';
+
+export const DEFAULT_ESTABLISHMENT_SORT: EstablishmentSortBy = 'eventToday';
+
+/** Opções do seletor de ordenação da aba Bares, na ordem de exibição. */
+export const ESTABLISHMENT_SORT_OPTIONS = [
+  'eventToday',
+  'eventWeek',
+  'distance',
+] as const satisfies readonly EstablishmentSortBy[];
+
+export const ESTABLISHMENT_SORT_LABELS: Record<EstablishmentSortBy, string> = {
+  eventToday: 'Evento hoje',
+  eventWeek: 'Na semana',
+  distance: 'Mais perto',
+};
+
 export interface EstablishmentFilterParams {
   /** Busca por nome (normalizada: sem acento, case-insensitive). */
   query?: string;
@@ -271,6 +309,48 @@ export interface EstablishmentFilterParams {
   attributeIds?: readonly EstablishmentAttribute[];
   /** Presente = ordena por proximidade; ausente = mantém a ordem recebida. */
   origin?: { lat: number; lng: number } | null;
+  /** Raio máximo em km a partir de `origin`. Sem `origin` não recorta. */
+  maxDistanceKm?: number;
+  /** Nota mínima do bar (0 = não recorta). */
+  minRating?: number;
+  /** Apenas bares abertos no horário de `now`. */
+  openNow?: boolean;
+  /** Critério de ordenação; default `eventToday`. */
+  sortBy?: EstablishmentSortBy;
+  /**
+   * Eventos do catálogo, para as ordenações por agenda. Ausente ou vazio faz
+   * `eventToday`/`eventWeek` degradarem para proximidade — sem agenda não há
+   * como separar quem tem evento de quem não tem.
+   */
+  events?: readonly Event[];
+  /** Base temporal das ordenações por agenda; default `new Date()`. */
+  now?: Date;
+}
+
+const DAY_MS = 86_400_000;
+
+/**
+ * Ids dos establishments com pelo menos um evento visível dentro da janela de
+ * `days` dias a partir de hoje (00h local). Eventos já encerrados não contam —
+ * mesmo critério que os tira do feed.
+ */
+function establishmentIdsWithEventWithin(
+  events: readonly Event[],
+  days: number,
+  now: Date,
+): Set<string> {
+  const startOfToday = new Date(now);
+  startOfToday.setHours(0, 0, 0, 0);
+  const limit = startOfToday.getTime() + days * DAY_MS;
+
+  const ids = new Set<string>();
+  for (const event of events) {
+    if (!isEventVisibleInFeed(event.ends_at, now)) continue;
+    const startsAt = new Date(event.starts_at).getTime();
+    if (Number.isNaN(startsAt) || startsAt >= limit) continue;
+    ids.add(event.establishment_id);
+  }
+  return ids;
 }
 
 /**
@@ -289,6 +369,8 @@ export function applyEstablishmentFilters(
     params.cityIds && params.cityIds.length > 0 ? params.cityIds : null;
   const attributeIds = params.attributeIds ?? [];
 
+  const now = params.now ?? new Date();
+
   const filtered = establishments.filter((establishment) => {
     if (cityIds) {
       if (!cityIds.includes(establishment.city_id)) return false;
@@ -300,10 +382,45 @@ export function applyEstablishmentFilters(
 
     if (query && !normalizeText(establishment.name).includes(query)) return false;
 
+    if (params.minRating && establishment.rating_avg < params.minRating) return false;
+
+    // Sem origin não há como medir raio — o controle de distância vira no-op,
+    // igual ao `nearMe` do feed de eventos sem localização.
+    if (params.origin && params.maxDistanceKm !== undefined) {
+      const distanceKm = haversineDistanceKm(params.origin, {
+        lat: establishment.lat,
+        lng: establishment.lng,
+      });
+      if (distanceKm > params.maxDistanceKm) return false;
+    }
+
+    if (params.openNow && !isOpenNow(establishment.opening_hours, now)) return false;
+
     return true;
   });
 
-  return sortEstablishmentsByDistance(filtered, params.origin);
+  const byDistance = sortEstablishmentsByDistance(filtered, params.origin);
+
+  const sortBy = params.sortBy ?? DEFAULT_ESTABLISHMENT_SORT;
+  if (sortBy === 'distance') return byDistance;
+
+  const events = params.events ?? [];
+  if (events.length === 0) return byDistance;
+
+  // Parte a lista em dois grupos preservando a ordem por proximidade dentro de
+  // cada um — sort estável faria o mesmo, mas o particionamento deixa a regra
+  // explícita: agenda decide o grupo, distância decide a posição.
+  const withEvent = establishmentIdsWithEventWithin(
+    events,
+    sortBy === 'eventToday' ? 1 : 7,
+    now,
+  );
+  const featured: Establishment[] = [];
+  const rest: Establishment[] = [];
+  for (const establishment of byDistance) {
+    (withEvent.has(establishment.id) ? featured : rest).push(establishment);
+  }
+  return [...featured, ...rest];
 }
 
 /**

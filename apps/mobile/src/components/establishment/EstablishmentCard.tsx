@@ -1,3 +1,4 @@
+import { useEstablishmentStatusLight } from '@agenda/core';
 import { useRouter } from 'expo-router';
 import { memo } from 'react';
 import { Linking } from 'react-native';
@@ -6,6 +7,7 @@ import { AttributeChips } from '@/components/ui/AttributeChips';
 import { GuardedPressable } from '@/components/ui/GuardedPressable';
 import { Icon } from '@/components/ui/Icon';
 import { RatingStars } from '@/components/ui/RatingStars';
+import { StatusLightBadge } from '@/components/ui/StatusLightBadge';
 import type { Establishment } from '@/data/schemas';
 import { colors } from '@/theme/colors';
 import { Image, Text, View } from '@/tw';
@@ -25,6 +27,7 @@ export const EstablishmentCard = memo(function EstablishmentCard({
   const router = useRouter();
   const instagramHandle = formatInstagramHandle(establishment.instagram);
   const instagramUrl = buildInstagramProfileUrl(establishment.instagram);
+  const statusLight = useEstablishmentStatusLight(establishment.opening_hours);
 
   return (
     <GuardedPressable
@@ -41,9 +44,14 @@ export const EstablishmentCard = memo(function EstablishmentCard({
         accessibilityLabel={establishment.name}
       />
       <View className="flex-1 justify-center gap-0.5">
-        <Text className="font-body text-muted-foreground text-[11px]">
-          {establishment.ambiance} · {establishment.price_range}
-        </Text>
+        {/* Semáforo no topo: embaixo, junto dos chips, ele quebrava para uma
+            segunda linha quando os diferenciais eram longos. */}
+        <View className="flex-row items-center justify-between gap-2">
+          <Text className="font-body text-muted-foreground flex-1 text-[11px]" numberOfLines={1}>
+            {establishment.ambiance} · {establishment.price_range}
+          </Text>
+          <StatusLightBadge light={statusLight} />
+        </View>
         <View className="flex-row items-center gap-2">
           <Text className="font-body-semibold text-foreground flex-shrink text-[15px]" numberOfLines={1}>
             {establishment.name}

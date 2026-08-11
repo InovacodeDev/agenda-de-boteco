@@ -44,9 +44,15 @@ const MAX_PRICE_LIMIT = 100;
 export interface FiltersSheetProps {
   visible: boolean;
   onClose: () => void;
+  /**
+   * Aba Bares (`false`) esconde as seções que descrevem o evento — data,
+   * estilo musical, preço e eventos passados. O que sobra são propriedades do
+   * próprio bar, todas consumidas por `applyEstablishmentFilters`.
+   */
+  showEventFilters?: boolean;
 }
 
-export function FiltersSheet({ visible, onClose }: FiltersSheetProps) {
+export function FiltersSheet({ visible, onClose, showEventFilters = true }: FiltersSheetProps) {
   const insets = useSafeAreaInsets();
 
   const storedFilters = useFiltersStore((state) => state.filters);
@@ -217,35 +223,39 @@ export function FiltersSheet({ visible, onClose }: FiltersSheetProps) {
                 setScrollViewHeight(e.nativeEvent.layout.height);
               }}
             >
-              <FilterSection title="Data">
-                <View className="flex-row flex-wrap gap-2">
-                  {DATE_OPTIONS.map(({ label, bucket }) => (
-                    <Chip
-                      key={bucket}
-                      label={label}
-                      selected={!draft.dateRange && draft.dateBucket === bucket}
-                      onPress={() => patch({ dateBucket: bucket, dateRange: null })}
+              {showEventFilters ? (
+                <>
+                  <FilterSection title="Data">
+                    <View className="flex-row flex-wrap gap-2">
+                      {DATE_OPTIONS.map(({ label, bucket }) => (
+                        <Chip
+                          key={bucket}
+                          label={label}
+                          selected={!draft.dateRange && draft.dateBucket === bucket}
+                          onPress={() => patch({ dateBucket: bucket, dateRange: null })}
+                        />
+                      ))}
+                    </View>
+                    <DateRangeField
+                      value={draft.dateRange}
+                      onChange={(range) => patch({ dateRange: range, dateBucket: 'any' })}
                     />
-                  ))}
-                </View>
-                <DateRangeField
-                  value={draft.dateRange}
-                  onChange={(range) => patch({ dateRange: range, dateBucket: 'any' })}
-                />
-              </FilterSection>
+                  </FilterSection>
 
-              <FilterSection title="Ordenar por">
-                <View className="flex-row flex-wrap gap-2">
-                  {SORT_OPTIONS.map((opt) => (
-                    <Chip
-                      key={opt.value}
-                      label={opt.label}
-                      selected={draft.sortBy === opt.value}
-                      onPress={() => patch({ sortBy: opt.value })}
-                    />
-                  ))}
-                </View>
-              </FilterSection>
+                  <FilterSection title="Ordenar por">
+                    <View className="flex-row flex-wrap gap-2">
+                      {SORT_OPTIONS.map((opt) => (
+                        <Chip
+                          key={opt.value}
+                          label={opt.label}
+                          selected={draft.sortBy === opt.value}
+                          onPress={() => patch({ sortBy: opt.value })}
+                        />
+                      ))}
+                    </View>
+                  </FilterSection>
+                </>
+              ) : null}
 
               <FilterSection title="Cidade">
                 <View className="flex-row flex-wrap gap-2">
@@ -298,18 +308,20 @@ export function FiltersSheet({ visible, onClose }: FiltersSheetProps) {
                 />
               </FilterSection>
 
-              <FilterSection title="Estilo musical">
-                <View className="flex-row flex-wrap gap-2">
-                  {(musicStyles ?? []).map((style) => (
-                    <Chip
-                      key={style.id}
-                      label={`${style.emoji} ${style.name}`}
-                      selected={draft.styleIds.includes(style.id)}
-                      onPress={() => toggleDraftStyle(style.id)}
-                    />
-                  ))}
-                </View>
-              </FilterSection>
+              {showEventFilters ? (
+                <FilterSection title="Estilo musical">
+                  <View className="flex-row flex-wrap gap-2">
+                    {(musicStyles ?? []).map((style) => (
+                      <Chip
+                        key={style.id}
+                        label={`${style.emoji} ${style.name}`}
+                        selected={draft.styleIds.includes(style.id)}
+                        onPress={() => toggleDraftStyle(style.id)}
+                      />
+                    ))}
+                  </View>
+                </FilterSection>
+              ) : null}
 
               <FilterSection title="Diferenciais">
                 {/* Legenda dentro da seção (e não como prop do FilterSection): o
@@ -352,20 +364,22 @@ export function FiltersSheet({ visible, onClose }: FiltersSheetProps) {
                 />
               </FilterSection>
 
-              <FilterSection
-                title="Preço máximo"
-                trailing={draft.maxPrice === null ? 'Sem limite' : `R$ ${draft.maxPrice}`}
-              >
-                <FilterSlider
-                  value={draft.maxPrice ?? MAX_PRICE_LIMIT}
-                  minimumValue={0}
-                  maximumValue={MAX_PRICE_LIMIT}
-                  step={5}
-                  onValueChange={(value) =>
-                    patch({ maxPrice: value >= MAX_PRICE_LIMIT ? null : value })
-                  }
-                />
-              </FilterSection>
+              {showEventFilters ? (
+                <FilterSection
+                  title="Preço máximo"
+                  trailing={draft.maxPrice === null ? 'Sem limite' : `R$ ${draft.maxPrice}`}
+                >
+                  <FilterSlider
+                    value={draft.maxPrice ?? MAX_PRICE_LIMIT}
+                    minimumValue={0}
+                    maximumValue={MAX_PRICE_LIMIT}
+                    step={5}
+                    onValueChange={(value) =>
+                      patch({ maxPrice: value >= MAX_PRICE_LIMIT ? null : value })
+                    }
+                  />
+                </FilterSection>
+              ) : null}
 
               <SwitchRow
                 title="Aberto agora"
@@ -373,6 +387,15 @@ export function FiltersSheet({ visible, onClose }: FiltersSheetProps) {
                 value={draft.openNow}
                 onValueChange={(value) => patch({ openNow: value })}
               />
+
+              {showEventFilters ? (
+                <SwitchRow
+                  title="Mostrar eventos passados"
+                  subtitle="Inclui os que já aconteceram"
+                  value={draft.includePastEvents}
+                  onValueChange={(value) => patch({ includePastEvents: value })}
+                />
+              ) : null}
             </ScrollView>
 
             <View

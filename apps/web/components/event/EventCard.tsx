@@ -11,6 +11,7 @@ import {
   haversineDistanceKm,
   type LatLng,
   type MusicStyle,
+  useEventStatusLight,
   useFavoritesStore,
 } from '@agenda/core';
 import Link from 'next/link';
@@ -26,6 +27,7 @@ import {
   MapPinIcon,
   TicketIcon,
 } from '@/components/ui/icons';
+import { StatusLightBadge } from '@/components/ui/StatusLightBadge';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 
 /** Teto de chips no card; o resto fica para a tela de detalhe do bar. */
@@ -68,6 +70,7 @@ export function EventCard({
 
   const badge = event.courtesy ? 'Cortesia' : event.promo ? 'Promoção' : null;
   const price = formatPrice(event.cover_charge);
+  const statusLight = useEventStatusLight(event.starts_at, event.ends_at);
 
   const distanceText = useMemo(() => {
     if (!userCoords) return null;
@@ -214,10 +217,14 @@ export function EventCard({
       </div>
 
       {/* Diferenciais são do bar, não do evento: o card já recebe o
-          establishment, então não custa consulta extra. */}
-      {establishment.attributes.length > 0 ? (
-        <div className="border-border bg-popover border-t px-4 pt-2.5 pb-3">
-          <AttributeChips attributes={establishment.attributes} max={MAX_CARD_ATTRIBUTES} />
+          establishment, então não custa consulta extra. O semáforo ancora no
+          extremo direito desta linha. */}
+      {establishment.attributes.length > 0 || statusLight ? (
+        <div className="border-border bg-popover flex items-center justify-between gap-2 border-t px-4 pt-2.5 pb-3">
+          <div className="min-w-0 flex-1">
+            <AttributeChips attributes={establishment.attributes} max={MAX_CARD_ATTRIBUTES} />
+          </div>
+          <StatusLightBadge light={statusLight} />
         </div>
       ) : null}
     </article>

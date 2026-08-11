@@ -1,4 +1,4 @@
-import { haversineDistanceKm, type LatLng } from '@agenda/core';
+import { haversineDistanceKm, type LatLng,useEventStatusLight } from '@agenda/core';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { memo, type ReactNode, useMemo } from 'react';
@@ -8,6 +8,7 @@ import { AttributeChips } from '@/components/ui/AttributeChips';
 import { GradientBadge } from '@/components/ui/GradientBadge';
 import { GuardedPressable } from '@/components/ui/GuardedPressable';
 import { Icon } from '@/components/ui/Icon';
+import { StatusLightBadge } from '@/components/ui/StatusLightBadge';
 import type { Establishment, Event, MusicStyle } from '@/data/schemas';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useFavoritesStore } from '@/store/useFavoritesStore';
@@ -60,6 +61,7 @@ export const EventCard = memo(function EventCard({
 
   const badge = event.courtesy ? 'Cortesia' : event.promo ? 'Promoção' : null;
   const price = formatPrice(event.cover_charge);
+  const statusLight = useEventStatusLight(event.starts_at, event.ends_at);
 
   const distanceText = useMemo(() => {
     if (!userCoords) return null;
@@ -192,10 +194,14 @@ export const EventCard = memo(function EventCard({
       </View>
 
       {/* Diferenciais são do bar, não do evento: o card já recebe o
-          establishment, então não custa consulta extra. */}
-      {establishment.attributes.length > 0 ? (
-        <View className="bg-popover border-border border-t px-4 pt-2.5 pb-3">
-          <AttributeChips attributes={establishment.attributes} max={MAX_CARD_ATTRIBUTES} />
+          establishment, então não custa consulta extra. O semáforo ancora no
+          extremo direito desta linha. */}
+      {establishment.attributes.length > 0 || statusLight ? (
+        <View className="bg-popover border-border flex-row items-center justify-between gap-2 border-t px-4 pt-2.5 pb-3">
+          <View className="flex-1">
+            <AttributeChips attributes={establishment.attributes} max={MAX_CARD_ATTRIBUTES} />
+          </View>
+          <StatusLightBadge light={statusLight} />
         </View>
       ) : null}
     </GuardedPressable>

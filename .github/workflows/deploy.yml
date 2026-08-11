@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - alfa
-      - beta
+      # - beta  # canal pausado: sem deploy por enquanto (descomente para religar)
       - release
 
 concurrency:
@@ -119,21 +119,30 @@ jobs:
 
       - name: Determine EAS Channel Profile
         run: |
+          # alfa = preview (build sem submissão). release = produção nas lojas.
+          # beta está pausado e nem dispara este workflow.
           if [ "${{ github.ref_name }}" = "alfa" ]; then
             echo "CHANNEL_PROFILE=alfa" >> "$GITHUB_ENV"
+            echo "SUBMIT_TO_STORES=false" >> "$GITHUB_ENV"
           elif [ "${{ github.ref_name }}" = "beta" ]; then
             echo "CHANNEL_PROFILE=beta" >> "$GITHUB_ENV"
+            echo "SUBMIT_TO_STORES=false" >> "$GITHUB_ENV"
           else
             echo "CHANNEL_PROFILE=production" >> "$GITHUB_ENV"
+            echo "SUBMIT_TO_STORES=true" >> "$GITHUB_ENV"
           fi
 
-      - name: Build and Auto-Submit to App Stores
+      - name: Build (and submit to stores on release only)
         run: |
           set -o pipefail
+          submit_args=()
+          if [ "$SUBMIT_TO_STORES" = "true" ]; then
+            submit_args+=(--auto-submit-with-profile "$CHANNEL_PROFILE")
+          fi
           pnpm --filter @agenda/mobile exec eas build \
             --platform all \
             --profile "$CHANNEL_PROFILE" \
-            --auto-submit-with-profile "$CHANNEL_PROFILE" \
+            "${submit_args[@]}" \
             --non-interactive \
             --no-wait \
             --json | tee "$RUNNER_TEMP/eas-build.json"
@@ -158,7 +167,11 @@ jobs:
               jq -r '.[] | "| \(.platform // "?") | [\(.id // "build")](\(.buildDetailsPageUrl // .buildPageUrl // .artifacts.buildUrl // "https://expo.dev/builds")) | \(.status // "queued") |"' \
                 "$RUNNER_TEMP/eas-build.json"
               echo ""
-              echo "Acompanhe o build e o auto-submit no [dashboard do EAS](https://expo.dev/builds)."
+              if [ "$SUBMIT_TO_STORES" = "true" ]; then
+                echo "Acompanhe o build e o auto-submit no [dashboard do EAS](https://expo.dev/builds)."
+              else
+                echo "🔍 Build de **preview** — nenhuma submissão às lojas neste canal."
+              fi
             else
               echo "⚠️ Nenhum build foi disparado (job pode ter falhado antes do \`eas build\`)."
             fi

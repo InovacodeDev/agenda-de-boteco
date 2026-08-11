@@ -72,9 +72,19 @@ function Chip({
 export interface FiltersSidebarProps {
   isOpen: boolean;
   onClose: () => void;
+  /**
+   * Aba Bares (`false`) esconde as seções que descrevem o evento — data,
+   * estilo musical, preço e eventos passados. O que sobra são propriedades do
+   * próprio bar, todas consumidas por `applyEstablishmentFilters`.
+   */
+  showEventFilters?: boolean;
 }
 
-export function FiltersSidebar({ isOpen, onClose }: FiltersSidebarProps) {
+export function FiltersSidebar({
+  isOpen,
+  onClose,
+  showEventFilters = true,
+}: FiltersSidebarProps) {
   const storedFilters = useFiltersStore((state) => state.filters);
   const replaceFilters = useFiltersStore((state) => state.replaceFilters);
   const { data: cities } = useCitiesQuery();
@@ -183,35 +193,39 @@ export function FiltersSidebar({ isOpen, onClose }: FiltersSidebarProps) {
         </header>
 
         <div className="flex-1 overflow-y-auto px-6 py-6 flex flex-col gap-6 scrollbar-thin">
-          <FilterSection title="Data">
-            <div className="flex flex-wrap gap-2">
-              {DATE_OPTIONS.map(({ label, bucket }) => (
-                <Chip
-                  key={bucket}
-                  label={label}
-                  selected={!draft.dateRange && draft.dateBucket === bucket}
-                  onClick={() => patch({ dateBucket: bucket, dateRange: null })}
+          {showEventFilters ? (
+            <>
+              <FilterSection title="Data">
+                <div className="flex flex-wrap gap-2">
+                  {DATE_OPTIONS.map(({ label, bucket }) => (
+                    <Chip
+                      key={bucket}
+                      label={label}
+                      selected={!draft.dateRange && draft.dateBucket === bucket}
+                      onClick={() => patch({ dateBucket: bucket, dateRange: null })}
+                    />
+                  ))}
+                </div>
+                <DateRangeField
+                  value={draft.dateRange}
+                  onChange={(range) => patch({ dateRange: range, dateBucket: 'any' })}
                 />
-              ))}
-            </div>
-            <DateRangeField
-              value={draft.dateRange}
-              onChange={(range) => patch({ dateRange: range, dateBucket: 'any' })}
-            />
-          </FilterSection>
+              </FilterSection>
 
-          <FilterSection title="Ordenar por">
-            <div className="flex flex-wrap gap-2">
-              {SORT_OPTIONS.map((opt) => (
-                <Chip
-                  key={opt.value}
-                  label={opt.label}
-                  selected={draft.sortBy === opt.value}
-                  onClick={() => patch({ sortBy: opt.value })}
-                />
-              ))}
-            </div>
-          </FilterSection>
+              <FilterSection title="Ordenar por">
+                <div className="flex flex-wrap gap-2">
+                  {SORT_OPTIONS.map((opt) => (
+                    <Chip
+                      key={opt.value}
+                      label={opt.label}
+                      selected={draft.sortBy === opt.value}
+                      onClick={() => patch({ sortBy: opt.value })}
+                    />
+                  ))}
+                </div>
+              </FilterSection>
+            </>
+          ) : null}
 
           <FilterSection title="Cidade">
             <div className="flex flex-wrap gap-2">
@@ -264,18 +278,20 @@ export function FiltersSidebar({ isOpen, onClose }: FiltersSidebarProps) {
             />
           </FilterSection>
 
-          <FilterSection title="Estilo musical">
-            <div className="flex flex-wrap gap-2">
-              {(musicStyles ?? []).map((style) => (
-                <Chip
-                  key={style.id}
-                  label={`${style.emoji} ${style.name}`}
-                  selected={draft.styleIds.includes(style.id)}
-                  onClick={() => toggleDraftStyle(style.id)}
-                />
-              ))}
-            </div>
-          </FilterSection>
+          {showEventFilters ? (
+            <FilterSection title="Estilo musical">
+              <div className="flex flex-wrap gap-2">
+                {(musicStyles ?? []).map((style) => (
+                  <Chip
+                    key={style.id}
+                    label={`${style.emoji} ${style.name}`}
+                    selected={draft.styleIds.includes(style.id)}
+                    onClick={() => toggleDraftStyle(style.id)}
+                  />
+                ))}
+              </div>
+            </FilterSection>
+          ) : null}
 
           <FilterSection title="Diferenciais">
             {/* Legenda sempre visível: o combinador é E, não OU — sem ela o usuário
@@ -316,18 +332,22 @@ export function FiltersSidebar({ isOpen, onClose }: FiltersSidebarProps) {
             />
           </FilterSection>
 
-          <FilterSection
-            title="Preço máximo"
-            trailing={draft.maxPrice === null ? 'Sem limite' : `R$ ${draft.maxPrice}`}
-          >
-            <FilterSlider
-              value={draft.maxPrice ?? MAX_PRICE_LIMIT}
-              minimumValue={0}
-              maximumValue={MAX_PRICE_LIMIT}
-              step={5}
-              onValueChange={(value) => patch({ maxPrice: value >= MAX_PRICE_LIMIT ? null : value })}
-            />
-          </FilterSection>
+          {showEventFilters ? (
+            <FilterSection
+              title="Preço máximo"
+              trailing={draft.maxPrice === null ? 'Sem limite' : `R$ ${draft.maxPrice}`}
+            >
+              <FilterSlider
+                value={draft.maxPrice ?? MAX_PRICE_LIMIT}
+                minimumValue={0}
+                maximumValue={MAX_PRICE_LIMIT}
+                step={5}
+                onValueChange={(value) =>
+                  patch({ maxPrice: value >= MAX_PRICE_LIMIT ? null : value })
+                }
+              />
+            </FilterSection>
+          ) : null}
 
           <SwitchRow
             title="Aberto agora"
@@ -335,6 +355,15 @@ export function FiltersSidebar({ isOpen, onClose }: FiltersSidebarProps) {
             value={draft.openNow}
             onValueChange={(value) => patch({ openNow: value })}
           />
+
+          {showEventFilters ? (
+            <SwitchRow
+              title="Mostrar eventos passados"
+              subtitle="Inclui os que já aconteceram"
+              value={draft.includePastEvents}
+              onValueChange={(value) => patch({ includePastEvents: value })}
+            />
+          ) : null}
         </div>
 
         <div className="border-t border-border px-6 py-4 bg-card flex gap-3">

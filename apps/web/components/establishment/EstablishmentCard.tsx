@@ -5,11 +5,13 @@ import {
   type Establishment,
   formatInstagramHandle,
   formatRating,
+  useEstablishmentStatusLight,
 } from '@agenda/core';
 import Link from 'next/link';
 
 import { AttributeChips } from '@/components/ui/AttributeChips';
 import { InstagramIcon, StarIcon } from '@/components/ui/icons';
+import { StatusLightBadge } from '@/components/ui/StatusLightBadge';
 
 export interface EstablishmentCardProps {
   establishment: Establishment;
@@ -26,6 +28,7 @@ export function EstablishmentCard({ establishment }: EstablishmentCardProps) {
   ).split(' ');
   const instagramHandle = formatInstagramHandle(establishment.instagram);
   const instagramUrl = buildInstagramProfileUrl(establishment.instagram);
+  const statusLight = useEstablishmentStatusLight(establishment.opening_hours);
 
   return (
     <Link
@@ -40,9 +43,14 @@ export function EstablishmentCard({ establishment }: EstablishmentCardProps) {
         className="h-20 w-20 shrink-0 rounded-xl object-cover"
       />
       <div className="flex flex-1 flex-col justify-center gap-0.5">
-        <p className="text-[11px] font-[family-name:var(--font-body)] text-muted-foreground">
-          {establishment.ambiance} · {establishment.price_range}
-        </p>
+        {/* Semáforo no topo: embaixo, junto dos chips, ele quebrava para uma
+            segunda linha quando os diferenciais eram longos. */}
+        <div className="flex items-center justify-between gap-2">
+          <p className="truncate text-[11px] font-[family-name:var(--font-body)] text-muted-foreground">
+            {establishment.ambiance} · {establishment.price_range}
+          </p>
+          <StatusLightBadge light={statusLight} />
+        </div>
         <div className="flex items-center gap-2">
           <p className="truncate text-[15px] font-[family-name:var(--font-body)] font-semibold text-foreground">
             {establishment.name}

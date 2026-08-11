@@ -21,6 +21,7 @@ export interface FiltersState {
   toggleFreeOnly: () => void;
   toggleNearMe: () => void;
   setOpenNow: (value: boolean) => void;
+  setIncludePastEvents: (value: boolean) => void;
   toggleCity: (id: string) => void;
   setCityIds: (ids: string[]) => void;
   toggleAttribute: (id: EstablishmentAttribute) => void;
@@ -60,6 +61,7 @@ export const useFiltersStore = create<FiltersState>()((set) => {
         filters: { ...state.filters, nearMe: !state.filters.nearMe },
       })),
     setOpenNow: (value) => patchFilters({ openNow: value }),
+    setIncludePastEvents: (value) => patchFilters({ includePastEvents: value }),
     toggleCity: (id) =>
       set((state) => ({
         filters: {
