@@ -17,3 +17,4 @@
 - Tela de detalhes do bar agora tem botão de voltar no topo
 - Página do bar mostra o @ do Instagram logo abaixo da capa; clicar abre o perfil
 - Página do evento mostra o @ do Instagram do bar abaixo do banner e leva direto ao post do evento quando houver
+- As fontes do site passam a ser servidas pelo próprio servidor, sem depender do Google

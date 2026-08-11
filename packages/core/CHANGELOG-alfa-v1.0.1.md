@@ -6,3 +6,4 @@
 - Dados guardados no dispositivo são descartados quando o formato muda, evitando falhas após atualizar
 - Eventos passam a guardar o link do post do Instagram que os divulga
 - O @ do Instagram é exibido em formato único (@perfil) e vira link para o perfil, em qualquer app
+- As fontes usadas nos sites passam a vir de um ponto único, servidas pelo próprio servidor
