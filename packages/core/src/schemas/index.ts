@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+export * from './catalog';
+
 export const barSchema = z.object({
   id: z.string().uuid(),
   name: z.string().min(1),

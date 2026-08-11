@@ -1,0 +1,42 @@
+@import 'tailwindcss';
+
+@theme {
+  /* Design tokens espelhando o mobile (apps/mobile/src/global.css). */
+  --color-background: #0f0f0f;
+  --color-foreground: #fafafa;
+  --color-card: #171717;
+  --color-card-foreground: #fafafa;
+  --color-popover: #141414;
+  --color-popover-foreground: #fafafa;
+  --color-surface: #1c1c1c;
+  --color-surface-elevated: #242424;
+  --color-muted: #242424;
+  --color-muted-foreground: #a6a6a6;
+  --color-input: #242424;
+  --color-secondary: #242424;
+  --color-secondary-foreground: #fafafa;
+  --color-border: #292929;
+  --color-primary: #1dd75e;
+  --color-primary-foreground: #0f0f0f;
+  --color-primary-glow: #3df57d;
+  --color-accent: #f9a91f;
+  --color-accent-foreground: #0f0f0f;
+  --color-destructive: #f53d7a;
+  --color-destructive-foreground: #fafafa;
+  --color-neon-cyan: #1fd5f9;
+  --color-neon-pink: #ff4da6;
+  --color-ring: #1dd75e;
+
+  /* Fontes: famílias web. As variáveis --font-* são preenchidas por next/font no layout. */
+  --font-heading: var(--font-space-grotesk), system-ui, sans-serif;
+  --font-body: var(--font-inter), system-ui, sans-serif;
+}
+
+html, body {
+  background: var(--color-background);
+  color: var(--color-foreground);
+}
+
+body {
+  font-family: var(--font-body);
+}

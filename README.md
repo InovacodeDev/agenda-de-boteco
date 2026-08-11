@@ -6,10 +6,11 @@ Monorepo (Turborepo + pnpm) com app mobile (Expo) e painel administrativo (Vite)
 
 ```
 apps/
-  mobile/   # Expo SDK 56 · expo-router · NativeWind · FlashList · Zustand
-  admin/    # Vite + React (painel administrativo, SSG via output: static)
+  mobile/             # @agenda/mobile — Expo SDK 56 · expo-router · NativeWind · FlashList · Zustand
+  admin/              # @agenda/admin — Vite + React (painel administrativo, SSG via output: static)
 packages/
-  core/     # Pacote interno source-only: client Supabase (fábrica), tipos e schemas Zod
+  core/               # @agenda/core — pacote interno source-only: client Supabase (fábrica), tipos e schemas Zod
+  typescript-config/  # @agenda/typescript-config — tsconfig base compartilhado (sem tsconfig na raiz)
 ```
 
 O `core` é um pacote interno **source-only** (padrão Just-in-Time do Turborepo): não tem build,
@@ -29,6 +30,7 @@ cp .env.example .env   # preencha os valores do Supabase
 ```
 
 Variáveis de ambiente:
+
 - **mobile**: `EXPO_PUBLIC_SUPABASE_URL` / `EXPO_PUBLIC_SUPABASE_ANON_KEY`
 - **admin**: `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY`
 
@@ -44,12 +46,12 @@ pnpm build       # build de produção (admin + export web do mobile)
 ### Por app
 
 ```bash
-pnpm --filter mobile ios       # Expo iOS
-pnpm --filter mobile android   # Expo Android
-pnpm --filter mobile web       # Expo web
-pnpm --filter admin dev        # Vite dev server
+pnpm --filter @agenda/mobile ios       # Expo iOS
+pnpm --filter @agenda/mobile android   # Expo Android
+pnpm --filter @agenda/mobile web       # Expo web
+pnpm --filter @agenda/admin dev        # Vite dev server
 
-pnpm --filter core gen:types   # regenera os tipos do Supabase (requer SUPABASE_PROJECT_ID)
+pnpm --filter @agenda/core gen:types   # regenera os tipos do Supabase (requer SUPABASE_PROJECT_ID)
 ```
 
 ## Notas

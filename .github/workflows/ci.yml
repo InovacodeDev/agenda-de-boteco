@@ -6,10 +6,82 @@ on:
   pull_request:
     branches: [ release, beta, alfa ]
 
+permissions:
+  contents: write
+
+concurrency:
+  group: ci-${{ github.ref_name }}
+  cancel-in-progress: false
+
 jobs:
+  version-gate:
+    name: Version Gate (tag check)
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.check.outputs.version }}
+      tag: ${{ steps.check.outputs.tag }}
+      mobile_changed: ${{ steps.check.outputs.mobile_changed }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Ensure version is not already deployed on this channel
+        id: check
+        run: |
+          set -euo pipefail
+          version=$(jq -r '.version' apps/mobile/package.json)
+          tag="${GITHUB_REF_NAME}-v${version}"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
+          # Faixa de comparação: PR = base..head; push = antes..depois.
+          if [ "${GITHUB_EVENT_NAME}" = "pull_request" ]; then
+            # checkout usa fetch-depth:0, então origin/BASE já está presente.
+            # `...HEAD` (three-dot) diffa do merge-base até o merge ref do PR =
+            # exatamente os arquivos que o PR altera. Não usar --depth aqui: um
+            # fetch raso quebraria o merge-base se a base avançar pós-checkout.
+            git fetch --no-tags origin "${GITHUB_BASE_REF}" || true
+            range="origin/${GITHUB_BASE_REF}...HEAD"
+          else
+            before="${{ github.event.before }}"
+            # Primeiro push da branch (before = zeros): trata como "mexeu no mobile".
+            if [ -z "$before" ] || [ "$before" = "0000000000000000000000000000000000000000" ]; then
+              range=""
+            else
+              range="${before}..${GITHUB_SHA}"
+            fi
+          fi
+
+          if [ -z "$range" ]; then
+            mobile_changed=true
+          elif git diff --name-only "$range" -- apps/mobile/ | grep -q .; then
+            mobile_changed=true
+          else
+            mobile_changed=false
+          fi
+          echo "mobile_changed=$mobile_changed" >> "$GITHUB_OUTPUT"
+
+          # Só valida a versão quando o mobile mudou — outras mudanças (web, docs,
+          # CI) não são bloqueadas por versão já publicada.
+          if [ "$mobile_changed" != "true" ]; then
+            echo "apps/mobile/ não mudou — version gate ignorado."
+            exit 0
+          fi
+
+          git fetch --tags --force
+          if git rev-parse -q --verify "refs/tags/$tag" >/dev/null; then
+            echo "::error::apps/mobile/ mudou e a versão $version já foi publicada no canal $GITHUB_REF_NAME (tag $tag existe). Bumpe apps/mobile/package.json."
+            exit 1
+          fi
+          echo "Tag $tag ainda não existe — liberado."
+
   verify:
     name: Build & Verify
     runs-on: ubuntu-latest
+    needs: version-gate
 
     steps:
       - name: Checkout repository
@@ -45,3 +117,41 @@ jobs:
 
       - name: Run Build
         run: pnpm run build
+
+  # Cria a tag do canal só em push, e só quando o mobile mudou (senão a tag da
+  # versão atual já existe de um push anterior). `git tag` é idempotente aqui:
+  # pula se a tag já existe, para não falhar em pushes subsequentes.
+  # NOTA: enquanto o deploy.yml não roda no GitHub, o CI é o dono das tags de
+  # versão. Quando o deploy voltar a rodar, remover a criação de tag daqui
+  # (ou do deploy.yml) para não duplicar — os dois tentariam criar a mesma tag.
+  tag:
+    name: Tag channel version
+    runs-on: ubuntu-latest
+    needs: [version-gate, verify]
+    if: github.event_name == 'push' && needs.version-gate.outputs.mobile_changed == 'true'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Tag version for this channel
+        run: |
+          set -euo pipefail
+          tag="${{ needs.version-gate.outputs.tag }}"
+          git fetch --tags --force
+          if git rev-parse -q --verify "refs/tags/$tag" >/dev/null; then
+            echo "Tag $tag já existe — nada a fazer."
+            exit 0
+          fi
+          git tag "$tag"
+          # Tolera corrida: se outra execução (ou o deploy) criou a tag entre o
+          # verify acima e este push, aceita em vez de falhar o job.
+          if ! git push origin "refs/tags/$tag"; then
+            git fetch --tags --force
+            git rev-parse -q --verify "refs/tags/$tag" >/dev/null || exit 1
+            echo "Tag $tag criada em paralelo — ok."
+            exit 0
+          fi
+          echo "Tag $tag criada — este canal fica bloqueado até o próximo bump de versão."
