@@ -1,78 +1,78 @@
 {
-    // Assumes root package.json scripts: dev / build / lint / typecheck (each calling turbo),
-    // and workspace package names "mobile" and "admin" (adjust --filter to match yours).
-    "version": "2.0.0",
-    "tasks": [
-        {
-            "label": "turbo: dev",
-            "detail": "Run every app's dev server (turbo dev)",
-            "type": "shell",
-            "command": "pnpm dev",
-            "isBackground": true,
-            "problemMatcher": {
-                "pattern": { "regexp": "^$" },
-                "background": {
-                    "activeOnStart": true,
-                    "beginsPattern": ".",
-                    "endsPattern": "(ready in|Waiting on|Bundled|http://localhost)"
-                }
-            },
-            "presentation": { "panel": "dedicated", "reveal": "always" }
-        },
-        {
-            "label": "dev: mobile (web)",
-            "detail": "Expo web dev server for apps/mobile — used as preLaunchTask",
-            "type": "shell",
-            "command": "pnpm --filter mobile dev",
-            "isBackground": true,
-            "problemMatcher": {
-                "pattern": { "regexp": "^$" },
-                "background": {
-                    "activeOnStart": true,
-                    "beginsPattern": ".",
-                    "endsPattern": "(Waiting on|Metro waiting|Web Bundled|http://localhost:8081)"
-                }
-            },
-            "presentation": { "panel": "dedicated" }
-        },
-        {
-            "label": "dev: admin (vite)",
-            "detail": "Vite dev server for apps/admin — used as preLaunchTask",
-            "type": "shell",
-            "command": "pnpm --filter admin dev",
-            "isBackground": true,
-            "problemMatcher": {
-                "pattern": { "regexp": "^$" },
-                "background": {
-                    "activeOnStart": true,
-                    "beginsPattern": ".",
-                    "endsPattern": "(ready in|Local:\\s+http://localhost:5173)"
-                }
-            },
-            "presentation": { "panel": "dedicated" }
-        },
-        {
-            "label": "build",
-            "detail": "turbo build",
-            "type": "shell",
-            "command": "pnpm build",
-            "group": { "kind": "build", "isDefault": true },
-            "problemMatcher": ["$tsc"]
-        },
-        {
-            "label": "lint",
-            "detail": "turbo lint (ESLint)",
-            "type": "shell",
-            "command": "pnpm lint",
-            "problemMatcher": ["$eslint-stylish"]
-        },
-        {
-            "label": "typecheck",
-            "detail": "turbo typecheck (tsc --noEmit)",
-            "type": "shell",
-            "command": "pnpm typecheck",
-            "group": { "kind": "test", "isDefault": true },
-            "problemMatcher": ["$tsc"]
+  // Assumes root package.json scripts: dev / build / lint / typecheck (each calling turbo),
+  // and workspace package names "@agenda/mobile" and "@agenda/admin" (adjust --filter to match yours).
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "turbo: dev",
+      "detail": "Run every app's dev server (turbo dev)",
+      "type": "shell",
+      "command": "pnpm dev",
+      "isBackground": true,
+      "problemMatcher": {
+        "pattern": { "regexp": "^$" },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".",
+          "endsPattern": "(ready in|Waiting on|Bundled|http://localhost)"
         }
-    ]
+      },
+      "presentation": { "panel": "dedicated", "reveal": "always" }
+    },
+    {
+      "label": "dev: mobile (web)",
+      "detail": "Expo web dev server for apps/mobile — used as preLaunchTask",
+      "type": "shell",
+      "command": "pnpm --filter @agenda/mobile dev",
+      "isBackground": true,
+      "problemMatcher": {
+        "pattern": { "regexp": "^$" },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".",
+          "endsPattern": "(Waiting on|Metro waiting|Web Bundled|http://localhost:8081)"
+        }
+      },
+      "presentation": { "panel": "dedicated" }
+    },
+    {
+      "label": "dev: admin (vite)",
+      "detail": "Vite dev server for apps/admin — used as preLaunchTask",
+      "type": "shell",
+      "command": "pnpm --filter @agenda/admin dev",
+      "isBackground": true,
+      "problemMatcher": {
+        "pattern": { "regexp": "^$" },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".",
+          "endsPattern": "(ready in|Local:\\s+http://localhost:5173)"
+        }
+      },
+      "presentation": { "panel": "dedicated" }
+    },
+    {
+      "label": "build",
+      "detail": "turbo build",
+      "type": "shell",
+      "command": "pnpm build",
+      "group": { "kind": "build", "isDefault": true },
+      "problemMatcher": ["$tsc"]
+    },
+    {
+      "label": "lint",
+      "detail": "turbo lint (ESLint)",
+      "type": "shell",
+      "command": "pnpm lint",
+      "problemMatcher": ["$eslint-stylish"]
+    },
+    {
+      "label": "typecheck",
+      "detail": "turbo typecheck (tsc --noEmit)",
+      "type": "shell",
+      "command": "pnpm typecheck",
+      "group": { "kind": "test", "isDefault": true },
+      "problemMatcher": ["$tsc"]
+    }
+  ]
 }

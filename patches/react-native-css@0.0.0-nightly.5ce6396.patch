@@ -1,0 +1,62 @@
+diff --git a/dist/commonjs/metro/index.js b/dist/commonjs/metro/index.js
+index 998b30375830850bee1fc102aae889c6d8eb9149..c1f558afba7f12dbaf20aec63a885f20bc78bcf5 100644
+--- a/dist/commonjs/metro/index.js
++++ b/dist/commonjs/metro/index.js
+@@ -127,17 +127,20 @@ function withReactNativeCSS(config, options) {
+                   nativeCSSFiles.set(filePath, [next, (0, _compiler.compile)(next, {
+                     hexColors: options?.hexColors
+                   }).stylesheet()]);
++                  // Metro >= 0.83 espera { changes, rootDir } em vez de { eventsQueue }
++                  const rootDir = config.projectRoot ?? process.cwd();
+                   watcher.emit("change", {
+-                    eventsQueue: nativeInjectionFilepaths.map(filePath => ({
+-                      filePath,
+-                      metadata: {
++                    changes: {
++                      addedFiles: [],
++                      modifiedFiles: nativeInjectionFilepaths.map(injectionPath => [_nodePath.relative(rootDir, injectionPath), {
+                         modifiedTime: Date.now(),
+                         size: 1,
+                         // Can be anything
+                         type: "virtual" // Can be anything
+-                      },
+-                      type: "change"
+-                    }))
++                      }]),
++                      removedFiles: []
++                    },
++                    rootDir
+                   });
+                 }
+                 const nativeTransform = await transformFile(filePath, transformOptions, fileBuffer);
+diff --git a/dist/module/metro/index.js b/dist/module/metro/index.js
+index e282f55964f864d3a1409ffad67d3ad6753eee41..7678a10adb9312cde17c1ec20007a3483a6b4d0e 100644
+--- a/dist/module/metro/index.js
++++ b/dist/module/metro/index.js
+@@ -121,17 +121,20 @@ export function withReactNativeCSS(config, options) {
+                   nativeCSSFiles.set(filePath, [next, compile(next, {
+                     hexColors: options?.hexColors
+                   }).stylesheet()]);
++                  // Metro >= 0.83 espera { changes, rootDir } em vez de { eventsQueue }
++                  const rootDir = config.projectRoot ?? process.cwd();
+                   watcher.emit("change", {
+-                    eventsQueue: nativeInjectionFilepaths.map(filePath => ({
+-                      filePath,
+-                      metadata: {
++                    changes: {
++                      addedFiles: [],
++                      modifiedFiles: nativeInjectionFilepaths.map(injectionPath => [relative(rootDir, injectionPath), {
+                         modifiedTime: Date.now(),
+                         size: 1,
+                         // Can be anything
+                         type: "virtual" // Can be anything
+-                      },
+-                      type: "change"
+-                    }))
++                      }]),
++                      removedFiles: []
++                    },
++                    rootDir
+                   });
+                 }
+                 const nativeTransform = await transformFile(filePath, transformOptions, fileBuffer);

@@ -1,19 +1,16 @@
 {
-  "extends": "expo/tsconfig.base",
+  "extends": ["@agenda/typescript-config/base.json", "expo/tsconfig.base"],
   "compilerOptions": {
     "strict": true,
     "baseUrl": ".",
     "ignoreDeprecations": "6.0",
     "skipLibCheck": true,
+    "types": ["jest"],
+    "moduleSuffixes": [".ios", ".android", ".native", ""],
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./src/*"],
+      "@assets/*": ["./assets/*"]
     }
   },
-  "include": [
-    "**/*.ts",
-    "**/*.tsx",
-    ".expo/types/**/*.ts",
-    "expo-env.d.ts",
-    "nativewind-env.d.ts"
-  ]
+  "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts", "nativewind-env.d.ts"]
 }
