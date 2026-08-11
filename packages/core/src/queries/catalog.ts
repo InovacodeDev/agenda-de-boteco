@@ -37,10 +37,11 @@ type NotificationRow = Database['public']['Tables']['notifications']['Row'];
 const CITY_COLUMNS = 'id,name,uf,lat,lng,slug';
 const ESTABLISHMENT_COLUMNS =
   'id,name,description,logo_url,cover_url,address,neighborhood,city_id,lat,lng,whatsapp,instagram,opening_hours,menu_items,price_range,ambiance,rating_avg,rating_count,attributes,slug,menu_pdf_url,menu_photo_urls';
-// photo_urls incluído; database.types.ts ainda não tem a coluna — selects de events usam
-// (client as SupabaseClient) sem generic para contornar a validação estática do supabase-js.
+// photo_urls e instagram_post_url incluídos; database.types.ts ainda não tem as colunas —
+// selects de events usam (client as SupabaseClient) sem generic para contornar a
+// validação estática do supabase-js.
 const EVENT_COLUMNS =
-  'id,name,attraction,description,banner_url,photo_urls,music_style_ids,establishment_id,starts_at,ends_at,cover_charge,courtesy,promo,slug';
+  'id,name,attraction,description,banner_url,photo_urls,music_style_ids,establishment_id,starts_at,ends_at,cover_charge,courtesy,promo,slug,instagram_post_url';
 const MUSIC_STYLE_COLUMNS = 'id,name,emoji';
 const NOTIFICATION_COLUMNS =
   'id,title,body,type,created_at,read,event_id,establishment_id';
@@ -131,6 +132,9 @@ function mapEvent(row: EventRow): Event {
     courtesy: nullToUndefined(row.courtesy),
     promo: nullToUndefined(row.promo),
     slug: nullToUndefined(row.slug),
+    instagram_post_url: nullToUndefined(
+      (row as { instagram_post_url?: string | null }).instagram_post_url ?? null,
+    ),
   });
 }
 

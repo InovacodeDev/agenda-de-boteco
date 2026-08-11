@@ -8,6 +8,10 @@
     ".": {
       "types": "./src/index.ts",
       "default": "./src/index.ts"
+    },
+    "./next-fonts": {
+      "types": "./src/fonts/next-fonts.ts",
+      "default": "./src/fonts/next-fonts.ts"
     }
   },
   "scripts": {

@@ -3,7 +3,9 @@ import {
   buildDirectionsUrl,
   buildEstablishmentShareUrl,
   buildEventShareUrl,
+  buildInstagramProfileUrl,
   buildWhatsAppUrl,
+  formatInstagramHandle,
 } from './links';
 
 describe('buildDirectionsUrl', () => {
@@ -35,6 +37,45 @@ describe('buildWhatsAppUrl', () => {
     expect(buildWhatsAppUrl('5548999990001', '')).toBe(
       'https://wa.me/5548999990001',
     );
+  });
+});
+
+describe('buildInstagramProfileUrl', () => {
+  it('monta a URL do perfil a partir do handle com @', () => {
+    expect(buildInstagramProfileUrl('@botecodoze')).toBe(
+      'https://instagram.com/botecodoze',
+    );
+  });
+
+  it('aceita handle sem @ e ignora espaços em volta', () => {
+    expect(buildInstagramProfileUrl('  botecodoze ')).toBe(
+      'https://instagram.com/botecodoze',
+    );
+  });
+
+  it('remove barra final para não gerar caminho vazio', () => {
+    expect(buildInstagramProfileUrl('botecodoze/')).toBe(
+      'https://instagram.com/botecodoze',
+    );
+  });
+
+  it('devolve undefined para handle ausente, vazio ou só @', () => {
+    expect(buildInstagramProfileUrl(undefined)).toBeUndefined();
+    expect(buildInstagramProfileUrl('   ')).toBeUndefined();
+    expect(buildInstagramProfileUrl('@')).toBeUndefined();
+  });
+});
+
+describe('formatInstagramHandle', () => {
+  it('normaliza para @perfil independente do formato salvo', () => {
+    expect(formatInstagramHandle('botecodoze')).toBe('@botecodoze');
+    expect(formatInstagramHandle('@botecodoze')).toBe('@botecodoze');
+    expect(formatInstagramHandle(' @botecodoze/ ')).toBe('@botecodoze');
+  });
+
+  it('devolve undefined quando não há handle utilizável', () => {
+    expect(formatInstagramHandle(undefined)).toBeUndefined();
+    expect(formatInstagramHandle('@')).toBeUndefined();
   });
 });
 

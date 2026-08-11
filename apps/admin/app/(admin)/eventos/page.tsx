@@ -57,6 +57,7 @@ type FormState = {
   cover_charge: string;
   courtesy: string;
   promo: string;
+  instagram_post_url: string;
 };
 
 const EMPTY: FormState = {
@@ -72,6 +73,7 @@ const EMPTY: FormState = {
   cover_charge: '',
   courtesy: '',
   promo: '',
+  instagram_post_url: '',
 };
 
 function toForm(e: Event): FormState {
@@ -88,6 +90,7 @@ function toForm(e: Event): FormState {
     cover_charge: currencyToMask(e.cover_charge),
     courtesy: e.courtesy ?? '',
     promo: e.promo ?? '',
+    instagram_post_url: e.instagram_post_url ?? '',
   };
 }
 
@@ -157,6 +160,7 @@ export default function EventosPage() {
       cover_charge: parseCurrencyBR(form.cover_charge),
       courtesy: form.courtesy || undefined,
       promo: form.promo || undefined,
+      instagram_post_url: form.instagram_post_url.trim() || undefined,
     };
 
     const result = eventWriteSchema.safeParse(candidate);
@@ -285,6 +289,14 @@ export default function EventosPage() {
           </Field>
           <Field label="Promo (opcional)" error={errors.promo}>
             <TextInput value={form.promo} onChange={(e) => set('promo', e.target.value)} />
+          </Field>
+          <Field label="Post do Instagram (opcional)" error={errors.instagram_post_url}>
+            <TextInput
+              type="url"
+              placeholder="https://instagram.com/p/..."
+              value={form.instagram_post_url}
+              onChange={(e) => set('instagram_post_url', e.target.value)}
+            />
           </Field>
           <div className="sm:col-span-2 lg:col-span-3">
             <Field label="Descrição" error={errors.description}>

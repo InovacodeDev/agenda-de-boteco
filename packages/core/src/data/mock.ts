@@ -248,6 +248,7 @@ export const EVENTS: Event[] = [
     ends_at: buildEventDate(1, 1),
     cover_charge: 20,
     courtesy: 'Mulheres free até 22h',
+    instagram_post_url: 'https://instagram.com/p/CxSambaNaVaranda/',
   },
   {
     id: 'ev2',
