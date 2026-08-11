@@ -1,0 +1,84 @@
+name: Version Gate
+
+# Promoção para canal estável exige bump de minor: publicado 0.0.9 na beta,
+# só 0.1.0+ entra; publicado 0.1.0 na release, só 0.2.0+. Patch não promove.
+# O alfa não passa por aqui — é onde o desenvolvimento acumula patches.
+on:
+  pull_request:
+    branches: [ beta, release ]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: version-gate-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Minor bump required
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Require minor bump over the channel's last release
+        run: |
+          set -euo pipefail
+
+          # Destino do merge. GITHUB_REF_NAME aqui seria o ref do PR
+          # ("42/merge"), não a branch de destino.
+          channel="${GITHUB_BASE_REF}"
+          version=$(jq -r '.version' apps/mobile/package.json)
+
+          if ! [[ "$version" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+            echo "::error file=apps/mobile/package.json::Versão '$version' não é semver (major.minor.patch)."
+            exit 1
+          fi
+          new_major="${BASH_REMATCH[1]}"
+          new_minor="${BASH_REMATCH[2]}"
+          new_patch="${BASH_REMATCH[3]}"
+
+          git fetch --tags --force
+
+          # Última versão publicada no canal. sort -V ordena por segmento
+          # numérico: sem ele 0.0.9 apareceria como maior que 0.0.10.
+          # `|| true`: sem nenhuma tag no canal o grep sai 1 e, com pipefail,
+          # derrubaria o script antes do caso "primeira versão do canal".
+          last=$(git tag -l "${channel}-v*" \
+            | sed "s|^${channel}-v||" \
+            | { grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' || true; } \
+            | sort -V \
+            | tail -1)
+
+          if [ -z "$last" ]; then
+            echo "Nenhuma versão publicada em '$channel' — $version será a primeira. Liberado."
+            exit 0
+          fi
+
+          [[ "$last" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]
+          last_major="${BASH_REMATCH[1]}"
+          last_minor="${BASH_REMATCH[2]}"
+          last_patch="${BASH_REMATCH[3]}"
+
+          echo "Canal '$channel' — última publicada: $last · PR traz: $version"
+
+          # Repetir ou retroceder nunca passa.
+          if [ "$new_major" -lt "$last_major" ] \
+            || { [ "$new_major" -eq "$last_major" ] && [ "$new_minor" -lt "$last_minor" ]; } \
+            || { [ "$new_major" -eq "$last_major" ] && [ "$new_minor" -eq "$last_minor" ] \
+                 && [ "$new_patch" -le "$last_patch" ]; }; then
+            echo "::error file=apps/mobile/package.json::Versão $version não avança sobre $last, já publicada em '$channel'. Bumpe apps/mobile/package.json para $((last_major)).$((last_minor + 1)).0 ou superior."
+            exit 1
+          fi
+
+          # Canal estável: o minor precisa mudar.
+          if [ "$new_major" -eq "$last_major" ] && [ "$new_minor" -eq "$last_minor" ]; then
+            echo "::error file=apps/mobile/package.json::'$channel' exige bump de minor sobre $last. Versão $version só muda o patch — use $((last_major)).$((last_minor + 1)).0 ou superior."
+            exit 1
+          fi
+
+          echo "Versão $version avança o minor sobre $last — liberado."

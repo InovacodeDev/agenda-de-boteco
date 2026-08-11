@@ -33,14 +33,7 @@ jobs:
         run: |
           set -euo pipefail
           version=$(jq -r '.version' apps/mobile/package.json)
-          # Em pull_request, GITHUB_REF_NAME é o ref do PR ("42/merge"); o canal
-          # que importa é o destino do merge.
-          if [ "${GITHUB_EVENT_NAME}" = "pull_request" ]; then
-            channel="${GITHUB_BASE_REF}"
-          else
-            channel="${GITHUB_REF_NAME}"
-          fi
-          tag="${channel}-v${version}"
+          tag="${GITHUB_REF_NAME}-v${version}"
           echo "version=$version" >> "$GITHUB_OUTPUT"
           echo "tag=$tag" >> "$GITHUB_OUTPUT"
 
@@ -79,9 +72,11 @@ jobs:
           fi
 
           git fetch --tags --force
-          # alfa: basta a versão ser nova. beta/release: exige bump de minor
-          # sobre a última publicada naquele canal — patch não promove.
-          bash scripts/check-channel-version.bash "$channel" "$version"
+          if git rev-parse -q --verify "refs/tags/$tag" >/dev/null; then
+            echo "::error::apps/mobile/ mudou e a versão $version já foi publicada no canal $GITHUB_REF_NAME (tag $tag existe). Bumpe apps/mobile/package.json."
+            exit 1
+          fi
+          echo "Tag $tag ainda não existe — liberado."
 
   verify:
     name: Build & Verify
