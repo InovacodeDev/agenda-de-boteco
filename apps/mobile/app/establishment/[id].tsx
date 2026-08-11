@@ -1,3 +1,4 @@
+import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { Linking, Modal, Share, StyleSheet } from 'react-native';
@@ -24,6 +25,7 @@ import {
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useFavoritesStore } from '@/store/useFavoritesStore';
 import { colors } from '@/theme/colors';
+import { gradientCardOverlay } from '@/theme/gradients';
 import { headingLetterSpacing } from '@/theme/typography';
 import { Image, ScrollView, Text, View } from '@/tw';
 import { upcomingEventsForEstablishment } from '@/utils/events';
@@ -151,6 +153,10 @@ function EstablishmentDetailContent() {
             contentFit="cover"
             style={StyleSheet.absoluteFill}
             accessibilityLabel={establishment.name}
+          />
+          <LinearGradient
+            {...gradientCardOverlay}
+            style={[StyleSheet.absoluteFill, { top: '40%' }]}
           />
         </View>
 

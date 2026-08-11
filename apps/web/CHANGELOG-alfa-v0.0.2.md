@@ -18,3 +18,6 @@
 - Página do bar mostra o @ do Instagram logo abaixo da capa; clicar abre o perfil
 - Página do evento mostra o @ do Instagram do bar abaixo do banner e leva direto ao post do evento quando houver
 - As fontes do site passam a ser servidas pelo próprio servidor, sem depender do Google
+- Corrigido o contraste da foto de capa do bar com as informações exibidas por cima
+- Cards de evento no feed mostram o @ do Instagram do bar, ao lado da distância
+- Cards de bares mostram o @ do Instagram ao lado do nome, e a logo ficou um pouco maior

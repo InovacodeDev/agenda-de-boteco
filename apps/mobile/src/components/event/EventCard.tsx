@@ -2,7 +2,7 @@ import { haversineDistanceKm, type LatLng } from '@agenda/core';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { memo, type ReactNode, useMemo } from 'react';
-import { StyleSheet } from 'react-native';
+import { Linking, StyleSheet } from 'react-native';
 
 import { AttributeChips } from '@/components/ui/AttributeChips';
 import { GradientBadge } from '@/components/ui/GradientBadge';
@@ -17,6 +17,7 @@ import { headingLetterSpacing } from '@/theme/typography';
 import { Image, Text, View } from '@/tw';
 import { formatRelativeDay, formatTimeRange } from '@/utils/dates';
 import { formatPrice } from '@/utils/format';
+import { buildInstagramProfileUrl, formatInstagramHandle } from '@/utils/links';
 
 interface FooterItemProps {
   icon: ReactNode;
@@ -71,6 +72,9 @@ export const EventCard = memo(function EventCard({
     }
     return `${dist.toFixed(1).replace('.', ',')}km de mim`;
   }, [establishment.lat, establishment.lng, userCoords]);
+
+  const instagramHandle = formatInstagramHandle(establishment.instagram);
+  const instagramUrl = buildInstagramProfileUrl(establishment.instagram);
 
   return (
     <GuardedPressable
@@ -134,10 +138,27 @@ export const EventCard = memo(function EventCard({
         </View>
       </View>
 
-      {distanceText ? (
-        <View className="bg-surface/50 border-border flex-row items-center gap-1.5 border-b px-4 py-1.5">
-          <Icon name="location-dot" color={colors.primary} size={12} />
-          <Text className="font-body text-muted-foreground text-[12px]">{distanceText}</Text>
+      {distanceText || (instagramHandle && instagramUrl) ? (
+        <View className="bg-surface/50 border-border flex-row items-center justify-between border-b px-4 py-1.5">
+          {distanceText ? (
+            <View className="flex-row items-center gap-1.5">
+              <Icon name="location-dot" color={colors.primary} size={12} />
+              <Text className="font-body text-muted-foreground text-[12px]">{distanceText}</Text>
+            </View>
+          ) : (
+            <View />
+          )}
+          {instagramHandle && instagramUrl ? (
+            <GuardedPressable
+              accessibilityRole="link"
+              accessibilityLabel={`Abrir ${instagramHandle} no Instagram`}
+              onPress={() => Linking.openURL(instagramUrl)}
+              className="flex-row items-center gap-1.5"
+            >
+              <Icon name="instagram" color={colors.primary} size={12} />
+              <Text className="font-body-medium text-primary text-[12px]">{instagramHandle}</Text>
+            </GuardedPressable>
+          ) : null}
         </View>
       ) : null}
 

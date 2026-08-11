@@ -1,11 +1,15 @@
 import { useRouter } from 'expo-router';
 import { memo } from 'react';
+import { Linking } from 'react-native';
 
 import { AttributeChips } from '@/components/ui/AttributeChips';
 import { GuardedPressable } from '@/components/ui/GuardedPressable';
+import { Icon } from '@/components/ui/Icon';
 import { RatingStars } from '@/components/ui/RatingStars';
 import type { Establishment } from '@/data/schemas';
+import { colors } from '@/theme/colors';
 import { Image, Text, View } from '@/tw';
+import { buildInstagramProfileUrl, formatInstagramHandle } from '@/utils/links';
 
 export interface EstablishmentCardProps {
   establishment: Establishment;
@@ -19,6 +23,9 @@ export const EstablishmentCard = memo(function EstablishmentCard({
   establishment,
 }: EstablishmentCardProps) {
   const router = useRouter();
+  const instagramHandle = formatInstagramHandle(establishment.instagram);
+  const instagramUrl = buildInstagramProfileUrl(establishment.instagram);
+
   return (
     <GuardedPressable
       accessibilityRole="button"
@@ -30,16 +37,28 @@ export const EstablishmentCard = memo(function EstablishmentCard({
         source={{ uri: establishment.logo_url }}
         recyclingKey={establishment.id}
         contentFit="cover"
-        className="h-16 w-16 rounded-xl"
+        className="h-20 w-20 rounded-xl"
         accessibilityLabel={establishment.name}
       />
       <View className="flex-1 justify-center gap-0.5">
         <Text className="font-body text-muted-foreground text-[11px]">
           {establishment.ambiance} · {establishment.price_range}
         </Text>
-        <Text className="font-body-semibold text-foreground text-[15px]" numberOfLines={1}>
-          {establishment.name}
-        </Text>
+        <View className="flex-row items-center gap-2">
+          <Text className="font-body-semibold text-foreground flex-shrink text-[15px]" numberOfLines={1}>
+            {establishment.name}
+          </Text>
+          {instagramHandle && instagramUrl ? (
+            <GuardedPressable
+              accessibilityRole="link"
+              accessibilityLabel={`Abrir ${instagramHandle} no Instagram`}
+              onPress={() => Linking.openURL(instagramUrl)}
+              hitSlop={6}
+            >
+              <Icon name="instagram" color={colors.primary} size={14} />
+            </GuardedPressable>
+          ) : null}
+        </View>
         <View className="flex-row items-center gap-2">
           <RatingStars avg={establishment.rating_avg} count={establishment.rating_count} />
           <Text className="font-body text-muted-foreground text-[12px]" numberOfLines={1}>

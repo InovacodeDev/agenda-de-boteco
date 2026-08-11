@@ -130,6 +130,7 @@ function EstablishmentDetailContent() {
           alt={establishment.name}
           className="h-full w-full object-cover"
         />
+        <div className="absolute inset-x-0 bottom-0 h-3/5 bg-gradient-to-b from-transparent to-black/85" />
         <button
           type="button"
           aria-label="Voltar"
