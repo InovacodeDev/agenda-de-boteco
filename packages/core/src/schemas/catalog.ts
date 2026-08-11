@@ -107,8 +107,14 @@ export const eventSchema = z.object({
   courtesy: z.string().optional(),
   promo: z.string().optional(),
   slug: z.string().optional(),
-  /** Post/reel do Instagram que divulga o evento. */
-  instagram_post_url: z.string().url().optional(),
+  /** Post/reel do Instagram que divulga o evento. Valor inválido é descartado. */
+  instagram_post_url: z
+    .string()
+    .optional()
+    .catch(undefined)
+    .transform((value) =>
+      value && z.string().url().safeParse(value).success ? value : undefined,
+    ),
 });
 
 export const eventAttractionSchema = z.object({
