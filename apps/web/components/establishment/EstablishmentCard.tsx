@@ -3,11 +3,15 @@
 import { type Establishment, formatRating } from '@agenda/core';
 import Link from 'next/link';
 
+import { AttributeChips } from '@/components/ui/AttributeChips';
 import { StarIcon } from '@/components/ui/icons';
 
 export interface EstablishmentCardProps {
   establishment: Establishment;
 }
+
+/** Teto de chips no card; o resto fica para a tela de detalhe. */
+const MAX_CARD_ATTRIBUTES = 3;
 
 /** Card compacto de bar (aba Bares), espelha o mobile. */
 export function EstablishmentCard({ establishment }: EstablishmentCardProps) {
@@ -48,6 +52,11 @@ export function EstablishmentCard({ establishment }: EstablishmentCardProps) {
           <span className="truncate text-[12px] font-[family-name:var(--font-body)] text-muted-foreground">
             {establishment.neighborhood}
           </span>
+        </div>
+        {/* empty:hidden: sem diferenciais o AttributeChips não renderiza nada e o
+            pt-0.5 deixaria um respiro morto no card. */}
+        <div className="pt-0.5 empty:hidden">
+          <AttributeChips attributes={establishment.attributes} max={MAX_CARD_ATTRIBUTES} />
         </div>
       </div>
     </article>

@@ -12,6 +12,7 @@
 import { z } from 'zod';
 
 import { ESTABLISHMENTS } from '../data';
+import type { EstablishmentAttribute } from '../schemas';
 import { establishmentSchema, menuItemSchema } from '../schemas';
 import { getConfiguredSupabase } from '../supabase/client';
 import { handleServiceError } from '../utils/errors';
@@ -77,7 +78,7 @@ interface NearbyRow {
   ambiance: string;
   rating_avg: number;
   rating_count: number;
-  highlights: string[];
+  attributes: EstablishmentAttribute[];
   slug: string | null;
   distance_km: number;
 }
@@ -102,7 +103,7 @@ function mapRow(row: NearbyRow): unknown {
     ambiance: row.ambiance,
     rating_avg: row.rating_avg,
     rating_count: row.rating_count,
-    highlights: row.highlights,
+    attributes: row.attributes,
     slug: nullToUndefined(row.slug),
     distance_km: row.distance_km,
   };

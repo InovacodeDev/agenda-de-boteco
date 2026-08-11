@@ -105,7 +105,7 @@ const ESTABLISHMENT_INPUT = {
   menu_items: [{ name: 'Cerveja', price: 10 }],
   price_range: '$$' as const,
   ambiance: 'Animado',
-  highlights: ['ao vivo'],
+  attributes: ['live-music' as const],
   menu_photo_urls: [],
 };
 

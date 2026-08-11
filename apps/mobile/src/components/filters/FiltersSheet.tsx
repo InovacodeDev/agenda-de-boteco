@@ -1,8 +1,9 @@
-import type { City } from '@agenda/core';
+import type { City, EstablishmentAttribute } from '@agenda/core';
 import { useEffect, useState } from 'react';
 import { Modal, type NativeScrollEvent, type NativeSyntheticEvent } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { AttributeSearchModal } from '@/components/filters/AttributeSearchModal';
 import { CitySearchModal } from '@/components/filters/CitySearchModal';
 import { DateRangeField } from '@/components/filters/DateRangeField';
 import { FilterSection } from '@/components/filters/FilterSection';
@@ -13,11 +14,12 @@ import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
 import { GuardedPressable } from '@/components/ui/GuardedPressable';
 import { Icon } from '@/components/ui/Icon';
+import { QUICK_ATTRIBUTE_METAS } from '@/data/lookup';
 import { useCitiesQuery, useMusicStylesQuery } from '@/hooks/queries';
 import { useUserLocation } from '@/hooks/useUserLocation';
 import { useFiltersStore } from '@/store/useFiltersStore';
 import { colors } from '@/theme/colors';
-import { ScrollView, View } from '@/tw';
+import { ScrollView, Text, View } from '@/tw';
 import { cn } from '@/utils/cn';
 import type { DateBucket, EventFilters, SortBy } from '@/utils/filters';
 import { DEFAULT_EVENT_FILTERS } from '@/utils/filters';
@@ -55,7 +57,11 @@ export function FiltersSheet({ visible, onClose }: FiltersSheetProps) {
   // estado provisório: só aplica ao tocar "Aplicar filtros"
   const [draft, setDraft] = useState<EventFilters>(storedFilters);
   const [draftCityIds, setDraftCityIds] = useState<string[]>(storedFilters.cityIds);
+  const [draftAttributeIds, setDraftAttributeIds] = useState<EstablishmentAttribute[]>(
+    storedFilters.attributeIds,
+  );
   const [isCitySearchOpen, setIsCitySearchOpen] = useState(false);
+  const [isAttributeSearchOpen, setIsAttributeSearchOpen] = useState(false);
 
   // Re-semeia o rascunho na transição fechado → aberto (adjusting state during
   // render, conforme a doc do React — evita efeito em cascata).
@@ -65,12 +71,18 @@ export function FiltersSheet({ visible, onClose }: FiltersSheetProps) {
     if (visible) {
       setDraft(storedFilters);
       setDraftCityIds(storedFilters.cityIds);
+      setDraftAttributeIds(storedFilters.attributeIds);
     }
   }
 
   const toggleDraftCity = (id: string) =>
     setDraftCityIds((current) =>
       current.includes(id) ? current.filter((cityId) => cityId !== id) : [...current, id],
+    );
+
+  const toggleDraftAttribute = (id: EstablishmentAttribute) =>
+    setDraftAttributeIds((current) =>
+      current.includes(id) ? current.filter((attrId) => attrId !== id) : [...current, id],
     );
 
   // Scroll dynamics states
@@ -147,17 +159,18 @@ export function FiltersSheet({ visible, onClose }: FiltersSheetProps) {
   const clear = () => {
     setDraft(DEFAULT_EVENT_FILTERS);
     setDraftCityIds([]);
+    setDraftAttributeIds([]);
   };
 
   const apply = () => {
-    replaceFilters({ ...draft, cityIds: draftCityIds });
+    replaceFilters({ ...draft, cityIds: draftCityIds, attributeIds: draftAttributeIds });
     onClose();
   };
 
   return (
     <>
       <Modal
-        visible={visible && !isCitySearchOpen}
+        visible={visible && !isCitySearchOpen && !isAttributeSearchOpen}
         transparent
         animationType="slide"
         onRequestClose={onClose}
@@ -298,6 +311,37 @@ export function FiltersSheet({ visible, onClose }: FiltersSheetProps) {
                 </View>
               </FilterSection>
 
+              <FilterSection title="Diferenciais">
+                {/* Legenda dentro da seção (e não como prop do FilterSection): o
+                    filtro é E, não OU, e sem hover no mobile o aviso precisa
+                    estar sempre visível. */}
+                <View className="flex-row items-center gap-1.5">
+                  <Icon name="circle-info" color={colors.mutedForeground} size={12} />
+                  <Text className="font-body text-muted-foreground flex-1 text-[11px]">
+                    Mostra apenas bares com todos os selecionados
+                  </Text>
+                </View>
+                <View className="flex-row flex-wrap gap-2">
+                  {QUICK_ATTRIBUTE_METAS.map((meta) => (
+                    <Chip
+                      key={meta.id}
+                      label={meta.label}
+                      selected={draftAttributeIds.includes(meta.id)}
+                      onPress={() => toggleDraftAttribute(meta.id)}
+                    />
+                  ))}
+                  <Chip
+                    label={
+                      draftAttributeIds.length > 0
+                        ? `Buscar diferencial (${draftAttributeIds.length})`
+                        : 'Buscar diferencial'
+                    }
+                    selected={draftAttributeIds.length > 0}
+                    onPress={() => setIsAttributeSearchOpen(true)}
+                  />
+                </View>
+              </FilterSection>
+
               <FilterSection title="Avaliação mínima" trailing={`${draft.minRating} ★`}>
                 <FilterSlider
                   value={draft.minRating}
@@ -366,6 +410,17 @@ export function FiltersSheet({ visible, onClose }: FiltersSheetProps) {
         onConfirm={(ids) => {
           setDraftCityIds(ids);
           setIsCitySearchOpen(false);
+        }}
+      />
+      {/* Mesmas regras do CitySearchModal: irmão do sheet, nunca aninhado, e os
+          dois nunca visíveis ao mesmo tempo. */}
+      <AttributeSearchModal
+        visible={isAttributeSearchOpen}
+        initialSelected={draftAttributeIds}
+        onClose={() => setIsAttributeSearchOpen(false)}
+        onConfirm={(ids) => {
+          setDraftAttributeIds(ids);
+          setIsAttributeSearchOpen(false);
         }}
       />
     </>

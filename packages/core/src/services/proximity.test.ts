@@ -109,7 +109,7 @@ function makeRpcRow(
     ambiance: base.ambiance,
     rating_avg: base.rating_avg,
     rating_count: base.rating_count,
-    highlights: base.highlights,
+    attributes: base.attributes,
     slug: base.slug ?? null,
     location: 'POINT(...)',
     distance_km: 1.23,

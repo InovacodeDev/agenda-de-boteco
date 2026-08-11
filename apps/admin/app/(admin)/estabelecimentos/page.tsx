@@ -3,6 +3,8 @@
 import {
   deleteEstablishment,
   type Establishment,
+  ESTABLISHMENT_ATTRIBUTES,
+  type EstablishmentAttribute,
   type EstablishmentWriteInput,
   establishmentWriteSchema,
   maskPhoneBR,
@@ -46,7 +48,7 @@ type FormState = {
   menu_items: string; // "Nome | 12.50" por linha
   price_range: PriceRange;
   ambiance: string;
-  highlights: string; // um por linha
+  attributes: EstablishmentAttribute[];
   menu_pdf_url: string;
   menu_photo_urls: string[];
 };
@@ -67,7 +69,7 @@ const EMPTY: FormState = {
   menu_items: '',
   price_range: '$$',
   ambiance: '',
-  highlights: '',
+  attributes: [],
   menu_pdf_url: '',
   menu_photo_urls: [],
 };
@@ -89,7 +91,7 @@ function toForm(e: Establishment): FormState {
     menu_items: e.menu_items.map((m) => `${m.name} | ${m.price}`).join('\n'),
     price_range: e.price_range,
     ambiance: e.ambiance,
-    highlights: e.highlights.join('\n'),
+    attributes: e.attributes,
     menu_pdf_url: e.menu_pdf_url ?? '',
     menu_photo_urls: e.menu_photo_urls ?? [],
   };
@@ -104,13 +106,6 @@ function parseMenu(raw: string): MenuItem[] {
       const [name, price] = line.split('|').map((s) => s.trim());
       return { name: name ?? '', price: Number(price) };
     });
-}
-
-function lines(raw: string): string[] {
-  return raw
-    .split('\n')
-    .map((s) => s.trim())
-    .filter(Boolean);
 }
 
 export default function EstabelecimentosPage() {
@@ -132,6 +127,14 @@ export default function EstabelecimentosPage() {
 
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) =>
     setForm((f) => ({ ...f, [key]: value }));
+
+  const toggleAttribute = (id: EstablishmentAttribute) =>
+    setForm((f) => ({
+      ...f,
+      attributes: f.attributes.includes(id)
+        ? f.attributes.filter((attr) => attr !== id)
+        : [...f.attributes, id],
+    }));
 
   const openNew = () => {
     setEditingId(null);
@@ -173,7 +176,7 @@ export default function EstabelecimentosPage() {
       menu_items: parseMenu(form.menu_items),
       price_range: form.price_range,
       ambiance: form.ambiance,
-      highlights: lines(form.highlights),
+      attributes: form.attributes,
       menu_pdf_url: form.menu_pdf_url || null,
       menu_photo_urls: form.menu_photo_urls || [],
     };
@@ -338,11 +341,29 @@ export default function EstabelecimentosPage() {
             </Field>
           </div>
           <div className="sm:col-span-2 lg:col-span-3">
-            <Field label="Destaques (um por linha)" error={errors.highlights}>
-              <TextArea
-                value={form.highlights}
-                onChange={(e) => set('highlights', e.target.value)}
-              />
+            <Field label="Diferenciais" error={errors.attributes}>
+              <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2 lg:grid-cols-3">
+                {ESTABLISHMENT_ATTRIBUTES.map((attribute) => (
+                  <label
+                    key={attribute.id}
+                    title={attribute.description}
+                    className="flex cursor-pointer items-start gap-2 rounded-lg px-2 py-1.5 text-sm hover:bg-muted/50"
+                  >
+                    <input
+                      type="checkbox"
+                      className="mt-0.5 h-4 w-4 shrink-0 accent-primary"
+                      checked={form.attributes.includes(attribute.id)}
+                      onChange={() => toggleAttribute(attribute.id)}
+                    />
+                    <span className="leading-tight">
+                      <span className="block text-foreground">{attribute.label}</span>
+                      <span className="block text-xs text-muted-foreground">
+                        {attribute.description}
+                      </span>
+                    </span>
+                  </label>
+                ))}
+              </div>
             </Field>
           </div>
           <div className="sm:col-span-2 lg:col-span-3">

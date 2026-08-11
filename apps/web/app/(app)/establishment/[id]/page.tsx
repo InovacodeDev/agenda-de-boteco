@@ -4,6 +4,7 @@ import {
   buildDirectionsUrl,
   buildWhatsAppUrl,
   FEATURES,
+  getAttributeMeta,
   indexById,
   musicStylesForEvent,
   upcomingEventsForEstablishment,
@@ -18,7 +19,14 @@ import { useMemo, useState } from 'react';
 import { EstablishmentDetailAgendaItem } from '@/components/establishment/EstablishmentDetailAgendaItem';
 import { EstablishmentDetailMenuItem } from '@/components/establishment/EstablishmentDetailMenuItem';
 import { UnderConstruction } from '@/components/feedback/UnderConstruction';
-import { ClockIcon, HeartIcon, MapPinIcon, SparklesIcon, StarIcon } from '@/components/ui/icons';
+import {
+  AttributeIcon,
+  ClockIcon,
+  HeartIcon,
+  MapPinIcon,
+  SparklesIcon,
+  StarIcon,
+} from '@/components/ui/icons';
 import { SegmentedTabs } from '@/components/ui/SegmentedTabs';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 
@@ -153,14 +161,19 @@ function EstablishmentDetailContent() {
         </p>
 
         <div className="flex flex-wrap gap-2">
-          {establishment.highlights.map((highlight) => (
-            <span
-              key={highlight}
-              className="rounded-full bg-surface-elevated px-3 py-1.5 text-[12px] font-[family-name:var(--font-body)] text-foreground"
-            >
-              {highlight}
-            </span>
-          ))}
+          {establishment.attributes.map((attributeId) => {
+            const meta = getAttributeMeta(attributeId);
+            return (
+              <span
+                key={attributeId}
+                title={meta.description}
+                className="flex items-center gap-1.5 rounded-full bg-surface-elevated px-3 py-1.5 text-[12px] font-[family-name:var(--font-body)] text-foreground"
+              >
+                <AttributeIcon icon={meta.icon} size={13} className="text-primary" />
+                {meta.label}
+              </span>
+            );
+          })}
         </div>
 
         <SegmentedTabs tabs={TABS} activeIndex={activeTab} onChange={setActiveTab} />

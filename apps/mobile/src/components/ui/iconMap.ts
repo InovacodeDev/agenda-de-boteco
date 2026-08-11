@@ -1,101 +1,179 @@
-import type { IconDefinition } from '@fortawesome/fontawesome-svg-core';
-import { faApple } from '@fortawesome/free-brands-svg-icons/faApple';
-import { faGoogle } from '@fortawesome/free-brands-svg-icons/faGoogle';
-import { faBell as faBellRegular } from '@fortawesome/free-regular-svg-icons/faBell';
-import { faCalendar as faCalendarRegular } from '@fortawesome/free-regular-svg-icons/faCalendar';
-import { faClock as faClockRegular } from '@fortawesome/free-regular-svg-icons/faClock';
-import { faComment as faCommentRegular } from '@fortawesome/free-regular-svg-icons/faComment';
-import { faEnvelope as faEnvelopeRegular } from '@fortawesome/free-regular-svg-icons/faEnvelope';
-import { faHeart as faHeartRegular } from '@fortawesome/free-regular-svg-icons/faHeart';
-import { faStar as faStarRegular } from '@fortawesome/free-regular-svg-icons/faStar';
-import { faTrashCan as faTrashCanRegular } from '@fortawesome/free-regular-svg-icons/faTrashCan';
-import { faUser as faUserRegular } from '@fortawesome/free-regular-svg-icons/faUser';
-import { faArrowLeft } from '@fortawesome/free-solid-svg-icons/faArrowLeft';
-import { faAt } from '@fortawesome/free-solid-svg-icons/faAt';
-import { faBell } from '@fortawesome/free-solid-svg-icons/faBell';
-import { faCalendar } from '@fortawesome/free-solid-svg-icons/faCalendar';
-import { faCheck } from '@fortawesome/free-solid-svg-icons/faCheck';
-import { faChevronRight } from '@fortawesome/free-solid-svg-icons/faChevronRight';
-import { faCircleInfo } from '@fortawesome/free-solid-svg-icons/faCircleInfo';
-import { faClock } from '@fortawesome/free-solid-svg-icons/faClock';
-import { faComment } from '@fortawesome/free-solid-svg-icons/faComment';
-import { faDownload } from '@fortawesome/free-solid-svg-icons/faDownload';
-import { faEnvelope } from '@fortawesome/free-solid-svg-icons/faEnvelope';
-import { faFilePdf } from '@fortawesome/free-solid-svg-icons/faFilePdf';
-import { faHeart } from '@fortawesome/free-solid-svg-icons/faHeart';
-import { faHouse } from '@fortawesome/free-solid-svg-icons/faHouse';
-import { faLocationArrow } from '@fortawesome/free-solid-svg-icons/faLocationArrow';
-import { faLocationDot } from '@fortawesome/free-solid-svg-icons/faLocationDot';
-import { faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons/faMagnifyingGlass';
-import { faMusic } from '@fortawesome/free-solid-svg-icons/faMusic';
-import { faRightFromBracket } from '@fortawesome/free-solid-svg-icons/faRightFromBracket';
-import { faScrewdriverWrench } from '@fortawesome/free-solid-svg-icons/faScrewdriverWrench';
-import { faShareNodes } from '@fortawesome/free-solid-svg-icons/faShareNodes';
-import { faSliders } from '@fortawesome/free-solid-svg-icons/faSliders';
-import { faStar } from '@fortawesome/free-solid-svg-icons/faStar';
-import { faStore } from '@fortawesome/free-solid-svg-icons/faStore';
-import { faTicket } from '@fortawesome/free-solid-svg-icons/faTicket';
-import { faTrashCan } from '@fortawesome/free-solid-svg-icons/faTrashCan';
-import { faUser } from '@fortawesome/free-solid-svg-icons/faUser';
-import { faWandMagicSparkles } from '@fortawesome/free-solid-svg-icons/faWandMagicSparkles';
-import { faXmark } from '@fortawesome/free-solid-svg-icons/faXmark';
+import {
+  AppleLogo,
+  ArrowLeft,
+  At,
+  Baby,
+  BeerStein,
+  Bell,
+  CalendarBlank,
+  CalendarCheck,
+  Car,
+  CaretRight,
+  ChatCircle,
+  Check,
+  Cheers,
+  Clock,
+  ClockAfternoon,
+  Confetti,
+  CookingPot,
+  CreditCard,
+  Disc,
+  Dog,
+  DownloadSimple,
+  Envelope,
+  FilePdf,
+  ForkKnife,
+  Globe,
+  GoogleLogo,
+  Hamburger,
+  Heart,
+  House,
+  type Icon as PhosphorIcon,
+  type IconWeight,
+  Info,
+  Laptop,
+  MagnifyingGlass,
+  MapPin,
+  Martini,
+  Megaphone,
+  Mountains,
+  MusicNotes,
+  NavigationArrow,
+  Plant,
+  RainbowCloud,
+  ShareNetwork,
+  SignOut,
+  SlidersHorizontal,
+  SoccerBall,
+  Sparkle,
+  SpeakerHigh,
+  Star,
+  Storefront,
+  Television,
+  Ticket,
+  Trash,
+  Tree,
+  Trophy,
+  User,
+  Users,
+  Wheelchair,
+  WifiHigh,
+  Wind,
+  Wine,
+  Wrench,
+  X,
+} from 'phosphor-react-native';
 
+/**
+ * Variantes de chamada da app. Mantidas em `solid`/`regular`/`brands` (nomes
+ * herdados dos call-sites) e traduzidas para os pesos do Phosphor: `solid` vira
+ * `fill` (estado ativo — coração favoritado, estrela preenchida) e `regular`
+ * segue outline. `brands` existe só para os logos, que têm peso único.
+ */
 export type IconVariant = 'solid' | 'regular' | 'brands';
 
-interface IconEntry {
-  solid?: IconDefinition;
-  regular?: IconDefinition;
-  brands?: IconDefinition;
-}
+const WEIGHT_BY_VARIANT: Record<IconVariant, IconWeight> = {
+  solid: 'fill',
+  regular: 'regular',
+  brands: 'fill',
+};
 
+/** Peso default de quem não passa `variant` — o padrão visual do app. */
+export const DEFAULT_ICON_WEIGHT: IconWeight = 'regular';
+
+/**
+ * Mapa central de ícones (Phosphor). Call-sites referenciam por nome
+ * kebab-case; trocar a biblioteca de ícones toca só este arquivo.
+ *
+ * Os nomes da primeira seção são os históricos da navegação/UI. A segunda
+ * cobre os atributos de estabelecimento (`icon` em ESTABLISHMENT_ATTRIBUTES).
+ */
 const ICON_MAP = {
-  'apple': { brands: faApple },
-  'arrow-left': { solid: faArrowLeft },
-  'at': { solid: faAt },
-  'bell': { solid: faBell, regular: faBellRegular },
-  'calendar': { solid: faCalendar, regular: faCalendarRegular },
-  'check': { solid: faCheck },
-  'chevron-right': { solid: faChevronRight },
-  'circle-info': { solid: faCircleInfo },
-  'clock': { solid: faClock, regular: faClockRegular },
-  'comment': { solid: faComment, regular: faCommentRegular },
-  'envelope': { solid: faEnvelope, regular: faEnvelopeRegular },
-  'google': { brands: faGoogle },
-  'heart': { solid: faHeart, regular: faHeartRegular },
-  'house': { solid: faHouse },
-  'location-arrow': { solid: faLocationArrow },
-  'location-dot': { solid: faLocationDot },
-  'magnifying-glass': { solid: faMagnifyingGlass },
-  'music': { solid: faMusic },
-  'right-from-bracket': { solid: faRightFromBracket },
-  'screwdriver-wrench': { solid: faScrewdriverWrench },
-  'share-nodes': { solid: faShareNodes },
-  'sliders': { solid: faSliders },
-  'star': { solid: faStar, regular: faStarRegular },
-  'store': { solid: faStore },
-  'ticket': { solid: faTicket },
-  'trash-can': { solid: faTrashCan, regular: faTrashCanRegular },
-  'user': { solid: faUser, regular: faUserRegular },
-  'wand-magic-sparkles': { solid: faWandMagicSparkles },
-  'xmark': { solid: faXmark },
-  'file-pdf': { solid: faFilePdf },
-  'download': { solid: faDownload },
-} satisfies Record<string, IconEntry>;
+  // UI e navegação
+  'apple': AppleLogo,
+  'arrow-left': ArrowLeft,
+  'at': At,
+  'bell': Bell,
+  'calendar': CalendarBlank,
+  'check': Check,
+  'chevron-right': CaretRight,
+  'circle-info': Info,
+  'clock': Clock,
+  'comment': ChatCircle,
+  'download': DownloadSimple,
+  'envelope': Envelope,
+  'file-pdf': FilePdf,
+  'google': GoogleLogo,
+  'heart': Heart,
+  'house': House,
+  'location-arrow': NavigationArrow,
+  'location-dot': MapPin,
+  'magnifying-glass': MagnifyingGlass,
+  'music': MusicNotes,
+  'right-from-bracket': SignOut,
+  'screwdriver-wrench': Wrench,
+  'share-nodes': ShareNetwork,
+  'sliders': SlidersHorizontal,
+  'star': Star,
+  'store': Storefront,
+  'ticket': Ticket,
+  'trash-can': Trash,
+  'user': User,
+  'wand-magic-sparkles': Sparkle,
+  'xmark': X,
+  // Atributos de estabelecimento
+  'accessible': Wheelchair,
+  'air-conditioning': Wind,
+  'audio-on': SpeakerHigh,
+  'beer': BeerStein,
+  'cheering': Megaphone,
+  'cocktail': Martini,
+  'counter': Storefront,
+  'date': Wine,
+  'deals': Cheers,
+  'dj': Disc,
+  'family': Users,
+  'free-entry': Ticket,
+  'gluten-free': CookingPot,
+  'globe': Globe,
+  'groups': Users,
+  'happy-hour': ClockAfternoon,
+  'kids': Baby,
+  'kids-menu': Hamburger,
+  'laptop': Laptop,
+  'lgbtq': RainbowCloud,
+  'meal-voucher': CreditCard,
+  'other-sports': Trophy,
+  'outdoor': Tree,
+  'parking': Car,
+  'party': Confetti,
+  'pet': Dog,
+  'reservation': CalendarCheck,
+  'romantic': Wine,
+  'scenic-view': Mountains,
+  'sports': SoccerBall,
+  'trophy': Trophy,
+  'tv': Television,
+  'vegan': Plant,
+  'vegetarian': ForkKnife,
+  'wifi': WifiHigh,
+} satisfies Record<string, PhosphorIcon>;
 
 export type IconName = keyof typeof ICON_MAP;
 
 export const ICON_NAMES = Object.keys(ICON_MAP) as IconName[];
 
-/**
- * Resolve a kebab-case name + optional variant to a Font Awesome icon.
- * If the requested variant is absent, falls back deterministically to the
- * entry's available definition (brands → solid → regular), guaranteeing a
- * valid IconDefinition for every registered name.
- */
-export function resolveIcon(name: IconName, variant: IconVariant = 'solid'): IconDefinition {
-  const entry: IconEntry = ICON_MAP[name];
-  const chosen =
-    entry[variant] ?? entry.brands ?? entry.solid ?? entry.regular;
-  // Every entry has at least one definition; the map type guarantees this.
-  return chosen as IconDefinition;
+/** Resolve um nome kebab-case para o componente Phosphor correspondente. */
+export function resolveIcon(name: IconName): PhosphorIcon {
+  return ICON_MAP[name];
+}
+
+/** Traduz a variante da app para o peso do Phosphor. */
+export function resolveWeight(variant?: IconVariant): IconWeight {
+  return variant ? WEIGHT_BY_VARIANT[variant] : DEFAULT_ICON_WEIGHT;
+}
+
+/** Type guard para nomes vindos de dados (ex.: `icon` do catálogo de atributos). */
+export function isIconName(value: string): value is IconName {
+  return value in ICON_MAP;
 }
