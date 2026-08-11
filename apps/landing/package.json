@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@agenda/core": "workspace:*",
+    "@vercel/analytics": "^2.0.1",
     "next": "^15.1.0",
     "react": "19.2.3",
     "react-dom": "19.2.3"
@@ -19,10 +20,10 @@
   "devDependencies": {
     "@agenda/typescript-config": "workspace:*",
     "@tailwindcss/postcss": "^4.0.0",
-    "tailwindcss": "^4.0.0",
+    "@types/node": "^22.0.0",
     "@types/react": "^19.2.15",
     "@types/react-dom": "^19.2.3",
-    "@types/node": "^22.0.0",
+    "tailwindcss": "^4.0.0",
     "typescript": "^6.0.3"
   }
 }
