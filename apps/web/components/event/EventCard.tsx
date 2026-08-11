@@ -1,8 +1,10 @@
 'use client';
 
 import {
+  buildInstagramProfileUrl,
   type Establishment,
   type Event,
+  formatInstagramHandle,
   formatPrice,
   formatRelativeDay,
   formatTimeRange,
@@ -20,6 +22,7 @@ import {
   CalendarIcon,
   ClockIcon,
   HeartIcon,
+  InstagramIcon,
   MapPinIcon,
   TicketIcon,
 } from '@/components/ui/icons';
@@ -78,6 +81,9 @@ export function EventCard({
     return `${dist.toFixed(1).replace('.', ',')}km de mim`;
   }, [establishment.lat, establishment.lng, userCoords]);
 
+  const instagramHandle = formatInstagramHandle(establishment.instagram);
+  const instagramUrl = buildInstagramProfileUrl(establishment.instagram);
+
   return (
     <Link href={`/event/${event.id}`} className="block transition-opacity hover:opacity-90">
     <article className="overflow-hidden rounded-2xl bg-card">
@@ -133,23 +139,46 @@ export function EventCard({
         </div>
       </div>
 
-      {distanceText ? (
-        <div className="bg-surface/50 border-border flex items-center gap-1.5 border-b px-4 py-1.5">
-          <svg
-            viewBox="0 0 24 24"
-            width={12}
-            height={12}
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={2.5}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="text-primary"
-          >
-            <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
-            <circle cx="12" cy="10" r="3" />
-          </svg>
-          <span className="font-[family-name:var(--font-body)] text-[12px] text-muted-foreground">{distanceText}</span>
+      {distanceText || (instagramHandle && instagramUrl) ? (
+        <div className="bg-surface/50 border-border flex items-center justify-between border-b px-4 py-1.5">
+          {distanceText ? (
+            <span className="flex items-center gap-1.5">
+              <svg
+                viewBox="0 0 24 24"
+                width={12}
+                height={12}
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2.5}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="text-primary"
+              >
+                <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
+                <circle cx="12" cy="10" r="3" />
+              </svg>
+              <span className="font-[family-name:var(--font-body)] text-[12px] text-muted-foreground">{distanceText}</span>
+            </span>
+          ) : (
+            <span />
+          )}
+          {instagramHandle && instagramUrl ? (
+            <button
+              type="button"
+              onClick={(clickEvent) => {
+                clickEvent.preventDefault();
+                clickEvent.stopPropagation();
+                window.open(instagramUrl, '_blank', 'noreferrer');
+              }}
+              aria-label={`Abrir ${instagramHandle} no Instagram`}
+              className="flex items-center gap-1.5 transition-opacity hover:opacity-80"
+            >
+              <InstagramIcon size={12} className="text-primary" />
+              <span className="font-[family-name:var(--font-body)] text-[12px] font-medium text-primary">
+                {instagramHandle}
+              </span>
+            </button>
+          ) : null}
         </div>
       ) : null}
 

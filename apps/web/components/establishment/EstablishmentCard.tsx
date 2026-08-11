@@ -1,10 +1,15 @@
 'use client';
 
-import { type Establishment, formatRating } from '@agenda/core';
+import {
+  buildInstagramProfileUrl,
+  type Establishment,
+  formatInstagramHandle,
+  formatRating,
+} from '@agenda/core';
 import Link from 'next/link';
 
 import { AttributeChips } from '@/components/ui/AttributeChips';
-import { StarIcon } from '@/components/ui/icons';
+import { InstagramIcon, StarIcon } from '@/components/ui/icons';
 
 export interface EstablishmentCardProps {
   establishment: Establishment;
@@ -19,6 +24,8 @@ export function EstablishmentCard({ establishment }: EstablishmentCardProps) {
     establishment.rating_avg,
     establishment.rating_count,
   ).split(' ');
+  const instagramHandle = formatInstagramHandle(establishment.instagram);
+  const instagramUrl = buildInstagramProfileUrl(establishment.instagram);
 
   return (
     <Link
@@ -30,15 +37,31 @@ export function EstablishmentCard({ establishment }: EstablishmentCardProps) {
       <img
         src={establishment.logo_url}
         alt={establishment.name}
-        className="h-16 w-16 shrink-0 rounded-xl object-cover"
+        className="h-20 w-20 shrink-0 rounded-xl object-cover"
       />
       <div className="flex flex-1 flex-col justify-center gap-0.5">
         <p className="text-[11px] font-[family-name:var(--font-body)] text-muted-foreground">
           {establishment.ambiance} · {establishment.price_range}
         </p>
-        <p className="truncate text-[15px] font-[family-name:var(--font-body)] font-semibold text-foreground">
-          {establishment.name}
-        </p>
+        <div className="flex items-center gap-2">
+          <p className="truncate text-[15px] font-[family-name:var(--font-body)] font-semibold text-foreground">
+            {establishment.name}
+          </p>
+          {instagramHandle && instagramUrl ? (
+            <button
+              type="button"
+              onClick={(clickEvent) => {
+                clickEvent.preventDefault();
+                clickEvent.stopPropagation();
+                window.open(instagramUrl, '_blank', 'noreferrer');
+              }}
+              aria-label={`Abrir ${instagramHandle} no Instagram`}
+              className="shrink-0 text-primary transition-opacity hover:opacity-80"
+            >
+              <InstagramIcon size={14} />
+            </button>
+          ) : null}
+        </div>
         <div className="flex items-center gap-2">
           <span className="flex items-center gap-1">
             <StarIcon size={14} className="text-accent" />
