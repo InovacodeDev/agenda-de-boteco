@@ -103,6 +103,9 @@ export default function FeedPage() {
         cityIds: filters.cityIds,
         attributeIds: filters.attributeIds,
         origin: userCoords,
+        maxDistanceKm: filters.maxDistanceKm,
+        minRating: filters.minRating,
+        openNow: filters.openNow,
         sortBy: barSort,
         events: events ?? [],
         now,
@@ -113,6 +116,9 @@ export default function FeedPage() {
       barQuery,
       filters.cityIds,
       filters.attributeIds,
+      filters.maxDistanceKm,
+      filters.minRating,
+      filters.openNow,
       userCoords,
       barSort,
       events,
@@ -207,7 +213,11 @@ export default function FeedPage() {
         </>
       )}
 
-      <FiltersSidebar isOpen={isFiltersOpen} onClose={() => setIsFiltersOpen(false)} />
+      <FiltersSidebar
+        isOpen={isFiltersOpen}
+        onClose={() => setIsFiltersOpen(false)}
+        showEventFilters={activeTab === 0}
+      />
     </section>
   );
 }

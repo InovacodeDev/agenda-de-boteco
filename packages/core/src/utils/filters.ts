@@ -24,6 +24,12 @@ export interface EventFilters {
   /** cidades selecionadas no filtro (união). Vazio = usa a cidade ativa do contexto. */
   cityIds: string[];
   /**
+   * Inclui no feed os eventos já encerrados, que por padrão somem no dia
+   * seguinte ao término. Soma ao resultado normal — não é uma visão exclusiva
+   * de histórico.
+   */
+  includePastEvents: boolean;
+  /**
    * Atributos exigidos do estabelecimento — combinados em **E**: o bar precisa
    * ter todos os marcados. Quem marca "pet friendly" + "área kids" quer levar o
    * cachorro *e* a criança, não um dos dois. Vazio = não filtra.
@@ -46,6 +52,7 @@ export const DEFAULT_EVENT_FILTERS: EventFilters = {
   // starts_at asc, então a lista nunca fica sem ordem definida.
   sortBy: 'distance',
   cityIds: [],
+  includePastEvents: false,
   attributeIds: [],
 };
 
@@ -78,7 +85,8 @@ export function hasActiveFilters(filters: EventFilters): boolean {
     filters.maxPrice !== DEFAULT_EVENT_FILTERS.maxPrice ||
     filters.freeOnly ||
     filters.nearMe ||
-    filters.openNow
+    filters.openNow ||
+    filters.includePastEvents
   );
 }
 
@@ -169,8 +177,11 @@ export function applyEventFilters(
 
   return events
     .filter((event) => {
-      // Evento encerrado sai do feed a partir do dia seguinte ao término.
-      if (!isEventVisibleInFeed(event.ends_at, ctx.now)) return false;
+      // Evento encerrado sai do feed a partir do dia seguinte ao término,
+      // salvo quando o usuário pede explicitamente para ver os passados.
+      if (!filters.includePastEvents && !isEventVisibleInFeed(event.ends_at, ctx.now)) {
+        return false;
+      }
 
       const establishment = ctx.establishmentsById[event.establishment_id];
       if (!establishment) return false;
@@ -298,6 +309,12 @@ export interface EstablishmentFilterParams {
   attributeIds?: readonly EstablishmentAttribute[];
   /** Presente = ordena por proximidade; ausente = mantém a ordem recebida. */
   origin?: { lat: number; lng: number } | null;
+  /** Raio máximo em km a partir de `origin`. Sem `origin` não recorta. */
+  maxDistanceKm?: number;
+  /** Nota mínima do bar (0 = não recorta). */
+  minRating?: number;
+  /** Apenas bares abertos no horário de `now`. */
+  openNow?: boolean;
   /** Critério de ordenação; default `eventToday`. */
   sortBy?: EstablishmentSortBy;
   /**
@@ -352,6 +369,8 @@ export function applyEstablishmentFilters(
     params.cityIds && params.cityIds.length > 0 ? params.cityIds : null;
   const attributeIds = params.attributeIds ?? [];
 
+  const now = params.now ?? new Date();
+
   const filtered = establishments.filter((establishment) => {
     if (cityIds) {
       if (!cityIds.includes(establishment.city_id)) return false;
@@ -362,6 +381,20 @@ export function applyEstablishmentFilters(
     if (!matchesAttributes(establishment, attributeIds)) return false;
 
     if (query && !normalizeText(establishment.name).includes(query)) return false;
+
+    if (params.minRating && establishment.rating_avg < params.minRating) return false;
+
+    // Sem origin não há como medir raio — o controle de distância vira no-op,
+    // igual ao `nearMe` do feed de eventos sem localização.
+    if (params.origin && params.maxDistanceKm !== undefined) {
+      const distanceKm = haversineDistanceKm(params.origin, {
+        lat: establishment.lat,
+        lng: establishment.lng,
+      });
+      if (distanceKm > params.maxDistanceKm) return false;
+    }
+
+    if (params.openNow && !isOpenNow(establishment.opening_hours, now)) return false;
 
     return true;
   });
@@ -380,7 +413,7 @@ export function applyEstablishmentFilters(
   const withEvent = establishmentIdsWithEventWithin(
     events,
     sortBy === 'eventToday' ? 1 : 7,
-    params.now ?? new Date(),
+    now,
   );
   const featured: Establishment[] = [];
   const rest: Establishment[] = [];

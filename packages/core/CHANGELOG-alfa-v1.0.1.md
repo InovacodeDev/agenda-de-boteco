@@ -11,3 +11,5 @@
 - Novo cálculo de status de eventos e bares (falta pouco, acontecendo agora, encerrado, aberto, fecha em breve), compartilhado entre app e site
 - Eventos encerrados deixam de aparecer no feed a partir do dia seguinte ao término
 - Nova ordenação de bares por agenda (evento hoje, evento na semana) ou proximidade, compartilhada entre app e site
+- Novo filtro de eventos passados, que inclui no feed os eventos já encerrados
+- Filtro de bares passa a aplicar distância, avaliação mínima e "aberto agora", que antes eram ignorados nessa lista

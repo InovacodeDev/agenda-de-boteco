@@ -190,6 +190,9 @@ export default function FeedScreen() {
         cityIds: filters.cityIds,
         attributeIds: filters.attributeIds,
         origin: userCoords,
+        maxDistanceKm: filters.maxDistanceKm,
+        minRating: filters.minRating,
+        openNow: filters.openNow,
         sortBy: barSort,
         events: events ?? [],
         now,
@@ -200,6 +203,9 @@ export default function FeedScreen() {
       barQuery,
       filters.cityIds,
       filters.attributeIds,
+      filters.maxDistanceKm,
+      filters.minRating,
+      filters.openNow,
       userCoords,
       barSort,
       events,
@@ -322,7 +328,11 @@ export default function FeedScreen() {
           renderItem={({ item }) => <EstablishmentCard establishment={item} />}
         />
       )}
-      <FiltersSheet visible={isFiltersOpen} onClose={() => setIsFiltersOpen(false)} />
+      <FiltersSheet
+        visible={isFiltersOpen}
+        onClose={() => setIsFiltersOpen(false)}
+        showEventFilters={activeTab === 0}
+      />
     </Screen>
   );
 }
