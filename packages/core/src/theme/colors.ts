@@ -25,6 +25,15 @@ export const colors = {
   neonCyan: '#1FD5F9',
   neonPink: '#FF4DA6',
   ring: '#1DD75E',
+  /*
+   * Semáforo de eventos/bares. Verde reusa primary; os outros três são
+   * próprios porque accent (âmbar) sozinho não separa "falta tempo" de
+   * "acabando", e destructive é rosa, não vermelho.
+   */
+  statusGreen: '#1DD75E',
+  statusYellow: '#F5D90A',
+  statusOrange: '#F97316',
+  statusRed: '#EF4444',
 } as const;
 
 export type ThemeColor = keyof typeof colors;

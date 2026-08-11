@@ -8,3 +8,5 @@
 - O @ do Instagram é exibido em formato único (@perfil) e vira link para o perfil, em qualquer app
 - As fontes usadas nos sites passam a vir de um ponto único, servidas pelo próprio servidor
 - Lista de eventos volta a carregar mesmo quando o link do Instagram de um evento está preenchido em formato inválido
+- Novo cálculo de status de eventos e bares (falta pouco, acontecendo agora, encerrado, aberto, fecha em breve), compartilhado entre app e site
+- Eventos encerrados deixam de aparecer no feed a partir do dia seguinte ao término

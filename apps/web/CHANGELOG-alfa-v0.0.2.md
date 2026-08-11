@@ -21,3 +21,6 @@
 - Corrigido o contraste da foto de capa do bar com as informações exibidas por cima
 - Cards de evento no feed mostram o @ do Instagram do bar, ao lado da distância
 - Cards de bares mostram o @ do Instagram ao lado do nome, e a logo ficou um pouco maior
+- Cards de evento mostram um semáforo com o tempo até começar, se está rolando agora e quando está prestes a terminar
+- Cards de bares mostram um semáforo indicando se está aberto, fechado, se abre em breve ou se fecha em uma hora
+- Eventos já encerrados deixam de aparecer no feed a partir do dia seguinte

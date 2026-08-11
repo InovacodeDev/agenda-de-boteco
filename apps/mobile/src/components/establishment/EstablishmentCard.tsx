@@ -1,3 +1,4 @@
+import { useEstablishmentStatusLight } from '@agenda/core';
 import { useRouter } from 'expo-router';
 import { memo } from 'react';
 import { Linking } from 'react-native';
@@ -6,6 +7,7 @@ import { AttributeChips } from '@/components/ui/AttributeChips';
 import { GuardedPressable } from '@/components/ui/GuardedPressable';
 import { Icon } from '@/components/ui/Icon';
 import { RatingStars } from '@/components/ui/RatingStars';
+import { StatusLightBadge } from '@/components/ui/StatusLightBadge';
 import type { Establishment } from '@/data/schemas';
 import { colors } from '@/theme/colors';
 import { Image, Text, View } from '@/tw';
@@ -15,8 +17,11 @@ export interface EstablishmentCardProps {
   establishment: Establishment;
 }
 
-/** Teto de chips no card; o resto fica para a tela de detalhe. */
-const MAX_CARD_ATTRIBUTES = 3;
+/**
+ * Teto de chips no card; o resto fica para a tela de detalhe. Menor que o do
+ * card de evento porque aqui o semáforo divide a mesma linha estreita.
+ */
+const MAX_CARD_ATTRIBUTES = 2;
 
 /** Card compacto de bar (Favoritos, carrossel do mapa). Memoizado para listas. */
 export const EstablishmentCard = memo(function EstablishmentCard({
@@ -25,6 +30,7 @@ export const EstablishmentCard = memo(function EstablishmentCard({
   const router = useRouter();
   const instagramHandle = formatInstagramHandle(establishment.instagram);
   const instagramUrl = buildInstagramProfileUrl(establishment.instagram);
+  const statusLight = useEstablishmentStatusLight(establishment.opening_hours);
 
   return (
     <GuardedPressable
@@ -65,7 +71,12 @@ export const EstablishmentCard = memo(function EstablishmentCard({
             {establishment.neighborhood}
           </Text>
         </View>
-        <AttributeChips attributes={establishment.attributes} max={MAX_CARD_ATTRIBUTES} />
+        <View className="flex-row items-center justify-between gap-2">
+          <View className="flex-1">
+            <AttributeChips attributes={establishment.attributes} max={MAX_CARD_ATTRIBUTES} />
+          </View>
+          <StatusLightBadge light={statusLight} />
+        </View>
       </View>
     </GuardedPressable>
   );

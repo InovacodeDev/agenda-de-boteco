@@ -5,18 +5,23 @@ import {
   type Establishment,
   formatInstagramHandle,
   formatRating,
+  useEstablishmentStatusLight,
 } from '@agenda/core';
 import Link from 'next/link';
 
 import { AttributeChips } from '@/components/ui/AttributeChips';
 import { InstagramIcon, StarIcon } from '@/components/ui/icons';
+import { StatusLightBadge } from '@/components/ui/StatusLightBadge';
 
 export interface EstablishmentCardProps {
   establishment: Establishment;
 }
 
-/** Teto de chips no card; o resto fica para a tela de detalhe. */
-const MAX_CARD_ATTRIBUTES = 3;
+/**
+ * Teto de chips no card; o resto fica para a tela de detalhe. Menor que o do
+ * card de evento porque aqui o semáforo divide a mesma linha estreita.
+ */
+const MAX_CARD_ATTRIBUTES = 2;
 
 /** Card compacto de bar (aba Bares), espelha o mobile. */
 export function EstablishmentCard({ establishment }: EstablishmentCardProps) {
@@ -26,6 +31,7 @@ export function EstablishmentCard({ establishment }: EstablishmentCardProps) {
   ).split(' ');
   const instagramHandle = formatInstagramHandle(establishment.instagram);
   const instagramUrl = buildInstagramProfileUrl(establishment.instagram);
+  const statusLight = useEstablishmentStatusLight(establishment.opening_hours);
 
   return (
     <Link
@@ -76,10 +82,12 @@ export function EstablishmentCard({ establishment }: EstablishmentCardProps) {
             {establishment.neighborhood}
           </span>
         </div>
-        {/* empty:hidden: sem diferenciais o AttributeChips não renderiza nada e o
-            pt-0.5 deixaria um respiro morto no card. */}
-        <div className="pt-0.5 empty:hidden">
-          <AttributeChips attributes={establishment.attributes} max={MAX_CARD_ATTRIBUTES} />
+        {/* Semáforo ancorado no extremo direito da linha dos diferenciais. */}
+        <div className="flex items-center justify-between gap-2 pt-0.5">
+          <div className="min-w-0 flex-1 empty:hidden">
+            <AttributeChips attributes={establishment.attributes} max={MAX_CARD_ATTRIBUTES} />
+          </div>
+          <StatusLightBadge light={statusLight} />
         </div>
       </div>
     </article>

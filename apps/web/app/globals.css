@@ -27,6 +27,12 @@
   --color-neon-pink: #ff4da6;
   --color-ring: #1dd75e;
 
+  /* Semáforo de eventos/bares — espelha colors.ts do core. */
+  --color-status-green: #1dd75e;
+  --color-status-yellow: #f5d90a;
+  --color-status-orange: #f97316;
+  --color-status-red: #ef4444;
+
   /* Fontes: famílias web. As variáveis --font-* são preenchidas por next/font no layout. */
   --font-heading: var(--font-space-grotesk), system-ui, sans-serif;
   --font-body: var(--font-inter), system-ui, sans-serif;

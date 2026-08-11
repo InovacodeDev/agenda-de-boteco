@@ -1,6 +1,7 @@
 import type { Establishment, EstablishmentAttribute, Event } from '../schemas';
 import { isOpenNow, isWeekend } from './dates';
 import { haversineDistanceKm, isVirtualCityId } from './geo';
+import { isEventVisibleInFeed } from './status-light';
 
 export type DateBucket = 'any' | 'today' | 'tomorrow' | 'weekend';
 
@@ -168,6 +169,9 @@ export function applyEventFilters(
 
   return events
     .filter((event) => {
+      // Evento encerrado sai do feed a partir do dia seguinte ao término.
+      if (!isEventVisibleInFeed(event.ends_at, ctx.now)) return false;
+
       const establishment = ctx.establishmentsById[event.establishment_id];
       if (!establishment) return false;
       if (cityIds) {
