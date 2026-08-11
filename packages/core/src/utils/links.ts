@@ -16,6 +16,23 @@ export function buildWhatsAppUrl(phone: string, text?: string): string {
   return text ? `${base}?text=${encodeURIComponent(text)}` : base;
 }
 
+/**
+ * URL do perfil no Instagram a partir do handle cadastrado (com ou sem `@`).
+ * Devolve `undefined` quando não há handle utilizável — o call-site esconde o
+ * link em vez de abrir instagram.com/ vazio.
+ */
+export function buildInstagramProfileUrl(handle?: string): string | undefined {
+  const username = handle?.trim().replace(/^@+/, '').replace(/\/+$/, '');
+  if (!username) return undefined;
+  return `https://instagram.com/${encodeURIComponent(username)}`;
+}
+
+/** Handle normalizado para exibição (`@perfil`), ou `undefined` se vazio. */
+export function formatInstagramHandle(handle?: string): string | undefined {
+  const username = handle?.trim().replace(/^@+/, '').replace(/\/+$/, '');
+  return username ? `@${username}` : undefined;
+}
+
 /** Scheme custom do app (deep link nativo). */
 export const APP_SCHEME = 'agenda-de-boteco';
 

@@ -3,6 +3,8 @@
 
 import {
   buildDirectionsUrl,
+  buildInstagramProfileUrl,
+  formatInstagramHandle,
   formatPrice,
   formatRelativeDay,
   formatTimeRange,
@@ -25,6 +27,7 @@ import {
   CalendarIcon,
   ClockIcon,
   HeartIcon,
+  InstagramIcon,
   MapPinIcon,
   TicketIcon,
 } from '@/components/ui/icons';
@@ -137,6 +140,12 @@ export default function EventDetailPage() {
 
   const styles = musicStylesForEvent(event, stylesById);
 
+  // O @ é sempre o do estabelecimento (o evento não tem perfil próprio); o
+  // destino é o post do evento quando cadastrado, senão o perfil do bar.
+  const instagramHandle = formatInstagramHandle(establishment.instagram);
+  const instagramUrl =
+    event.instagram_post_url ?? buildInstagramProfileUrl(establishment.instagram);
+
   const badge = event.courtesy
     ? { label: 'Cortesia', text: event.courtesy }
     : event.promo
@@ -185,6 +194,17 @@ export default function EventDetailPage() {
         <p className="text-[15px] font-[family-name:var(--font-body)] text-muted-foreground">
           {event.attraction}
         </p>
+        {instagramHandle && instagramUrl ? (
+          <a
+            href={instagramUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="flex w-fit items-center gap-1.5 pt-0.5 text-[13px] font-[family-name:var(--font-body)] font-medium text-primary transition-opacity hover:opacity-80"
+          >
+            <InstagramIcon size={14} />
+            {instagramHandle}
+          </a>
+        ) : null}
       </div>
 
       <div className="flex flex-col gap-3">

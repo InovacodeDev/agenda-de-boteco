@@ -26,6 +26,7 @@ const UI_ICON_NAMES = [
   'google',
   'heart',
   'house',
+  'instagram',
   'location-arrow',
   'location-dot',
   'magnifying-glass',

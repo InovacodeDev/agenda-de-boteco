@@ -27,7 +27,13 @@ import { colors } from '@/theme/colors';
 import { headingLetterSpacing } from '@/theme/typography';
 import { Image, ScrollView, Text, View } from '@/tw';
 import { upcomingEventsForEstablishment } from '@/utils/events';
-import { buildDirectionsUrl, buildEstablishmentShareUrl, buildWhatsAppUrl } from '@/utils/links';
+import {
+  buildDirectionsUrl,
+  buildEstablishmentShareUrl,
+  buildInstagramProfileUrl,
+  buildWhatsAppUrl,
+  formatInstagramHandle,
+} from '@/utils/links';
 
 const TABS = ['Sobre', 'Agenda', 'Cardápio', 'Reviews'];
 
@@ -94,6 +100,9 @@ function EstablishmentDetailContent() {
     );
   }
 
+  const instagramHandle = formatInstagramHandle(establishment.instagram);
+  const instagramUrl = buildInstagramProfileUrl(establishment.instagram);
+
   const share = () => {
     const url = buildEstablishmentShareUrl(
       { slugOrId: establishment.id },
@@ -157,6 +166,19 @@ function EstablishmentDetailContent() {
               <Text className="font-body text-muted-foreground text-[12px]">
                 {establishment.ambiance} · {establishment.price_range}
               </Text>
+              {instagramHandle && instagramUrl ? (
+                <GuardedPressable
+                  accessibilityRole="link"
+                  accessibilityLabel={`Abrir ${instagramHandle} no Instagram`}
+                  onPress={() => Linking.openURL(instagramUrl)}
+                  className="flex-row items-center gap-1.5 self-start"
+                >
+                  <Icon name="instagram" color={colors.primary} size={13} />
+                  <Text className="font-body-medium text-primary text-[12px]">
+                    {instagramHandle}
+                  </Text>
+                </GuardedPressable>
+              ) : null}
             </View>
           </View>
 
@@ -211,13 +233,6 @@ function EstablishmentDetailContent() {
                   <Icon name="clock" variant="regular" color={colors.mutedForeground} size={13} />
                 }
               />
-              {establishment.instagram ? (
-                <AboutCard
-                  label="Instagram"
-                  value={establishment.instagram}
-                  icon={<Icon name="at" color={colors.primary} size={13} />}
-                />
-              ) : null}
             </View>
           ) : null}
 

@@ -21,6 +21,7 @@ import {
   HeartIcon as PhHeartIcon,
   type Icon as PhosphorIcon,
   InfoIcon as PhInfoIcon,
+  InstagramLogoIcon as PhInstagramLogoIcon,
   LaptopIcon,
   MagnifyingGlassIcon,
   MapPinIcon as PhMapPinIcon,
@@ -110,6 +111,10 @@ export function XIcon({ size = 16, className }: IconProps) {
 
 export function InfoIcon({ size = 16, className }: IconProps) {
   return <PhInfoIcon size={size} className={className} />;
+}
+
+export function InstagramIcon({ size = 16, className }: IconProps) {
+  return <PhInstagramLogoIcon size={size} className={className} />;
 }
 
 /**

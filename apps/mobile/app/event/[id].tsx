@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/Button';
 import { CircleIconButton } from '@/components/ui/CircleIconButton';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { GradientBadge } from '@/components/ui/GradientBadge';
+import { GuardedPressable } from '@/components/ui/GuardedPressable';
 import { Icon } from '@/components/ui/Icon';
 import { InfoCard } from '@/components/ui/InfoCard';
 import { SectionLabel } from '@/components/ui/SectionLabel';
@@ -21,7 +22,12 @@ import { headingLetterSpacing } from '@/theme/typography';
 import { ScrollView, Text, View } from '@/tw';
 import { formatRelativeDay, formatTimeRange } from '@/utils/dates';
 import { formatPrice } from '@/utils/format';
-import { buildDirectionsUrl, buildEventShareUrl } from '@/utils/links';
+import {
+  buildDirectionsUrl,
+  buildEventShareUrl,
+  buildInstagramProfileUrl,
+  formatInstagramHandle,
+} from '@/utils/links';
 
 export default function EventDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -89,6 +95,12 @@ export default function EventDetailScreen() {
   }
 
   const styles = musicStylesForEvent(event, stylesById);
+
+  // O @ é sempre o do estabelecimento (o evento não tem perfil próprio); o
+  // destino é o post do evento quando cadastrado, senão o perfil do bar.
+  const instagramHandle = formatInstagramHandle(establishment.instagram);
+  const instagramUrl =
+    event.instagram_post_url ?? buildInstagramProfileUrl(establishment.instagram);
 
   const badge = event.courtesy
     ? { label: 'Cortesia', text: event.courtesy }
@@ -158,6 +170,23 @@ export default function EventDetailScreen() {
               {event.name}
             </Text>
             <Text className="font-body text-muted-foreground text-[15px]">{event.attraction}</Text>
+            {instagramHandle && instagramUrl ? (
+              <GuardedPressable
+                accessibilityRole="link"
+                accessibilityLabel={
+                  event.instagram_post_url
+                    ? `Ver o post do evento no Instagram de ${instagramHandle}`
+                    : `Abrir ${instagramHandle} no Instagram`
+                }
+                onPress={() => Linking.openURL(instagramUrl)}
+                className="flex-row items-center gap-1.5 self-start pt-0.5"
+              >
+                <Icon name="instagram" color={colors.primary} size={14} />
+                <Text className="font-body-medium text-primary text-[13px]">
+                  {instagramHandle}
+                </Text>
+              </GuardedPressable>
+            ) : null}
           </View>
 
           <View className="gap-3">

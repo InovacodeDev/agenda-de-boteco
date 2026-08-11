@@ -2,8 +2,10 @@
 
 import {
   buildDirectionsUrl,
+  buildInstagramProfileUrl,
   buildWhatsAppUrl,
   FEATURES,
+  formatInstagramHandle,
   getAttributeMeta,
   indexById,
   musicStylesForEvent,
@@ -24,8 +26,8 @@ import {
   AttributeIcon,
   ClockIcon,
   HeartIcon,
+  InstagramIcon,
   MapPinIcon,
-  SparklesIcon,
   StarIcon,
 } from '@/components/ui/icons';
 import { SegmentedTabs } from '@/components/ui/SegmentedTabs';
@@ -116,6 +118,9 @@ function EstablishmentDetailContent() {
     );
   }
 
+  const instagramHandle = formatInstagramHandle(establishment.instagram);
+  const instagramUrl = buildInstagramProfileUrl(establishment.instagram);
+
   return (
     <section className="flex flex-col">
       <div className="relative -mx-4 h-65 sm:mx-0 sm:overflow-hidden sm:rounded-2xl">
@@ -155,9 +160,22 @@ function EstablishmentDetailContent() {
             alt={`Logo ${establishment.name}`}
             className="h-16 w-16 shrink-0 rounded-2xl border-2 border-background object-cover"
           />
-          <p className="pb-1 text-[12px] font-[family-name:var(--font-body)] text-muted-foreground">
-            {establishment.ambiance} · {establishment.price_range}
-          </p>
+          <div className="flex flex-col gap-0.5 pb-1">
+            <p className="text-[12px] font-[family-name:var(--font-body)] text-muted-foreground">
+              {establishment.ambiance} · {establishment.price_range}
+            </p>
+            {instagramHandle && instagramUrl ? (
+              <a
+                href={instagramUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="flex w-fit items-center gap-1.5 text-[12px] font-[family-name:var(--font-body)] font-medium text-primary transition-opacity hover:opacity-80"
+              >
+                <InstagramIcon size={13} />
+                {instagramHandle}
+              </a>
+            ) : null}
+          </div>
         </div>
 
         <div className="flex flex-col gap-1">
@@ -201,13 +219,6 @@ function EstablishmentDetailContent() {
               value={establishment.opening_hours}
               icon={<ClockIcon size={13} className="text-muted-foreground" />}
             />
-            {establishment.instagram ? (
-              <AboutCard
-                label="Instagram"
-                value={establishment.instagram}
-                icon={<SparklesIcon size={13} className="text-primary" />}
-              />
-            ) : null}
           </div>
         ) : null}
 

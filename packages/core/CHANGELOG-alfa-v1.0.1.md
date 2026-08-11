@@ -4,3 +4,5 @@
 - Filtro de eventos e de bares aceita vários atributos ao mesmo tempo, exigindo todos os selecionados
 - Nova filtragem de bares compartilhada entre app e site, com ordenação por proximidade
 - Dados guardados no dispositivo são descartados quando o formato muda, evitando falhas após atualizar
+- Eventos passam a guardar o link do post do Instagram que os divulga
+- O @ do Instagram é exibido em formato único (@perfil) e vira link para o perfil, em qualquer app
