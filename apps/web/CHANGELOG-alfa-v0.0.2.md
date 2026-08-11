@@ -10,3 +10,5 @@
 - Cards da lista de bares mostram os diferenciais de cada lugar
 - Cards de evento mostram os diferenciais do bar onde ele acontece
 - Ícones do site renovados com um traço mais leve e uniforme
+- Corrigida tela em branco ao abrir o site para quem já tinha visitado antes da última atualização
+- Passamos a medir de forma anônima quais páginas são mais visitadas, para melhorar o site

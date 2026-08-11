@@ -5,8 +5,12 @@ import { type Query } from '@tanstack/react-query';
  * mudança na forma dos dados persistidos (queryKeys, shape de dados em cache):
  * o `buster` do PersistQueryClientProvider descarta caches antigos quando o
  * valor muda, evitando reidratar dados incompatíveis.
+ *
+ * Campo novo em `establishmentSchema`/`eventSchema` conta como mudança de shape:
+ * a rehidratação NÃO passa pelo Zod, então o `.default([])` não preenche o campo
+ * ausente e o cache antigo chega à UI incompleto. v1 -> v2: `attributes`.
  */
-export const CACHE_BUSTER = 'v1';
+export const CACHE_BUSTER = 'v2';
 
 /**
  * Allowlist do catálogo: apenas o PRIMEIRO segmento da queryKey é considerado.

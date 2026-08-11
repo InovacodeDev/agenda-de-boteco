@@ -3,3 +3,4 @@
 - Logo do Agenda de Boteco agora aparece como ícone da aba do navegador
 - Cadastro de estabelecimento troca o campo livre de destaques por uma lista de 36 diferenciais com marcação, cada um com sua descrição
 - Os diferenciais marcados aqui alimentam os filtros do app e do site
+- Passamos a medir de forma anônima quais telas do painel são mais usadas

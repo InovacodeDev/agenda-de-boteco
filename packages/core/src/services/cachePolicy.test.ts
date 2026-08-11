@@ -6,6 +6,7 @@
  */
 import { type Query, type QueryKey } from '@tanstack/react-query';
 
+import { establishmentSchema } from '../schemas/catalog';
 import { CACHE_BUSTER, shouldDehydrateQuery } from './cachePolicy';
 
 /**
@@ -78,5 +79,42 @@ describe('CACHE_BUSTER', () => {
   it('é string não-vazia', () => {
     expect(typeof CACHE_BUSTER).toBe('string');
     expect(CACHE_BUSTER.length).toBeGreaterThan(0);
+  });
+
+  /**
+   * A rehidratação do persister NÃO passa pelo Zod: um cache gravado antes de um
+   * campo novo existir volta sem ele, e `.default([])` não socorre. Este snapshot
+   * das chaves persistidas falha quando o shape muda sem bumpar o buster —
+   * exatamente o que deixou `attributes` undefined na v1 e quebrou o feed web.
+   * Ao adicionar/remover campo: atualize a lista E incremente CACHE_BUSTER.
+   */
+  it('acompanha o shape de establishmentSchema', () => {
+    expect(Object.keys(establishmentSchema.shape).sort()).toEqual(
+      [
+        'address',
+        'ambiance',
+        'attributes',
+        'city_id',
+        'cover_url',
+        'description',
+        'id',
+        'instagram',
+        'lat',
+        'lng',
+        'logo_url',
+        'menu_items',
+        'menu_pdf_url',
+        'menu_photo_urls',
+        'name',
+        'neighborhood',
+        'opening_hours',
+        'price_range',
+        'rating_avg',
+        'rating_count',
+        'slug',
+        'whatsapp',
+      ].sort(),
+    );
+    expect(CACHE_BUSTER).toBe('v2');
   });
 });
