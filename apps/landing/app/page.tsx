@@ -17,7 +17,6 @@ import {
 // vercel.json), então o path relativo basta. Em dev, apontar para as URLs dos
 // apps rodando em portas próprias via env (o basePath deles já inclui /app|/admin).
 const WEB_BASE = process.env.NEXT_PUBLIC_WEB_URL ?? '';
-const ADMIN_BASE = process.env.NEXT_PUBLIC_ADMIN_URL ?? '';
 const CONTACT_EMAIL = 'contato@inovacode.dev';
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
@@ -73,11 +72,13 @@ const FEATURES: readonly { icon: React.ReactNode; title: string; text: string }[
   },
 ];
 
+const OWNER_CTA_SOON = 'Em breve estará disponível para bares e estabelecimentos';
+
 const OWNER_BENEFITS: readonly string[] = [
-  'Publique eventos com banner, atração, horário e couvert em minutos',
-  'Mantenha o perfil do bar atualizado: fotos, endereço, WhatsApp e Instagram',
-  'Marque seus diferenciais e apareça nos filtros de quem procura exatamente isso',
-  'Alcance quem já está perto e decidindo onde passar a noite',
+  'Publicar eventos com banner, atração, horário e couvert em minutos',
+  'Manter o perfil do bar atualizado: fotos, endereço, WhatsApp e Instagram',
+  'Marcar seus diferenciais e aparecer nos filtros de quem procura exatamente isso',
+  'Alcançar quem já está perto e decidindo onde passar a noite',
 ];
 
 const FAQ: readonly { question: string; answer: React.ReactNode }[] = [
@@ -114,14 +115,15 @@ const FAQ: readonly { question: string; answer: React.ReactNode }[] = [
     question: 'Sou dono de bar. Como divulgo meus eventos?',
     answer: (
       <>
-        Pelo painel de estabelecimentos.{' '}
+        O painel de estabelecimentos está a caminho: {OWNER_CTA_SOON.toLowerCase()}. Enquanto isso,
+        você pode{' '}
         <a
-          href={`mailto:${CONTACT_EMAIL}?subject=Quero%20cadastrar%20meu%20bar`}
+          href={`mailto:${CONTACT_EMAIL}?subject=Quero%20saber%20do%20painel%20para%20bares`}
           className="text-primary underline-offset-4 hover:underline"
         >
-          Fale com a gente
+          deixar seu contato
         </a>{' '}
-        para liberarmos seu acesso.
+        para avisarmos na abertura.
       </>
     ),
   },
@@ -292,9 +294,9 @@ export default function LandingPage() {
             <SectionLabel>Para donos de bar</SectionLabel>
             <SectionTitle>Sua programação na frente de quem vai sair hoje</SectionTitle>
             <Lead>
-              Cadastre seu estabelecimento e publique seus eventos no painel. Quem está procurando
-              samba no seu bairro, com mesa na calçada e aceitando cães, encontra você — porque foi
-              exatamente isso que essa pessoa filtrou.
+              Em breve você vai cadastrar seu estabelecimento e publicar seus eventos no painel.
+              Quem está procurando samba no seu bairro, com mesa na calçada e aceitando cães,
+              encontra você — porque foi exatamente isso que essa pessoa filtrou.
             </Lead>
 
             <ul className="flex flex-col gap-3">
@@ -306,19 +308,29 @@ export default function LandingPage() {
               ))}
             </ul>
 
-            <div className="mt-1 flex flex-wrap gap-3">
-              <a
-                href={`mailto:${CONTACT_EMAIL}?subject=Quero%20cadastrar%20meu%20bar`}
-                className="flex h-12 items-center justify-center rounded-full bg-primary px-6 text-[14px] font-semibold text-primary-foreground transition-opacity hover:opacity-90"
-              >
-                Cadastrar meu bar
-              </a>
-              <a
-                href={`${ADMIN_BASE}/admin`}
-                className="flex h-12 items-center justify-center rounded-full border border-border px-6 text-[14px] font-semibold text-foreground transition-colors hover:border-primary hover:text-primary"
-              >
-                Acessar o painel
-              </a>
+            {/* Cadastro de bares ainda não está aberto: <span> em vez de <a>
+                mantém os CTAs fora da ordem de foco e sem destino navegável,
+                em vez de só parecerem desabilitados. */}
+            <div className="mt-1 flex flex-col items-start gap-3">
+              <div className="flex flex-wrap gap-3">
+                <span
+                  aria-disabled
+                  title={OWNER_CTA_SOON}
+                  className="flex h-12 cursor-not-allowed items-center justify-center rounded-full bg-primary px-6 text-[14px] font-semibold text-primary-foreground opacity-40"
+                >
+                  Cadastrar meu bar
+                </span>
+                <span
+                  aria-disabled
+                  title={OWNER_CTA_SOON}
+                  className="flex h-12 cursor-not-allowed items-center justify-center rounded-full border border-border px-6 text-[14px] font-semibold text-foreground opacity-40"
+                >
+                  Acessar o painel
+                </span>
+              </div>
+              {/* O title é tooltip só no desktop com mouse; o texto visível
+                  garante que touch e leitor de tela também recebam o aviso. */}
+              <p className="text-[13px] text-muted-foreground">{OWNER_CTA_SOON}</p>
             </div>
           </div>
 
@@ -462,14 +474,11 @@ export default function LandingPage() {
           <div className="flex flex-col gap-2.5">
             <p className="text-[13px] font-bold text-foreground">Estabelecimentos</p>
             <a href="#para-bares" className="text-[13px] text-muted-foreground hover:text-foreground">
-              Cadastrar meu bar
+              Para donos de bar
             </a>
-            <a
-              href={`${ADMIN_BASE}/admin`}
-              className="text-[13px] text-muted-foreground hover:text-foreground"
-            >
-              Painel admin
-            </a>
+            <span className="text-[13px] text-muted-foreground/60" title={OWNER_CTA_SOON}>
+              Painel admin (em breve)
+            </span>
           </div>
 
           <div className="flex flex-col gap-2.5">
