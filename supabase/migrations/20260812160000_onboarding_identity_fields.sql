@@ -1,7 +1,9 @@
--- Onboarding passo 1 passou a coletar logo, capa e descrição, que antes eram
--- placeholders vazios preenchidos só depois na tela de Perfil.
+-- O onboarding passou a coletar, nos três passos, tudo que antes ficava como
+-- placeholder vazio para a tela de Perfil: identidade (logo, capa, descrição),
+-- contato (Instagram) e operação (horário, faixa de preço, ambiente, cardápio e
+-- os diferenciais).
 --
--- A assinatura muda (5 → 8 parâmetros), e mudar a lista de argumentos de uma
+-- A assinatura muda (5 → 14 parâmetros), e mudar a lista de argumentos de uma
 -- função exige DROP: CREATE OR REPLACE só substitui a de assinatura idêntica —
 -- sem o DROP, as duas versões coexistiriam e a chamada ficaria ambígua.
 DROP FUNCTION IF EXISTS public.create_owned_establishment(TEXT, TEXT, TEXT, TEXT, TEXT);
@@ -14,7 +16,13 @@ CREATE OR REPLACE FUNCTION public.create_owned_establishment(
   p_city_id TEXT,
   p_address TEXT,
   p_neighborhood TEXT,
-  p_whatsapp TEXT
+  p_whatsapp TEXT,
+  p_instagram TEXT,
+  p_opening_hours TEXT,
+  p_price_range TEXT,
+  p_ambiance TEXT,
+  p_menu_url TEXT,
+  p_attributes public.establishment_attribute_enum[]
 )
 RETURNS TEXT
 LANGUAGE plpgsql
@@ -46,15 +54,23 @@ BEGIN
     120
   );
 
-  -- opening_hours, ambiance, lat/lng e price_range seguem como placeholders:
-  -- são do passo de Perfil (Fase 2), não do onboarding.
+  -- Faixa de preço é opcional no formulário; vazio cai no '$$' (moderado).
+  -- lat/lng seguem 0/0 até o Perfil informar o endereço geocodificado — 0/0
+  -- fica fora de qualquer raio de busca, então o bar não aparece no "perto de
+  -- mim" no lugar errado.
   INSERT INTO public.establishments (
     id, name, description, logo_url, cover_url, address, neighborhood,
-    city_id, lat, lng, whatsapp, opening_hours, price_range, ambiance
+    city_id, lat, lng, whatsapp, instagram, opening_hours, price_range,
+    ambiance, menu_pdf_url, attributes
   ) VALUES (
     v_id, p_name, COALESCE(p_description, ''), COALESCE(p_logo_url, ''),
     COALESCE(p_cover_url, ''), p_address, p_neighborhood,
-    p_city_id, 0, 0, p_whatsapp, '', '$$', ''
+    p_city_id, 0, 0, p_whatsapp, NULLIF(btrim(COALESCE(p_instagram, '')), ''),
+    COALESCE(p_opening_hours, ''),
+    COALESCE(NULLIF(btrim(COALESCE(p_price_range, '')), ''), '$$')::public.price_range_enum,
+    COALESCE(p_ambiance, ''),
+    NULLIF(btrim(COALESCE(p_menu_url, '')), ''),
+    COALESCE(p_attributes, '{}')
   );
 
   INSERT INTO public.establishment_owners (user_id, establishment_id)
@@ -64,5 +80,12 @@ BEGIN
 END;
 $fn$;
 
-REVOKE EXECUTE ON FUNCTION public.create_owned_establishment(TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION public.create_owned_establishment(TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT) TO authenticated, service_role;
+REVOKE EXECUTE ON FUNCTION public.create_owned_establishment(
+  TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT,
+  public.establishment_attribute_enum[]
+) FROM PUBLIC;
+
+GRANT EXECUTE ON FUNCTION public.create_owned_establishment(
+  TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT,
+  public.establishment_attribute_enum[]
+) TO authenticated, service_role;

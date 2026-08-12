@@ -17,4 +17,4 @@
 - Novo cadastro de estabelecimento pelo próprio dono, que cria o bar e o vínculo da conta de uma só vez
 - Além do código por e-mail, agora é possível entrar com e-mail e senha ou com a conta Google, e recuperar a senha esquecida
 - Contas passam a ter uma marcação de acesso ao painel do estabelecimento, concedida apenas após confirmação do e-mail
-- O cadastro de bar pelo dono passa a gravar logo, capa e descrição já na criação
+- O cadastro de bar pelo dono passa a gravar logo, capa, descrição, contato, dados de operação e diferenciais já na criação

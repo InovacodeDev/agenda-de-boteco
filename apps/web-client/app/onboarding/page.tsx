@@ -3,10 +3,13 @@
 import {
   catalogKeys,
   createOwnedEstablishment,
+  ESTABLISHMENT_ATTRIBUTES,
+  type EstablishmentAttribute,
   getFriendlyErrorMessage,
   isCurrentUserEstablishmentOwner,
   listCities,
   maskPhoneBR,
+  PRICE_RANGE_LABELS,
   signOut,
   useAuthStore,
 } from '@agenda/core';
@@ -16,6 +19,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
+import { AttributeIcon } from '@/components/ui/AttributeIcon';
 import { ImageDrop } from '@/components/ui/ImageDrop';
 import { panelKeys } from '@/hooks/use-owned-establishment';
 import logo from '@/public/logo.png';
@@ -31,6 +35,12 @@ interface Draft {
   address: string;
   neighborhood: string;
   whatsapp: string;
+  instagram: string;
+  openingHours: string;
+  priceRange: string;
+  ambiance: string;
+  menuUrl: string;
+  attributes: EstablishmentAttribute[];
 }
 
 const EMPTY_DRAFT: Draft = {
@@ -42,7 +52,25 @@ const EMPTY_DRAFT: Draft = {
   address: '',
   neighborhood: '',
   whatsapp: '',
+  instagram: '',
+  openingHours: '',
+  priceRange: '',
+  ambiance: '',
+  menuUrl: '',
+  attributes: [],
 };
+
+/** Tipos de ambiente da especificação do painel (seção 4). */
+const AMBIANCES = [
+  'Boteco tradicional',
+  'Pub',
+  'Bar moderno',
+  'Restaurante-bar',
+  'Cervejaria',
+  'Choperia',
+  'Casa de shows',
+  'Lounge',
+] as const;
 
 const LABEL_CLASS = 'text-[14px] font-medium text-foreground';
 
@@ -83,6 +111,14 @@ export default function OnboardingPage() {
   const set = <K extends keyof Draft>(key: K, value: Draft[K]) =>
     setDraft((current) => ({ ...current, [key]: value }));
 
+  const toggleAttribute = (id: EstablishmentAttribute) =>
+    setDraft((current) => ({
+      ...current,
+      attributes: current.attributes.includes(id)
+        ? current.attributes.filter((item) => item !== id)
+        : [...current.attributes, id],
+    }));
+
   // Só nome e cidade são obrigatórios — o resto o dono completa em /perfil.
   const stepValid =
     step === 0 ? draft.name.trim().length > 0 : step === 1 ? Boolean(draft.cityId) : true;
@@ -100,6 +136,12 @@ export default function OnboardingPage() {
         address: draft.address.trim(),
         neighborhood: draft.neighborhood.trim(),
         whatsapp: draft.whatsapp.trim(),
+        instagram: draft.instagram.trim(),
+        openingHours: draft.openingHours.trim(),
+        priceRange: draft.priceRange,
+        ambiance: draft.ambiance,
+        menuUrl: draft.menuUrl.trim(),
+        attributes: draft.attributes,
       });
       await queryClient.invalidateQueries({ queryKey: panelKeys.ownedEstablishmentId });
       router.replace('/');
@@ -110,7 +152,6 @@ export default function OnboardingPage() {
     }
   };
 
-  const cityName = cities.find((city) => city.id === draft.cityId)?.name ?? '—';
   const progress = Math.round(((step + 1) / STEPS.length) * 100);
   const isLastStep = step === STEPS.length - 1;
 
@@ -212,25 +253,6 @@ export default function OnboardingPage() {
           {step === 1 ? (
             <div className="flex flex-col gap-5">
               <div className="flex flex-col gap-1.5">
-                <label htmlFor="city" className={LABEL_CLASS}>
-                  Cidade *
-                </label>
-                <select
-                  id="city"
-                  value={draft.cityId}
-                  onChange={(e) => set('cityId', e.target.value)}
-                  className={FIELD_CLASS}
-                >
-                  <option value="">Selecione a cidade</option>
-                  {cities.map((city) => (
-                    <option key={city.id} value={city.id}>
-                      {city.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="flex flex-col gap-1.5">
                 <label htmlFor="address" className={LABEL_CLASS}>
                   Endereço completo
                 </label>
@@ -243,51 +265,179 @@ export default function OnboardingPage() {
                 />
               </div>
 
-              <div className="flex flex-col gap-1.5">
-                <label htmlFor="neighborhood" className={LABEL_CLASS}>
-                  Bairro
-                </label>
-                <input
-                  id="neighborhood"
-                  value={draft.neighborhood}
-                  onChange={(e) => set('neighborhood', e.target.value)}
-                  placeholder="Vila Madalena"
-                  className={FIELD_CLASS}
-                />
+              <div className="grid grid-cols-2 gap-6">
+                <div className="flex flex-col gap-1.5">
+                  <label htmlFor="city" className={LABEL_CLASS}>
+                    Cidade *
+                  </label>
+                  {/* Select, e não texto livre: city_id é FK de `cities`, então
+                      um nome digitado não teria para onde apontar. */}
+                  <select
+                    id="city"
+                    value={draft.cityId}
+                    onChange={(e) => set('cityId', e.target.value)}
+                    className={`${FIELD_CLASS} ${draft.cityId ? '' : 'text-muted-foreground'}`}
+                  >
+                    <option value="">São Paulo</option>
+                    {cities.map((city) => (
+                      <option key={city.id} value={city.id} className="text-foreground">
+                        {city.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <label htmlFor="neighborhood" className={LABEL_CLASS}>
+                    Bairro
+                  </label>
+                  <input
+                    id="neighborhood"
+                    value={draft.neighborhood}
+                    onChange={(e) => set('neighborhood', e.target.value)}
+                    placeholder="Vila Madalena"
+                    className={FIELD_CLASS}
+                  />
+                </div>
               </div>
 
-              <div className="flex flex-col gap-1.5">
-                <label htmlFor="whatsapp" className={LABEL_CLASS}>
-                  WhatsApp
-                </label>
-                <input
-                  id="whatsapp"
-                  value={draft.whatsapp}
-                  onChange={(e) => set('whatsapp', maskPhoneBR(e.target.value))}
-                  placeholder="(11) 99999-9999"
-                  inputMode="tel"
-                  className={FIELD_CLASS}
-                />
+              <div className="grid grid-cols-2 gap-6">
+                <div className="flex flex-col gap-1.5">
+                  <label htmlFor="whatsapp" className={LABEL_CLASS}>
+                    WhatsApp
+                  </label>
+                  <input
+                    id="whatsapp"
+                    value={draft.whatsapp}
+                    onChange={(e) => set('whatsapp', maskPhoneBR(e.target.value))}
+                    placeholder="(11) 99999-9999"
+                    inputMode="tel"
+                    className={FIELD_CLASS}
+                  />
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <label htmlFor="instagram" className={LABEL_CLASS}>
+                    Instagram
+                  </label>
+                  <input
+                    id="instagram"
+                    value={draft.instagram}
+                    onChange={(e) => set('instagram', e.target.value)}
+                    placeholder="@bardoze"
+                    autoCapitalize="none"
+                    autoCorrect="off"
+                    className={FIELD_CLASS}
+                  />
+                </div>
               </div>
             </div>
           ) : null}
 
           {step === 2 ? (
-            <dl className="flex flex-col gap-3 rounded-xl bg-surface/40 p-5 text-[14px]">
-              {[
-                ['Nome', draft.name],
-                ['Descrição', draft.description || '—'],
-                ['Cidade', cityName],
-                ['Endereço', draft.address || '—'],
-                ['Bairro', draft.neighborhood || '—'],
-                ['WhatsApp', draft.whatsapp || '—'],
-              ].map(([label, value]) => (
-                <div key={label} className="flex justify-between gap-4">
-                  <dt className="text-muted-foreground">{label}</dt>
-                  <dd className="truncate text-right text-foreground">{value}</dd>
+            <div className="flex flex-col gap-5">
+              <h2 className="font-[family-name:var(--font-heading)] text-lg font-bold text-foreground">
+                Operação
+              </h2>
+
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="openingHours" className={LABEL_CLASS}>
+                  Horário de funcionamento
+                </label>
+                <input
+                  id="openingHours"
+                  value={draft.openingHours}
+                  onChange={(e) => set('openingHours', e.target.value)}
+                  placeholder="Seg a Sáb, 18h às 02h"
+                  className={FIELD_CLASS}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-6">
+                <div className="flex flex-col gap-1.5">
+                  <label htmlFor="priceRange" className={LABEL_CLASS}>
+                    Faixa de preço
+                  </label>
+                  <select
+                    id="priceRange"
+                    value={draft.priceRange}
+                    onChange={(e) => set('priceRange', e.target.value)}
+                    className={`${FIELD_CLASS} ${draft.priceRange ? '' : 'text-muted-foreground'}`}
+                  >
+                    <option value="">Selecione</option>
+                    {Object.entries(PRICE_RANGE_LABELS).map(([value, label]) => (
+                      <option key={value} value={value} className="text-foreground">
+                        {label}
+                      </option>
+                    ))}
+                  </select>
                 </div>
-              ))}
-            </dl>
+
+                <div className="flex flex-col gap-1.5">
+                  <label htmlFor="ambiance" className={LABEL_CLASS}>
+                    Tipo de ambiente
+                  </label>
+                  <select
+                    id="ambiance"
+                    value={draft.ambiance}
+                    onChange={(e) => set('ambiance', e.target.value)}
+                    className={`${FIELD_CLASS} ${draft.ambiance ? '' : 'text-muted-foreground'}`}
+                  >
+                    <option value="">Selecione</option>
+                    {AMBIANCES.map((item) => (
+                      <option key={item} value={item} className="text-foreground">
+                        {item}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="menuUrl" className={LABEL_CLASS}>
+                  Link do cardápio
+                </label>
+                <input
+                  id="menuUrl"
+                  value={draft.menuUrl}
+                  onChange={(e) => set('menuUrl', e.target.value)}
+                  placeholder="https://..."
+                  type="url"
+                  inputMode="url"
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  className={FIELD_CLASS}
+                />
+              </div>
+
+              <div className="flex flex-col gap-2.5">
+                <span className={LABEL_CLASS}>Diferenciais do local</span>
+                {/* Lista oficial de 36 atributos do core, não os 12 do mockup:
+                    é o mesmo enum que alimenta os filtros do app e do site. */}
+                <div className="flex flex-wrap gap-2">
+                  {ESTABLISHMENT_ATTRIBUTES.map((attribute) => {
+                    const selected = draft.attributes.includes(attribute.id);
+                    return (
+                      <button
+                        key={attribute.id}
+                        type="button"
+                        title={attribute.description}
+                        aria-pressed={selected}
+                        onClick={() => toggleAttribute(attribute.id)}
+                        className={`flex items-center gap-1.5 rounded-full px-3.5 py-2 text-[14px] font-medium transition-colors ${
+                          selected
+                            ? 'bg-primary text-primary-foreground'
+                            : 'bg-surface-elevated text-foreground hover:bg-surface'
+                        }`}
+                      >
+                        <AttributeIcon name={attribute.icon} />
+                        {attribute.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
           ) : null}
 
           <div className="mt-7 flex items-center justify-between gap-4">

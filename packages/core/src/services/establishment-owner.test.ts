@@ -1,3 +1,4 @@
+import type { EstablishmentAttribute } from '../schemas/catalog';
 import {
   claimEstablishmentOwner,
   createOwnedEstablishment,
@@ -170,6 +171,12 @@ describe('createOwnedEstablishment', () => {
     address: 'Rua X, 100',
     neighborhood: 'Centro',
     whatsapp: '48999999999',
+    instagram: '@bardotito',
+    openingHours: 'Seg a Sáb, 18h às 02h',
+    priceRange: '$$',
+    ambiance: 'Boteco tradicional',
+    menuUrl: 'https://cardapio.example',
+    attributes: ['pet-friendly', 'live-music'] satisfies EstablishmentAttribute[],
   };
 
   it('lança sem Supabase configurado', async () => {
@@ -193,6 +200,12 @@ describe('createOwnedEstablishment', () => {
       p_address: 'Rua X, 100',
       p_neighborhood: 'Centro',
       p_whatsapp: '48999999999',
+      p_instagram: '@bardotito',
+      p_opening_hours: 'Seg a Sáb, 18h às 02h',
+      p_price_range: '$$',
+      p_ambiance: 'Boteco tradicional',
+      p_menu_url: 'https://cardapio.example',
+      p_attributes: ['pet-friendly', 'live-music'],
     });
   });
 

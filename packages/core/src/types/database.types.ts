@@ -591,12 +591,18 @@ export type Database = {
       create_owned_establishment: {
         Args: {
           p_address: string
+          p_ambiance: string
+          p_attributes: Database["public"]["Enums"]["establishment_attribute_enum"][]
           p_city_id: string
           p_cover_url: string
           p_description: string
+          p_instagram: string
           p_logo_url: string
+          p_menu_url: string
           p_name: string
           p_neighborhood: string
+          p_opening_hours: string
+          p_price_range: string
           p_whatsapp: string
         }
         Returns: string

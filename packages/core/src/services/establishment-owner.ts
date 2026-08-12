@@ -1,3 +1,4 @@
+import type { EstablishmentAttribute } from '../schemas/catalog';
 import { getConfiguredSupabase } from '../supabase/client';
 import { handleServiceError } from '../utils/errors';
 
@@ -66,6 +67,13 @@ export interface CreateOwnedEstablishmentInput {
   address: string;
   neighborhood: string;
   whatsapp: string;
+  instagram: string;
+  openingHours: string;
+  /** Vazio quando o dono não escolheu; a RPC aplica o default. */
+  priceRange: string;
+  ambiance: string;
+  menuUrl: string;
+  attributes: EstablishmentAttribute[];
 }
 
 /**
@@ -122,6 +130,12 @@ export async function createOwnedEstablishment(
       p_address: input.address,
       p_neighborhood: input.neighborhood,
       p_whatsapp: input.whatsapp,
+      p_instagram: input.instagram,
+      p_opening_hours: input.openingHours,
+      p_price_range: input.priceRange,
+      p_ambiance: input.ambiance,
+      p_menu_url: input.menuUrl,
+      p_attributes: input.attributes,
     });
     if (error) {
       throw error;
