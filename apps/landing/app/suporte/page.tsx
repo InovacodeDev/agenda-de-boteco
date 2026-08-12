@@ -1,4 +1,6 @@
 import type { Metadata } from 'next';
+import Image from 'next/image';
+import Link from 'next/link';
 
 const CONTACT_EMAIL = 'contato@inovacode.dev';
 const WEB_BASE = process.env.NEXT_PUBLIC_WEB_URL ?? '';
@@ -41,6 +43,16 @@ function Bullet({ children }: { children: React.ReactNode }) {
 export default function SupportPage() {
   return (
     <main className="min-h-dvh bg-[linear-gradient(160deg,#1A122B,#0F0F0F)]">
+      <header className="mx-auto flex w-full max-w-2xl items-center px-5 pt-6">
+        <Link
+          href="/"
+          className="flex items-center gap-2 text-[14px] font-semibold text-muted-foreground transition-colors hover:text-foreground"
+        >
+          <Image src="/logo.png" alt="Agenda de Boteco" width={811} height={582} className="h-7 w-auto" />
+          <span>← Voltar</span>
+        </Link>
+      </header>
+
       <div className="mx-auto w-full max-w-2xl px-5 pb-16 pt-8">
         <h1 className="mb-1 font-[family-name:var(--font-heading)] text-[28px] font-bold leading-tight text-foreground">
           Suporte
