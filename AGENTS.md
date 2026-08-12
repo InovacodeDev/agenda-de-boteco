@@ -315,7 +315,7 @@ arquivo: apps/mobile/CHANGELOG-alfa-v0.0.8.md
 heading: # Changelog 0.0.8 (alfa)
 ```
 
-**Não bumpe o `package.json`.** O CHANGELOG antecipa a versão; o bump é decisão do usuário no momento do release. No mobile a versão tem fonte única no `package.json` (o `app.config.ts` importa de lá).
+**Durante os commits, não bumpe o `package.json`.** O CHANGELOG antecipa a versão; o bump acontece uma única vez, no momento de abrir o PR para `alfa` (Seção 8.1). No mobile a versão tem fonte única no `package.json` (o `app.config.ts` importa de lá).
 
 ### Formato
 
@@ -333,6 +333,30 @@ heading: # Changelog 0.0.8 (alfa)
 ```
 
 Descreva o **efeito percebido**, não a implementação: "busca de cidades volta a funcionar", não "esconde o Modal de filtros quando o de cidade abre".
+
+---
+
+## 8.1 🔖 Bump de Versão ao Abrir PR para `alfa`
+
+**Sempre que o usuário pedir para abrir um PR para `alfa`**, o último número da versão (patch, em `major.minor.patch`) de **cada app/pacote alterado na branch** deve subir 1 no `package.json`, em um commit próprio, **antes** de abrir o PR. Ex.: `0.0.3` → `0.0.4`.
+
+Isto não requer nova autorização — o pedido de abrir o PR já é a autorização.
+
+### Procedimento
+
+1. Descubra os projetos alterados na branch: `git diff --name-only alfa...HEAD` → mapeie os caminhos para `apps/*` e `packages/*`.
+2. Para cada projeto afetado, incremente o patch no `package.json` dele. Nada mais: nenhum outro arquivo de versão, nenhum lockfile.
+3. A versão resultante **deve coincidir** com a do arquivo `CHANGELOG-<branch>-v<version>.md` que os commits da branch vinham alimentando (Seção 8). Se divergir, o CHANGELOG é a fonte de verdade — renomeie o bump para bater com ele, não o contrário.
+4. Commit isolado: `Bump <projeto> to <versão>` (ou `Bump versions for alfa release` quando forem vários).
+5. Só então abra o PR.
+
+### Regras de borda
+
+- **Só patch.** Minor ou major exigem instrução explícita do usuário.
+- **Só projetos tocados.** Um app que a branch não alterou não sobe de versão.
+- **Só para `alfa`.** PRs para outras bases não disparam bump automático.
+- **Não bumpe duas vezes.** Se o `package.json` do projeto já estiver na versão do CHANGELOG pendente, o bump já foi feito nesta branch — não repita.
+- **Mudanças que não exigem CHANGELOG** (apenas `.md`, `scripts/` ou CI — Seção 8) também **não** exigem bump.
 
 ---
 
