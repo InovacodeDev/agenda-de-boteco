@@ -29,7 +29,7 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
-    <h2 className="max-w-2xl font-[family-name:var(--font-heading)] text-[28px] font-bold leading-tight text-foreground sm:text-[36px]">
+    <h2 className="max-w-2xl font-heading text-[28px] font-bold leading-tight text-foreground sm:text-[36px]">
       {children}
     </h2>
   );
@@ -137,7 +137,7 @@ export default function LandingPage() {
         {/* Brilho de fundo atrás do hero. */}
         <div
           aria-hidden
-          className="pointer-events-none absolute -top-40 left-1/2 h-[520px] w-[820px] -translate-x-1/2 rounded-full opacity-25 blur-[120px]"
+          className="pointer-events-none absolute -top-40 left-1/2 h-130 w-205 -translate-x-1/2 rounded-full opacity-25 blur-[120px]"
           style={{ background: 'radial-gradient(circle,#1DD75E,transparent 70%)' }}
         />
 
@@ -170,7 +170,7 @@ export default function LandingPage() {
               Começando por Florianópolis e região
             </span>
 
-            <h1 className="font-[family-name:var(--font-heading)] text-[40px] font-bold leading-[1.05] text-foreground sm:text-[58px]">
+            <h1 className="font-heading text-[40px] font-bold leading-[1.05] text-foreground sm:text-[58px]">
               O que rola hoje no{' '}
               <span className="bg-[linear-gradient(135deg,#1DD75E,#1AE6C3)] bg-clip-text text-transparent">
                 boteco
@@ -226,7 +226,7 @@ export default function LandingPage() {
                 <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
                   {feature.icon}
                 </span>
-                <h3 className="font-[family-name:var(--font-heading)] text-[17px] font-bold text-foreground">
+                <h3 className="font-heading text-[17px] font-bold text-foreground">
                   {feature.title}
                 </h3>
                 <p className="text-[14px] leading-6 text-muted-foreground">{feature.text}</p>
@@ -248,7 +248,7 @@ export default function LandingPage() {
             <div className="flex flex-col items-center gap-5 text-center">
               <FiltersPreview />
               <div className="flex flex-col gap-1.5">
-                <h3 className="font-[family-name:var(--font-heading)] text-[17px] font-bold text-foreground">
+                <h3 className="font-heading text-[17px] font-bold text-foreground">
                   Filtre como você escolhe
                 </h3>
                 <p className="text-[14px] leading-6 text-muted-foreground">
@@ -261,7 +261,7 @@ export default function LandingPage() {
             <div className="flex flex-col items-center gap-5 text-center">
               <MapPreview />
               <div className="flex flex-col gap-1.5">
-                <h3 className="font-[family-name:var(--font-heading)] text-[17px] font-bold text-foreground">
+                <h3 className="font-heading text-[17px] font-bold text-foreground">
                   Veja no mapa quem está perto
                 </h3>
                 <p className="text-[14px] leading-6 text-muted-foreground">
@@ -274,7 +274,7 @@ export default function LandingPage() {
             <div className="flex flex-col items-center gap-5 text-center">
               <FeedPreview />
               <div className="flex flex-col gap-1.5">
-                <h3 className="font-[family-name:var(--font-heading)] text-[17px] font-bold text-foreground">
+                <h3 className="font-heading text-[17px] font-bold text-foreground">
                   Eventos e bares, lado a lado
                 </h3>
                 <p className="text-[14px] leading-6 text-muted-foreground">
@@ -340,7 +340,7 @@ export default function LandingPage() {
                 <ChartIcon size={18} />
               </span>
               <div>
-                <p className="font-[family-name:var(--font-heading)] text-[14px] font-bold text-foreground">
+                <p className="font-heading text-[14px] font-bold text-foreground">
                   Painel do estabelecimento
                 </p>
                 <p className="text-[11px] text-muted-foreground">Boteco do Cais · Centro</p>
@@ -450,7 +450,7 @@ export default function LandingPage() {
               height={582}
               className="h-9 w-auto self-start"
             />
-            <p className="max-w-[220px] text-[13px] leading-6 text-muted-foreground">
+            <p className="max-w-55 text-[13px] leading-6 text-muted-foreground">
               Os melhores eventos e bares da sua cidade, sempre à mão.
             </p>
           </div>
@@ -477,7 +477,7 @@ export default function LandingPage() {
               Para donos de bar
             </a>
             <span className="text-[13px] text-muted-foreground/60" title={OWNER_CTA_SOON}>
-              Painel admin (em breve)
+              Painel administrativo (em breve)
             </span>
           </div>
 
