@@ -87,7 +87,9 @@ RETURNS TEXT
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public
-AS $$
+-- Delimitador nomeado: o corpo contém '$$' (a faixa de preço padrão), que
+-- fecharia um dollar-quote anônimo no meio da função.
+AS $fn$
 DECLARE
   v_user_id UUID := auth.uid();
   v_id TEXT;
@@ -126,7 +128,7 @@ BEGIN
 
   RETURN v_id;
 END;
-$$;
+$fn$;
 
 REVOKE EXECUTE ON FUNCTION public.create_owned_establishment(TEXT, TEXT, TEXT, TEXT, TEXT) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.create_owned_establishment(TEXT, TEXT, TEXT, TEXT, TEXT) TO authenticated, service_role;
