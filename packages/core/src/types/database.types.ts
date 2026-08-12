@@ -351,18 +351,21 @@ export type Database = {
           email: string | null
           id: string
           is_admin: boolean
+          is_establishment_owner: boolean
         }
         Insert: {
           created_at?: string
           email?: string | null
           id: string
           is_admin?: boolean
+          is_establishment_owner?: boolean
         }
         Update: {
           created_at?: string
           email?: string | null
           id?: string
           is_admin?: boolean
+          is_establishment_owner?: boolean
         }
         Relationships: []
       }
@@ -584,6 +587,7 @@ export type Database = {
             }
             Returns: string
           }
+      claim_establishment_owner: { Args: never; Returns: undefined }
       create_owned_establishment: {
         Args: {
           p_address: string
@@ -727,6 +731,7 @@ export type Database = {
       geomfromewkt: { Args: { "": string }; Returns: unknown }
       gettransactionid: { Args: never; Returns: unknown }
       is_admin: { Args: never; Returns: boolean }
+      is_establishment_owner: { Args: never; Returns: boolean }
       longtransactionsenabled: { Args: never; Returns: boolean }
       nearby_establishments: {
         Args: {

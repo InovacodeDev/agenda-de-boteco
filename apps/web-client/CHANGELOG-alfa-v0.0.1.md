@@ -7,3 +7,6 @@
 - Cada dono enxerga e edita apenas o seu próprio estabelecimento
 - Menu lateral com Dashboard, Eventos, Perfil, Métricas, Avaliações e Configurações
 - O painel do estabelecimento passa a ser acessado pelo endereço /client
+- Ter conta no aplicativo não dá acesso ao painel: é preciso criar o acesso de dono de bar
+- Quem já usa o Agenda de Boteco pode reaproveitar o mesmo e-mail — o cadastro do painel libera o acesso na conta que já existe, após confirmação por e-mail
+- Quem entra com uma conta sem acesso ao painel recebe um aviso claro e o caminho para criar o acesso

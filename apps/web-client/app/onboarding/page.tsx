@@ -4,6 +4,7 @@ import {
   catalogKeys,
   createOwnedEstablishment,
   getFriendlyErrorMessage,
+  isCurrentUserEstablishmentOwner,
   listCities,
   maskPhoneBR,
   useAuthStore,
@@ -50,10 +51,20 @@ export default function OnboardingPage() {
     queryFn: () => listCities(),
   });
 
+  // Mesma regra do painel: sem sessão ou sem a flag de dono, volta ao login.
   useEffect(() => {
     if (status === 'signedOut' || status === 'unavailable') {
       router.replace('/login');
+      return;
     }
+    if (status !== 'signedIn') return;
+    let active = true;
+    void isCurrentUserEstablishmentOwner().then((isOwner) => {
+      if (active && !isOwner) router.replace('/login');
+    });
+    return () => {
+      active = false;
+    };
   }, [status, router]);
 
   const set = <K extends keyof Draft>(key: K, value: Draft[K]) =>

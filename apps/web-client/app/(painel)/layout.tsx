@@ -1,6 +1,10 @@
 'use client';
 
-import { getOwnedEstablishmentId, useAuthStore } from '@agenda/core';
+import {
+  getOwnedEstablishmentId,
+  isCurrentUserEstablishmentOwner,
+  useAuthStore,
+} from '@agenda/core';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
@@ -10,8 +14,10 @@ import { Topbar } from '@/components/Topbar';
 type OwnerCheck = 'checking' | 'linked' | 'unlinked';
 
 /**
- * Guard do painel: sem sessão vai para /login; com sessão mas sem bar vinculado
- * vai para o onboarding. O isolamento real é o RLS — este check é só navegação.
+ * Guard do painel: sem sessão vai para /login; com sessão mas sem a flag de dono
+ * volta para /login (conta do app público não acessa o painel); com a flag mas
+ * sem bar vinculado vai para o onboarding. O isolamento real é o RLS — este
+ * check é só navegação.
  */
 export default function PainelLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -25,7 +31,14 @@ export default function PainelLayout({ children }: { children: React.ReactNode }
       return;
     }
     let active = true;
-    void getOwnedEstablishmentId().then((id) => {
+    void (async () => {
+      const isOwner = await isCurrentUserEstablishmentOwner();
+      if (!active) return;
+      if (!isOwner) {
+        router.replace('/login');
+        return;
+      }
+      const id = await getOwnedEstablishmentId();
       if (!active) return;
       if (id) {
         setCheck('linked');
@@ -33,7 +46,7 @@ export default function PainelLayout({ children }: { children: React.ReactNode }
       }
       setCheck('unlinked');
       router.replace('/onboarding');
-    });
+    })();
     return () => {
       active = false;
     };

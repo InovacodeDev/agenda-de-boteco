@@ -1,6 +1,8 @@
 import {
+  claimEstablishmentOwner,
   createOwnedEstablishment,
   getOwnedEstablishmentId,
+  isCurrentUserEstablishmentOwner,
 } from './establishment-owner';
 
 const mockGetSupabase = jest.fn();
@@ -75,6 +77,86 @@ describe('getOwnedEstablishmentId', () => {
       }),
     );
     await expect(getOwnedEstablishmentId()).rejects.toThrow('rls denied');
+  });
+});
+
+describe('isCurrentUserEstablishmentOwner', () => {
+  it('retorna false sem Supabase configurado', async () => {
+    mockGetSupabase.mockReturnValue(null);
+    await expect(isCurrentUserEstablishmentOwner()).resolves.toBe(false);
+  });
+
+  it('retorna false sem sessão ativa', async () => {
+    mockGetSupabase.mockReturnValue(makeClient({ session: { data: { session: null } } }));
+    await expect(isCurrentUserEstablishmentOwner()).resolves.toBe(false);
+  });
+
+  it('retorna true quando a flag está ligada', async () => {
+    const client = makeClient({
+      maybeSingle: jest
+        .fn()
+        .mockResolvedValue({ data: { is_establishment_owner: true }, error: null }),
+    });
+    mockGetSupabase.mockReturnValue(client);
+
+    await expect(isCurrentUserEstablishmentOwner()).resolves.toBe(true);
+    expect(client.from).toHaveBeenCalledWith('profiles');
+    expect(client.eq).toHaveBeenCalledWith('id', 'u1');
+  });
+
+  // Conta do app público: existe, autentica, mas não acessa o painel.
+  it('retorna false quando a flag está desligada', async () => {
+    mockGetSupabase.mockReturnValue(
+      makeClient({
+        maybeSingle: jest
+          .fn()
+          .mockResolvedValue({ data: { is_establishment_owner: false }, error: null }),
+      }),
+    );
+    await expect(isCurrentUserEstablishmentOwner()).resolves.toBe(false);
+  });
+
+  it('retorna false quando o profile não existe', async () => {
+    mockGetSupabase.mockReturnValue(makeClient());
+    await expect(isCurrentUserEstablishmentOwner()).resolves.toBe(false);
+  });
+
+  it('propaga erro do Supabase', async () => {
+    mockGetSupabase.mockReturnValue(
+      makeClient({
+        maybeSingle: jest
+          .fn()
+          .mockResolvedValue({ data: null, error: new Error('rls denied') }),
+      }),
+    );
+    await expect(isCurrentUserEstablishmentOwner()).rejects.toThrow('rls denied');
+  });
+});
+
+describe('claimEstablishmentOwner', () => {
+  it('lança sem Supabase configurado', async () => {
+    mockGetSupabase.mockReturnValue(null);
+    await expect(claimEstablishmentOwner()).rejects.toThrow('Supabase não configurado');
+  });
+
+  // A RPC não recebe e-mail nem id: age sobre auth.uid(). Passar um alvo aqui
+  // seria o bug que permite promover a conta de outra pessoa.
+  it('chama a RPC sem argumentos', async () => {
+    const rpc = jest.fn().mockResolvedValue({ data: null, error: null });
+    mockGetSupabase.mockReturnValue(makeClient({ rpc }));
+
+    await expect(claimEstablishmentOwner()).resolves.toBeUndefined();
+    expect(rpc).toHaveBeenCalledWith('claim_establishment_owner');
+  });
+
+  it('propaga erro da RPC (ex: sem sessão)', async () => {
+    const rpc = jest.fn().mockResolvedValue({
+      data: null,
+      error: new Error('Autenticação obrigatória'),
+    });
+    mockGetSupabase.mockReturnValue(makeClient({ rpc }));
+
+    await expect(claimEstablishmentOwner()).rejects.toThrow('Autenticação obrigatória');
   });
 });
 

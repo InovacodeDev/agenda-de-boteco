@@ -1,10 +1,13 @@
 'use client';
 
 import {
+  claimEstablishmentOwner,
   getFriendlyErrorMessage,
+  isCurrentUserEstablishmentOwner,
   sendPasswordReset,
   signInWithOAuth,
   signInWithPassword,
+  signOut,
   signUpWithPassword,
   useAuthStore,
 } from '@agenda/core';
@@ -16,7 +19,21 @@ import { GoogleIcon } from '@/components/GoogleIcon';
 import logo from '@/public/logo.png';
 
 type Tab = 'signIn' | 'signUp';
-type Notice = { tone: 'error' | 'success'; message: string };
+type Notice = { tone: 'error' | 'success' | 'denied'; message: string };
+
+const DENIED_MESSAGE =
+  'Esta conta não tem acesso ao painel do estabelecimento. Se você é dono de um bar, crie seu acesso na aba "Criar conta".';
+
+/**
+ * Marca que este navegador iniciou um cadastro de dono. O link de confirmação
+ * do e-mail reabre esta tela já com sessão, e é aí que a promoção acontece —
+ * ver o efeito de sessão abaixo. Fica em sessionStorage (não localStorage) para
+ * não sobreviver ao fechamento da aba: a intenção vale para esta visita.
+ *
+ * Não é credencial nem autorização: quem forjar a chave e não tiver sessão
+ * confirmada não promove nada, porque a RPC age sobre auth.uid().
+ */
+const SIGNUP_INTENT_KEY = 'web-client:signup-intent';
 
 const TABS: { id: Tab; label: string }[] = [
   { id: 'signIn', label: 'Entrar' },
@@ -41,10 +58,41 @@ export default function LoginPage() {
   const unavailable = status === 'unavailable';
   const canSubmit = email.trim().length > 0 && password.length >= 6 && !busy && !unavailable;
 
+  /**
+   * Ter conta no Agenda de Boteco não dá acesso ao painel. Ao ganhar sessão:
+   * - quem chegou pelo link de confirmação do cadastro (marca em sessionStorage)
+   *   é promovido a dono agora — a sessão prova que o e-mail é dele;
+   * - quem já era dono entra;
+   * - quem tem conta só do app público é recusado, com o caminho do cadastro.
+   */
   useEffect(() => {
-    if (status === 'signedIn') {
-      router.replace('/');
-    }
+    if (status !== 'signedIn') return;
+    let active = true;
+
+    void (async () => {
+      try {
+        if (window.sessionStorage.getItem(SIGNUP_INTENT_KEY)) {
+          window.sessionStorage.removeItem(SIGNUP_INTENT_KEY);
+          await claimEstablishmentOwner();
+          if (active) router.replace('/');
+          return;
+        }
+        const isOwner = await isCurrentUserEstablishmentOwner();
+        if (!active) return;
+        if (isOwner) {
+          router.replace('/');
+          return;
+        }
+        await signOut();
+        if (active) setNotice({ tone: 'denied', message: DENIED_MESSAGE });
+      } catch (error: unknown) {
+        if (active) setNotice({ tone: 'error', message: getFriendlyErrorMessage(error) });
+      }
+    })();
+
+    return () => {
+      active = false;
+    };
   }, [status, router]);
 
   /** Envolve a ação: limpa aviso, trava o botão e traduz o erro do Supabase. */
@@ -67,9 +115,15 @@ export default function LoginPage() {
       void run(() => signInWithPassword(email.trim(), password));
       return;
     }
+    // Se o e-mail já existir no app público, o Supabase não cria conta nova nem
+    // devolve erro — manda o e-mail de confirmação e devolve sucesso, para não
+    // revelar quem tem cadastro. A promoção da conta existente acontece quando
+    // o usuário volta pelo link, com sessão. Daí a mensagem ser a mesma nos dois
+    // casos: qualquer diferença aqui vira um detector de e-mails cadastrados.
+    window.sessionStorage.setItem(SIGNUP_INTENT_KEY, '1');
     void run(() => signUpWithPassword(email.trim(), password), {
       tone: 'success',
-      message: 'Conta criada. Confira seu e-mail para confirmar o cadastro.',
+      message: 'Enviamos um e-mail para você confirmar o acesso ao painel.',
     });
   };
 
@@ -134,7 +188,27 @@ export default function LoginPage() {
             </p>
           ) : null}
 
-          {notice ? (
+          {notice?.tone === 'denied' ? (
+            <div
+              role="status"
+              className="mt-4 flex flex-col items-start gap-2 rounded-xl border border-border bg-surface px-3.5 py-3"
+            >
+              <p className="text-[12px] leading-relaxed text-muted-foreground">
+                {notice.message}
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  setTab('signUp');
+                  setNotice(null);
+                  setPassword('');
+                }}
+                className="text-[12px] font-semibold text-primary underline-offset-2 hover:underline"
+              >
+                Criar meu acesso
+              </button>
+            </div>
+          ) : notice ? (
             <p
               role="status"
               className={`mt-4 text-[12px] ${
@@ -210,7 +284,15 @@ export default function LoginPage() {
           <button
             type="button"
             disabled={busy || unavailable}
-            onClick={() => void run(() => signInWithOAuth('google'))}
+            onClick={() => {
+              // Pela aba "Criar conta", o Google também é cadastro: a conta que
+              // voltar do OAuth vira dona. O e-mail já vem verificado pelo
+              // provedor, então a garantia é a mesma do link de confirmação.
+              if (tab === 'signUp') {
+                window.sessionStorage.setItem(SIGNUP_INTENT_KEY, '1');
+              }
+              void run(() => signInWithOAuth('google'));
+            }}
             className="flex h-12 w-full items-center justify-center gap-2.5 rounded-xl border border-border bg-surface text-[14px] font-medium text-foreground transition-colors hover:bg-surface-elevated disabled:opacity-50"
           >
             <GoogleIcon className="h-[18px] w-[18px]" />
