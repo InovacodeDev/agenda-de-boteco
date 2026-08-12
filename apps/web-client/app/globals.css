@@ -40,6 +40,9 @@
 
 @theme inline {
   --gradient-primary: linear-gradient(135deg, #1dd75e, #16d0a5);
+  /* gradientNight do core (#1A122B → #0F0F0F), o "fundo onboarding/login".
+     Radial no topo para o roxo se dissolver antes de chegar ao card. */
+  --gradient-night: radial-gradient(80% 55% at 22% 0%, #211634 0%, #170f26 32%, #0f0f0f 72%);
 }
 
 html,
