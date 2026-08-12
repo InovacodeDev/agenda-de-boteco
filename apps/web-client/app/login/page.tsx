@@ -24,9 +24,9 @@ const TABS: { id: Tab; label: string }[] = [
 ];
 
 const FIELD_CLASS =
-  'h-[54px] w-full rounded-xl border border-border bg-surface px-4 text-[15px] text-foreground placeholder:text-muted-foreground outline-none transition-colors focus:border-primary';
+  'h-12 w-full rounded-xl border border-border bg-surface px-3.5 text-[14px] text-foreground placeholder:text-muted-foreground outline-none transition-colors focus:border-primary';
 
-const LABEL_CLASS = 'text-[14px] font-semibold text-foreground';
+const LABEL_CLASS = 'text-[13px] font-semibold text-foreground';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -86,22 +86,22 @@ export default function LoginPage() {
 
   return (
     <main className="flex min-h-dvh flex-col items-center justify-center bg-[image:var(--gradient-night)] px-6 py-12">
-      <div className="flex w-full max-w-[494px] flex-col items-center">
+      <div className="flex w-full max-w-[440px] flex-col items-center">
         <Image
           src={logo}
           alt="Agenda de Boteco"
           priority
-          className="h-[92px] w-[92px] rounded-[22px] bg-white object-contain p-2.5"
+          className="h-20 w-20 rounded-[20px] bg-white object-contain p-2"
         />
 
-        <h1 className="mt-6 text-center font-[family-name:var(--font-heading)] text-[34px] font-bold leading-tight tracking-tight text-foreground">
+        <h1 className="mt-5 text-center font-[family-name:var(--font-heading)] text-[30px] font-bold leading-tight tracking-tight text-foreground">
           Painel do Estabelecimento
         </h1>
-        <p className="mt-2 text-center text-[16px] text-muted-foreground">
+        <p className="mt-1.5 text-center text-[15px] text-muted-foreground">
           Cadastre eventos e apareça no app dos amantes da noite
         </p>
 
-        <div className="mt-9 w-full rounded-2xl border border-border bg-card p-6">
+        <div className="mt-7 w-full rounded-2xl border border-border bg-card p-5">
           <div
             role="tablist"
             aria-label="Entrar ou criar conta"
@@ -117,7 +117,7 @@ export default function LoginPage() {
                   setTab(item.id);
                   setNotice(null);
                 }}
-                className={`flex-1 rounded-lg py-2.5 text-[15px] font-medium transition-colors ${
+                className={`flex-1 rounded-lg py-2 text-[14px] font-medium transition-colors ${
                   tab === item.id
                     ? 'bg-background text-foreground'
                     : 'text-muted-foreground hover:text-foreground'
@@ -129,7 +129,7 @@ export default function LoginPage() {
           </div>
 
           {unavailable ? (
-            <p className="mt-5 rounded-xl bg-surface px-4 py-3 text-[13px] text-muted-foreground">
+            <p className="mt-4 rounded-xl bg-surface px-3.5 py-2.5 text-[12px] text-muted-foreground">
               Login indisponível: configuração do Supabase ausente.
             </p>
           ) : null}
@@ -137,7 +137,7 @@ export default function LoginPage() {
           {notice ? (
             <p
               role="status"
-              className={`mt-5 text-[13px] ${
+              className={`mt-4 text-[12px] ${
                 notice.tone === 'error' ? 'text-destructive' : 'text-primary'
               }`}
             >
@@ -146,7 +146,7 @@ export default function LoginPage() {
           ) : null}
 
           <form
-            className="mt-6 flex flex-col"
+            className="mt-5 flex flex-col"
             onSubmit={(event) => {
               event.preventDefault();
               handleSubmit();
@@ -164,10 +164,10 @@ export default function LoginPage() {
               autoComplete="email"
               autoCapitalize="none"
               autoCorrect="off"
-              className={`mt-2 ${FIELD_CLASS}`}
+              className={`mt-1.5 ${FIELD_CLASS}`}
             />
 
-            <div className="mt-5 flex items-baseline justify-between gap-4">
+            <div className="mt-4 flex items-baseline justify-between gap-4">
               <label htmlFor="password" className={LABEL_CLASS}>
                 Senha
               </label>
@@ -176,7 +176,7 @@ export default function LoginPage() {
                   type="button"
                   disabled={busy}
                   onClick={handleReset}
-                  className="text-[14px] font-medium text-primary underline-offset-2 hover:underline"
+                  className="text-[13px] font-medium text-primary underline-offset-2 hover:underline"
                 >
                   Esqueci minha senha
                 </button>
@@ -189,21 +189,21 @@ export default function LoginPage() {
               placeholder="••••••"
               type="password"
               autoComplete={tab === 'signIn' ? 'current-password' : 'new-password'}
-              className={`mt-2 ${FIELD_CLASS}`}
+              className={`mt-1.5 ${FIELD_CLASS}`}
             />
 
             <button
               type="submit"
               disabled={!canSubmit}
-              className="mt-6 h-[54px] w-full rounded-xl bg-primary text-[15px] font-semibold text-primary-foreground shadow-[0_10px_40px_-10px_rgba(29,215,94,0.45)] transition-opacity hover:opacity-90 disabled:opacity-50 disabled:shadow-none"
+              className="mt-5 h-12 w-full rounded-xl bg-primary text-[14px] font-semibold text-primary-foreground shadow-[0_10px_40px_-10px_rgba(29,215,94,0.45)] transition-opacity hover:opacity-90 disabled:opacity-50 disabled:shadow-none"
             >
               {busy ? 'Aguarde…' : tab === 'signIn' ? 'Entrar' : 'Criar conta'}
             </button>
           </form>
 
-          <div className="my-6 flex items-center gap-4">
+          <div className="my-5 flex items-center gap-3">
             <span className="h-px flex-1 bg-border" />
-            <span className="text-[13px] text-muted-foreground">ou continue com</span>
+            <span className="text-[12px] text-muted-foreground">ou continue com</span>
             <span className="h-px flex-1 bg-border" />
           </div>
 
@@ -211,9 +211,9 @@ export default function LoginPage() {
             type="button"
             disabled={busy || unavailable}
             onClick={() => void run(() => signInWithOAuth('google'))}
-            className="flex h-[54px] w-full items-center justify-center gap-3 rounded-xl border border-border bg-surface text-[15px] font-medium text-foreground transition-colors hover:bg-surface-elevated disabled:opacity-50"
+            className="flex h-12 w-full items-center justify-center gap-2.5 rounded-xl border border-border bg-surface text-[14px] font-medium text-foreground transition-colors hover:bg-surface-elevated disabled:opacity-50"
           >
-            <GoogleIcon className="h-5 w-5" />
+            <GoogleIcon className="h-[18px] w-[18px]" />
             Google
           </button>
         </div>
