@@ -5,11 +5,13 @@ import {
   getFriendlyErrorMessage,
   isCurrentUserEstablishmentOwner,
   sendPasswordReset,
+  signInWithEmailOtp,
   signInWithOAuth,
   signInWithPassword,
   signOut,
-  signUpWithPassword,
+  updatePassword,
   useAuthStore,
+  verifyEmailOtp,
 } from '@agenda/core';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -21,19 +23,24 @@ import logo from '@/public/logo.png';
 type Tab = 'signIn' | 'signUp';
 type Notice = { tone: 'error' | 'success' | 'denied'; message: string };
 
+/**
+ * O cadastro é em duas etapas: pedimos o código por e-mail ('email') e depois
+ * recebemos código + senha ('code'). Vale tanto para quem nunca teve conta
+ * quanto para quem já usa o app público — nos dois casos o código é a prova de
+ * posse do e-mail, e só depois dele a senha é gravada e o acesso liberado.
+ */
+type SignUpStep = 'email' | 'code';
+
 const DENIED_MESSAGE =
   'Esta conta não tem acesso ao painel do estabelecimento. Se você é dono de um bar, crie seu acesso na aba "Criar conta".';
 
 /**
- * Marca que este navegador iniciou um cadastro de dono. O link de confirmação
- * do e-mail reabre esta tela já com sessão, e é aí que a promoção acontece —
- * ver o efeito de sessão abaixo. Fica em sessionStorage (não localStorage) para
- * não sobreviver ao fechamento da aba: a intenção vale para esta visita.
- *
- * Não é credencial nem autorização: quem forjar a chave e não tiver sessão
- * confirmada não promove nada, porque a RPC age sobre auth.uid().
+ * Marca que o Google foi acionado pela aba "Criar conta". Só o OAuth precisa
+ * disso: ele recarrega a página, e a intenção não sobrevive em memória. Não é
+ * credencial — quem forjar a chave sem sessão não promove nada, porque a RPC
+ * age sobre auth.uid(), e o e-mail do Google já vem verificado pelo provedor.
  */
-const SIGNUP_INTENT_KEY = 'web-client:signup-intent';
+const OAUTH_SIGNUP_KEY = 'web-client:oauth-signup';
 
 const TABS: { id: Tab; label: string }[] = [
   { id: 'signIn', label: 'Entrar' },
@@ -50,29 +57,39 @@ export default function LoginPage() {
   const status = useAuthStore((state) => state.status);
 
   const [tab, setTab] = useState<Tab>('signIn');
+  const [signUpStep, setSignUpStep] = useState<SignUpStep>('email');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [code, setCode] = useState('');
   const [busy, setBusy] = useState(false);
+  /** Ligado enquanto o cadastro conclui, para o efeito de sessão não interferir. */
+  const [claiming, setClaiming] = useState(false);
   const [notice, setNotice] = useState<Notice | null>(null);
 
   const unavailable = status === 'unavailable';
-  const canSubmit = email.trim().length > 0 && password.length >= 6 && !busy && !unavailable;
+
+  const canSubmit = (() => {
+    if (busy || unavailable) return false;
+    if (tab === 'signIn') return email.trim().length > 0 && password.length >= 6;
+    if (signUpStep === 'email') return email.trim().length > 0;
+    return code.trim().length === 6 && password.length >= 6;
+  })();
 
   /**
-   * Ter conta no Agenda de Boteco não dá acesso ao painel. Ao ganhar sessão:
-   * - quem chegou pelo link de confirmação do cadastro (marca em sessionStorage)
-   *   é promovido a dono agora — a sessão prova que o e-mail é dele;
-   * - quem já era dono entra;
-   * - quem tem conta só do app público é recusado, com o caminho do cadastro.
+   * Ter conta no Agenda de Boteco não dá acesso ao painel: quem entra sem a flag
+   * de dono é recusado, com o caminho do cadastro. O cadastro concede a flag por
+   * conta própria (handleSignUpVerify) — durante ele, `claiming` segura este
+   * efeito para não deslogar a sessão recém-criada antes da promoção.
    */
   useEffect(() => {
-    if (status !== 'signedIn') return;
+    if (status !== 'signedIn' || claiming) return;
     let active = true;
 
     void (async () => {
       try {
-        if (window.sessionStorage.getItem(SIGNUP_INTENT_KEY)) {
-          window.sessionStorage.removeItem(SIGNUP_INTENT_KEY);
+        // Volta do Google pela aba "Criar conta": promove antes de checar.
+        if (window.sessionStorage.getItem(OAUTH_SIGNUP_KEY)) {
+          window.sessionStorage.removeItem(OAUTH_SIGNUP_KEY);
           await claimEstablishmentOwner();
           if (active) router.replace('/');
           return;
@@ -93,7 +110,7 @@ export default function LoginPage() {
     return () => {
       active = false;
     };
-  }, [status, router]);
+  }, [status, claiming, router]);
 
   /** Envolve a ação: limpa aviso, trava o botão e traduz o erro do Supabase. */
   const run = async (action: () => Promise<void>, onDone?: Notice) => {
@@ -109,22 +126,64 @@ export default function LoginPage() {
     }
   };
 
+  /**
+   * Etapa 1 do cadastro: dispara o código. Usamos OTP em vez de signUp porque
+   * signUp falha com "User already registered" quando o e-mail já tem conta
+   * confirmada no app público — justamente o caso que precisamos atender. O OTP
+   * cria a conta se não existir e autentica a existente, sem distinção na UI.
+   */
+  const handleSignUpStart = async () => {
+    if (!canSubmit) return;
+    setNotice(null);
+    setBusy(true);
+    try {
+      await signInWithEmailOtp(email.trim());
+      setSignUpStep('code');
+      setNotice({
+        tone: 'success',
+        message: `Enviamos um código para ${email.trim()}. Ele confirma que o e-mail é seu.`,
+      });
+    } catch (error: unknown) {
+      setNotice({ tone: 'error', message: getFriendlyErrorMessage(error) });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  /**
+   * Etapa 2: o código vira sessão, e só então gravamos a senha e liberamos o
+   * painel. Ordem importa — sem sessão válida, updatePassword e a RPC de
+   * promoção não têm sobre quem agir.
+   */
+  const handleSignUpVerify = async () => {
+    if (!canSubmit) return;
+    setNotice(null);
+    setBusy(true);
+    setClaiming(true);
+    try {
+      await verifyEmailOtp(email.trim(), code.trim());
+      await updatePassword(password);
+      await claimEstablishmentOwner();
+      router.replace('/');
+    } catch (error: unknown) {
+      setNotice({ tone: 'error', message: getFriendlyErrorMessage(error) });
+      setClaiming(false);
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const handleSubmit = () => {
     if (!canSubmit) return;
     if (tab === 'signIn') {
       void run(() => signInWithPassword(email.trim(), password));
       return;
     }
-    // Se o e-mail já existir no app público, o Supabase não cria conta nova nem
-    // devolve erro — manda o e-mail de confirmação e devolve sucesso, para não
-    // revelar quem tem cadastro. A promoção da conta existente acontece quando
-    // o usuário volta pelo link, com sessão. Daí a mensagem ser a mesma nos dois
-    // casos: qualquer diferença aqui vira um detector de e-mails cadastrados.
-    window.sessionStorage.setItem(SIGNUP_INTENT_KEY, '1');
-    void run(() => signUpWithPassword(email.trim(), password), {
-      tone: 'success',
-      message: 'Enviamos um e-mail para você confirmar o acesso ao painel.',
-    });
+    if (signUpStep === 'email') {
+      void handleSignUpStart();
+      return;
+    }
+    void handleSignUpVerify();
   };
 
   const handleReset = () => {
@@ -170,6 +229,8 @@ export default function LoginPage() {
                 onClick={() => {
                   setTab(item.id);
                   setNotice(null);
+                  setSignUpStep('email');
+                  setCode('');
                 }}
                 className={`flex-1 rounded-lg py-2 text-[14px] font-medium transition-colors ${
                   tab === item.id
@@ -238,41 +299,87 @@ export default function LoginPage() {
               autoComplete="email"
               autoCapitalize="none"
               autoCorrect="off"
-              className={`mt-1.5 ${FIELD_CLASS}`}
+              readOnly={tab === 'signUp' && signUpStep === 'code'}
+              className={`mt-1.5 ${FIELD_CLASS} ${
+                tab === 'signUp' && signUpStep === 'code' ? 'text-muted-foreground' : ''
+              }`}
             />
 
-            <div className="mt-4 flex items-baseline justify-between gap-4">
-              <label htmlFor="password" className={LABEL_CLASS}>
-                Senha
-              </label>
-              {tab === 'signIn' ? (
-                <button
-                  type="button"
-                  disabled={busy}
-                  onClick={handleReset}
-                  className="text-[13px] font-medium text-primary underline-offset-2 hover:underline"
-                >
-                  Esqueci minha senha
-                </button>
-              ) : null}
-            </div>
-            <input
-              id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••"
-              type="password"
-              autoComplete={tab === 'signIn' ? 'current-password' : 'new-password'}
-              className={`mt-1.5 ${FIELD_CLASS}`}
-            />
+            {tab === 'signUp' && signUpStep === 'code' ? (
+              <>
+                <label htmlFor="code" className={`${LABEL_CLASS} mt-4`}>
+                  Código do e-mail
+                </label>
+                <input
+                  id="code"
+                  value={code}
+                  onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
+                  placeholder="000000"
+                  inputMode="numeric"
+                  maxLength={6}
+                  autoComplete="one-time-code"
+                  className={`mt-1.5 ${FIELD_CLASS} text-center tracking-[6px]`}
+                />
+              </>
+            ) : null}
+
+            {tab === 'signIn' || signUpStep === 'code' ? (
+              <>
+                <div className="mt-4 flex items-baseline justify-between gap-4">
+                  <label htmlFor="password" className={LABEL_CLASS}>
+                    {tab === 'signIn' ? 'Senha' : 'Crie uma senha'}
+                  </label>
+                  {tab === 'signIn' ? (
+                    <button
+                      type="button"
+                      disabled={busy}
+                      onClick={handleReset}
+                      className="text-[13px] font-medium text-primary underline-offset-2 hover:underline"
+                    >
+                      Esqueci minha senha
+                    </button>
+                  ) : null}
+                </div>
+                <input
+                  id="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••"
+                  type="password"
+                  autoComplete={tab === 'signIn' ? 'current-password' : 'new-password'}
+                  className={`mt-1.5 ${FIELD_CLASS}`}
+                />
+              </>
+            ) : null}
 
             <button
               type="submit"
               disabled={!canSubmit}
               className="mt-5 h-12 w-full rounded-xl bg-primary text-[14px] font-semibold text-primary-foreground shadow-[0_10px_40px_-10px_rgba(29,215,94,0.45)] transition-opacity hover:opacity-90 disabled:opacity-50 disabled:shadow-none"
             >
-              {busy ? 'Aguarde…' : tab === 'signIn' ? 'Entrar' : 'Criar conta'}
+              {busy
+                ? 'Aguarde…'
+                : tab === 'signIn'
+                  ? 'Entrar'
+                  : signUpStep === 'email'
+                    ? 'Enviar código'
+                    : 'Criar acesso'}
             </button>
+
+            {tab === 'signUp' && signUpStep === 'code' ? (
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => {
+                  setSignUpStep('email');
+                  setCode('');
+                  setNotice(null);
+                }}
+                className="mt-3 text-[13px] font-medium text-muted-foreground underline-offset-2 hover:underline"
+              >
+                Usar outro e-mail
+              </button>
+            ) : null}
           </form>
 
           <div className="my-5 flex items-center gap-3">
@@ -285,11 +392,11 @@ export default function LoginPage() {
             type="button"
             disabled={busy || unavailable}
             onClick={() => {
-              // Pela aba "Criar conta", o Google também é cadastro: a conta que
-              // voltar do OAuth vira dona. O e-mail já vem verificado pelo
-              // provedor, então a garantia é a mesma do link de confirmação.
+              // Pela aba "Criar conta", o Google também é cadastro. O OAuth
+              // recarrega a página, então a intenção vai para sessionStorage —
+              // é o único caminho em que ela não cabe no state em memória.
               if (tab === 'signUp') {
-                window.sessionStorage.setItem(SIGNUP_INTENT_KEY, '1');
+                window.sessionStorage.setItem(OAUTH_SIGNUP_KEY, '1');
               }
               void run(() => signInWithOAuth('google'));
             }}
