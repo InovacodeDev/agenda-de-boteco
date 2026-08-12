@@ -20,6 +20,12 @@
       "port": 8089
     },
     {
+      "name": "agenda-web-client",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter", "@agenda/web-client", "dev"],
+      "port": 8090
+    },
+    {
       "name": "agenda-landing",
       "runtimeExecutable": "pnpm",
       "runtimeArgs": ["--filter", "@agenda/landing", "dev"],

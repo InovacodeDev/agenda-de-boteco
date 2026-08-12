@@ -1,3 +1,4 @@
+import * as errors from '../utils/errors';
 import {
   AuthUnavailableError,
   configureAuthRedirect,
@@ -5,8 +6,13 @@ import {
   isAuthAvailable,
   onAuthUserChange,
   requestAccountDeletion,
+  sendPasswordReset,
   signInWithEmailOtp,
+  signInWithOAuth,
+  signInWithPassword,
   signOut,
+  signUpWithPassword,
+  updatePassword,
   verifyEmailOtp,
 } from './auth';
 
@@ -24,6 +30,10 @@ interface MockAuth {
   signInWithOAuth: jest.Mock;
   setSession: jest.Mock;
   verifyOtp: jest.Mock;
+  signInWithPassword: jest.Mock;
+  signUp: jest.Mock;
+  resetPasswordForEmail: jest.Mock;
+  updateUser: jest.Mock;
 }
 
 function makeClient(overrides: Partial<MockAuth> = {}, rpc?: jest.Mock) {
@@ -37,6 +47,10 @@ function makeClient(overrides: Partial<MockAuth> = {}, rpc?: jest.Mock) {
     signInWithOAuth: jest.fn().mockResolvedValue({ data: { url: 'https://oauth.url' }, error: null }),
     setSession: jest.fn().mockResolvedValue({ error: null }),
     verifyOtp: jest.fn().mockResolvedValue({ error: null }),
+    signInWithPassword: jest.fn().mockResolvedValue({ error: null }),
+    signUp: jest.fn().mockResolvedValue({ error: null }),
+    resetPasswordForEmail: jest.fn().mockResolvedValue({ error: null }),
+    updateUser: jest.fn().mockResolvedValue({ error: null }),
     ...overrides,
   };
   return { auth, rpc: rpc ?? jest.fn().mockResolvedValue({ data: null, error: null }) };
@@ -191,6 +205,192 @@ describe('verifyEmailOtp', () => {
     const client = makeClient({ verifyOtp });
     mockGetSupabase.mockReturnValue(client);
     await expect(verifyEmailOtp('tito@exemplo.com', '123456')).rejects.toThrow('invalid token');
+  });
+});
+
+describe('signInWithPassword', () => {
+  it('lança AuthUnavailableError sem Supabase', async () => {
+    mockGetSupabase.mockReturnValue(null);
+    await expect(signInWithPassword('tito@exemplo.com', 'senha123')).rejects.toBeInstanceOf(
+      AuthUnavailableError,
+    );
+  });
+
+  it('chama signInWithPassword com email e senha', async () => {
+    const client = makeClient();
+    mockGetSupabase.mockReturnValue(client);
+    await signInWithPassword('tito@exemplo.com', 'senha123');
+    expect(client.auth.signInWithPassword).toHaveBeenCalledWith({
+      email: 'tito@exemplo.com',
+      password: 'senha123',
+    });
+  });
+
+  it('propaga erro do Supabase', async () => {
+    const client = makeClient({
+      signInWithPassword: jest.fn().mockResolvedValue({ error: new Error('invalid credentials') }),
+    });
+    mockGetSupabase.mockReturnValue(client);
+    await expect(signInWithPassword('tito@exemplo.com', 'senha123')).rejects.toThrow(
+      'invalid credentials',
+    );
+  });
+
+  it('NÃO inclui a senha no contexto de erro', async () => {
+    const spy = jest.spyOn(errors, 'handleServiceError').mockImplementation((error) => {
+      throw error;
+    });
+    const client = makeClient({
+      signInWithPassword: jest.fn().mockResolvedValue({ error: new Error('boom') }),
+    });
+    mockGetSupabase.mockReturnValue(client);
+
+    await expect(signInWithPassword('tito@exemplo.com', 'senha-secreta')).rejects.toThrow('boom');
+
+    expect(spy).toHaveBeenCalledWith(expect.any(Error), {
+      method: 'auth.signInWithPassword',
+      args: { email: 'tito@exemplo.com' },
+    });
+    expect(JSON.stringify(spy.mock.calls)).not.toContain('senha-secreta');
+    spy.mockRestore();
+  });
+});
+
+describe('signUpWithPassword', () => {
+  it('lança AuthUnavailableError sem Supabase', async () => {
+    mockGetSupabase.mockReturnValue(null);
+    await expect(signUpWithPassword('tito@exemplo.com', 'senha123')).rejects.toBeInstanceOf(
+      AuthUnavailableError,
+    );
+  });
+
+  it('chama signUp com email, senha e emailRedirectTo', async () => {
+    const client = makeClient();
+    mockGetSupabase.mockReturnValue(client);
+    await signUpWithPassword('tito@exemplo.com', 'senha123');
+    expect(client.auth.signUp).toHaveBeenCalledWith({
+      email: 'tito@exemplo.com',
+      password: 'senha123',
+      options: { emailRedirectTo: 'agenda-de-boteco://' },
+    });
+  });
+
+  it('propaga erro do Supabase', async () => {
+    const client = makeClient({
+      signUp: jest.fn().mockResolvedValue({ error: new Error('user already registered') }),
+    });
+    mockGetSupabase.mockReturnValue(client);
+    await expect(signUpWithPassword('tito@exemplo.com', 'senha123')).rejects.toThrow(
+      'user already registered',
+    );
+  });
+
+  it('NÃO inclui a senha no contexto de erro', async () => {
+    const spy = jest.spyOn(errors, 'handleServiceError').mockImplementation((error) => {
+      throw error;
+    });
+    const client = makeClient({
+      signUp: jest.fn().mockResolvedValue({ error: new Error('boom') }),
+    });
+    mockGetSupabase.mockReturnValue(client);
+
+    await expect(signUpWithPassword('tito@exemplo.com', 'senha-secreta')).rejects.toThrow('boom');
+
+    expect(spy).toHaveBeenCalledWith(expect.any(Error), {
+      method: 'auth.signUpWithPassword',
+      args: { email: 'tito@exemplo.com' },
+    });
+    expect(JSON.stringify(spy.mock.calls)).not.toContain('senha-secreta');
+    spy.mockRestore();
+  });
+});
+
+describe('sendPasswordReset', () => {
+  it('lança AuthUnavailableError sem Supabase', async () => {
+    mockGetSupabase.mockReturnValue(null);
+    await expect(sendPasswordReset('tito@exemplo.com')).rejects.toBeInstanceOf(
+      AuthUnavailableError,
+    );
+  });
+
+  it('chama resetPasswordForEmail com email e redirectTo', async () => {
+    const client = makeClient();
+    mockGetSupabase.mockReturnValue(client);
+    await sendPasswordReset('tito@exemplo.com');
+    expect(client.auth.resetPasswordForEmail).toHaveBeenCalledWith('tito@exemplo.com', {
+      redirectTo: 'agenda-de-boteco://',
+    });
+  });
+
+  it('propaga erro do Supabase', async () => {
+    const client = makeClient({
+      resetPasswordForEmail: jest.fn().mockResolvedValue({ error: new Error('rate limit') }),
+    });
+    mockGetSupabase.mockReturnValue(client);
+    await expect(sendPasswordReset('tito@exemplo.com')).rejects.toThrow('rate limit');
+  });
+});
+
+describe('updatePassword', () => {
+  it('lança AuthUnavailableError sem Supabase', async () => {
+    mockGetSupabase.mockReturnValue(null);
+    await expect(updatePassword('nova-senha')).rejects.toBeInstanceOf(AuthUnavailableError);
+  });
+
+  it('chama updateUser com a nova senha', async () => {
+    const client = makeClient();
+    mockGetSupabase.mockReturnValue(client);
+    await updatePassword('nova-senha');
+    expect(client.auth.updateUser).toHaveBeenCalledWith({ password: 'nova-senha' });
+  });
+
+  it('propaga erro do Supabase', async () => {
+    const client = makeClient({
+      updateUser: jest.fn().mockResolvedValue({ error: new Error('session expired') }),
+    });
+    mockGetSupabase.mockReturnValue(client);
+    await expect(updatePassword('nova-senha')).rejects.toThrow('session expired');
+  });
+
+  it('NÃO inclui a senha no contexto de erro', async () => {
+    const spy = jest.spyOn(errors, 'handleServiceError').mockImplementation((error) => {
+      throw error;
+    });
+    const client = makeClient({
+      updateUser: jest.fn().mockResolvedValue({ error: new Error('boom') }),
+    });
+    mockGetSupabase.mockReturnValue(client);
+
+    await expect(updatePassword('senha-secreta')).rejects.toThrow('boom');
+
+    expect(spy).toHaveBeenCalledWith(expect.any(Error), { method: 'auth.updatePassword' });
+    expect(JSON.stringify(spy.mock.calls)).not.toContain('senha-secreta');
+    spy.mockRestore();
+  });
+});
+
+describe('signInWithOAuth', () => {
+  it('lança AuthUnavailableError sem Supabase', async () => {
+    mockGetSupabase.mockReturnValue(null);
+    await expect(signInWithOAuth('google')).rejects.toBeInstanceOf(AuthUnavailableError);
+  });
+
+  it('chama signInWithOAuth com provider e redirectTo', async () => {
+    const client = makeClient();
+    mockGetSupabase.mockReturnValue(client);
+    await signInWithOAuth('google');
+    expect(client.auth.signInWithOAuth).toHaveBeenCalledWith({
+      provider: 'google',
+      options: { redirectTo: 'agenda-de-boteco://' },
+    });
+  });
+
+  it('propaga erro do Supabase', async () => {
+    const client = makeClient({
+      signInWithOAuth: jest.fn().mockResolvedValue({ error: new Error('provider disabled') }),
+    });
+    mockGetSupabase.mockReturnValue(client);
+    await expect(signInWithOAuth('google')).rejects.toThrow('provider disabled');
   });
 });
 

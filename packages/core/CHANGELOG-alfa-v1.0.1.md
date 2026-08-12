@@ -13,3 +13,6 @@
 - Nova ordenação de bares por agenda (evento hoje, evento na semana) ou proximidade, compartilhada entre app e site
 - Novo filtro de eventos passados, que inclui no feed os eventos já encerrados
 - Filtro de bares passa a aplicar distância, avaliação mínima e "aberto agora", que antes eram ignorados nessa lista
+- Donos de bar podem ter uma conta vinculada ao próprio estabelecimento, com permissão para editar o perfil e gerenciar apenas os eventos do seu bar
+- Novo cadastro de estabelecimento pelo próprio dono, que cria o bar e o vínculo da conta de uma só vez
+- Além do código por e-mail, agora é possível entrar com e-mail e senha ou com a conta Google, e recuperar a senha esquecida

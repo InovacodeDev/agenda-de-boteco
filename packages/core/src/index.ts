@@ -59,6 +59,7 @@ export {
   upsertNotification,
 } from './services/catalog';
 export * from './services/connectivity';
+export * from './services/establishment-owner';
 export * from './services/favorites';
 export * from './services/proximity';
 export * from './services/queryKeys';

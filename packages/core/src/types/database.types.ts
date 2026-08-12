@@ -79,6 +79,32 @@ export type Database = {
         }
         Relationships: []
       }
+      establishment_owners: {
+        Row: {
+          created_at: string
+          establishment_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          establishment_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          establishment_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "establishment_owners_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       establishments: {
         Row: {
           address: string
@@ -558,6 +584,16 @@ export type Database = {
             }
             Returns: string
           }
+      create_owned_establishment: {
+        Args: {
+          p_address: string
+          p_city_id: string
+          p_name: string
+          p_neighborhood: string
+          p_whatsapp: string
+        }
+        Returns: string
+      }
       disablelongtransactions: { Args: never; Returns: string }
       dropgeometrycolumn:
         | {
@@ -723,6 +759,10 @@ export type Database = {
           slug: string
           whatsapp: string
         }[]
+      }
+      owns_establishment: {
+        Args: { target_id: string }
+        Returns: boolean
       }
       populate_geometry_columns:
         | { Args: { tbl_oid: unknown; use_typmod?: boolean }; Returns: number }
