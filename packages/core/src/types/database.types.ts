@@ -592,6 +592,9 @@ export type Database = {
         Args: {
           p_address: string
           p_city_id: string
+          p_cover_url: string
+          p_description: string
+          p_logo_url: string
           p_name: string
           p_neighborhood: string
           p_whatsapp: string

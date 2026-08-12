@@ -10,3 +10,4 @@
 - Ter conta no aplicativo não dá acesso ao painel: é preciso criar o acesso de dono de bar
 - Quem já usa o Agenda de Boteco pode reaproveitar o mesmo e-mail — o cadastro do painel libera o acesso na conta que já existe, após confirmação por e-mail
 - Quem entra com uma conta sem acesso ao painel recebe um aviso claro e o caminho para criar o acesso
+- Cadastro do bar agora aceita logo, imagem de capa e descrição já no primeiro passo, com barra de progresso mostrando o quanto falta

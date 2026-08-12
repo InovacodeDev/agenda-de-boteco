@@ -59,6 +59,9 @@ export async function claimEstablishmentOwner(): Promise<void> {
 /** Campos mínimos do wizard de onboarding (Fase 1 do painel do estabelecimento). */
 export interface CreateOwnedEstablishmentInput {
   name: string;
+  description: string;
+  logoUrl: string;
+  coverUrl: string;
   cityId: string;
   address: string;
   neighborhood: string;
@@ -112,6 +115,9 @@ export async function createOwnedEstablishment(
   try {
     const { data, error } = await client.rpc('create_owned_establishment', {
       p_name: input.name,
+      p_description: input.description,
+      p_logo_url: input.logoUrl,
+      p_cover_url: input.coverUrl,
       p_city_id: input.cityId,
       p_address: input.address,
       p_neighborhood: input.neighborhood,

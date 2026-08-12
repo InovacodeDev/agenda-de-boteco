@@ -163,6 +163,9 @@ describe('claimEstablishmentOwner', () => {
 describe('createOwnedEstablishment', () => {
   const INPUT = {
     name: 'Bar do Tito',
+    description: 'O melhor boteco da ilha',
+    logoUrl: 'https://cdn.example/logo.png',
+    coverUrl: 'https://cdn.example/capa.png',
     cityId: 'florianopolis',
     address: 'Rua X, 100',
     neighborhood: 'Centro',
@@ -183,6 +186,9 @@ describe('createOwnedEstablishment', () => {
     await expect(createOwnedEstablishment(INPUT)).resolves.toBe('bar-do-tito-abc');
     expect(rpc).toHaveBeenCalledWith('create_owned_establishment', {
       p_name: 'Bar do Tito',
+      p_description: 'O melhor boteco da ilha',
+      p_logo_url: 'https://cdn.example/logo.png',
+      p_cover_url: 'https://cdn.example/capa.png',
       p_city_id: 'florianopolis',
       p_address: 'Rua X, 100',
       p_neighborhood: 'Centro',
