@@ -42,6 +42,10 @@ export default function LandingPage() {
           © 2026 Agenda de Boteco ·{' '}
           <a href={`${WEB_BASE}/app/privacidade`} className="hover:text-foreground">
             Privacidade
+          </a>{' '}
+          ·{' '}
+          <a href="/suporte" className="hover:text-foreground">
+            Suporte
           </a>
         </p>
         <a href={`${ADMIN_BASE}/admin`} className="text-[12px] text-muted-foreground hover:text-foreground">
