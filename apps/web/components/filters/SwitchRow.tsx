@@ -38,7 +38,8 @@ export function SwitchRow({ title, subtitle, value, onValueChange }: SwitchRowPr
       >
         {/* Geometria toda inline: as utilities de translate e left deste
             projeto não cobrem o caso e o thumb ficava parado no trilho.
-            Trilho 48 − thumb 20 − folga 4 = 24px na ponta direita. */}
+            Trilho 48 − left 4 − thumb 20 − folga 4 = 20px de curso, o que
+            mantém a mesma folga de 4px nas duas pontas. */}
         <span
           className="rounded-full bg-foreground"
           style={{
@@ -47,7 +48,7 @@ export function SwitchRow({ title, subtitle, value, onValueChange }: SwitchRowPr
             left: 4,
             width: 20,
             height: 20,
-            transform: `translateX(${value ? 24 : 0}px)`,
+            transform: `translateX(${value ? 20 : 0}px)`,
             transition: 'transform 200ms',
           }}
         />
