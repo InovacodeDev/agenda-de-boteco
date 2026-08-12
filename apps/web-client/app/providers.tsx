@@ -23,10 +23,10 @@ function bootstrap() {
   bootstrapped = true;
   configureAppStorage(webStorage);
   configureSupabase(getSupabase);
-  // O painel roda sob basePath /painel — o retorno do OAuth/magic link precisa
-  // cair em /painel/login, não na raiz do domínio (que é o site público).
+  // O painel roda sob basePath /client — o retorno do OAuth/magic link precisa
+  // cair em /client/login, não na raiz do domínio (que é o site público).
   configureAuthRedirect(() =>
-    typeof window !== 'undefined' ? `${window.location.origin}/painel/login` : '',
+    typeof window !== 'undefined' ? `${window.location.origin}/client/login` : '',
   );
   configureQueryErrorHandler((error) => {
     logErrorToTerminal(error, { method: 'queryClient' });

@@ -6,3 +6,4 @@
 - Cadastro inicial guiado em 3 passos: nome do bar, endereço e contato, e revisão antes de concluir
 - Cada dono enxerga e edita apenas o seu próprio estabelecimento
 - Menu lateral com Dashboard, Eventos, Perfil, Métricas, Avaliações e Configurações
+- O painel do estabelecimento passa a ser acessado pelo endereço /client
