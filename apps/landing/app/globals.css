@@ -16,6 +16,13 @@
   --color-accent: #f9a91f;
   --color-accent-foreground: #0f0f0f;
   --color-ring: #1dd75e;
+  --color-popover: #141414;
+  --color-neon-pink: #ff4da6;
+
+  /* Semáforo de eventos — espelha o web/mobile, usado nos mockups do preview. */
+  --color-status-green: #1dd75e;
+  --color-status-yellow: #f5d90a;
+  --color-status-red: #ef4444;
 
   --font-heading: var(--font-space-grotesk), system-ui, sans-serif;
   --font-body: var(--font-inter), system-ui, sans-serif;

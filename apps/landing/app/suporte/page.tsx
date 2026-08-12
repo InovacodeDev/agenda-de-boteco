@@ -6,7 +6,7 @@ const CONTACT_EMAIL = 'contato@inovacode.dev';
 const WEB_BASE = process.env.NEXT_PUBLIC_WEB_URL ?? '';
 
 export const metadata: Metadata = {
-  title: 'Suporte · Agenda de Boteco',
+  title: 'Suporte',
   description: 'Ajuda, contato e respostas para as dúvidas mais comuns do Agenda de Boteco.',
 };
 
