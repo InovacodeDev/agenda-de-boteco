@@ -70,8 +70,12 @@ export const establishmentSchema = z.object({
   id: z.string(),
   name: z.string(),
   description: z.string(),
-  logo_url: z.string().url(),
-  cover_url: z.string().url(),
+  // Aceitam string vazia: no onboarding do painel logo e capa são opcionais, e
+  // o bar nasce sem elas até o dono subir as imagens em /perfil. Exigir URL
+  // aqui deixava o estabelecimento gravado mas ilegível — o parse quebrava na
+  // leitura. A UI já trata ausência de imagem.
+  logo_url: z.union([z.string().url(), z.literal('')]),
+  cover_url: z.union([z.string().url(), z.literal('')]),
   address: z.string(),
   neighborhood: z.string(),
   city_id: z.string(),

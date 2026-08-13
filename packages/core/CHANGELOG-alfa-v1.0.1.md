@@ -19,3 +19,4 @@
 - Contas passam a ter uma marcação de acesso ao painel do estabelecimento, concedida apenas após confirmação do e-mail
 - O cadastro de bar pelo dono passa a gravar logo, capa, descrição, contato, dados de operação e diferenciais já na criação
 - Donos podem cadastrar uma cidade nova pelo painel; nomes iguais (mesmo com acento ou caixa diferente) reaproveitam a cidade existente
+- Bar cadastrado sem logo ou imagem de capa volta a abrir normalmente, em vez de falhar ao carregar

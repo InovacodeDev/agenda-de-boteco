@@ -122,6 +122,22 @@ describe('catalog service — fallback mock (client nulo)', () => {
     it('retorna null para id inexistente', async () => {
       await expect(getEstablishment('nao-existe')).resolves.toBeNull();
     });
+
+    // Regressão: o onboarding do painel cria o bar sem logo/capa (a RPC grava
+    // ''), e o schema exigia URL — o estabelecimento era gravado mas quebrava
+    // na leitura. Só a string vazia passa; texto arbitrário segue inválido.
+    it('aceita logo_url e cover_url vazios (bar recém-criado no painel)', async () => {
+      const semImagens = {
+        ...(await getEstablishment('e1')),
+        logo_url: '',
+        cover_url: '',
+      };
+      expect(() => establishmentSchema.parse(semImagens)).not.toThrow();
+
+      expect(() =>
+        establishmentSchema.parse({ ...semImagens, logo_url: 'nao-e-url' }),
+      ).toThrow();
+    });
   });
 
   describe('listEventsByEstablishment', () => {
