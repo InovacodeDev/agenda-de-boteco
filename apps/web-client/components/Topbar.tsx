@@ -11,8 +11,8 @@ export function Topbar() {
   const initial = email?.trim().charAt(0).toUpperCase() ?? '?';
 
   return (
-    <header className="flex items-center justify-between gap-4 border-b border-border bg-background px-8 py-5">
-      <span className="truncate font-[family-name:var(--font-heading)] text-[17px] font-bold text-foreground">
+    <header className="border-border bg-background flex items-center justify-between gap-4 border-b px-8 py-5">
+      <span className="font-heading text-foreground truncate text-[18px] font-600">
         {establishment?.name ?? 'Seu estabelecimento'}
       </span>
 
@@ -26,11 +26,11 @@ export function Topbar() {
       >
         <span
           aria-hidden
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface-elevated text-[14px] font-semibold text-foreground"
+          className="bg-surface-elevated text-foreground flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[14px] font-semibold"
         >
           {initial}
         </span>
-        <span className="hidden text-[15px] text-foreground sm:inline">{email}</span>
+        <span className="text-foreground hidden text-[15px] sm:inline">{email}</span>
         <span className="sr-only">Sair da conta</span>
       </button>
     </header>

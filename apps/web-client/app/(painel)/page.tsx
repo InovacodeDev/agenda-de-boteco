@@ -48,53 +48,48 @@ export default function DashboardPage() {
   const { data: establishment } = useOwnedEstablishment();
 
   return (
-    <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-6">
-      <section className="rounded-2xl bg-[image:var(--gradient-primary)] p-10 text-primary-foreground shadow-[0_20px_60px_-20px_rgba(29,215,94,0.45)]">
-        <SparkleIcon size={28} weight="fill" aria-hidden />
-        <h1 className="mt-4 font-[family-name:var(--font-heading)] text-[28px] font-bold leading-tight">
+    <div className="mx-auto flex w-full max-w-300 flex-col gap-6">
+      <section className="text-primary-foreground shadow-neon rounded-2xl bg-(image:--gradient-primary) p-8">
+        <SparkleIcon size={32} weight="regular" aria-hidden />
+        <h2 className="font-heading mt-4 text-3xl leading-9 font-bold">
           Bem-vindo{establishment?.name ? `, ${establishment.name}` : ''}!
-        </h1>
-        <p className="mt-2 max-w-[52ch] text-[16px] leading-relaxed opacity-85">
-          Seu painel está pronto. Cadastre o primeiro evento e apareça no feed dos amantes da
-          noite.
+        </h2>
+        <p className="mt-2 max-w-xl text-[16px] leading-relaxed opacity-90">
+          Seu painel está pronto. Cadastre o primeiro evento e apareça no feed dos amantes da noite.
         </p>
         {/* ponytail: aponta para a listagem até a Fase 3 criar /eventos/novo. */}
         <Link
           href="/eventos"
-          className="mt-6 inline-flex items-center gap-2 rounded-full bg-background px-6 py-3.5 text-[15px] font-semibold text-foreground transition-opacity hover:opacity-90"
+          className="bg-background text-foreground mt-5 inline-flex items-center justify-center gap-2 rounded-[14px] px-4 py-2 text-sm font-medium transition-opacity hover:opacity-90"
         >
-          <PlusIcon size={18} weight="bold" />
+          <PlusIcon size={14} weight="bold" />
           Cadastrar primeiro evento
         </Link>
       </section>
 
-      <section className="grid gap-6 md:grid-cols-3">
+      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {SHORTCUTS.map((item) => {
           const ItemIcon = item.icon;
           return (
             <div
               key={item.href}
-              className="flex flex-col rounded-2xl border border-border bg-card p-6"
+              className="border-border bg-card text-card-foreground hover:border-primary/50 group flex flex-col rounded-lg border p-5 shadow-sm transition"
             >
-              <ItemIcon size={24} className="text-primary" aria-hidden />
-              <h2 className="mt-4 font-[family-name:var(--font-heading)] text-[19px] font-bold text-foreground">
-                {item.title}
-              </h2>
-              <p className="mt-1.5 flex-1 text-[15px] text-muted-foreground">
-                {item.description}
-              </p>
+              <ItemIcon size={24} className="text-primary mb-3" aria-hidden />
+              <h3 className="mb-1 font-semibold">{item.title}</h3>
+              <p className="text-muted-foreground mb-4 flex-1 text-sm">{item.description}</p>
 
               {item.disabled ? (
-                <span
-                  aria-disabled
-                  className="mt-6 rounded-full bg-surface px-4 py-3 text-center text-[15px] font-medium text-muted-foreground"
+                <button
+                  disabled
+                  className="ring-offset-background focus-visible:ring-ring border-input bg-background hover:bg-accent hover:text-accent-foreground inline-flex h-9 w-full items-center justify-center gap-2 rounded-[14px] border px-3 text-sm font-medium whitespace-nowrap transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0"
                 >
                   {item.cta}
-                </span>
+                </button>
               ) : (
                 <Link
                   href={item.href}
-                  className="mt-6 rounded-full bg-surface-elevated px-4 py-3 text-center text-[15px] font-medium text-foreground transition-colors hover:bg-surface"
+                  className="ring-offset-background focus-visible:ring-ring border-input bg-background hover:bg-accent hover:text-accent-foreground inline-flex h-9 w-full items-center justify-center gap-2 rounded-[14px] border px-3 text-sm font-medium whitespace-nowrap transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0"
                 >
                   {item.cta}
                 </Link>
