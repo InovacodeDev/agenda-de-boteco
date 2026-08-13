@@ -16,3 +16,4 @@
 - O que falta para salvar aparece ao passar o mouse sobre o botão bloqueado, em vez de ocupar espaço fixo na tela
 - Seção de repetição do evento ganha título, chave de liga/desliga na cor da marca e resumo destacado de quantos eventos serão criados
 - Menu lateral fica fixo na tela: rolar uma página longa não move mais o menu, que só rola por conta própria quando não couber na altura da janela
+- Aba do navegador passa a exibir a logo do Agenda de Boteco
