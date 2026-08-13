@@ -91,6 +91,22 @@ export function formatRelativeDay(iso: string, now: Date = new Date()): string {
   return `${String(date.getDate()).padStart(2, '0')} De ${MONTHS_PT[date.getMonth()]}.`;
 }
 
+/**
+ * 'Qui., 22 de out.' — dia da semana abreviado + dia + mês, formato da agenda do
+ * painel do dono. Diferente de formatRelativeDay (que troca por 'Hoje'/'Amanhã'
+ * e some com o mês na semana corrente): aqui o dono compara datas de uma lista,
+ * então toda linha precisa mostrar a data inteira.
+ *
+ * Com `withTime`, anexa o horário: 'Sex., 25 de set. • 18:00'.
+ */
+export function formatEventDate(iso: string, withTime = false): string {
+  const date = new Date(iso);
+  const weekday = WEEKDAYS_PT[date.getDay()];
+  const month = MONTHS_PT[date.getMonth()].toLowerCase();
+  const day = `${weekday}., ${date.getDate()} de ${month}.`;
+  return withTime ? `${day} • ${formatTime(iso)}` : day;
+}
+
 /** '20:00' no fuso local */
 export function formatTime(iso: string): string {
   const date = new Date(iso);

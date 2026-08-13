@@ -4,6 +4,7 @@ import {
   currencyToMask,
   deleteEvent,
   type Event,
+  type EventStatus,
   type EventWriteInput,
   eventWriteSchema,
   maskCurrencyBR,
@@ -102,6 +103,9 @@ export default function EventosPage() {
 
   const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  // Status do evento aberto para edição. O admin não edita este campo (rascunho
+  // é do painel do dono), mas precisa devolvê-lo intacto no upsert.
+  const [editingStatus, setEditingStatus] = useState<EventStatus | null>(null);
   const [form, setForm] = useState<FormState>(EMPTY);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
@@ -125,6 +129,7 @@ export default function EventosPage() {
 
   const openNew = () => {
     setEditingId(null);
+    setEditingStatus(null);
     setForm(EMPTY);
     setErrors({});
     setSubmitError(null);
@@ -133,6 +138,7 @@ export default function EventosPage() {
 
   const openEdit = (row: Event) => {
     setEditingId(row.id);
+    setEditingStatus(row.status);
     setForm(toForm(row));
     setErrors({});
     setSubmitError(null);
@@ -161,6 +167,11 @@ export default function EventosPage() {
       courtesy: form.courtesy || undefined,
       promo: form.promo || undefined,
       instagram_post_url: form.instagram_post_url.trim() || undefined,
+      // Rascunho é do painel do dono (Fase 3) e o admin não tem campo de status:
+      // na criação publica direto, como sempre fez, mas na edição preserva o
+      // status atual — salvar um evento que o dono deixou em rascunho não pode
+      // publicá-lo pelas costas dele.
+      status: editingStatus ?? 'published',
     };
 
     const result = eventWriteSchema.safeParse(candidate);

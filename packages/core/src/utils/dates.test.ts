@@ -1,5 +1,6 @@
 import {
   buildEventDate,
+  formatEventDate,
   formatRelativeDay,
   formatTime,
   formatTimeRange,
@@ -103,6 +104,27 @@ describe('formatRelativeDay', () => {
   it('retorna data abreviada a partir de 7 dias', () => {
     expect(formatRelativeDay(localIso(2026, 5, 17), FIXED_NOW)).toBe('17 De Jun.');
     expect(formatRelativeDay(localIso(2026, 6, 5), FIXED_NOW)).toBe('05 De Jul.');
+  });
+});
+
+describe('formatEventDate', () => {
+  it('formata dia da semana, dia e mês em minúsculas', () => {
+    expect(formatEventDate(localIso(2026, 9, 22))).toBe('Qui., 22 de out.');
+    expect(formatEventDate(localIso(2026, 8, 25))).toBe('Sex., 25 de set.');
+  });
+
+  it('não preenche o dia com zero à esquerda', () => {
+    expect(formatEventDate(localIso(2026, 5, 5))).toBe('Sex., 5 de jun.');
+  });
+
+  it('anexa o horário quando pedido', () => {
+    expect(formatEventDate(localIso(2026, 8, 25, 18, 0), true)).toBe(
+      'Sex., 25 de set. • 18:00',
+    );
+  });
+
+  it('mantém sábado com acento', () => {
+    expect(formatEventDate(localIso(2026, 0, 3))).toBe('Sáb., 3 de jan.');
   });
 });
 

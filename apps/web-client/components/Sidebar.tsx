@@ -66,9 +66,8 @@ export function Sidebar() {
         })}
       </nav>
 
-      {/* ponytail: aponta para a listagem até a Fase 3 criar /eventos/novo. */}
       <Link
-        href="/eventos"
+        href="/eventos/novo"
         className="bg-primary text-primary-foreground shadow-neon inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-medium transition-opacity hover:opacity-90"
       >
         <PlusIcon size={16} weight="bold" />

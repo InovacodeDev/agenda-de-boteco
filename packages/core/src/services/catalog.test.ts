@@ -85,6 +85,18 @@ describe('catalog service — fallback mock (client nulo)', () => {
     it('retorna null para id inexistente', async () => {
       await expect(getEvent('nao-existe')).resolves.toBeNull();
     });
+
+    // Regressão, mesmo caso de logo_url/cover_url: o banner é opcional no
+    // formulário do dono e a coluna é NOT NULL, então um evento sem imagem
+    // grava ''. Exigir URL gravava o evento e quebrava a leitura dele.
+    it('aceita banner_url vazio (evento salvo sem banner)', async () => {
+      const semBanner = { ...(await getEvent('ev1')), banner_url: '' };
+      expect(() => eventSchema.parse(semBanner)).not.toThrow();
+
+      expect(() =>
+        eventSchema.parse({ ...semBanner, banner_url: 'nao-e-url' }),
+      ).toThrow();
+    });
   });
 
   describe('listEstablishments', () => {

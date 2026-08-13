@@ -103,7 +103,11 @@ export const eventSchema = z.object({
   name: z.string(),
   attraction: z.string(),
   description: z.string(),
-  banner_url: z.string().url(),
+  // Aceita string vazia, pelo mesmo motivo de logo_url/cover_url: o banner é
+  // opcional no formulário do dono e a coluna é NOT NULL, então um evento sem
+  // imagem grava '' — exigir URL aqui gravava o evento e quebrava o parse na
+  // leitura. A UI já trata ausência de banner.
+  banner_url: z.union([z.string().url(), z.literal('')]),
   photo_urls: z.array(z.string().url()).default([]),
   music_style_ids: z.array(z.string()),
   establishment_id: z.string(),
