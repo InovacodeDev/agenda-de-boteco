@@ -65,7 +65,7 @@ export default function PainelLayout({ children }: { children: React.ReactNode }
       <Sidebar />
       <div className="flex min-w-0 flex-1 flex-col">
         <Topbar />
-        <main className="flex-1 overflow-auto bg-background p-8">{children}</main>
+        <main className="flex-1 overflow-auto bg-background px-8 py-10">{children}</main>
       </div>
     </div>
   );
