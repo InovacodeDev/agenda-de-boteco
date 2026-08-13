@@ -25,3 +25,4 @@
 - Eventos passam a guardar a capacidade do local, informação de uso interno do dono
 - Eventos que se repetem (ex.: toda sexta) passam a ser agrupados, permitindo cancelar a série inteira de uma vez
 - Agenda do painel do dono lista os eventos do mais recente para o mais antigo, incluindo os rascunhos
+- Triagem de termos impróprios nos textos cadastrados pelo estabelecimento, com fila de revisão: pronta e desativada, sem efeito no produto até ser liberada
