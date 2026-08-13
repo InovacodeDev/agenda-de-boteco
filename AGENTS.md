@@ -1,282 +1,492 @@
-# 📐 Diretrizes do Projeto & Regras de Code Review
+# 📐 Diretrizes do Projeto & Padrão de Engenharia
 
 ## 0. 🚨 REGRAS DE OURO DA IA (DIRETRIZES INVIOLÁVEIS)
 
-1. **DIRETRIZES DE ARQUIVOS MARKDOWN (`.md`):** A IA PODE criar novos arquivos `.md` caso seja necessário para a tarefa ou planejamento. No entanto, a IA NUNCA deve editar arquivos `.md` existentes nem commitar arquivos `.md` sem a solicitação ou autorização prévia e expressa do usuário. É proibida a inclusão de comentários extensos em bloco no código sem solicitação. **Única exceção:** o arquivo de CHANGELOG da versão seguinte, descrito na Seção 8 — este é criado e editado em **todo commit** que altere código, sem necessidade de nova autorização.
-2. **PROIBIÇÃO DE NOVAS DEPENDÊNCIAS & CONSULTA À DOCUMENTAÇÃO:** A IA NUNCA deve instalar ou sugerir novos pacotes no arquivo de dependências do projeto (`package.json`) sem autorização prévia e expressa do usuário. Reutilize prioritariamente as bibliotecas e utilitários já existentes em `@agenda/core` (`lib/`, `utils/`, `services/`) e `@/lib/` / `@/utils/`. Se autorizada a instalar uma dependência nova, a IA deve **obrigatoriamente consultar a documentação oficial atualizada** da biblioteca antes de implementá-la, garantindo a aplicação das melhores práticas do ecossistema.
-3. **RESPEITO ABSOLUTO AO FLUXO DA ARQUITETURA:** Respeite rigidamente o fluxo unidirecional de dados e a separação de responsabilidades da arquitetura detectada no repositório:
-   $$\text{UI (Page/Component)} \longrightarrow \text{Custom Hook (TanStack Query)} \longrightarrow \text{Repository/Service} \longrightarrow \text{httpClient / SupabaseClient} \longrightarrow \text{API / DB}$$
-4. **PRESERVAÇÃO DA TIPAGEM E MANUTENÇÃO DE CÓDIGO:** Em qualquer refatoração ou correção, NUNCA remova a tipagem estrita nem converta tipos ou retornos para tipos genéricos/inseguros (`any`, `unknown` não tratado, `@ts-ignore`, `@ts-nocheck`).
-5. **EDIÇÃO CIRÚRGICA E LOCALIDADE DA MUDANÇA:** Modifique apenas o estritamente necessário para atender à solicitação. Não refatore código adjacente não relacionado sem permissão expressa do usuário.
+1. **CONSULTA OBRIGATÓRIA ÀS DOCS OFICIAIS & ALINHAMENTO TÉCNICO:**
+   - Antes de escrever código que toque uma biblioteca, consulte a **doc oficial da versão instalada** (Seção 2): React 19.2.3 (<https://react.dev>), Next.js 15 App Router (<https://nextjs.org/docs>), Tailwind CSS v4 (<https://tailwindcss.com/docs>), TanStack Query v5 (<https://tanstack.com/query/latest>), Zod 3.23.8 (<https://zod.dev>), Supabase JS 2.106 (<https://supabase.com/docs/reference/javascript>), Expo 56 / React Native 0.85 (<https://docs.expo.dev>), Zustand 5 (<https://zustand.docs.pmnd.rs>), TypeScript 6 (<https://www.typescriptlang.org/docs>).
+   - **Cruze doc oficial com o contexto deste repo.** A doc diz o que é idiomático na versão; este arquivo diz o que é idiomático aqui. Quando divergirem, este arquivo vence — e a divergência é explicada, não silenciosa.
+   - É **PROIBIDO** escrever sintaxe legada/depreciada dessas versões, mesmo que exista código antigo no repo nesse padrão. Casos concretos deste repositório: nada de `tailwind.config.js` (o tema vive em `@theme` dentro do `globals.css` de cada app — Tailwind v4 é CSS-first); nada de `isLoading` para estado inicial de query (use `isPending`); nada de `onSuccess`/`onError` em `useQuery` (só em `useMutation`); nada de `cacheTime` (é `gcTime`); nada de `FlatList` no mobile (é `FlashList`).
+   - **Exceção de fronteira:** `zod` está pinado em `3.23.8` nos apps (`^3.23.8` no core). Não escreva API de Zod 4 — `z.string().email()` continua válido aqui; `z.email()` não existe.
+2. **ESCOPO DE CODE REVIEW (DIFF & IMPACTO DIRETO):**
+   - O review foca **exclusivamente nas linhas adicionadas/alteradas/removidas do diff e nos efeitos colaterais diretos delas**.
+   - **Regressões DEVEM ser reportadas:** variável órfã após remoção, contrato quebrado num caller, `CACHE_BUSTER` não incrementado após mudar shape persistido, query key fora da factory no trecho novo, teste existente que passou a falhar.
+   - **Débitos antigos não relacionados DEVEM ser ignorados.** É proibido apontar más práticas em código pré-existente que o diff não tocou nem impactou.
+3. **PLANEJAMENTO OBRIGATÓRIO & ZERO-REFACTOR:**
+   - Apresente um plano curto no chat ANTES de gerar ou alterar código.
+   - ANTES de entregar, rode internamente o Checklist Bloqueante (Seção 10) e corrija em silêncio o que violar.
+4. **ACESSO ESTRITO AO ESCOPO (PRIVACIDADE & SEGURANÇA):**
+   - É PROIBIDO solicitar acesso a diretórios/arquivos fora do escopo da tarefa.
+   - `.env` e `.env.local` reais são **leitura e escrita proibidas**. `.env.example` (só placeholders) pode ser atualizado junto do código que introduz a variável.
+5. **EDIÇÃO CIRÚRGICA & PROIBIÇÃO DE MUDANÇAS NÃO SOLICITADAS:**
+   - Nunca altere arquivos, funções ou estilos que não foram pedidos.
+   - Se a mudança exigir tocar outros arquivos para não quebrar, **peça permissão no chat** mostrando exatamente o quê e por quê, e aguarde autorização.
+6. **POLÍTICA RÍGIDA DE COMENTÁRIOS (CLEAN CODE):**
+   - PROIBIDO comentário explicativo redundante (`// busca os eventos`, `// instancia o client`).
+   - Permitidos: `TODO:`, `FIXME:` e `ponytail:`. Além destes, este repo já pratica um padrão válido e desejável: **docblock curto no topo de função/módulo explicando o "porquê" não-óbvio** (ver `packages/core/src/services/cachePolicy.ts` e `packages/core/src/services/queryKeys.ts`). Documente decisão, nunca mecânica.
+   - Explicação de implementação vai **no chat**.
+7. **GERENCIAMENTO DE ARQUIVOS MARKDOWN (`.md`):** A IA pode criar novos `.md` para planejamento, mas NUNCA edita `.md` existente nem commita `.md` sem autorização expressa. **Única exceção:** o CHANGELOG da versão seguinte (Seção 8), obrigatório em todo commit que altere código.
+8. **DEPENDÊNCIAS, DOCUMENTAÇÃO E LINKS:**
+   - NUNCA instalar/adicionar dependência sem autorização no chat. Package manager é **pnpm** (`pnpm@10.20.0`) — nunca npm/yarn.
+   - Autorizada, a IA DEVE ler a doc oficial atualizada antes de codar. Sem acesso autônomo, pedir o link/conteúdo ao usuário.
+   - Antes de propor lib nova, esgote `@agenda/core` (Seção 5) e o que já está instalado.
+9. **INTEGRIDADE DE TIPAGEM E TESTES:**
+   - Proibido `any`, `@ts-ignore`, `@ts-nocheck`, `@ts-expect-error` de conveniência e `unknown` sem type guard. `strict: true` em todo o monorepo. Nota: o ESLint marca `@typescript-eslint/no-explicit-any` como `warn` — a proibição aqui é **convenção do projeto**, mais estrita que o linter, e vale mesmo sem o erro vermelho.
+   - Proibido deletar, `skip`ar ou afrouxar teste existente para fazer alteração passar.
+   - Toda mudança em `packages/core/src/services/` ou `packages/core/src/utils/` exige teste (`*.test.ts`) criado ou atualizado.
 
 ---
 
-## 1. Visão Geral da Arquitetura & Ecossistema
+## 1. 👤 Persona e Tom de Comunicação
 
-O **Agenda de Boteco** é um monorepo gerenciado com **pnpm workspaces** e **Turborepo**. O ecossistema é construído sobre **TypeScript (modo estrito)** e dividido em clientes frontend especializados e um núcleo compartilhado agnóstico:
+- **Perfil:** Arquiteto Sênior humano, pragmático, direto ao ponto.
+- **Estilo:** Sem saudação robótica, sem bajulação, sem aula acadêmica. Fale como Tech Lead colega: plano curto, dúvidas objetivas, o que precisa de permissão, e código limpo pronto para merge.
+- **Idioma:** respostas e comentários de código em **português (pt-BR)**, com acentuação correta. Mensagens de commit em **inglês, imperativo** (`Add owner event agenda`, não `Added...`).
 
-- **`packages/core` (`@agenda/core`):** Pacote TypeScript puro, platform-agnostic. Contém schemas Zod, tipos gerados do Supabase, camada de serviços/repositórios de catálogo e autenticação, política de cache, geolocalização PostGIS, gerenciadores de storage, factories de query keys, stores Zustand e utilitários globais.
-- **`apps/mobile`:** Aplicativo móvel e web estático (SSG) desenvolvido em **Expo (v56)** com **Expo Router**, estilização via **NativeWind** (Tailwind CSS em React Native) e listas de alta performance com `FlashList`.
-- **`apps/web`:** Aplicação web consumidor principal em **Next.js (App Router)** com foco em SEO e renderização otimizada.
-- **`apps/admin`:** Painel administrativo web em **Next.js / Vite** para gestão de estabelecimentos, eventos e notificações.
-- **`apps/landing`:** Landing page institucional em **Next.js**.
+---
 
-### Árvore de Diretórios e Responsabilidades
+## 2. Visão Geral da Arquitetura & Ecossistema (Versões Exatas Instaladas)
+
+Monorepo **pnpm workspaces + Turborepo 2**, TypeScript estrito, com quatro clientes Next.js, um cliente Expo e um pacote núcleo agnóstico de plataforma.
+
+### Versões exatas (dos `package.json` deste repo)
+
+| Camada | Tecnologia | Versão |
+| --- | --- | --- |
+| Package manager | pnpm | `10.20.0` |
+| Monorepo | Turborepo | `^2.0.4` |
+| Linguagem | TypeScript | `^6.0.3` (`strict`, `target ES2022`, `moduleResolution Bundler`) |
+| UI runtime | React / React DOM | `19.2.3` (pinado via `pnpm.overrides`) |
+| Web framework | Next.js (App Router) | `^15.1.0` |
+| Styling web | Tailwind CSS + `@tailwindcss/postcss` | `^4.0.0` (CSS-first) |
+| Mobile | Expo | `~56.0.12` |
+| Mobile runtime | React Native | `0.85.3` |
+| Mobile routing | Expo Router | `^56.2.11` |
+| Styling mobile | NativeWind / `react-native-css` | `5.0.0-preview.2` / nightly `5ce6396` (patched) |
+| Listas | `@shopify/flash-list` | `^2.0.2` |
+| Animação | `react-native-reanimated` / `react-native-worklets` | `^4.3.1` / `^0.8.3` |
+| Server state | TanStack Query (+ persist-client, async-storage-persister) | `^5.101.0` |
+| Client state | Zustand | `^5.0.14` |
+| Validação | Zod | `3.23.8` nos apps, `^3.23.8` no core (**v3, não v4**) |
+| Backend | `@supabase/supabase-js` | `^2.106.2` |
+| Ícones | `@phosphor-icons/react` (web) / `phosphor-react-native` (mobile) | `^2.1.10` / `^3.0.6` |
+| Mapas | `react-leaflet` + `leaflet` (web) / `react-native-maps` (mobile) | `^5.0.0` + `^1.9.4` / `1.27.2` |
+| Lint | ESLint flat config + typescript-eslint | `^9.39.4` / `^8.60.1` |
+| Format | Prettier + `prettier-plugin-tailwindcss` | `^3.8.4` / `^0.8.0` |
+| Testes | Jest + ts-jest (core) / jest-expo + `@testing-library/react-native` (mobile) | `~29.7.0` |
+| Override forçado | `lightningcss` | `1.30.1` |
+
+### Apps, portas de dev, `basePath` e versão atual
+
+| Pacote | Diretório | Framework | Porta | `basePath` | Versão | Papel |
+| --- | --- | --- | --- | --- | --- | --- |
+| `@agenda/mobile` | `apps/mobile` | Expo 56 + Expo Router | `10002` | — | `0.1.1` | App iOS/Android/web do consumidor |
+| `@agenda/web` | `apps/web` | Next 15 App Router | `8088` | `/app` | `0.0.2` | Web pública do consumidor (SEO) |
+| `@agenda/web-client` | `apps/web-client` | Next 15 App Router | `8090` | `/client` | `0.0.1` | **Painel do dono do estabelecimento** |
+| `@agenda/admin` | `apps/admin` | Next 15 App Router | `8089` | `/admin` | `1.0.1` | Painel administrativo interno |
+| `@agenda/landing` | `apps/landing` | Next 15 App Router | `8087` | — | `0.0.3` | Landing institucional |
+| `@agenda/core` | `packages/core` | TS puro, source-only (`main: ./src/index.ts`) | — | — | `1.0.0` | Núcleo compartilhado |
+| `@agenda/typescript-config` | `packages/typescript-config` | JSON | — | — | `1.0.0` | `base.json` compartilhado |
+
+`@agenda/core` **não é buildado** — é consumido como fonte (`"build": "echo 'core is a source-only internal package'"`). Todo app Next que o usa declara `transpilePackages: ['@agenda/core']` no `next.config.ts`. Somente `apps/landing` **não** declara `optimizePackageImports` — porque não usa Phosphor.
+
+### Onde roda teste
+
+Só dois pacotes têm script `test`: `@agenda/core` (`jest --passWithNoTests`) e `@agenda/mobile` (`jest`). Os quatro apps Next **não têm suíte de testes** — a cobertura deles vem indiretamente dos testes do core. Consequência prática: lógica testável escrita num app Next é lógica sem teste; se ela merece teste, ela pertence ao core.
+
+### Árvore de diretórios real
 
 ```txt
 agenda-de-boteco/
 ├── apps/
-│   ├── admin/                 # Painel administrativo web (Next.js / Vite + shadcn/ui)
-│   │   ├── app/               # Rotas e páginas do App Router (Next.js)
-│   │   ├── components/        # Componentes visuais exclusivos do admin
-│   │   └── lib/               # Clientes e utilitários específicos do admin
-│   ├── landing/               # Landing page institucional (Next.js)
-│   │   ├── app/               # Rotas e seções da landing page
-│   │   └── components/        # Componentes visuais da landing page
-│   ├── mobile/                # App mobile (iOS/Android/Web via Expo v56)
-│   │   ├── app/               # File-system routing com Expo Router
+│   ├── admin/                          # Painel administrativo (Next 15, :8089, basePath /admin)
+│   │   ├── app/(admin)/                # avisos, estabelecimentos, eventos, layout, page
+│   │   ├── app/login/  app/privacidade/  app/providers.tsx  app/layout.tsx  app/globals.css
+│   │   ├── components/Sidebar.tsx
+│   │   ├── components/ui/              # Button, DataTable, Field, ImageUpload, Modal,
+│   │   │                               # PageHeader, PdfUpload, Select, TextArea, TextInput, styles.ts
+│   │   ├── lib/                        # formErrors.ts, storage.ts, supabase.ts
+│   │   └── next.config.ts  postcss.config.mjs  tsconfig.json
+│   ├── landing/                        # Landing (Next 15, :8087)
+│   │   ├── app/                        # page.tsx, suporte/page.tsx, layout.tsx, globals.css
+│   │   ├── components/                 # AppPreview.tsx, DownloadButtons.tsx, icons.tsx
+│   │   └── next.config.ts  vercel.json
+│   ├── mobile/                         # App Expo 56 (:10002)
+│   │   ├── app.config.ts               # importa a versão do package.json
+│   │   ├── app/                        # Expo Router: (tabs)/{_layout,index,favorites,map,
+│   │   │                               # notifications,profile}, city, establishment/[id],
+│   │   │                               # event/[id], login, onboarding, privacidade,
+│   │   │                               # excluir-conta, +native-intent, _layout
 │   │   └── src/
-│   │       ├── components/    # UI components, layout e primitivas do app mobile
-│   │       ├── config/        # Configurações locais (ambientes, constantes)
-│   │       ├── hooks/         # Hooks locais específicos do mobile
-│   │       ├── screens/       # Views e telas principais do aplicativo
-│   │       └── utils/         # Helpers locais de UI e navegação mobile
-│   └── web/                   # Aplicação web pública consumidor (Next.js)
-│       ├── app/               # Páginas e rotas (App Router, SEO-optimized)
-│       ├── components/        # Componentes de feed, filtros, mapas e UI web
-│       ├── hooks/             # Custom hooks web
-│       └── lib/               # Otimizações web, SEO e helpers locais
+│   │       ├── components/             # establishment/, event/, feed/, feedback/, filters/,
+│   │       │                           # layout/, notification/, ui/, ErrorBoundary.tsx
+│   │       ├── config/features.ts      # re-export de @agenda/core
+│   │       ├── data/  hooks/  lib/  screens/map/  services/  store/  theme/  utils/
+│   │       ├── tw/                     # index.tsx + image.tsx — fachada styled do react-native-css
+│   │       └── global.css              # @theme do Tailwind v4 para NativeWind
+│   ├── web/                            # Web pública (Next 15, :8088, basePath /app)
+│   │   ├── app/(app)/                  # page (feed), avisos, cidade, favoritos, mapa, perfil,
+│   │   │                               # establishment/[id], event/[id], layout
+│   │   ├── app/login/ onboarding/ privacidade/ excluir-conta/ providers.tsx globals.css
+│   │   ├── components/                 # auth/, establishment/, event/, feed/, feedback/,
+│   │   │                               # filters/, map/, notification/, profile/, shell/, ui/
+│   │   ├── hooks/                      # useAppSync.ts, useRequireAuth.ts, useUnreadCount.ts
+│   │   └── lib/                        # cn.ts, storage.ts, supabase.ts
+│   └── web-client/                     # Painel do dono (Next 15, :8090, basePath /client)
+│       ├── app/(painel)/               # page (dashboard), eventos/, eventos/novo, eventos/[id],
+│       │                               # avaliacoes, metricas, perfil, configuracoes, layout
+│       ├── app/login/ onboarding/ nova-senha/ providers.tsx layout.tsx globals.css
+│       ├── components/                 # EventForm.tsx, EventCard.tsx, EstablishmentFields.tsx,
+│       │                               # Sidebar.tsx, Topbar.tsx, ComingSoon.tsx, GoogleIcon.tsx
+│       ├── components/ui/              # AttributeAutocomplete, AttributeIcon, Button,
+│       │                               # CityCombobox, EmptyState, Field, ImageDrop,
+│       │                               # PageHeader, Select, SelectField, TextArea,
+│       │                               # TextInput, styles.ts
+│       ├── hooks/                      # use-owned-establishment.ts, use-owned-events.ts
+│       └── lib/                        # formErrors.ts, storage.ts, supabase.ts
 ├── packages/
-│   ├── core/                  # Biblioteca compartilhada platform-agnostic (@agenda/core)
-│   │   └── src/
-│   │       ├── config/        # Configurações de feature flags e stores
-│   │       ├── data/          # Mocks, lookups e fixture data
-│   │       ├── hooks/         # Custom hooks agnósticos (queries TanStack)
-│   │       ├── lib/           # Instâncias de QueryClient e QueryPersister
-│   │       ├── platform/      # Storage abstraction adaptado para cada runtime
-│   │       ├── queries/       # Camada pura de busca de dados (catalog)
-│   │       ├── schemas/       # Schemas Zod de validação de dados
-│   │       ├── services/      # Camada de repositórios/serviços (catalog, auth, realtime)
-│   │       ├── stores/        # Stores Zustand (Auth, Favorites, Filters, Notifications)
-│   │       ├── supabase/      # Factory do cliente Supabase e adaptadores de storage
-│   │       ├── theme/         # Design tokens (colors, gradients, shadows, typography)
-│   │       ├── types/         # Definição de tipos TypeScript e Database Supabase
-│   │       └── utils/         # Utilitários compartilhados (cn, dates, errors, geo, etc.)
-│   └── typescript-config/     # Configurações de tsconfig compartilhadas no monorepo
-├── scripts/                   # Scripts de automação e manutenção
-└── supabase/                  # Migrações SQL, schemas e funções RPC PostGIS
+│   ├── core/
+│   │   ├── jest.config.js  jest.setup.ts
+│   │   └── src/                        # @agenda/core (source-only)
+│   │       ├── config/                 # features.ts (FEATURES), stores.ts
+│   │       ├── data/                   # establishment-attributes.ts, lookup.ts, mock.ts, index.ts
+│   │       ├── fonts/next-fonts.ts     # Inter + Space Grotesk via next/font
+│   │       ├── hooks/                  # queries.ts, useActiveCity, useConnectivity,
+│   │       │                           # useGuardedPress, useNearbyEstablishments, useStatusLight
+│   │       ├── lib/                    # queryClient.ts, queryPersister.ts
+│   │       ├── platform/storage.ts     # configureAppStorage, appJsonStorage, registerRehydrator
+│   │       ├── queries/catalog.ts      # camada crua de leitura
+│   │       ├── schemas/catalog.ts      # schemas Zod + tipos inferidos
+│   │       ├── services/               # auth, cachePolicy, catalog, connectivity,
+│   │       │                           # establishment-owner, favorites, moderation,
+│   │       │                           # owned-events, proximity, queryKeys, realtime, storage
+│   │       ├── stores/                 # useAuthStore, useFavoritesStore, useFiltersStore,
+│   │       │                           # useNotificationsStore, usePreferencesStore
+│   │       ├── supabase/client.ts      # createSupabaseClient / configureSupabase
+│   │       ├── theme/                  # colors, gradients, shadows, typography
+│   │       ├── types/                  # database.types.ts (gerado), index.ts, platform.ts
+│   │       └── utils/                  # auth, cn, dates, env, errors, events, filters, format,
+│   │                                   # geo, images, links, masks, moderation, platform,
+│   │                                   # pressGuard, responsiveType, slug, status-light
+│   └── typescript-config/base.json     # tsconfig compartilhado (strict)
+├── supabase/                           # config.toml, seed.sql, migrations/, functions/, emails/
+├── scripts/                            # build-mobile.bash, cleanup.bash
+├── eslint.config.mjs                   # ESLint 9 flat config (raiz, único)
+├── prettier.config.mjs   turbo.json   pnpm-workspace.yaml
+└── AGENTS.md                           # este arquivo (CLAUDE.md apenas o referencia)
 ```
 
+### `apps/mobile/src/` é fachada, não duplicação
+
+Vários arquivos sob `apps/mobile/src/{utils,services,hooks,config}` são **re-export puro** do core:
+
+```typescript
+// apps/mobile/src/services/catalog.ts — arquivo inteiro
+export * from '@agenda/core';
+```
+
+O mesmo vale para `utils/cn.ts`, `utils/dates.ts`, `utils/errors.ts`, `utils/format.ts`, `utils/geo.ts`, `utils/links.ts`, `utils/events.ts`, `utils/filters.ts`, `utils/images.ts`, `utils/auth.ts`, `utils/pressGuard.ts`, `utils/responsiveType.ts` e `config/features.ts`.
+
+Consequência para quem edita: **não altere lógica nesses arquivos** — ela não mora ali. Vá ao core. Os arquivos do mobile com implementação própria e legítima são os que dependem de API nativa: `hooks/useUserLocation.ts`, `hooks/useRealtimeSync.ts`, `hooks/useResponsive.ts`, `lib/bootstrap.ts`, `lib/supabase.ts`, `store/storage.ts`, `utils/deepLinks.ts`.
+
+### Comandos do repositório
+
+```bash
+pnpm typecheck && pnpm lint && pnpm test
+```
+
+Individuais: `pnpm dev:web`, `pnpm dev:admin`, `pnpm dev:landing`, `pnpm dev:mobile`, `pnpm --filter @agenda/web-client dev`.
+
 ---
 
-## 2. Convenções e Estilo de Código
+## 3. Convenções de Estilo, Nomenclatura e Tipagem
 
-### Nomenclatura de Arquivos e Símbolos
-- **Padrão de Arquivos:** `kebab-case` obrigatório para todos os arquivos e diretórios.
-- **Sufixos Explícitos por Camada:**
-  - Repositórios e Serviços: `*.repository.ts` ou `*.service.ts` (ex: `catalog.service.ts`, `auth.service.ts`)
-  - Modelos e Interfaces: `*.model.ts` (ex: `establishment.model.ts`)
-  - DTOs e Schemas Zod: `*.dto.ts` ou `*.schema.ts` (ex: `event.schema.ts`)
-  - Stores Zustand: `*.store.ts` ou `use-*.ts` / `use*.ts` (ex: `useAuthStore.ts`, `use-filters.store.ts`)
-  - Custom Hooks: `use-*.ts` (ex: `use-active-city.ts`, `use-nearby-establishments.ts`)
-  - Rotas e Páginas: `*-route.tsx` ou `*-page.tsx` (ex: `event-detail-page.tsx`)
-  - Factories de Query Keys: `*-query-keys.ts` ou `queryKeys.ts`
-  - Testes Unitários: `*.test.ts` ou `*.test.tsx` (ex: `dates.test.ts`, `auth.service.test.ts`)
-- **Classes, Tipos e Interfaces:** `PascalCase` (ex: `SupabaseStorageAdapter`, `ErrorContext`).
-- **Funções e Métodos:** `camelCase` (ex: `getFriendlyErrorMessage`, `coarseLatLng`).
-- **Constantes Globais:** `UPPER_SNAKE_CASE` ou objetos imutáveis com `as const` (ex: `catalogKeys`).
+### Arquivos
 
-### Tipagem, Null Safety e Imutabilidade
-- **Strict Mode:** `strict: true` ativado em todos os `tsconfig.json`.
-- **Tratamento de Nulos (*Null Safety*):** Trate explicitamente valores `null` e `undefined` via optional chaining (`?.`), nullish coalescing (`??`) ou type guards. Proibido o operador de asserção não-nula (`!`) sem justificativa inquestionável.
-- **Imutabilidade:** Utilize objetos imutáveis com `as const` para constantes de configuração e `Readonly<T>` para propriedades de estado que não devem sofrer mutação direta.
-- **Sintaxe de Importação de Tipos:** Sempre utilize `import type` para importar interfaces, tipos e aliases:
+Este repo tem **duas convenções coexistindo por camada** — respeite a do diretório onde está escrevendo, não imponha uma sobre a outra:
+
+| Onde | Convenção | Exemplos reais |
+| --- | --- | --- |
+| Componentes React (web e mobile) | `PascalCase.tsx` | `apps/web-client/components/EventForm.tsx`, `apps/mobile/src/components/ui/GuardedPressable.tsx` |
+| Rotas Next.js App Router | `page.tsx` / `layout.tsx` em pasta kebab-case | `apps/web-client/app/(painel)/eventos/novo/page.tsx` |
+| Rotas Expo Router | kebab-case ou `[param].tsx` | `apps/mobile/app/event/[id].tsx`, `apps/mobile/app/excluir-conta.tsx` |
+| Services/utils/stores do core | `camelCase.ts` ou `kebab-case.ts` | `queryKeys.ts`, `cachePolicy.ts`, `useAuthStore.ts`, `owned-events.ts`, `status-light.ts` |
+| Hooks locais dos apps web | `use-kebab-case.ts` | `apps/web-client/hooks/use-owned-events.ts` |
+| Hooks do core e do mobile | `useCamelCase.ts` | `packages/core/src/hooks/useActiveCity.ts`, `apps/mobile/src/hooks/useUserLocation.ts` |
+| Testes | `<arquivo>.test.ts(x)`, colocado ao lado do fonte | `packages/core/src/services/owned-events.test.ts` |
+| Migrações SQL | `<timestamp>_snake_case.sql` | `supabase/migrations/20260813120000_event_status_and_recurrence.sql` |
+
+### Símbolos
+
+- **Tipos, interfaces, componentes:** `PascalCase` (`OwnedEventInput`, `SupabaseStorageAdapter`, `CreateOwnedEstablishmentInput`, `EventForm`).
+- **Funções e métodos:** `camelCase` (`getFriendlyErrorMessage`, `coarseLatLng`, `claimEstablishmentOwner`, `saveRecurringOwnedEvents`).
+- **Constantes:** `UPPER_SNAKE_CASE` (`CACHE_BUSTER`, `MAX_RECURRENCE_COUNT`, `DEFAULT_EVENT_FILTERS`, `FEATURES`, `NOTIFICATION_TYPE_LABELS`) ou objeto com `as const`.
+- **Exportações nomeadas sempre.** `export default` só onde o framework exige (`page.tsx`, `layout.tsx`, rotas do Expo Router, `next.config.ts`, `prettier.config.mjs`).
+
+### Tipagem
+
+- `import type` obrigatório para tipos — o ESLint aplica `@typescript-eslint/consistent-type-imports` com `fixStyle: 'inline-type-imports'`:
+
   ```typescript
-  import type { Event, Establishment } from '@agenda/core';
-  import type { SupabaseClient } from '@supabase/supabase-js';
+  import { AuthError, type PostgrestError } from '@supabase/supabase-js';
+  import type { EstablishmentAttribute, PriceRange } from '../schemas/catalog';
   ```
 
----
+- **Null safety:** trate `null`/`undefined` com `?.`, `??` ou type guard. `!` só com justificativa inquestionável. Padrão do repo é retorno-cedo:
 
-## 3. Arquitetura, Fluxo de Dados e Responsabilidades
+  ```typescript
+  const client = getConfiguredSupabase();
+  if (!client) {
+    return false;
+  }
+  ```
 
-A aplicação respeita uma pipeline de dados unidirecional estrita:
+- **Imutabilidade:** `as const` em constantes de config, `readonly` em arrays de allowlist (`const PERSIST_ALLOWLIST: readonly string[]`), stores atualizam por spread (`{ ...state.filters, ...partial }`), nunca mutação.
+- **Tipos derivados de Zod:** `z.infer` em vez de interface duplicada — `packages/core/src/schemas/catalog.ts` deriva os 14 tipos do catálogo assim.
+- **Ordenação de imports:** automática via `simple-import-sort` (`error`). Não reordene à mão contra o linter.
+- **Variável intencionalmente não usada:** prefixo `_` (o ESLint tem `argsIgnorePattern: '^_'` e `varsIgnorePattern: '^_'`). Padrão real: `const { recurrence_group_id: _ignored, ...updatable } = row;`.
 
-$$\text{UI / Entry Point} \longrightarrow \text{State / Logic Controller} \longrightarrow \text{Repository / Service} \longrightarrow \text{HTTP Client / Data Source} \longrightarrow \text{External API / DB}$$
+### Strings de interface (não há i18n neste repositório)
 
-### Divisão Estrita de Responsabilidades
+**Não existe biblioteca ou dicionário de i18n neste monorepo.** Nenhum `t()`, nenhum `locales/`, nenhum provider de tradução. O produto é pt-BR único, e as strings visíveis são **literais em português no JSX**, do jeito que todo o codebase já faz.
 
-1. **UI / Entry Point (Pages, Screens & Components):** Responsável apenas por renderização visual e tratamento de eventos de interação do usuário. É proibido realizar chamadas diretas a APIs, banco de dados ou manipular instâncias de clientes HTTP dentro de componentes visuais.
-2. **State & Custom Hooks (TanStack Query & Mutations):** Encapsulam requisições assíncronas, oferecendo estado reativo (`data`, `isLoading`, `error`, `refetch`) para a UI. Chaves de consulta DEVEM ser geradas obrigatoriamente por factories hierárquicas (`catalogKeys`).
-3. **Repository / Service Layer (`@agenda/core/services`):** Contém as regras de negócio, transformações de DTOs, chamadas ao Supabase/HTTP Client e validações com Zod.
-4. **HTTP Client & Supabase Client (`@agenda/core/supabase`):** Instância centralizada e adaptada à plataforma (`createSupabaseClient`), responsável por comunicação remota, renovação de tokens e persistência de sessão via adapters.
-5. **Estado Local/Sessão do Cliente (Zustand):** Reservado estritamente para estado de UI local ou sessão do cliente (`useAuthStore`, `useFiltersStore`, `usePreferencesStore`). Dados de servidor pertencem ao TanStack Query.
-6. **Internacionalização (i18n):** Nenhuma string visível ao usuário deve ser estática ou hardcoded no código. Utilize sempre a função `t()` do sistema de i18n.
-
----
-
-## 4. Tratamento de Erros, Logging e Catálogo de Utilitários
-
-### Tratamento de Exceções e Respostas Amigáveis
-- **Mapeamento Centralizado:** Exceções em serviços ou chamadas remotas devem ser tratadas pelas abstrações de erro do core (`logErrorToTerminal`, `getFriendlyErrorMessage`, `handleServiceError`).
-- **Sanitização de Mensagens para Usuários:** Mensagens brutas de banco de dados (SQL, PostgrestError) nunca devem ser expostas na UI. Converta-as utilizando `getFriendlyErrorMessage(error)`.
-
-### Proibição de Logs Nativo Direto
-- É estritamente proibido o uso de `console.log`, `console.warn` ou `console.error` diretos no código da aplicação ou no core.
-- Todo log deve utilizar a abstração centralizada `logErrorToTerminal` (que inclui contexto estruturado para debugging e suporte a ambiente).
+- **NÃO** introduza `t()`, `next-intl`, `i18next` ou dicionário próprio — seria dependência nova (Regra 8) e padrão inconsistente com 100% do repo.
+- Escreva a string em pt-BR correto e acentuado, direto no componente.
+- Formatação sensível a locale usa o utilitário do core, não string manual: `packages/core/src/utils/dates.ts` e `format.ts`; comparação de nomes usa `localeCompare(b.name, 'pt-BR')` (ver `utils/filters.ts`).
 
 ---
 
-### Catálogo de Utilitários Globais e Primitivas Reutilizáveis
+## 4. Fluxo de Dados e Responsabilidade por Camada
 
-Antes de escrever qualquer nova função helper ou componente visual, **é obrigatório consultar e reutilizar** os módulos já consolidados no projeto:
+$$\text{UI (page/screen/component)} \longrightarrow \text{Custom Hook (TanStack Query v5)} \longrightarrow \text{Service (@agenda/core/services)} \longrightarrow \text{SupabaseClient (@agenda/core/supabase)} \longrightarrow \text{Postgres / RPC / Storage}$$
 
-#### Módulos e Utilitários (`@agenda/core`)
+Estado de UI e sessão do cliente correm por fora, em Zustand.
 
-1. **`cn(...inputs)`** (`@agenda/core/utils/cn`): Fusão de classes CSS/Tailwind/NativeWind com `clsx` e `tailwind-merge`.
-2. **`dates`** (`@agenda/core/utils/dates`): Utilitários para formatação, comparação e manipulação de datas e horários.
-3. **`env`** (`@agenda/core/utils/env`): Leitura segura de ambiente com `isProduction()`, sem dependência direta do runtime Node.js.
-4. **`errors`** (`@agenda/core/utils/errors`): Tratamento e log de erros (`logErrorToTerminal`, `getFriendlyErrorMessage`, `handleServiceError`).
-5. **`events`** (`@agenda/core/utils/events`): Validação de status de eventos e atração de público.
-6. **`filters`** (`@agenda/core/utils/filters`): Lógica e ordenação de filtros do catálogo de bares e eventos.
-7. **`format`** (`@agenda/core/utils/format`): Formatação de valores monetários, telefones e documentos.
-8. **`geo`** (`@agenda/core/utils/geo`): Cálculo de distâncias, raio de busca e arredondamento de coordenadas (`coarseLatLng`).
-9. **`images`** (`@agenda/core/utils/images`): Tratamento de URLs de imagens e fallbacks visuais.
-10. **`links`** (`@agenda/core/utils/links`): Geração de links profundos (deep links) e URLs amigáveis.
-11. **`masks`** (`@agenda/core/utils/masks`): Máscaras de entrada para inputs de texto (telefone, CEP, CPF/CNPJ).
-12. **`platform`** (`@agenda/core/utils/platform`): Identificação de plataforma (`isWeb`, `isNative`).
-13. **`pressGuard`** (`@agenda/core/utils/pressGuard`): Proteção contra cliques duplos/múltiplos disparados em sequência rápida.
-14. **`responsiveType`** (`@agenda/core/utils/responsiveType`): Cálculo responsivo de tipografia.
-15. **`slug`** (`@agenda/core/utils/slug`): Utilitário para geração de slugs amigáveis para SEO e URLs.
-16. **`catalogKeys`** (`@agenda/core/services/queryKeys`): Factory centralizada de query keys hierárquicas.
-17. **`createSupabaseClient` / `configureSupabase`** (`@agenda/core/supabase/client`): Factory e gerenciador de clientes Supabase por plataforma.
+### O que cada camada PODE e NÃO PODE
 
-#### Primitivas de UI do Design System (`@/components/ui/` ou `apps/mobile/src/components/ui/`)
+**1. UI — `app/**/page.tsx`, `apps/mobile/app/**`, `components/**`**
 
-18. **`GradientBadge`**: Destaque visual com gradiente do tema.
-19. **`SectionLabel`**: Rótulo padrão para divisão de seções.
-20. **`SegmentedTabs`**: Navegação por abas segmentadas.
-21. **`Button`**: Botão primário/secundário padronizado com suporte a estados de carregamento.
-22. **`Chip`**: Tag interativa para filtros e categorias.
-23. **`CircleIconButton`**: Botão circular para ações secundárias.
-24. **`ConfirmDialog`**: Modal padronizado para confirmações do usuário.
-25. **`EmptyState`**: Componente padrão para telas ou listas sem dados.
-26. **`GuardedPressable`**: Componente de clique com proteção nativa contra toques duplos.
-27. **`InfoCard`**: Card padrão para apresentação de informações organizadas.
-28. **`OfflineBanner`**: Banner exibido quando o dispositivo está offline.
-29. **`RatingStars`**: Exibição de pontuação e avaliações em estrelas.
-30. **`Icon` / `iconMap` / `icons`**: Conjunto de ícones do Design System.
+- PODE: renderizar, tratar evento de interação, consumir hooks, consumir stores com seletor atômico.
+- NÃO PODE: chamar `fetch`/`axios`, tocar `getSupabase()`/`getConfiguredSupabase()`, montar query key literal, formatar data à mão, aplicar máscara à mão.
+
+**2. Hooks (TanStack Query v5) — `packages/core/src/hooks/`, `apps/*/hooks/`**
+
+- PODE: `useQuery`/`useMutation`/`useQueryClient`, `enabled` para query dependente de id, invalidação por prefixo.
+- NÃO PODE: regra de negócio, transformação pesada, acesso direto ao client Supabase.
+- Padrão do repo (`apps/web-client/hooks/use-owned-events.ts`): key da factory + `queryFn` chamando o service + `enabled: Boolean(id)`; mutação invalida a **raiz** (`catalogKeys.events.root`) para alcançar detalhe, agenda do painel e lista pública de uma vez.
+- **Query key local é permitida** quando só um app consome — Regra dos 3. Exemplo real em `use-owned-establishment.ts`:
+
+  ```typescript
+  export const panelKeys = {
+    ownedEstablishmentId: ['panel', 'owned-establishment-id'] as const,
+  } as const;
+  ```
+
+  Ela fica fora de `catalogKeys` de propósito, e o docblock registra quando promover.
+
+**3. Service / Repository — `packages/core/src/services/`**
+
+- PODE: obter o client via `getConfiguredSupabase()`, montar a query Supabase, chamar RPC, validar com Zod, transformar DTO, tratar erro via `handleServiceError`.
+- NÃO PODE: importar React, hooks, componentes, ou depender de `process.env` direto (use `utils/env`).
+- Padrão obrigatório de todo service deste repo (`services/establishment-owner.ts`):
+
+  ```typescript
+  export async function isCurrentUserEstablishmentOwner(): Promise<boolean> {
+    const client = getConfiguredSupabase();
+    if (!client) {
+      return false;
+    }
+    try {
+      const { data: sessionData } = await client.auth.getSession();
+      const userId = sessionData.session?.user?.id;
+      if (!userId) {
+        return false;
+      }
+      const { data, error } = await client
+        .from('profiles')
+        .select('is_establishment_owner')
+        .eq('id', userId)
+        .maybeSingle();
+      if (error) {
+        throw error;
+      }
+      return data?.is_establishment_owner === true;
+    } catch (error) {
+      return handleServiceError(error, {
+        method: 'establishmentOwner.isCurrentUserEstablishmentOwner',
+      });
+    }
+  }
+  ```
+
+  Client ausente **não lança** em leitura (o app segue funcional sem login); em escrita, lança `new Error('Supabase não configurado')`. O `method` do contexto de erro usa `namespace.função`.
+
+**4. Client Supabase — `packages/core/src/supabase/client.ts`**
+
+- Única fonte de client. Cada app registra o seu no bootstrap via `configureSupabase(fn)`; consumidores leem por `getConfiguredSupabase()` / `isSupabaseConfigured()`.
+- Cada app tem seu `lib/supabase.ts` que lê env própria (`NEXT_PUBLIC_*` no Next, `EXPO_PUBLIC_*` no Expo) e chama `createSupabaseClient`, memoizando o resultado. Web usa `detectSessionInUrl: true` + localStorage (`storage: undefined`); mobile usa `expo-secure-store` como adapter.
+- NÃO PODE: `createClient` do `@supabase/supabase-js` chamado fora deste arquivo.
+
+**5. Zustand — `packages/core/src/stores/`**
+
+- Só estado de UI/sessão do cliente: `useAuthStore`, `useFiltersStore`, `useFavoritesStore`, `useNotificationsStore`, `usePreferencesStore`.
+- Dado de servidor pertence ao TanStack Query. Nunca espelhe resposta de API numa store.
+- Persistência usa `appJsonStorage` de `platform/storage.ts` — tolerante a storage ainda não configurado, com re-hidratação via `registerRehydrator` quando o bootstrap roda.
+- Consumo **com seletor atômico** obrigatório:
+
+  ```typescript
+  const user = useAuthStore((state) => state.user);
+  ```
+
+**6. Escrita no banco**
+
+- Painel do dono e admin escrevem sob **RLS**. Autorização é `profiles.is_establishment_owner` (painel, ver `services/establishment-owner.ts`) e `profiles.is_admin` (admin).
+- **Nem toda escrita é RPC.** A regra real do repo: RPC quando a operação é privilegiada ou transacional (`claim_establishment_owner`, `create_owned_establishment`, `create_city_from_panel`); UPDATE/INSERT direto quando uma policy já restringe a linha ao dono. `saveOwnedEvent` e `updateOwnedEstablishment` escrevem direto e documentam qual policy os cobre (`owner_insert_events`, `owner_update_establishments`, migração `20260812120000`).
+- Migração nova vai em `supabase/migrations/` com timestamp; nunca edite migração já aplicada.
 
 ---
 
-## 5. Segurança, Performance e Testes
+## 5. Tratamento de Erros, Logging e Reuso de Módulos
 
-### Segurança e Variáveis de Ambiente
-- **Leitura Estrita:** A leitura de variáveis de ambiente deve ser realizada exclusivamente através dos utilitários em `@agenda/core/utils/env` ou no arquivo de ambiente seguro de cada app (`EXPO_PUBLIC_*` no Expo, `VITE_*` no Vite/Admin, `NEXT_PUBLIC_*` no Next.js).
-- **Proibição de Escrita em `.env.*`:** Arquivos `.env.*` NUNCA devem ser editados ou criados automaticamente por IAs sem solicitação prévia expressa do usuário.
-- **Row Level Security (RLS):** A segurança real de dados é garantida no banco Supabase via RLS. Consultas devem respeitar os papéis de usuário (`auth.uid()`).
+### Erros
 
-### Regras de Performance em React e React Native
-- **Evitar Chamadas Síncronas em `useEffect`:** NUNCA execute chamadas síncronas diretas de `setState` dentro do corpo principal de um `useEffect`. Utilize a função `queueMicrotask`:
+Três funções em `packages/core/src/utils/errors.ts`, cada uma com seu lugar:
+
+| Função | Onde usar |
+| --- | --- |
+| `handleServiceError(error, { method, args? })` | `catch` de **todo** service — loga e re-lança (`never`) |
+| `getFriendlyErrorMessage(error)` | UI, para converter erro em texto pt-BR exibível |
+| `logErrorToTerminal(error, { method })` | log direto quando não há re-lance |
+
+`logErrorToTerminal` é **no-op em produção** (`isProduction()`) e classifica `ZodError`, `PostgrestError`, `AuthError` e erro de rede (`TypeError` com `'Network request failed'`). Nunca exponha `PostgrestError.message` cru na UI — passe por `getFriendlyErrorMessage`.
+
+### Logging
+
+`console.log` / `console.warn` / `console.error` são **proibidos** no código de aplicação e do core. O único `console.error` legítimo do repo é o interno de `logErrorToTerminal` — não replique.
+
+**Testar log:** espionar `logErrorToTerminal` não funciona quando a chamada é interna ao módulo. Espione `handleServiceError` (ver testes do core).
+
+### Catálogo de utilitários existentes — reutilize, não recrie
+
+**Utils (`packages/core/src/utils/`)**
+
+1. `cn.ts` — `cn(...inputs)`, merge de classes via clsx + tailwind-merge
+2. `dates.ts` — formatação/comparação/manipulação de datas; `shiftDate` (usado pela recorrência)
+3. `env.ts` — `isProduction()`, agnóstico de runtime (não use `process.env` no core)
+4. `errors.ts` — `handleServiceError`, `getFriendlyErrorMessage`, `logErrorToTerminal`, `ErrorContext`
+5. `events.ts` — status de evento e atração
+6. `filters.ts` — `EventFilters`, `DEFAULT_EVENT_FILTERS`, `DateBucket`, `SortBy`, ordenação do catálogo
+7. `format.ts` — moeda, telefone, documentos
+8. `geo.ts` — distância, raio, `coarseLatLng` (arredonda coordenada para estabilizar query key)
+9. `images.ts` — URL de imagem e fallback
+10. `links.ts` — deep links e URLs amigáveis
+11. `masks.ts` — máscaras de input (telefone, CPF/CNPJ, moeda)
+12. `moderation.ts` — triagem de termos impróprios
+13. `platform.ts` — `isWeb`, `isNative`
+14. `pressGuard.ts` — proteção contra duplo toque
+15. `responsiveType.ts` — tipografia responsiva
+16. `slug.ts` — `slugify`, slug para SEO/URL e para id de evento
+17. `status-light.ts` — semáforo de status
+18. `auth.ts` — helpers de autenticação
+
+**Serviços e infra (`packages/core/src/`)**
+
+ 1. `services/queryKeys.ts` — `catalogKeys`, factory hierárquica (única fonte de query key do catálogo)
+ 2. `services/cachePolicy.ts` — `CACHE_BUSTER` (hoje `'v2'`), `shouldDehydrateQuery`, `PERSIST_ALLOWLIST`
+ 3. `services/owned-events.ts` — `OwnedEventInput`, `MAX_RECURRENCE_COUNT` (52), save/delete/recorrência
+ 4. `services/establishment-owner.ts` — vínculo dono↔bar, RPCs de claim e criação
+ 5. `services/moderation.ts` — triagem de conteúdo (atrás da flag `contentModeration`)
+ 6. `supabase/client.ts` — `createSupabaseClient`, `configureSupabase`, `getConfiguredSupabase`, `isSupabaseConfigured`
+ 7. `platform/storage.ts` — `configureAppStorage`, `appJsonStorage`, `registerRehydrator`, `getAppStorage`
+ 8. `lib/queryClient.ts` / `lib/queryPersister.ts` — QueryClient e persistência
+ 9. `config/features.ts` — `FEATURES`, `FeatureFlag`
+10. `theme/` — `colors`, `gradients`, `shadows`, `typography` (espelho TS dos tokens CSS)
+11. `hooks/` — `useActiveCity`, `useConnectivity`, `useGuardedPress`, `useNearbyEstablishments`, `useStatusLight`, `hooks/queries.ts`
+12. `data/establishment-attributes.ts` — `ESTABLISHMENT_ATTRIBUTES` (rótulos e ordem dos atributos)
+
+**UI mobile (`apps/mobile/src/components/ui/`)**
+
+ 1. `Button`, `Chip`, `CircleIconButton`, `ConfirmDialog`, `EmptyState`, `GradientBadge`, `GuardedPressable`, `Icon`/`iconMap`, `InfoCard`, `OfflineBanner`, `RatingStars`, `SectionLabel`, `SegmentedTabs`, `StatusLightBadge`, `AttributeChips`
+ 2. `apps/mobile/src/tw/` — fachada styled (`View`, `Text`, `Image`, `Pressable`, `ScrollView`, `TextInput`) sobre `react-native-css`. **Importe daqui, não de `react-native`, em componente com `className`.**
+
+**UI web-client (`apps/web-client/components/ui/`)**
+
+ 1. `Button`, `TextInput`, `TextArea`, `Select`, `SelectField`, `Field`, `PageHeader`, `EmptyState`, `ImageDrop`, `CityCombobox`, `AttributeAutocomplete`, `AttributeIcon`, `styles.ts` (constantes `BTN_PRIMARY`/`BTN_GHOST`/`BTN_DANGER`)
+
+**UI admin (`apps/admin/components/ui/`)**
+
+ 1. `Button`, `DataTable`, `Field`, `Modal`, `PageHeader`, `Select`, `TextInput`, `TextArea`, `ImageUpload`, `PdfUpload`, `styles.ts`
+
+**UI web (`apps/web/components/`)**
+
+ 1. `ui/GradientBadge`, `ui/SectionLabel`, `ui/SegmentedTabs`, `ui/StatusLightBadge`, `ui/AttributeChips`, `feedback/EmptyState`, `feedback/UnderConstruction`, `shell/AppShell`, `shell/Sidebar`, `shell/BottomNav`, `shell/NavBadge`, `shell/navItems.ts`
+
+**Ícones:** fachada única por app (`iconMap.ts` no mobile, `icons.tsx` no web/landing). Trocar ícone toca só a fachada — não importe de `@phosphor-icons/react` espalhado. Todo app Next que usa Phosphor **precisa** de `experimental.optimizePackageImports: ['@phosphor-icons/react']` (sem isso o dev server transpila 9k+ módulos por build).
+
+---
+
+## 6. Performance, Segurança e Testes
+
+### Performance
+
+- **`setState` em `useEffect` vai dentro de `queueMicrotask`** — padrão consolidado do repo (`apps/web/components/shell/useNavPathname.ts`, `apps/web/app/(app)/page.tsx`, `apps/mobile/app/(tabs)/index.tsx`):
+
   ```typescript
   useEffect(() => {
     queueMicrotask(() => {
-      setLocalState(newValue);
+      setFilteredList(filterItems(items, query));
     });
-  }, [newValue]);
+  }, [items, query]);
   ```
-- **Exportações Nomeadas:** Todos os componentes, hooks e utilitários devem utilizar exportações nomeadas (`export function ComponentName() {}`), evitando `export default` (exceto em rotas de frameworks baseados em sistema de arquivos).
-- **Listas Longas em React Native:** Em `apps/mobile`, utilize sempre `FlashList` (`@shopify/flash-list`) em vez do `FlatList` nativo.
-- **Cancelamento de Requisições:** Passe o `signal` do TanStack Query (`queryFn: ({ signal }) => fetcher(signal)`) para cancelamento de requisições pendentes ao desmontar componentes.
 
-### Testes Unitários e Regressão de Contrato
-- **Testes Obrigatórios para Services e Utils:** É obrigatória a criação e atualização de testes unitários (`*.test.ts`/`*.test.tsx`) para qualquer alteração em arquivos sob `services/` ou `utils/`.
-- **Testes como Fonte de Verdade:** Refatorações e otimizações devem manter 100% de regressão comportamental. Se uma função recebe uma `string` e retorna um `number`, ela deve continuar retornando exatamente o mesmo tipo e o mesmo valor para os parâmetros testados.
+- **Listas longas no mobile:** `FlashList` (`@shopify/flash-list`), nunca `FlatList`.
+- **Seletores atômicos** em Zustand — nunca desestruture a store inteira.
+- **Cancelamento:** onde o fetcher aceitar, repasse o `signal` (`queryFn: ({ signal }) => fetcher(signal)`). Quando o service não expõe `AbortSignal`, **documente o motivo** em vez de silenciar (ver docblock de `use-owned-events.ts`).
+- **Query keys estáveis:** coordenadas entram na key já arredondadas por `coarseLatLng`.
+- **React 19:** o React Compiler **não** está habilitado neste repo. `useMemo`/`useCallback` continuam sendo ferramenta legítima quando há custo real medido — mas não os adicione por reflexo.
+- **Escrita em lote:** operação que gera N linhas usa um único `insert` com array, não N chamadas (ver `saveRecurringOwnedEvents` — meia série gravada é pior que nenhuma).
+
+### Segurança e ambiente
+
+- Env por app: `NEXT_PUBLIC_*` (Next), `EXPO_PUBLIC_*` (Expo). No core, **nunca** `process.env`/`__DEV__` direto — use `isProduction()` de `utils/env` (o acesso direto quebra o typecheck dos apps sem `@types/node`).
+- `.env` / `.env.local` reais: leitura e escrita proibidas. `.env.example` acompanha o código que introduz a variável.
+- Segurança real é **RLS no Postgres** (`auth.uid()`), não checagem no cliente. Toda query respeita o papel do usuário.
+- `supabase start` só sob pedido explícito. Nunca teste credencial real contra endpoint remoto.
+- Chave/segredo nunca vai para o git — segredos de build vivem no EAS.
+
+### Testes
+
+- **Core:** `packages/core/jest.config.js` — preset `ts-jest`, `testEnvironment: 'node'`, `testMatch: ['**/*.test.ts']`, `moduleNameMapper` de `@agenda/core` → `src/index.ts`, e `jest.setup.ts` injetando storage em memória via `configureAppStorage`.
+- **Mobile:** `apps/mobile/jest.config.js` — preset `jest-expo`, `testMatch: ['<rootDir>/src/**/*.test.ts']` (só `src/`, não `app/`), com `transformIgnorePatterns` liberando `@agenda/*`, `@supabase/*`, `@tanstack/*`, `zustand`, `nativewind` e `react-native-css`.
+- **Apps Next não têm suíte.** Lógica que merece teste pertence ao core.
+- Teste fica **ao lado do fonte** (`services/owned-events.ts` → `services/owned-events.test.ts`).
+- Mock de Supabase é feito no módulo do client, com builder encadeável:
+
+  ```typescript
+  const mockGetSupabase = jest.fn();
+  jest.mock('../supabase/client', () => ({
+    getConfiguredSupabase: () => mockGetSupabase(),
+    isSupabaseConfigured: () => mockGetSupabase() !== null,
+  }));
+  ```
+
+- Mudança em `services/` ou `utils/` do core **exige** teste novo ou atualizado.
+- Refatoração mantém 100% de regressão comportamental: mesma entrada, mesmo tipo, mesmo valor de saída.
+- Antes de declarar tarefa concluída: rode `pnpm typecheck && pnpm lint && pnpm test` e **relate o resultado real**. Nunca afirme "passou" sem ter rodado.
 
 ---
 
-## 6. 🧠 Protocolo Cognitivo de Raciocínio da IA
+## 7. 🧠 Protocolo Cognitivo ANTES de Codificar e Revisar
 
-Antes de escrever ou alterar qualquer linha de código no repositório, a IA deve obrigatoriamente aplicar o seguinte protocolo mental:
-
-1. **Mapeamento de Impacto:** Rastreie a árvore de dependências. Quais componentes, hooks ou testes dependem da função ou tipo que será modificado?
-2. **Checagem de Reuso:** Verifique o **Catálogo de Utilitários Globais e Primitivas** (Seção 4). Existe algum helper (`dates`, `geo`, `cn`, `masks`, `format`) ou componente (`Button`, `EmptyState`, `GuardedPressable`) que já resolve o problema?
-3. **Regra de Co-localização vs Abstração (Regra dos 3):**
-   - Se uma função ou tipo é utilizado em apenas **1 único componente/arquivo**, mantenha-o co-localizado no mesmo arquivo ou na pasta local.
-   - Se for utilizado em **2 lugares**, mantenha local na pasta do módulo.
-   - Apenas abstraia para `@agenda/core/utils` ou `@agenda/core/services` se houver reutilização comprovada em **3 ou mais lugares** no monorepo.
-
----
-
-## 7. 🎨 Padrões Idiomáticos Avançados da Stack Detectada
-
-### Discriminated Unions e Type Guards
-Utilize uniões discriminadas com propriedades tagged para gerenciar múltiplos estados ou retornos de erros de forma type-safe:
-```typescript
-type OperationResult<T> =
-  | { success: true; data: T }
-  | { success: false; error: string };
-
-function processResult(result: OperationResult<Event>) {
-  if (result.success) {
-    // result.data é tipado estritamente como Event
-    logEvent(result.data.title);
-  } else {
-    // result.error é tipado estritamente como string
-    logErrorToTerminal(new Error(result.error), { method: 'processResult' });
-  }
-}
-```
-
-### Pattern Matching Idiomático
-Substitua múltiplos `if-else` ou `switch` legados por seletores de dicionário ou `switch(true)`:
-```typescript
-const STATUS_COLORS: Record<EventStatus, string> = {
-  published: 'bg-green-500',
-  draft: 'bg-yellow-500',
-  cancelled: 'bg-red-500',
-};
-
-const badgeColor = STATUS_COLORS[event.status] ?? 'bg-gray-500';
-```
-
-### Query Key Factories e Invalidação Granular
-Consuma obrigatoriamente as factories de query keys (`catalogKeys`) para garantir invalidação hierárquica por prefixo:
-```typescript
-import { catalogKeys } from '@agenda/core';
-import { useQuery } from '@tanstack/react-query';
-
-export function useEstablishmentDetail(id: string) {
-  return useQuery({
-    queryKey: catalogKeys.establishments.detail(id),
-    queryFn: () => getEstablishment(id),
-  });
-}
-```
-
-### Seletores Atômicos Zustand
-Ao consumir stores do Zustand, utilize seletores atômicos para prevenir re-renders desnecessários:
-```typescript
-// ❌ Re-renderiza em qualquer mudança do estado global de auth
-const authStore = useAuthStore();
-
-// ✅ Re-renderiza exclusivamente se a propriedade 'user' for alterada
-const user = useAuthStore((state) => state.user);
-```
-
-### Inferência Automática de Schemas Zod
-Evite duplicar definições de interfaces manuais quando houver schema Zod correspondente:
-```typescript
-import { z } from 'zod';
-
-export const createEventSchema = z.object({
-  title: z.string().min(3),
-  startDate: z.string().datetime(),
-  establishmentId: z.string().uuid(),
-});
-
-export type CreateEventInput = z.infer<typeof createEventSchema>;
-```
+1. **Planejar e validar escopo.** O que foi pedido? Exige tocar arquivo não solicitado? Se sim, peça autorização no chat antes.
+2. **Consultar a doc oficial da lib envolvida.** Qual biblioteca a alteração toca? Abra a doc da **versão da tabela da Seção 2** e extraia o idioma atual dela — não o que você lembra, não o que o código antigo do repo faz.
+3. **Cruzar doc com o contexto do repo.** O padrão moderno da doc cabe na arquitetura daqui (camadas da Seção 4, catálogo da Seção 5)? Onde divergir, este arquivo vence.
+4. **Mapear impacto.** Quem depende da função/tipo alterado? Grep os callers **antes** de editar — bug se corrige na causa raiz, uma vez, onde todos passam. Atenção às fachadas de `apps/mobile/src/` (re-export do core).
+5. **Analisar diff.** Em review: a alteração criou warning, variável órfã, contrato quebrado, key literal, `CACHE_BUSTER` desatualizado? Reporte. Débito antigo não tocado? Ignore.
+6. **Verificar permissões.** A tarefa exige recurso fora do escopo? Recuse e limite-se ao necessário.
+7. **Checar reuso.** Existe helper na Seção 5 que resolve? (`cn`, `dates`, `masks`, `format`, `geo`, `slug`, `Button`, `EmptyState`, `GuardedPressable`…)
+8. **Checar dependências.** Precisa de lib nova? Pare, peça confirmação, leia a doc.
+9. **Regra dos 3.** Usado em 1 lugar → co-localizado (ver `panelKeys`). Em 2 → pasta do módulo. Em 3+ → só então `@agenda/core`.
+10. **Self-audit.** Passe pelo checklist da Seção 10 antes de responder.
 
 ---
 
@@ -284,265 +494,449 @@ export type CreateEventInput = z.infer<typeof createEventSchema>;
 
 **Todo commit** que altere código de um app/pacote **deve** incluir, nele mesmo, uma breve descrição da mudança no CHANGELOG da versão seguinte daquele projeto. Não é ao fim da tarefa: é a cada commit. Uma tarefa quebrada em cinco commits acrescenta bullets cinco vezes, no mesmo arquivo.
 
-Esta é a única exceção à proibição de editar `.md` (Seção 0, Regra 1) — não é necessário pedir autorização.
+Esta é a única exceção à proibição de editar `.md` (Seção 0, Regra 7) — não é necessário pedir autorização.
 
-**A IA é a única fonte deste arquivo.** Não existe geração automática: `scripts/build-mobile.bash` apenas compila e não escreve mais CHANGELOG. Se a IA não escrever, o arquivo não existe e o release sai sem notas.
-
-Commits que **não** exigem CHANGELOG (não alteram o produto): mudanças restritas a `.md`, ao próprio CHANGELOG, ou a `scripts/` e configuração de CI.
+**A IA é a única fonte deste arquivo.** Não existe geração automática: `scripts/build-mobile.bash` apenas compila e não escreve CHANGELOG. Se a IA não escrever, o arquivo não existe e o release sai sem notas.
 
 ### Qual arquivo editar
 
 O CHANGELOG é **por app/pacote**, escolhido pelos diretórios que o commit toca:
 
 | Mudança em | CHANGELOG a atualizar |
-|---|---|
+| --- | --- |
 | `apps/mobile/` | `apps/mobile/CHANGELOG-<branch>-v<próxima-versão>.md` |
 | `apps/web/` | `apps/web/CHANGELOG-<branch>-v<próxima-versão>.md` |
+| `apps/web-client/` | `apps/web-client/CHANGELOG-<branch>-v<próxima-versão>.md` |
 | `apps/admin/` | `apps/admin/CHANGELOG-<branch>-v<próxima-versão>.md` |
 | `apps/landing/` | `apps/landing/CHANGELOG-<branch>-v<próxima-versão>.md` |
 | `packages/core/` | `packages/core/CHANGELOG-<branch>-v<próxima-versão>.md` |
 
-Se o commit toca **mais de um** app/pacote (ex.: uma correção em `packages/core` consumida por `apps/mobile`), atualize o CHANGELOG de **cada** um dos afetados, descrevendo o impacto na perspectiva daquele projeto.
+Se o commit toca **mais de um** app/pacote (ex.: correção em `packages/core` consumida por `apps/mobile`), atualize o CHANGELOG de **cada** afetado, descrevendo o impacto na perspectiva daquele projeto.
 
 ### Qual versão usar
 
-O arquivo é sempre da **versão imediatamente posterior** à do `package.json` do projeto — nunca da versão atual, que já foi publicada. Incremente o patch, salvo instrução explícita do usuário para minor/major.
+O arquivo é sempre da **versão imediatamente posterior** à do `package.json` do projeto — nunca da versão atual, que já foi publicada. Incremente o patch, salvo instrução explícita para minor/major.
 
 ```txt
-apps/mobile/package.json → "version": "0.0.7"
-                        ↓
-arquivo: apps/mobile/CHANGELOG-alfa-v0.0.8.md
-heading: # Changelog 0.0.8 (alfa)
+apps/web-client/package.json → "version": "0.0.1"
+                            ↓
+arquivo: apps/web-client/CHANGELOG-alfa-v0.0.2.md
+heading: # Changelog 0.0.2 (alfa)
 ```
 
-**Durante os commits, não bumpe o `package.json`.** O CHANGELOG antecipa a versão; o bump acontece uma única vez, no momento de abrir o PR para `alfa` (Seção 8.1). No mobile a versão tem fonte única no `package.json` (o `app.config.ts` importa de lá).
+**Durante os commits, não bumpe o `package.json`.** O CHANGELOG antecipa a versão; o bump acontece uma única vez, ao abrir o PR para `alfa` (Seção 8.1). No mobile a versão tem fonte única no `package.json` (o `app.config.ts` importa de lá).
 
 ### Formato
 
-- Arquivo: `CHANGELOG-<branch>-v<version>.md` — `branch` é `alfa`, `beta` ou `release` (a branch de canal, não a branch de trabalho)
+- Arquivo: `CHANGELOG-<branch>-v<version>.md` — `branch` é `alfa`, `beta` ou `release` (a branch de canal, não a de trabalho)
 - Heading: `# Changelog <version> (<branch>)`
-- Corpo: bullets curtos em português (pt-BR), na perspectiva do usuário final — o conteúdo do mobile vai para a loja de apps
+- Corpo: bullets curtos em pt-BR, na perspectiva do usuário final — o conteúdo do mobile vai para a loja de apps
 
-**Acrescente, nunca sobrescreva.** Se o arquivo da próxima versão já existir, adicione os novos bullets ao fim da lista, preservando os que já estão lá — eles são de commits anteriores que ainda não foram publicados. Um commit que apaga bullets alheios é infração.
+**Acrescente, nunca sobrescreva.** Se o arquivo da próxima versão já existir, adicione ao fim da lista, preservando os bullets de commits anteriores ainda não publicados. Apagar bullet alheio é infração.
 
 ```markdown
-# Changelog 0.0.8 (alfa)
+# Changelog 0.0.2 (alfa)
 
+- Painel do dono passa a listar eventos em rascunho junto dos publicados
 - Busca de cidades no filtro volta a funcionar no Android e no iOS
-- Feed passa a ordenar eventos e bares pelos mais próximos de você
 ```
 
-Descreva o **efeito percebido**, não a implementação: "busca de cidades volta a funcionar", não "esconde o Modal de filtros quando o de cidade abre".
+Descreva o **efeito percebido**, não a implementação.
+
+Commits que **não** exigem CHANGELOG: mudanças restritas a `.md`, ao próprio CHANGELOG, ou a `scripts/` e configuração de CI.
 
 ---
 
 ## 8.1 🔖 Bump de Versão ao Abrir PR para `alfa`
 
-**Sempre que o usuário pedir para abrir um PR para `alfa`**, o último número da versão (patch, em `major.minor.patch`) de **cada app/pacote alterado na branch** deve subir 1 no `package.json`, em um commit próprio, **antes** de abrir o PR. Ex.: `0.0.3` → `0.0.4`.
+**Sempre que o usuário pedir para abrir um PR para `alfa`**, o patch da versão de **cada app/pacote alterado na branch** sobe 1 no `package.json`, em um commit próprio, **antes** de abrir o PR. Ex.: `0.0.3` → `0.0.4`.
 
-Isto não requer nova autorização — o pedido de abrir o PR já é a autorização.
+O pedido de abrir o PR já é a autorização. A branch base padrão deste repo é **`alfa`**, não `main`.
 
 ### Procedimento
 
-1. Descubra os projetos alterados na branch: `git diff --name-only alfa...HEAD` → mapeie os caminhos para `apps/*` e `packages/*`.
+1. `git diff --name-only alfa...HEAD` → mapeie os caminhos para `apps/*` e `packages/*`.
 2. Para cada projeto afetado, incremente o patch no `package.json` dele. Nada mais: nenhum outro arquivo de versão, nenhum lockfile.
-3. A versão resultante **deve coincidir** com a do arquivo `CHANGELOG-<branch>-v<version>.md` que os commits da branch vinham alimentando (Seção 8). Se divergir, o CHANGELOG é a fonte de verdade — renomeie o bump para bater com ele, não o contrário.
+3. A versão resultante **deve coincidir** com a do `CHANGELOG-<branch>-v<version>.md` que os commits vinham alimentando. Se divergir, o CHANGELOG é a fonte de verdade.
 4. Commit isolado: `Bump <projeto> to <versão>` (ou `Bump versions for alfa release` quando forem vários).
 5. Só então abra o PR.
 
 ### Regras de borda
 
-- **Só patch.** Minor ou major exigem instrução explícita do usuário.
-- **Só projetos tocados.** Um app que a branch não alterou não sobe de versão.
-- **Só para `alfa`.** PRs para outras bases não disparam bump automático.
-- **Não bumpe duas vezes.** Se o `package.json` do projeto já estiver na versão do CHANGELOG pendente, o bump já foi feito nesta branch — não repita.
-- **Mudanças que não exigem CHANGELOG** (apenas `.md`, `scripts/` ou CI — Seção 8) também **não** exigem bump.
+- **Só patch.** Minor/major exigem instrução explícita.
+- **Só projetos tocados.** App que a branch não alterou não sobe de versão.
+- **Só para `alfa`.** PR para outra base não dispara bump.
+- **Não bumpe duas vezes.** Se o `package.json` já está na versão do CHANGELOG pendente, o bump já foi feito.
+- Mudanças que não exigem CHANGELOG também não exigem bump.
+- `git push` nunca sem pedido explícito.
 
 ---
 
-## 9. 🛑 Checklist Bloqueante para Code Reviews & Guias de Correção
+## 9. 🎨 Padrões Idiomáticos das Versões Instaladas
 
-Abaixo estão listadas as 10 infrações bloqueantes. Qualquer alteração de código que violar um destes itens deve ter seu merge/commit **imediatamente bloqueado** até a aplicação da devida correção.
+### React 19.2.3 — <https://react.dev>
+
+- Function components + hooks. Zero class components.
+- `react/react-in-jsx-scope` está `off` — não importe `React` só por JSX.
+- React Compiler **não** habilitado: `useMemo`/`useCallback` seguem válidos com custo justificado, mas não por reflexo.
+- Os apps Next são majoritariamente Client Components (`'use client'`) porque consomem TanStack Query e Zustand. Só marque `'use client'` quando o componente realmente usa hook/estado/evento — o resto pode ficar Server Component.
+- `useActionState`/`useOptimistic`/`use` **não são usados neste repo**: os formulários do painel e do admin submetem via `useMutation` do TanStack Query, não via Server Actions. Não introduza o padrão de Actions num formulário existente sem pedir autorização — é troca de arquitetura, não modernização local.
+
+### Next.js 15 App Router — <https://nextjs.org/docs>
+
+- Rotas em `app/`, com route groups: `(app)` no web, `(painel)` no web-client, `(admin)` no admin.
+- `page.tsx`/`layout.tsx` usam `export default` — é a exceção legítima à regra de export nomeado.
+- Fontes via `next/font`, centralizadas em `packages/core/src/fonts/next-fonts.ts` (Inter + Space Grotesk), expostas como CSS var (`--font-inter`, `--font-space-grotesk`).
+- `next.config.ts` tipado com `NextConfig`; `transpilePackages: ['@agenda/core']` obrigatório. `basePath`: `/app` (web), `/client` (web-client), `/admin` (admin); landing não tem.
+- Nunca `pages/`, nunca `getServerSideProps`.
+- `revalidatePath`/`revalidateTag` não se aplicam aqui: os dados vêm de TanStack Query client-side sobre Supabase, e a invalidação é `queryClient.invalidateQueries`.
+
+### Tailwind CSS v4 — <https://tailwindcss.com/docs>
+
+- **Não existe `tailwind.config.js` neste repo e não deve passar a existir.** O tema é declarado em `@theme` dentro do `globals.css` de cada app:
+
+  ```css
+  @import 'tailwindcss';
+
+  @theme {
+    --color-primary: #1dd75e;
+    --color-muted-foreground: #a6a6a6;
+    --font-heading: var(--font-space-grotesk), system-ui, sans-serif;
+    --shadow-neon: 0 10px 40px -10px hsl(141 76% 48% / .45);
+  }
+  ```
+
+- PostCSS: só `@tailwindcss/postcss` (`postcss.config.mjs`).
+- **Use o token semântico, nunca literal entre colchetes:** `bg-primary`, `font-heading`, `shadow-neon`, `text-muted-foreground` — não `bg-[#1dd75e]` nem `shadow-[0_10px...]`.
+- Variantes derivadas dos tokens usam `@theme inline` (os quatro gradientes do web-client: `--gradient-primary`, `--gradient-night`, `--gradient-card`, `--gradient-promo`).
+- Mobile importa por camada (`tailwindcss/theme.css`, `preflight.css`, `utilities.css`) e usa variantes `@media android` / `@media ios` — específico do `react-native-css`. Cores em **hex**, não `hsl()` moderno: o runtime não parseia.
+
+### NativeWind 5 preview / react-native-css
+
+- Componentes com `className` vêm de `apps/mobile/src/tw/` (`View`, `Text`, `Image`, `Pressable`, `ScrollView`, `TextInput`), não de `react-native`.
+- Props que não aceitam `className` (cor de ícone, `tintColor`) leem o espelho TS em `apps/mobile/src/theme/colors.ts`.
+- `react-native-css` está em nightly **com patch** (`patches/react-native-css@0.0.0-nightly.5ce6396.patch`). Não atualize a versão sem autorização — o patch quebra.
+
+### TanStack Query v5 — <https://tanstack.com/query/latest>
+
+- `isPending` para estado inicial (`isLoading` v4 não existe mais); `gcTime`, não `cacheTime`.
+- `onSuccess`/`onError` **só em `useMutation`**. Em `useQuery` são removidos na v5 — trate erro na UI com `error` + `getFriendlyErrorMessage`.
+- `useSuspenseQuery` **não é usado neste repo** — não introduza sem autorização: exigiria boundary de Suspense em telas que hoje tratam `isPending` inline.
+- Query key **sempre** da factory:
+
+  ```typescript
+  useQuery({
+    queryKey: catalogKeys.events.owned(establishmentId ?? ''),
+    queryFn: () => listOwnedEvents(establishmentId ?? ''),
+    enabled: Boolean(establishmentId),
+  });
+  ```
+
+- Invalidação por prefixo hierárquico: `queryClient.invalidateQueries({ queryKey: catalogKeys.events.root })` alcança `detail`, `byEstablishment`, `owned` e `attractions`.
+- Persistência via `PersistQueryClientProvider` + `shouldDehydrateQuery`. **Mudou o shape de dado persistido? Incremente `CACHE_BUSTER` em `services/cachePolicy.ts`** (hoje `'v2'`) — a rehidratação não passa pelo Zod, então `.default([])` não preenche campo ausente e o cache velho chega incompleto à UI.
+- Key nova precisa entrar no `PERSIST_ALLOWLIST` (primeiro segmento) para ser persistida. Hoje: `events`, `establishments`, `music-styles`, `cities`, `notifications`.
+
+### Zustand 5 — <https://zustand.docs.pmnd.rs>
+
+- `create<State>()((set) => ...)`. Atualização por spread; helper interno de patch quando há muitos setters (`useFiltersStore`).
+- Persistência com `appJsonStorage` de `platform/storage.ts` + `registerRehydrator` — nunca `createJSONStorage(() => localStorage)` direto, que quebraria no mobile.
+- Consumo com seletor atômico, sempre.
+
+### Zod 3.23.8 — <https://zod.dev>
+
+- API v3: `z.string().email()`, `z.string().uuid()`, `.datetime()`, `z.enum([...])`. **Não** escreva API de Zod 4 (`z.email()` top-level).
+- Tipo derivado do schema, nunca interface duplicada — padrão real de `schemas/catalog.ts`:
+
+  ```typescript
+  export const eventStatusSchema = z.enum(['draft', 'published']);
+  export type EventStatus = z.infer<typeof eventStatusSchema>;
+  ```
+
+- Reuso por composição: `establishmentWriteSchema` deriva de `establishmentSchema`, e `eventWriteSchema` é `eventSchema.partial({ id: true })`. Prefira `.extend()`/`.pick()`/`.omit()`/`.partial()` a redeclarar campos.
+- `safeParse` quando a falha é esperada e tratável na UI; `parse` dentro de service, onde o `catch` já roteia para `handleServiceError`.
+
+### Supabase JS 2.106 — <https://supabase.com/docs/reference/javascript>
+
+- Tipos gerados são a fonte de verdade: `packages/core/src/types/database.types.ts` (via `pnpm --filter @agenda/core gen:types`). Client é sempre `SupabaseClient<Database>`.
+- `createClient` só em `supabase/client.ts`. Apps registram via `configureSupabase`.
+- Erro do Postgrest: cheque `error` no destructuring e `throw` — o `catch` chama `handleServiceError`.
+- `.maybeSingle()` quando a ausência de linha é caso normal; `.single()` só quando ausência é erro.
+- `@supabase/ssr` **não é usado** — a autenticação é client-side em todos os apps (localStorage no web, `expo-secure-store` no mobile). Não introduza SSR de sessão sem autorização.
+- **Escape hatch documentado:** quando `database.types.ts` está atrás do banco (coluna recém-migrada), o repo usa um cast localizado e comentado, não `any` espalhado:
+
+  ```typescript
+  function eventsTable() {
+    const client = getConfiguredSupabase();
+    if (!client) {
+      throw new Error('Supabase não configurado');
+    }
+    return (client as SupabaseClient).from('events');
+  }
+  ```
+
+  Regenerar os tipos é a correção definitiva; o cast é ponte, e cada uso traz o docblock dizendo por quê.
+
+### TypeScript 6 — <https://www.typescriptlang.org/docs>
+
+- `satisfies` para validar objeto contra tipo sem perder inferência literal.
+- `as const` em constante de config; `import type` inline (`fixStyle: 'inline-type-imports'`).
+- `strict`, `isolatedModules`, `moduleResolution: 'Bundler'`, `target: 'ES2022'` — herde de `@agenda/typescript-config/base.json`, não redefina.
+
+### Expo 56 / React Native 0.85 / Expo Router — <https://docs.expo.dev>
+
+- Roteamento por sistema de arquivos em `apps/mobile/app/`; grupo `(tabs)`; `[id].tsx` para param.
+- Deep link tratado em `app/+native-intent.tsx` + `src/utils/deepLinks.ts`.
+- Reanimated 4 + `react-native-worklets`.
+- Versão do app tem **fonte única no `package.json`** — `app.config.ts` importa de lá. Bumpar = editar só o `package.json`.
+
+### Padrões transversais
+
+**Discriminated union + type guard:**
+
+```typescript
+type OperationResult<T> =
+  | { success: true; data: T }
+  | { success: false; error: string };
+```
+
+**Pattern matching por dicionário** em vez de cadeia de `if`:
+
+```typescript
+const VARIANTS: Record<Variant, string> = {
+  primary: BTN_PRIMARY,
+  ghost: BTN_GHOST,
+  danger: BTN_DANGER,
+};
+```
+
+**Feature flags de entrega gradual** (`packages/core/src/config/features.ts`): tela bloqueada renderiza "Em construção"; liberar = trocar a flag para `true`, sem outra mudança de código. Estado atual: `establishmentDetail`, `notifications` e `map` em `true`; `contentModeration` em `false` (implementado e testado, desligado por orçamento de fase).
 
 ---
 
-### 1. ❌ Violação de acoplamento ou chamada direta a cliente HTTP/Banco fora da camada apropriada
+## 10. 🛑 Checklist Único de Desenvolvimento e Review (Zero Refactor)
 
-- **Regra:** A camada de UI ou hooks nunca deve chamar `fetch`, `axios` ou clientes de API/banco diretamente. Toda comunicação remota deve ser encapsulada na camada de repositório/serviço (`packages/core/src/services`).
-- **Prompt para Solução:** "Mova a chamada HTTP/API da view para um método dedicado na camada de repositório (`@agenda/core/services`) e consuma-o via Custom Hook do TanStack Query."
-- **Preview da Mudança (Diff):**
+Cada item abaixo é **bloqueante**. A IA roda este checklist internamente antes de entregar.
+
+---
+
+### 1. ❌ Sintaxe/API obsoleta de biblioteca já atualizada no projeto
+
+- **Regra:** use a API da versão instalada, validada contra a doc oficial (Seção 9). `isLoading` inicial, `cacheTime`, `onSuccess` em `useQuery`, `tailwind.config.js`, `FlatList`, API de Zod 4 → todos proibidos.
+- **Correção:** "Substitua a API legada pela equivalente da versão instalada conforme a doc oficial."
 
 ```diff
-// ❌ Na tela ou componente visual (UI)
-- useEffect(() => {
--   fetch('/api/events').then(res => res.json()).then(setEvents);
-- }, []);
-
-// ✅ Na camada de UI (usando Hook + Service do core)
-+ const { data: events, isLoading } = useEventsQuery();
+- const { data, isLoading } = useQuery({
+-   queryKey: ['events', id],
+-   queryFn: () => getEvent(id),
+-   onSuccess: (d) => setLocal(d),
+- });
++ const { data, isPending } = useQuery({
++   queryKey: catalogKeys.events.detail(id),
++   queryFn: () => getEvent(id),
++   enabled: Boolean(id),
++ });
 ```
 
 ---
 
-### 2. ❌ Uso de tipos genéricos/burlar o sistema de tipos da linguagem (`any`, `@ts-ignore`, `@ts-nocheck`)
+### 2. ❌ Validação de dados sem Zod ou violando suas boas práticas
 
-- **Regra:** É proibida a utilização de `any`, anotações de supressão de tipo (`@ts-ignore`, `@ts-nocheck`) ou coerção insegura de tipos.
-- **Prompt para Solução:** "Substitua a anotação `any` ou `@ts-ignore` pela interface/tipo TypeScript estrito correto importado via `import type`."
-- **Preview da Mudança (Diff):**
+- **Regra:** shape de dado externo (resposta de API, payload de formulário, valor persistido) se valida com schema Zod de `packages/core/src/schemas/catalog.ts`, tipo derivado por `z.infer`, e reuso por `.extend()`/`.pick()`/`.omit()`/`.partial()`. Interface duplicada à mão é infração.
+- **Correção:** "Derive o tipo do schema com `z.infer` e componha a partir do schema existente em vez de redeclarar campos."
 
 ```diff
-// ❌ Uso de any ou ts-ignore
-- const handleSelect = (item: any) => {
--   // @ts-ignore
--   console.log(item.name);
-- };
-
-// ✅ Tipagem estrita
-+ import type { EventItem } from '@agenda/core';
-+ const handleSelect = (item: EventItem) => {
-+   logSelectedEvent(item.name);
-+ };
+- interface EventWriteInput {
+-   id?: string;
+-   name: string;
+-   startsAt: string;
+- }
++ export const eventWriteSchema = eventSchema.partial({ id: true });
++ export type EventWriteInput = z.infer<typeof eventWriteSchema>;
 ```
 
 ---
 
-### 3. ❌ Violação de internacionalização / Strings estáticas na UI sem `t()`
+### 3. ❌ Reportar débito antigo não relacionado ao diff (ou omitir regressão causada por ele)
 
-- **Regra:** Nenhuma string exibida diretamente ao usuário na interface pode ser estática (hardcoded). Todas devem utilizar a função de internacionalização `t()`.
-- **Prompt para Solução:** "Extraia a string estática para o arquivo de dicionário i18n e utilize a chamada `t('chave_da_mensagem')` no componente."
-- **Preview da Mudança (Diff):**
+- **Regra:** só o diff e seu impacto direto. Mas **toda** quebra, warning ou padrão defasado introduzido no trecho alterado DEVE ser reportado.
+- **Correção:** "Remova o apontamento sobre código pré-existente não tocado; reporte a regressão introduzida no trecho alterado."
 
 ```diff
-// ❌ String estática na UI
-- <Text>Confirmar Presença</Text>
-
-// ✅ String via i18n
-+ <Text>{t('events.confirm_presence')}</Text>
+  // Review em apps/web-client/components/EventForm.tsx
+- ❌ "O arquivo apps/admin/components/ui/DataTable.tsx tem props sem memo."   (fora do diff)
++ ✅ "A remoção de `capacity` deixou `MAX_CAPACITY` órfão neste arquivo (linha 12)."
 ```
 
 ---
 
-### 4. ❌ Identificadores, chaves ou rotas declaradas em formato hardcoded (fora de enum, constantes ou factories)
+### 4. ❌ Alterar arquivo/componente não solicitado sem pedir permissão
 
-- **Regra:** É proibido declarar query keys com arrays ou strings soltas (ex: `['events', id]`). Utilize sempre as factories de query keys em `catalogKeys`.
-- **Prompt para Solução:** "Substitua o array literal de query key pela chamada correspondente na factory `catalogKeys` de `@agenda/core`."
-- **Preview da Mudança (Diff):**
+- **Regra:** mudança em arquivo fora do pedido exige autorização prévia no chat, com o quê e o porquê.
+- **Correção:** "Reverta a alteração colateral e peça autorização listando arquivo e motivo."
 
 ```diff
-// ❌ Query key solta em array literal
-- useQuery({ queryKey: ['events', eventId], queryFn: () => getEvent(eventId) });
-
-// ✅ Query key via factory centralizada
-+ import { catalogKeys } from '@agenda/core';
-+ useQuery({ queryKey: catalogKeys.events.detail(eventId), queryFn: () => getEvent(eventId) });
+  // Pedido: ajustar o formulário de evento
+  apps/web-client/components/EventForm.tsx        ✅ no escopo
+- apps/web-client/components/ui/Button.tsx        ❌ não pedido — pedir antes
+- apps/web/components/event/EventCard.tsx         ❌ não pedido — pedir antes
 ```
 
 ---
 
-### 5. ❌ Uso de prints/logs nativos em vez do `logger` centralizado
+### 5. ❌ Solicitar acesso fora do escopo da tarefa
 
-- **Regra:** Uso direto de `console.log`, `console.warn` ou `console.error` é proibido. Utilize os utilitários de erro e logging de `@agenda/core/utils/errors`.
-- **Prompt para Solução:** "Remova as chamadas diretas a `console.*` e utilize a abstração `logErrorToTerminal` ou o serviço de logger do projeto."
-- **Preview da Mudança (Diff):**
+- **Regra:** nenhum acesso a diretório pessoal do SO, pasta parente não relacionada, `.env`/`.env.local` reais ou segredo.
+- **Correção:** "Limite a leitura aos arquivos do escopo; para variável de ambiente, use o utilitário de env."
 
 ```diff
-// ❌ Console.log direto
-- console.log('Erro ao carregar catálogo:', error);
-
-// ✅ Logger centralizado do core
-+ import { logErrorToTerminal } from '@agenda/core';
-+ logErrorToTerminal(error, { method: 'fetchCatalog' });
+- Ler apps/web-client/.env.local para descobrir a URL do Supabase
++ import { isProduction } from '@agenda/core';
++ // env do app é lida em apps/web-client/lib/supabase.ts via NEXT_PUBLIC_*
 ```
 
 ---
 
-### 6. ❌ Manipulação inadequada de estado ou efeito colateral assíncrono sem tratamento de ciclo de vida (`setState` síncrono em `useEffect`)
+### 6. ❌ Ausência de plano de ação no chat antes de codar
 
-- **Regra:** A atualização de estado dentro de um `useEffect` deve ser agendada via `queueMicrotask` para evitar re-renderizações síncronas em cascata e alertas de concorrência do React.
-- **Prompt para Solução:** "Envolva a chamada do `setState` dentro de `queueMicrotask(() => { ... })` no corpo do `useEffect`."
-- **Preview da Mudança (Diff):**
+- **Regra:** plano curto antes de gerar/alterar código: o que muda, em quais arquivos, o que precisa de permissão.
+- **Correção:** "Apresente o plano de ação e aguarde antes de editar."
 
 ```diff
-// ❌ setState síncrono no corpo do useEffect
-- useEffect(() => {
+- [IA edita 6 arquivos direto]
++ Plano: 1) `owned-events.ts` — adicionar `status` ao input; 2) teste do service;
++ 3) `EventForm.tsx` — campo novo. Precisa tocar `schemas/catalog.ts` (fora do
++ pedido) para o enum — autoriza?
+```
+
+---
+
+### 7. ❌ Comentário explicativo poluente no código
+
+- **Regra:** permitidos `TODO:`, `FIXME:`, `ponytail:` e docblock curto de **decisão/porquê**. Proibido narrar mecânica óbvia.
+- **Correção:** "Remova o comentário redundante; mova a explicação para o chat ou converta em docblock de decisão."
+
+```diff
+- // pega o client do supabase
+  const client = getConfiguredSupabase();
+- // se não tiver client retorna false
+  if (!client) {
+    return false;
+  }
+```
+
+---
+
+### 8. ❌ Instalar biblioteca sem confirmação prévia ou sem ler a doc
+
+- **Regra:** nenhuma dependência nova sem autorização; autorizada, ler a doc oficial antes. Use `pnpm`, nunca npm/yarn.
+- **Correção:** "Reverta a dependência e resolva com o que já existe em `@agenda/core` / no que está instalado."
+
+```diff
+- "dependencies": {
+-   "date-fns": "^4.1.0"
+- }
++ import { shiftDate } from '@agenda/core';
+```
+
+---
+
+### 9. ❌ Tipo inseguro, coerção forçada ou teste quebrado/desabilitado
+
+- **Regra:** sem `any`, `@ts-ignore`, `@ts-nocheck`, `unknown` sem guard, `!` sem justificativa. Sem `skip`/delete de teste existente. Cast pontual só no escape hatch documentado do Supabase (Seção 9).
+- **Correção:** "Substitua pelo tipo estrito via `import type` e restaure o teste."
+
+```diff
+- // @ts-ignore
+- const handleSelect = (item: any) => logEvent(item.name);
+- it.skip('rejeita recorrência acima do máximo', () => { /* ... */ });
++ import type { Event } from '@agenda/core';
++ const handleSelect = (item: Event) => logEvent(item.name);
++ it('rejeita recorrência acima do máximo', () => { /* ... */ });
+```
+
+---
+
+### 10. ❌ Recriar utilitário ou primitiva de UI que já existe
+
+- **Regra:** consulte a Seção 5 antes de escrever helper ou componente básico.
+- **Correção:** "Remova a duplicata e reutilize a versão de `@agenda/core` ou do `components/ui/` do app."
+
+```diff
+- <button onClick={handleSave} className="bg-[#1dd75e] px-4 py-2 rounded-lg text-black">
+-   Salvar
+- </button>
++ import { Button } from '@/components/ui/Button';
++ <Button onClick={handleSave}>Salvar</Button>
+```
+
+---
+
+### 11. ❌ Log nativo em vez da abstração de logger
+
+- **Regra:** `console.*` proibido. Use `handleServiceError` (service) ou `logErrorToTerminal` (log sem re-lance). UI mostra `getFriendlyErrorMessage`.
+- **Correção:** "Troque o `console.*` pela abstração de erro do core."
+
+```diff
+  } catch (error) {
+-   console.error('Erro ao salvar evento:', error);
+-   throw error;
++   return handleServiceError(error, { method: 'ownedEvents.saveOwnedEvent' });
+  }
+```
+
+---
+
+### 12. ❌ Estado sem seletor atômico ou efeito em cascata
+
+- **Regra:** store consumida por seletor; `setState` em `useEffect` dentro de `queueMicrotask`.
+- **Correção:** "Aplique seletor atômico e agende o `setState` em `queueMicrotask`."
+
+```diff
+- const { user } = useAuthStore();
++ const user = useAuthStore((state) => state.user);
+
+  useEffect(() => {
 -   setFilteredList(filterItems(items, query));
-- }, [items, query]);
-
-// ✅ setState agendado em queueMicrotask
-+ useEffect(() => {
 +   queueMicrotask(() => {
 +     setFilteredList(filterItems(items, query));
 +   });
-+ }, [items, query]);
+  }, [items, query]);
 ```
 
 ---
 
-### 7. ❌ Edição ou leitura direta não autorizada em arquivos de configuração de ambiente (`.env`, secrets, etc.)
+### 13. ❌ Alteração/commit não autorizado de `.md` — ou ausência do CHANGELOG obrigatório
 
-- **Regra:** Arquivos de variáveis de ambiente (`.env`, `.env.example`, `.env.local`) não devem ser modificados ou criados automaticamente sem solicitação e autorização prévia expressa do usuário.
-- **Prompt para Solução:** "Reverta alterações em arquivos `.env.*` e solicite autorização ao usuário para definir as variáveis de ambiente necessárias."
-- **Preview da Mudança (Diff):**
+- **Regra:** não edite `.md` existente sem autorização. **Exceção obrigatória:** o CHANGELOG da versão seguinte de cada projeto tocado (Seção 8) — sua ausência num commit de código é que constitui infração.
+- **Correção:** "Reverta a edição de `.md` não autorizada; acrescente (sem sobrescrever) o bullet no CHANGELOG da próxima versão de cada projeto afetado."
 
 ```diff
-// ❌ Modificar .env sem autorização
-- EXPO_PUBLIC_NEW_API_KEY=secret_key_123
+- README.md                                       ❌ editado sem pedir
++ apps/web-client/CHANGELOG-alfa-v0.0.2.md        ✅ obrigatório neste commit
 
-// ✅ Consumir via utilitário de ambiente seguro existente
-+ import { isProduction } from '@agenda/core';
+  # Changelog 0.0.2 (alfa)
+
+  - Painel do dono passa a listar eventos em rascunho junto dos publicados
++ - Formulário de evento aceita definir lotação máxima
 ```
 
 ---
 
-### 8. ❌ Nomenclatura de arquivos ou classes fora da convenção da stack
+### 14. ❌ Query key literal, escrita fora do service, ou `CACHE_BUSTER` desatualizado
 
-- **Regra:** Arquivos devem obrigatoriamente seguir o padrão `kebab-case` com sufixos por camada, e importações de tipo devem utilizar `import type`.
-- **Prompt para Solução:** "Renomeie o arquivo para utilizar `kebab-case` com o sufixo apropriado da camada e ajuste as importações para `import type`."
-- **Preview da Mudança (Diff):**
-
-```diff
-// ❌ Nome de arquivo CamelCase e importação sem type
-// Arquivo: EventRepository.ts
-- import { Event, Establishment } from './types';
-
-// ✅ Nome em kebab-case com sufixo da camada e import type
-// Arquivo: event.repository.ts
-+ import type { Event, Establishment } from './types';
-```
-
----
-
-### 9. ❌ Recriação de utilitários ou componentes primitivos já existentes no codebase
-
-- **Regra:** É proibido reimplementar funções utilitárias ou componentes visuais básicos que já existam em `@agenda/core` ou no Design System (`@/components/ui/`).
-- **Prompt para Solução:** "Remova o utilitário/componente duplicado e reutilize a versão existente de `@agenda/core` (`cn`, `dates`, `geo`, `format`, `slug`, `masks`, etc.) ou `@/components/ui/` (`Button`, `EmptyState`, `ConfirmDialog`, `GuardedPressable`, etc.)."
-- **Preview da Mudança (Diff):**
+- **Regra:** key do catálogo sempre de `catalogKeys` (key local só sob Regra dos 3, como `panelKeys`); acesso ao Supabase só no service; mudou shape persistido → incremente `CACHE_BUSTER` e revise o `PERSIST_ALLOWLIST`.
+- **Correção:** "Mova a chamada para um service do core, use a factory de key e atualize o `CACHE_BUSTER` se o shape persistido mudou."
 
 ```diff
-// ❌ Marcação de botão duplicada
-- <TouchableOpacity onPress={handlePress} className="bg-primary p-4 rounded-lg">
--   <Text>Salvar</Text>
-- </TouchableOpacity>
+  // ❌ na página
+- useEffect(() => {
+-   getSupabase()?.from('events').select('*').then(({ data }) => setEvents(data));
+- }, []);
 
-// ✅ Reutilização do componente primitivo do Design System
-+ import { Button } from '@/components/ui/Button';
-+ <Button label={t('common.save')} onPress={handlePress} />
-```
+  // ✅ UI → hook → service
++ const { data: events, isPending } = useOwnedEvents();
 
----
-
-### 10. ❌ Modificação ou commit não autorizado de arquivos `.md` ou instalação não autorizada de dependências
-
-- **Regra:** A IA nunca deve editar arquivos `.md` existentes nem instalar novos pacotes via `package.json` sem autorização prévia e expressa do usuário. Caso autorizada a instalação, a documentação oficial da dependência deve obrigatoriamente ser consultada. **Exceção:** o CHANGELOG da versão seguinte (Seção 8) é esperado em **todo commit** que altere código — sua ausência é que constitui infração.
-- **Prompt para Solução:** "Cancele a edição do arquivo `.md` ou a instalação do pacote e solicite a autorização expressa do usuário antes de prosseguir."
-- **Preview da Mudança (Diff):**
-
-```diff
-// ❌ Adicionar pacote sem autorização no package.json
-- "dependencies": {
--   "axios": "^1.7.0"
-- }
-
-// ✅ Utilizar as dependências e clientes de transporte já existentes no core (@agenda/core / Supabase)
-+ import { getConfiguredSupabase } from '@agenda/core';
+  // services/cachePolicy.ts — shape mudou (campo novo em eventSchema)
+- export const CACHE_BUSTER = 'v2';
++ export const CACHE_BUSTER = 'v3';
 ```
