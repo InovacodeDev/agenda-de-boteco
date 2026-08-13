@@ -14,3 +14,4 @@
 - Atalho "Novo evento" da barra lateral passa a abrir direto o formulário de cadastro
 - Formulário de evento ganha seta de voltar ao lado do título, no lugar do botão "Cancelar"
 - O que falta para salvar aparece ao passar o mouse sobre o botão bloqueado, em vez de ocupar espaço fixo na tela
+- Seção de repetição do evento ganha título, chave de liga/desliga na cor da marca e resumo destacado de quantos eventos serão criados

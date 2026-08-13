@@ -14,7 +14,12 @@ import {
   shiftDate,
   useMusicStylesQuery,
 } from '@agenda/core';
-import { ArrowLeftIcon } from '@phosphor-icons/react';
+import {
+  ArrowLeftIcon,
+  ArrowsClockwiseIcon,
+  FloppyDiskIcon,
+  UploadSimpleIcon,
+} from '@phosphor-icons/react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -183,11 +188,7 @@ export function EventForm({ event }: { event?: Event }) {
   const lastOccurrence =
     repeat && hasDate
       ? formatEventDate(
-          shiftDate(
-            toLocalIso(draft.date, draft.time),
-            recurrence.count - 1,
-            recurrence.frequency,
-          ),
+          shiftDate(toLocalIso(draft.date, draft.time), recurrence.count - 1, recurrence.frequency),
         )
       : null;
 
@@ -361,20 +362,33 @@ export function EventForm({ event }: { event?: Event }) {
       {isEditing ? null : (
         <section
           aria-label="Repetição"
-          className="shadow-card border-border bg-card flex flex-col gap-5 rounded-2xl border p-7"
+          className="shadow-card border-border bg-card rounded-2xl border p-7"
         >
-          <label className="flex cursor-pointer items-center gap-3">
+          <h2 className="font-heading text-foreground mb-5 text-lg font-bold">Repetição</h2>
+
+          {/* Switch em vez de checkbox nativo: o controle do sistema ignora os
+              tokens do tema e ficava claro demais no painel escuro. */}
+          <label className="flex cursor-pointer items-start justify-between gap-6">
+            <span className="flex flex-col gap-1">
+              <span className="text-foreground text-sm font-medium">Repetir este evento</span>
+              <span className="text-muted-foreground text-[13px]">
+                Para a programação fixa da casa, como o happy hour de toda sexta.
+              </span>
+            </span>
             <input
               type="checkbox"
               checked={repeat}
               onChange={(e) => setRepeat(e.target.checked)}
-              className="accent-primary h-4 w-4"
+              className="peer sr-only"
             />
-            <span className="text-foreground text-sm font-medium">Repetir este evento</span>
+            <span
+              aria-hidden
+              className="bg-surface-elevated peer-focus-visible:ring-primary peer-checked:bg-primary relative mt-0.5 h-6 w-11 shrink-0 rounded-full transition-colors peer-focus-visible:ring-2 after:absolute after:top-0.5 after:left-0.5 after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-transform after:content-[''] peer-checked:after:translate-x-5"
+            />
           </label>
 
           {repeat ? (
-            <>
+            <div className="border-border mt-6 flex flex-col gap-5 border-t pt-6">
               <div className="grid grid-cols-2 gap-6">
                 <Field label="Frequência">
                   <Select
@@ -410,15 +424,37 @@ export function EventForm({ event }: { event?: Event }) {
                 </Field>
               </div>
 
-              {/* O dono precisa saber que está criando N eventos, não um. */}
-              <p className="text-muted-foreground text-[13px]">
-                {lastOccurrence
-                  ? // formatEventDate já termina em ponto ('Sex., 4 de set.'), então a
-                    // frase não acrescenta outro — senão sai 'set..'.
-                    `Serão criados ${recurrence.count} eventos, o último em ${lastOccurrence}`
-                  : `Serão criados ${recurrence.count} eventos. Escolha a data para ver a última ocorrência.`}
+              {/* Criar 52 eventos de uma vez é irreversível na prática, então o
+                  resumo é destacado, não uma nota de pé de formulário. */}
+              <p className="bg-surface-elevated text-muted-foreground flex items-start gap-2.5 rounded-xl p-4 text-[13px]">
+                <ArrowsClockwiseIcon
+                  size={16}
+                  weight="regular"
+                  aria-hidden
+                  className="text-primary mt-px shrink-0"
+                />
+                {lastOccurrence ? (
+                  <span>
+                    Serão criados{' '}
+                    <strong className="text-foreground font-semibold">
+                      {recurrence.count} eventos
+                    </strong>
+                    , o último em{' '}
+                    {/* formatEventDate já termina em ponto ('Sex., 4 de set.'),
+                        então a frase não acrescenta outro — senão sai 'set..'. */}
+                    <strong className="text-foreground font-semibold">{lastOccurrence}</strong>
+                  </span>
+                ) : (
+                  <span>
+                    Serão criados{' '}
+                    <strong className="text-foreground font-semibold">
+                      {recurrence.count} eventos
+                    </strong>
+                    . Escolha a data para ver a última ocorrência.
+                  </span>
+                )}
               </p>
-            </>
+            </div>
           ) : null}
         </section>
       )}
@@ -435,13 +471,20 @@ export function EventForm({ event }: { event?: Event }) {
           <Button
             variant="ghost"
             onClick={() => void handleSave('draft')}
+            className="gap-3"
             disabled={!canSave || busy !== null}
           >
+            <FloppyDiskIcon size={18} weight="bold" />
             {busy === 'draft' ? 'Salvando…' : 'Salvar rascunho'}
           </Button>
         </span>
         <span title={blockedReason ?? undefined}>
-          <Button onClick={() => void handleSave('published')} disabled={!canSave || busy !== null}>
+          <Button
+            onClick={() => void handleSave('published')}
+            className="gap-3"
+            disabled={!canSave || busy !== null}
+          >
+            <UploadSimpleIcon size={18} weight="bold" />
             {busy === 'published' ? 'Publicando…' : 'Publicar evento'}
           </Button>
         </span>
