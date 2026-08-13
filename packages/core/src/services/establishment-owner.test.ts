@@ -4,6 +4,7 @@ import {
   createOwnedEstablishment,
   getOwnedEstablishmentId,
   isCurrentUserEstablishmentOwner,
+  updateOwnedEstablishment,
 } from './establishment-owner';
 
 const mockGetSupabase = jest.fn();
@@ -18,12 +19,18 @@ function makeClient(options: {
   session?: unknown;
   maybeSingle?: jest.Mock;
   rpc?: jest.Mock;
+  updateError?: Error;
 } = {}) {
   const maybeSingle =
     options.maybeSingle ?? jest.fn().mockResolvedValue({ data: null, error: null });
   const eq = jest.fn().mockReturnValue({ maybeSingle });
   const select = jest.fn().mockReturnValue({ eq });
-  const from = jest.fn().mockReturnValue({ select });
+  // O UPDATE termina em .eq(), sem .select(): resolve direto.
+  const updateEq = jest
+    .fn()
+    .mockResolvedValue({ data: null, error: options.updateError ?? null });
+  const update = jest.fn().mockReturnValue({ eq: updateEq });
+  const from = jest.fn().mockReturnValue({ select, update });
   return {
     auth: {
       getSession: jest.fn().mockResolvedValue(options.session ?? SESSION),
@@ -31,6 +38,8 @@ function makeClient(options: {
     from,
     select,
     eq,
+    update,
+    updateEq,
     maybeSingle,
     rpc: options.rpc ?? jest.fn().mockResolvedValue({ data: 'bar-1', error: null }),
   };
@@ -228,5 +237,85 @@ describe('createOwnedEstablishment', () => {
     await expect(createOwnedEstablishment(INPUT)).rejects.toThrow(
       'não retornou o id',
     );
+  });
+});
+
+describe('updateOwnedEstablishment', () => {
+  const INPUT = {
+    name: 'Bar do Tito',
+    description: 'O melhor boteco da ilha',
+    logoUrl: 'https://cdn.example/logo.png',
+    coverUrl: 'https://cdn.example/capa.png',
+    cityId: 'florianopolis',
+    address: 'Rua X, 100',
+    neighborhood: 'Centro',
+    whatsapp: '48999999999',
+    instagram: '@bardotito',
+    openingHours: 'Seg a Sáb, 18h às 02h',
+    priceRange: '$$' as const,
+    ambiance: 'Boteco tradicional',
+    menuUrl: 'https://cardapio.example',
+    attributes: ['pet-friendly', 'live-music'] satisfies EstablishmentAttribute[],
+  };
+
+  it('lança sem Supabase configurado', async () => {
+    mockGetSupabase.mockReturnValue(null);
+    await expect(updateOwnedEstablishment('bar-1', INPUT)).rejects.toThrow(
+      'Supabase não configurado',
+    );
+  });
+
+  it('atualiza só as colunas do formulário, na linha do bar', async () => {
+    const client = makeClient();
+    mockGetSupabase.mockReturnValue(client);
+
+    await expect(updateOwnedEstablishment('bar-1', INPUT)).resolves.toBeUndefined();
+    expect(client.from).toHaveBeenCalledWith('establishments');
+    expect(client.update).toHaveBeenCalledWith({
+      name: 'Bar do Tito',
+      description: 'O melhor boteco da ilha',
+      logo_url: 'https://cdn.example/logo.png',
+      cover_url: 'https://cdn.example/capa.png',
+      city_id: 'florianopolis',
+      address: 'Rua X, 100',
+      neighborhood: 'Centro',
+      whatsapp: '48999999999',
+      instagram: '@bardotito',
+      opening_hours: 'Seg a Sáb, 18h às 02h',
+      price_range: '$$',
+      ambiance: 'Boteco tradicional',
+      menu_pdf_url: 'https://cardapio.example',
+      attributes: ['pet-friendly', 'live-music'],
+    });
+    expect(client.updateEq).toHaveBeenCalledWith('id', 'bar-1');
+  });
+
+  // lat/lng e rating não são editáveis na tela; se entrassem no payload, salvar
+  // o perfil zeraria a geolocalização e a nota do bar.
+  it('não toca em lat/lng, rating nem menu_items', async () => {
+    const client = makeClient();
+    mockGetSupabase.mockReturnValue(client);
+
+    await updateOwnedEstablishment('bar-1', INPUT);
+    const payload = client.update.mock.calls[0][0];
+    for (const column of ['lat', 'lng', 'rating_avg', 'rating_count', 'menu_items', 'id']) {
+      expect(payload).not.toHaveProperty(column);
+    }
+  });
+
+  // Coluna anulável: '' viraria um "@" vazio no perfil público.
+  it('grava null quando Instagram e cardápio vêm vazios', async () => {
+    const client = makeClient();
+    mockGetSupabase.mockReturnValue(client);
+
+    await updateOwnedEstablishment('bar-1', { ...INPUT, instagram: '', menuUrl: '' });
+    expect(client.update).toHaveBeenCalledWith(
+      expect.objectContaining({ instagram: null, menu_pdf_url: null }),
+    );
+  });
+
+  it('propaga erro do Supabase (ex: RLS de outro dono)', async () => {
+    mockGetSupabase.mockReturnValue(makeClient({ updateError: new Error('rls denied') }));
+    await expect(updateOwnedEstablishment('bar-1', INPUT)).rejects.toThrow('rls denied');
   });
 });

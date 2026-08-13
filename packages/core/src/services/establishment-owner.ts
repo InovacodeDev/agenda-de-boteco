@@ -1,4 +1,4 @@
-import type { EstablishmentAttribute } from '../schemas/catalog';
+import type { EstablishmentAttribute, PriceRange } from '../schemas/catalog';
 import { getConfiguredSupabase } from '../supabase/client';
 import { handleServiceError } from '../utils/errors';
 
@@ -87,7 +87,10 @@ export async function createCityFromPanel(name: string, uf: string): Promise<str
   }
 }
 
-/** Campos mínimos do wizard de onboarding (Fase 1 do painel do estabelecimento). */
+/**
+ * Campos do wizard de onboarding (Fase 1) e da tela de Perfil (Fase 2) — são os
+ * mesmos: o onboarding coleta o mínimo e o Perfil edita tudo depois.
+ */
 export interface CreateOwnedEstablishmentInput {
   name: string;
   description: string;
@@ -178,6 +181,56 @@ export async function createOwnedEstablishment(
     return handleServiceError(error, {
       method: 'establishmentOwner.createOwnedEstablishment',
       args: { name: input.name, cityId: input.cityId },
+    });
+  }
+}
+
+/**
+ * Salva o perfil público do bar do dono logado (Fase 2). UPDATE direto, sem RPC:
+ * a policy `owner_update_establishments` já restringe a linha a quem é dono, e
+ * o WITH CHECK no id impede repontar o registro para outro estabelecimento.
+ *
+ * Só as colunas do formulário vão no payload — lat/lng, rating e menu_items
+ * ficam de fora para o save não zerar o que a tela não edita.
+ */
+export async function updateOwnedEstablishment(
+  id: string,
+  input: CreateOwnedEstablishmentInput & { priceRange: PriceRange },
+): Promise<void> {
+  const client = getConfiguredSupabase();
+  if (!client) {
+    throw new Error('Supabase não configurado');
+  }
+  try {
+    const { error } = await client
+      .from('establishments')
+      .update({
+        name: input.name,
+        description: input.description,
+        logo_url: input.logoUrl,
+        cover_url: input.coverUrl,
+        city_id: input.cityId,
+        address: input.address,
+        neighborhood: input.neighborhood,
+        whatsapp: input.whatsapp,
+        // Coluna anulável: string vazia viraria um "@" fantasma no perfil público.
+        instagram: input.instagram || null,
+        opening_hours: input.openingHours,
+        // Na criação a RPC aplica o default do banco quando vazio; aqui o valor
+        // sempre existe, porque a tela carrega o atual do estabelecimento.
+        price_range: input.priceRange,
+        ambiance: input.ambiance,
+        menu_pdf_url: input.menuUrl || null,
+        attributes: input.attributes,
+      })
+      .eq('id', id);
+    if (error) {
+      throw error;
+    }
+  } catch (error) {
+    return handleServiceError(error, {
+      method: 'establishmentOwner.updateOwnedEstablishment',
+      args: { id, name: input.name },
     });
   }
 }

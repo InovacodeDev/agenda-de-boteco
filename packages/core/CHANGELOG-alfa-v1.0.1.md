@@ -20,3 +20,4 @@
 - O cadastro de bar pelo dono passa a gravar logo, capa, descrição, contato, dados de operação e diferenciais já na criação
 - Donos podem cadastrar uma cidade nova pelo painel; nomes iguais (mesmo com acento ou caixa diferente) reaproveitam a cidade existente
 - Bar cadastrado sem logo ou imagem de capa volta a abrir normalmente, em vez de falhar ao carregar
+- Dono de bar passa a poder salvar as alterações do perfil do próprio estabelecimento, sem afetar a localização e a nota do bar

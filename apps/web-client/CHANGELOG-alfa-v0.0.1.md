@@ -15,3 +15,5 @@
 - Diferenciais do bar podem ser buscados e selecionados no cadastro, com a lista completa da plataforma e ícones
 - Campo de cidade agora aceita digitação com sugestões e permite cadastrar uma cidade que ainda não está na lista, informando o estado
 - Painel inicial reformulado, com boas-vindas em destaque e atalhos para eventos, perfil e métricas
+- Tela de Perfil do bar no ar: dono edita logo, capa, descrição, endereço, contato, horário, faixa de preço, ambiente, cardápio e diferenciais em uma página única
+- Perfil abre já preenchido com os dados atuais do bar e confirma na tela quando as alterações são salvas
