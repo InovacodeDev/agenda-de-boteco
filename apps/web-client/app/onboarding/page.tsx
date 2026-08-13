@@ -4,7 +4,6 @@ import {
   catalogKeys,
   createCityFromPanel,
   createOwnedEstablishment,
-  ESTABLISHMENT_ATTRIBUTES,
   type EstablishmentAttribute,
   getFriendlyErrorMessage,
   isCurrentUserEstablishmentOwner,
@@ -20,7 +19,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-import { AttributeIcon } from '@/components/ui/AttributeIcon';
+import { AttributeAutocomplete } from '@/components/ui/AttributeAutocomplete';
 import { CityCombobox } from '@/components/ui/CityCombobox';
 import { ImageDrop } from '@/components/ui/ImageDrop';
 import { SelectField } from '@/components/ui/SelectField';
@@ -129,14 +128,6 @@ export default function OnboardingPage() {
       setErrorMessage(getFriendlyErrorMessage(error));
     }
   };
-
-  const toggleAttribute = (id: EstablishmentAttribute) =>
-    setDraft((current) => ({
-      ...current,
-      attributes: current.attributes.includes(id)
-        ? current.attributes.filter((item) => item !== id)
-        : [...current.attributes, id],
-    }));
 
   // Só nome e cidade são obrigatórios — o resto o dono completa em /perfil.
   const stepValid =
@@ -421,32 +412,17 @@ export default function OnboardingPage() {
                 />
               </div>
 
-              <div className="flex flex-col gap-2.5">
-                <span className={LABEL_CLASS}>Diferenciais do local</span>
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="attributes" className={LABEL_CLASS}>
+                  Diferenciais do local
+                </label>
                 {/* Lista oficial de 36 atributos do core, não os 12 do mockup:
                     é o mesmo enum que alimenta os filtros do app e do site. */}
-                <div className="flex flex-wrap gap-2">
-                  {ESTABLISHMENT_ATTRIBUTES.map((attribute) => {
-                    const selected = draft.attributes.includes(attribute.id);
-                    return (
-                      <button
-                        key={attribute.id}
-                        type="button"
-                        title={attribute.description}
-                        aria-pressed={selected}
-                        onClick={() => toggleAttribute(attribute.id)}
-                        className={`flex items-center gap-1.5 rounded-full px-3.5 py-2 text-[14px] font-medium transition-colors ${
-                          selected
-                            ? 'bg-primary text-primary-foreground'
-                            : 'bg-surface-elevated text-foreground hover:bg-surface'
-                        }`}
-                      >
-                        <AttributeIcon name={attribute.icon} />
-                        {attribute.label}
-                      </button>
-                    );
-                  })}
-                </div>
+                <AttributeAutocomplete
+                  value={draft.attributes}
+                  onChange={(attributes) => set('attributes', attributes)}
+                  inputClassName={FIELD_CLASS}
+                />
               </div>
             </div>
           ) : null}
