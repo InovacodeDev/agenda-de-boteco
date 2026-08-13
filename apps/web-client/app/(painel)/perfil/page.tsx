@@ -6,6 +6,7 @@ import {
   type PriceRange,
   updateOwnedEstablishment,
 } from '@agenda/core';
+import { FloppyDiskIcon } from '@phosphor-icons/react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 
@@ -29,6 +30,10 @@ export default function PerfilPage() {
   const { data: establishment } = useOwnedEstablishment();
 
   const [draft, setDraft] = useState<EstablishmentDraft>(EMPTY_DRAFT);
+  // Cópia do que está gravado, para detectar se há algo a salvar. Guardar o
+  // snapshot é mais barato que comparar campo a campo contra o Establishment
+  // (nomes e nulabilidade divergem entre a linha do banco e o formulário).
+  const [savedDraft, setSavedDraft] = useState<EstablishmentDraft>(EMPTY_DRAFT);
   const [busy, setBusy] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
@@ -38,7 +43,7 @@ export default function PerfilPage() {
   useEffect(() => {
     if (!establishment) return;
     queueMicrotask(() => {
-      setDraft({
+      const loaded: EstablishmentDraft = {
         logoUrl: establishment.logo_url,
         coverUrl: establishment.cover_url,
         name: establishment.name,
@@ -53,7 +58,9 @@ export default function PerfilPage() {
         ambiance: establishment.ambiance,
         menuUrl: establishment.menu_pdf_url ?? '',
         attributes: establishment.attributes,
-      });
+      };
+      setDraft(loaded);
+      setSavedDraft(loaded);
     });
   }, [establishment]);
 
@@ -62,9 +69,23 @@ export default function PerfilPage() {
     setDraft((current) => ({ ...current, [key]: value }));
   };
 
+  /**
+   * Compara o formulário com o que está gravado. Texto entra normalizado por
+   * trim() — o submit também faz trim, então espaços na ponta não são alteração.
+   * A ordem dos diferenciais não importa: a lista é um conjunto.
+   */
+  const isDirty = (Object.keys(draft) as (keyof EstablishmentDraft)[]).some((key) => {
+    const current = draft[key];
+    const saved = savedDraft[key];
+    if (Array.isArray(current) && Array.isArray(saved)) {
+      return current.length !== saved.length || current.some((item) => !saved.includes(item));
+    }
+    return String(current).trim() !== String(saved).trim();
+  });
+
   // Mesmos obrigatórios do onboarding: sem nome e cidade o bar fica ilocalizável.
   const canSave =
-    Boolean(establishment) && draft.name.trim().length > 0 && Boolean(draft.cityId);
+    Boolean(establishment) && isDirty && draft.name.trim().length > 0 && Boolean(draft.cityId);
 
   const handleSubmit = async () => {
     if (!establishment) return;
@@ -89,6 +110,9 @@ export default function PerfilPage() {
         menuUrl: draft.menuUrl.trim(),
         attributes: draft.attributes,
       });
+      // O que está na tela passa a ser o gravado, desabilitando o botão sem
+      // esperar o refetch da invalidação abaixo.
+      setSavedDraft(draft);
       await queryClient.invalidateQueries({
         queryKey: catalogKeys.establishments.detail(establishment.id),
       });
@@ -103,9 +127,11 @@ export default function PerfilPage() {
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-6">
       <header>
-        <h1 className="font-heading text-3xl font-bold text-foreground">Perfil do bar</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Estas informações aparecem para quem procura o seu bar no aplicativo e no site.
+        <h1 className="font-heading text-foreground text-2xl font-bold">
+          Perfil do estabelecimento
+        </h1>
+        <p className="text-muted-foreground mt-1 text-sm">
+          Essas informações aparecem no app dos usuários.
         </p>
       </header>
 
@@ -123,33 +149,34 @@ export default function PerfilPage() {
             <section
               key={title}
               aria-label={title}
-              className="shadow-card rounded-2xl border border-border bg-card p-7"
+              className="shadow-card border-border bg-card rounded-2xl border p-7"
             >
-              <h2 className="font-heading mb-5 text-lg font-bold text-foreground">{title}</h2>
+              <h2 className="font-heading text-foreground mb-5 text-lg font-bold">{title}</h2>
               <Fields draft={draft} set={set} onError={setErrorMessage} />
             </section>
           ))}
 
           <div className="flex items-center justify-end gap-4">
             {errorMessage ? (
-              <p className="flex-1 text-[13px] text-destructive">{errorMessage}</p>
+              <p className="text-destructive flex-1 text-[13px]">{errorMessage}</p>
             ) : null}
             {saved && !errorMessage ? (
-              <p role="status" className="flex-1 text-[13px] text-primary">
+              <p role="status" className="text-primary flex-1 text-[13px]">
                 Alterações salvas.
               </p>
             ) : null}
             <button
               type="submit"
               disabled={!canSave || busy}
-              className="shadow-neon rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50 disabled:shadow-none"
+              className="shadow-neon bg-primary text-primary-foreground inline-flex flex-row items-center gap-4 rounded-xl px-4 py-2 text-sm font-medium transition-opacity hover:opacity-90 disabled:opacity-50 disabled:shadow-none"
             >
+              <FloppyDiskIcon size={18} weight="regular" />
               {busy ? 'Salvando…' : 'Salvar alterações'}
             </button>
           </div>
         </form>
       ) : (
-        <p className="text-sm text-muted-foreground">Carregando…</p>
+        <p className="text-muted-foreground text-sm">Carregando…</p>
       )}
     </div>
   );

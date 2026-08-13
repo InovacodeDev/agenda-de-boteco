@@ -17,3 +17,4 @@
 - Painel inicial reformulado, com boas-vindas em destaque e atalhos para eventos, perfil e métricas
 - Tela de Perfil do bar no ar: dono edita logo, capa, descrição, endereço, contato, horário, faixa de preço, ambiente, cardápio e diferenciais em uma página única
 - Perfil abre já preenchido com os dados atuais do bar e confirma na tela quando as alterações são salvas
+- Botão "Salvar alterações" do perfil só fica disponível quando há mudança de fato, evitando salvamento desnecessário
