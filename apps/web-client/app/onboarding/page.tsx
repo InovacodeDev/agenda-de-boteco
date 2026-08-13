@@ -2,6 +2,7 @@
 
 import {
   catalogKeys,
+  createCityFromPanel,
   createOwnedEstablishment,
   ESTABLISHMENT_ATTRIBUTES,
   type EstablishmentAttribute,
@@ -20,11 +21,13 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import { AttributeIcon } from '@/components/ui/AttributeIcon';
+import { CityCombobox } from '@/components/ui/CityCombobox';
 import { ImageDrop } from '@/components/ui/ImageDrop';
+import { SelectField } from '@/components/ui/SelectField';
 import { panelKeys } from '@/hooks/use-owned-establishment';
 import logo from '@/public/logo.png';
 
-const STEPS = ['Identidade', 'Endereço & contato', 'Revisão'] as const;
+const STEPS = ['Identidade', 'Endereço & contato', 'Operação'] as const;
 
 interface Draft {
   logoUrl: string;
@@ -110,6 +113,22 @@ export default function OnboardingPage() {
 
   const set = <K extends keyof Draft>(key: K, value: Draft[K]) =>
     setDraft((current) => ({ ...current, [key]: value }));
+
+  /**
+   * Cria a cidade digitada e já a seleciona. A RPC é idempotente: se o nome
+   * casar com uma existente (ignorando acento e caixa), devolve o id dela em
+   * vez de duplicar.
+   */
+  const handleCreateCity = async (name: string, uf: string) => {
+    setErrorMessage(null);
+    try {
+      const cityId = await createCityFromPanel(name, uf);
+      await queryClient.invalidateQueries({ queryKey: catalogKeys.cities });
+      set('cityId', cityId);
+    } catch (error: unknown) {
+      setErrorMessage(getFriendlyErrorMessage(error));
+    }
+  };
 
   const toggleAttribute = (id: EstablishmentAttribute) =>
     setDraft((current) => ({
@@ -270,21 +289,13 @@ export default function OnboardingPage() {
                   <label htmlFor="city" className={LABEL_CLASS}>
                     Cidade *
                   </label>
-                  {/* Select, e não texto livre: city_id é FK de `cities`, então
-                      um nome digitado não teria para onde apontar. */}
-                  <select
-                    id="city"
+                  <CityCombobox
+                    cities={cities}
                     value={draft.cityId}
-                    onChange={(e) => set('cityId', e.target.value)}
-                    className={`${FIELD_CLASS} ${draft.cityId ? '' : 'text-muted-foreground'}`}
-                  >
-                    <option value="">São Paulo</option>
-                    {cities.map((city) => (
-                      <option key={city.id} value={city.id} className="text-foreground">
-                        {city.name}
-                      </option>
-                    ))}
-                  </select>
+                    onSelect={(cityId) => set('cityId', cityId)}
+                    onCreate={handleCreateCity}
+                    inputClassName={FIELD_CLASS}
+                  />
                 </div>
 
                 <div className="flex flex-col gap-1.5">
@@ -358,7 +369,7 @@ export default function OnboardingPage() {
                   <label htmlFor="priceRange" className={LABEL_CLASS}>
                     Faixa de preço
                   </label>
-                  <select
+                  <SelectField
                     id="priceRange"
                     value={draft.priceRange}
                     onChange={(e) => set('priceRange', e.target.value)}
@@ -370,14 +381,14 @@ export default function OnboardingPage() {
                         {label}
                       </option>
                     ))}
-                  </select>
+                  </SelectField>
                 </div>
 
                 <div className="flex flex-col gap-1.5">
                   <label htmlFor="ambiance" className={LABEL_CLASS}>
                     Tipo de ambiente
                   </label>
-                  <select
+                  <SelectField
                     id="ambiance"
                     value={draft.ambiance}
                     onChange={(e) => set('ambiance', e.target.value)}
@@ -389,7 +400,7 @@ export default function OnboardingPage() {
                         {item}
                       </option>
                     ))}
-                  </select>
+                  </SelectField>
                 </div>
               </div>
 

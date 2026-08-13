@@ -588,6 +588,10 @@ export type Database = {
             Returns: string
           }
       claim_establishment_owner: { Args: never; Returns: undefined }
+      create_city_from_panel: {
+        Args: { p_name: string; p_uf: string }
+        Returns: string
+      }
       create_owned_establishment: {
         Args: {
           p_address: string

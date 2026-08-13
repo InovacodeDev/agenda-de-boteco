@@ -13,3 +13,4 @@
 - Cadastro do bar agora aceita logo, imagem de capa e descrição já no primeiro passo, com barra de progresso mostrando o quanto falta
 - Cadastro passa a coletar Instagram, horário de funcionamento, faixa de preço, tipo de ambiente e link do cardápio
 - Diferenciais do bar podem ser marcados já no cadastro, com a lista completa da plataforma e ícones
+- Campo de cidade agora aceita digitação com sugestões e permite cadastrar uma cidade que ainda não está na lista, informando o estado

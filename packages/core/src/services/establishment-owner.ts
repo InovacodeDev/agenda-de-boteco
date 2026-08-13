@@ -57,6 +57,36 @@ export async function claimEstablishmentOwner(): Promise<void> {
   }
 }
 
+/**
+ * Cria a cidade digitada no onboarding, ou devolve o id da que já existe.
+ * A deduplicação é do banco (slug do nome + UF), então "São Paulo" e
+ * "sao paulo" convergem para a mesma linha em vez de virarem duas.
+ */
+export async function createCityFromPanel(name: string, uf: string): Promise<string> {
+  const client = getConfiguredSupabase();
+  if (!client) {
+    throw new Error('Supabase não configurado');
+  }
+  try {
+    const { data, error } = await client.rpc('create_city_from_panel', {
+      p_name: name,
+      p_uf: uf,
+    });
+    if (error) {
+      throw error;
+    }
+    if (!data) {
+      throw new Error('RPC create_city_from_panel não retornou o id');
+    }
+    return data;
+  } catch (error) {
+    return handleServiceError(error, {
+      method: 'establishmentOwner.createCityFromPanel',
+      args: { name, uf },
+    });
+  }
+}
+
 /** Campos mínimos do wizard de onboarding (Fase 1 do painel do estabelecimento). */
 export interface CreateOwnedEstablishmentInput {
   name: string;

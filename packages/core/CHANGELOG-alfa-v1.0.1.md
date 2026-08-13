@@ -18,3 +18,4 @@
 - Além do código por e-mail, agora é possível entrar com e-mail e senha ou com a conta Google, e recuperar a senha esquecida
 - Contas passam a ter uma marcação de acesso ao painel do estabelecimento, concedida apenas após confirmação do e-mail
 - O cadastro de bar pelo dono passa a gravar logo, capa, descrição, contato, dados de operação e diferenciais já na criação
+- Donos podem cadastrar uma cidade nova pelo painel; nomes iguais (mesmo com acento ou caixa diferente) reaproveitam a cidade existente
