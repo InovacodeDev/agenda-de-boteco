@@ -107,24 +107,67 @@ describe('invalidationKeysForChange', () => {
     expect(invalidationKeysForChange('notifications')).toEqual([['notifications']]);
   });
 
+  it('mapeia cities → [cities, establishments.root, events.root]', () => {
+    expect(invalidationKeysForChange('cities')).toEqual([
+      catalogKeys.cities,
+      catalogKeys.establishments.root,
+      catalogKeys.events.root,
+    ]);
+    expect(invalidationKeysForChange('cities')).toEqual([
+      ['cities'],
+      ['establishments'],
+      ['events'],
+    ]);
+  });
+
+  it('mapeia music_styles → [music-styles, establishments.root, events.root]', () => {
+    expect(invalidationKeysForChange('music_styles')).toEqual([
+      catalogKeys.musicStyles,
+      catalogKeys.establishments.root,
+      catalogKeys.events.root,
+    ]);
+    expect(invalidationKeysForChange('music_styles')).toEqual([
+      ['music-styles'],
+      ['establishments'],
+      ['events'],
+    ]);
+  });
+
+  it('mapeia event_attractions → [events.root], que cobre a key de atrações por prefixo', () => {
+    expect(invalidationKeysForChange('event_attractions')).toEqual([
+      catalogKeys.events.root,
+    ]);
+    // A key de atrações é ['events','attractions',id]: o prefixo ['events'] a alcança.
+    expect(catalogKeys.events.attractions('e1').slice(0, 1)).toEqual(
+      catalogKeys.events.root,
+    );
+  });
+
   it('tabela desconhecida → []', () => {
     expect(invalidationKeysForChange('foo')).toEqual([]);
   });
 });
 
 describe('subscribeToCatalogChanges', () => {
-  it('cria o canal catalog-changes e assina as 3 tabelas', () => {
+  it('cria o canal catalog-changes e assina as 6 tabelas do catálogo', () => {
     const { client, channelFactory, getChannel } = makeFakeClient();
 
     subscribeToCatalogChanges(client, () => undefined);
     const channel = getChannel();
 
     expect(channelFactory).toHaveBeenCalledWith('catalog-changes');
-    expect(channel.on).toHaveBeenCalledTimes(3);
+    expect(channel.on).toHaveBeenCalledTimes(6);
     expect(channel.subscribe).toHaveBeenCalledTimes(1);
 
     const tables = channel.onCalls.map((call) => call.filter.table);
-    expect(tables).toEqual(['events', 'establishments', 'notifications']);
+    expect(tables).toEqual([
+      'events',
+      'establishments',
+      'notifications',
+      'cities',
+      'music_styles',
+      'event_attractions',
+    ]);
     for (const call of channel.onCalls) {
       expect(call.type).toBe('postgres_changes');
       expect(call.filter.event).toBe('*');
@@ -153,6 +196,16 @@ describe('subscribeToCatalogChanges', () => {
     getChannel().onCalls[0].handler(changePayload('events'));
 
     expect(onInvalidate).toHaveBeenCalledWith([['events']]);
+  });
+
+  it('toda tabela assinada resolve ao menos uma key (sem assinatura órfã)', () => {
+    const { client, getChannel } = makeFakeClient();
+
+    subscribeToCatalogChanges(client, () => undefined);
+
+    for (const call of getChannel().onCalls) {
+      expect(invalidationKeysForChange(call.filter.table).length).toBeGreaterThan(0);
+    }
   });
 
   it('cleanup remove o canal criado exatamente uma vez', () => {

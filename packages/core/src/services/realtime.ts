@@ -8,15 +8,28 @@ import type { Database } from '../types';
 import { isProduction } from '../utils/env';
 import { catalogKeys } from './queryKeys';
 
-/** Tabelas do catálogo presentes na publication `supabase_realtime`. */
-const CATALOG_TABLES = ['events', 'establishments', 'notifications'] as const;
+/**
+ * Tabelas do catálogo presentes na publication `supabase_realtime`. Espelha as
+ * migrações 20260612000200 e 20260813140000 — tabela adicionada aqui sem entrar
+ * na publication assina um canal que nunca emite (falha silenciosa).
+ */
+const CATALOG_TABLES = [
+  'events',
+  'establishments',
+  'notifications',
+  'cities',
+  'music_styles',
+  'event_attractions',
+] as const;
 
 /**
  * Resolve as query keys a invalidar quando uma tabela muda no Postgres. Função
  * PURA: a invalidação é por prefixo de root, então `['events']` cobre
- * `['events','detail',id]` e `['events','by-establishment',id]`. Mudança em
- * `establishments` revalida também `events` porque os cards de evento renderizam
- * dados do estabelecimento. Tabela desconhecida → nenhuma invalidação.
+ * `['events','detail',id]`, `['events','by-establishment',id]` e
+ * `['events','attractions',id]`. Mudança em `establishments` revalida também
+ * `events` porque os cards de evento renderizam dados do estabelecimento; o
+ * mesmo vale para `cities` e `music_styles`, que aparecem embutidos nesses
+ * cards além de alimentarem filtros. Tabela desconhecida → nenhuma invalidação.
  */
 export function invalidationKeysForChange(table: string): QueryKey[] {
   switch (table) {
@@ -26,6 +39,20 @@ export function invalidationKeysForChange(table: string): QueryKey[] {
       return [catalogKeys.establishments.root, catalogKeys.events.root];
     case 'notifications':
       return [catalogKeys.notifications];
+    case 'cities':
+      return [
+        catalogKeys.cities,
+        catalogKeys.establishments.root,
+        catalogKeys.events.root,
+      ];
+    case 'music_styles':
+      return [
+        catalogKeys.musicStyles,
+        catalogKeys.establishments.root,
+        catalogKeys.events.root,
+      ];
+    case 'event_attractions':
+      return [catalogKeys.events.root];
     default:
       return [];
   }
