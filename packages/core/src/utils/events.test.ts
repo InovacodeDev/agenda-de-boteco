@@ -11,6 +11,7 @@ function ev(id: string, establishmentId: string, startsAt: Date): Event {
     description: '',
     banner_url: 'https://example.com/a.jpg',
     photo_urls: [],
+    status: 'published',
     music_style_ids: [],
     establishment_id: establishmentId,
     starts_at: startsAt.toISOString(),

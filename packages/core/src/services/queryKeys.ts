@@ -12,6 +12,10 @@ export const catalogKeys = {
       ['events', 'by-establishment', establishmentId] as const,
     attractions: (eventId: string) =>
       ['events', 'attractions', eventId] as const,
+    // Agenda do painel do dono (inclui rascunho). Começa com 'events' para que
+    // a invalidação por prefixo após salvar/apagar evento também a alcance.
+    owned: (establishmentId: string) =>
+      ['events', 'owned', establishmentId] as const,
   },
   establishments: {
     root: ['establishments'] as const,

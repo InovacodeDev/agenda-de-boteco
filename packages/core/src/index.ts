@@ -54,6 +54,7 @@ export {
   listEventsByEstablishment,
   listMusicStyles,
   listNotifications,
+  listOwnedEvents,
   upsertEstablishment,
   upsertEvent,
   upsertNotification,
@@ -61,6 +62,7 @@ export {
 export * from './services/connectivity';
 export * from './services/establishment-owner';
 export * from './services/favorites';
+export * from './services/owned-events';
 export * from './services/proximity';
 export * from './services/queryKeys';
 export * from './services/realtime';

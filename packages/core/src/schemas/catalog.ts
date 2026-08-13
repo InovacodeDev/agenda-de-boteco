@@ -95,6 +95,9 @@ export const establishmentSchema = z.object({
   menu_photo_urls: z.array(z.string().url()).default([]),
 });
 
+/** Espelha `event_status_enum` do banco. 'draft' não aparece no feed público. */
+export const eventStatusSchema = z.enum(['draft', 'published']);
+
 export const eventSchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -111,6 +114,15 @@ export const eventSchema = z.object({
   courtesy: z.string().optional(),
   promo: z.string().optional(),
   slug: z.string().optional(),
+  /**
+   * Default 'published' espelha o default do banco: evento gravado antes da
+   * coluna existir (e mock sem o campo) continua público ao ser lido.
+   */
+  status: eventStatusSchema.default('published'),
+  /** Lotação do evento; só o painel do dono usa. null = dono não controla. */
+  capacity: z.number().int().positive().nullable().optional(),
+  /** Agrupa as ocorrências geradas por recorrência. null = evento único. */
+  recurrence_group_id: z.string().nullable().optional(),
   /** Post/reel do Instagram que divulga o evento. Valor inválido é descartado. */
   instagram_post_url: z
     .string()
@@ -169,6 +181,7 @@ export type PriceRange = z.infer<typeof priceRangeSchema>;
 export type EstablishmentAttribute = z.infer<typeof establishmentAttributeSchema>;
 export type Establishment = z.infer<typeof establishmentSchema>;
 export type Event = z.infer<typeof eventSchema>;
+export type EventStatus = z.infer<typeof eventStatusSchema>;
 export type EventAttraction = z.infer<typeof eventAttractionSchema>;
 export type NotificationType = z.infer<typeof notificationTypeSchema>;
 export type AppNotification = z.infer<typeof notificationSchema>;

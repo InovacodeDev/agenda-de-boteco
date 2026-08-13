@@ -21,3 +21,7 @@
 - Donos podem cadastrar uma cidade nova pelo painel; nomes iguais (mesmo com acento ou caixa diferente) reaproveitam a cidade existente
 - Bar cadastrado sem logo ou imagem de capa volta a abrir normalmente, em vez de falhar ao carregar
 - Dono de bar passa a poder salvar as alterações do perfil do próprio estabelecimento, sem afetar a localização e a nota do bar
+- Eventos agora têm rascunho e publicado: o rascunho aparece só para o dono do bar, nunca no aplicativo ou no site
+- Eventos passam a guardar a capacidade do local, informação de uso interno do dono
+- Eventos que se repetem (ex.: toda sexta) passam a ser agrupados, permitindo cancelar a série inteira de uma vez
+- Agenda do painel do dono lista os eventos do mais recente para o mais antigo, incluindo os rascunhos

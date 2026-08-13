@@ -12,6 +12,7 @@ import {
   type EventAttraction,
   eventAttractionSchema,
   eventSchema,
+  type EventStatus,
   type EventWriteInput,
   eventWriteSchema,
   menuItemSchema,
@@ -37,11 +38,12 @@ type NotificationRow = Database['public']['Tables']['notifications']['Row'];
 const CITY_COLUMNS = 'id,name,uf,lat,lng,slug';
 const ESTABLISHMENT_COLUMNS =
   'id,name,description,logo_url,cover_url,address,neighborhood,city_id,lat,lng,whatsapp,instagram,opening_hours,menu_items,price_range,ambiance,rating_avg,rating_count,attributes,slug,menu_pdf_url,menu_photo_urls';
-// photo_urls e instagram_post_url incluídos; database.types.ts ainda não tem as colunas —
-// selects de events usam (client as SupabaseClient) sem generic para contornar a
-// validação estática do supabase-js.
+// photo_urls, instagram_post_url, status, capacity e recurrence_group_id incluídos;
+// database.types.ts ainda não tem as colunas — selects de events usam
+// (client as SupabaseClient) sem generic para contornar a validação estática do
+// supabase-js.
 const EVENT_COLUMNS =
-  'id,name,attraction,description,banner_url,photo_urls,music_style_ids,establishment_id,starts_at,ends_at,cover_charge,courtesy,promo,slug,instagram_post_url';
+  'id,name,attraction,description,banner_url,photo_urls,music_style_ids,establishment_id,starts_at,ends_at,cover_charge,courtesy,promo,slug,instagram_post_url,status,capacity,recurrence_group_id';
 const MUSIC_STYLE_COLUMNS = 'id,name,emoji';
 const NOTIFICATION_COLUMNS =
   'id,title,body,type,created_at,read,event_id,establishment_id';
@@ -135,6 +137,12 @@ function mapEvent(row: EventRow): Event {
     instagram_post_url: nullToUndefined(
       (row as { instagram_post_url?: string | null }).instagram_post_url ?? null,
     ),
+    // Coluna NOT NULL no banco; o ?? cobre a leitura de uma linha selecionada
+    // antes da migration rodar, e o schema aplica o mesmo default 'published'.
+    status: (row as { status?: EventStatus }).status ?? 'published',
+    capacity: (row as { capacity?: number | null }).capacity ?? null,
+    recurrence_group_id:
+      (row as { recurrence_group_id?: string | null }).recurrence_group_id ?? null,
   });
 }
 
@@ -162,6 +170,11 @@ function mapNotification(row: NotificationRow): AppNotification {
 export async function listEvents(
   client: SupabaseClient<Database>,
 ): Promise<Event[]> {
+  // NÃO adicione .eq('status','published') aqui: o filtro é da RLS (a policy
+  // select_events de 20260813120000 já esconde rascunho de quem não é dono nem
+  // admin). Filtrar de novo na query esconderia o rascunho do próprio dono no
+  // painel, que é justamente quem precisa vê-lo.
+  //
   // Invariante: esta ordenação (starts_at asc) deve casar com o fallback mock
   // em apps/mobile/src/services/catalog.ts (sortByStartsAtAsc).
   const { data, error } = await eventsFrom(client)
@@ -212,15 +225,27 @@ export async function getEstablishment(
 export async function listEventsByEstablishment(
   client: SupabaseClient<Database>,
   establishmentId: string,
+  /** 'asc' (público, próximos primeiro) | 'desc' (painel do dono). */
+  order: 'asc' | 'desc' = 'asc',
 ): Promise<Event[]> {
-  // Invariante: esta ordenação (starts_at asc) deve casar com o fallback mock
-  // em apps/mobile/src/services/catalog.ts (sortByStartsAtAsc).
+  // Invariante: a ordenação default (starts_at asc) deve casar com o fallback
+  // mock em apps/mobile/src/services/catalog.ts (sortByStartsAtAsc).
   const { data, error } = await eventsFrom(client)
     .select(EVENT_COLUMNS)
     .eq('establishment_id', establishmentId)
-    .order('starts_at', { ascending: true });
+    .order('starts_at', { ascending: order === 'asc' });
   if (error) throw error;
   return ((data ?? []) as EventRow[]).map(mapEvent);
+}
+
+// Agenda do dono: mesma query da pública, só a ordem muda — daí o parâmetro em
+// listEventsByEstablishment em vez de uma segunda função com o select duplicado.
+// Rascunho vem junto porque a RLS mostra os próprios ao dono.
+export async function listOwnedEvents(
+  client: SupabaseClient<Database>,
+  establishmentId: string,
+): Promise<Event[]> {
+  return listEventsByEstablishment(client, establishmentId, 'desc');
 }
 
 export async function listEventAttractions(
