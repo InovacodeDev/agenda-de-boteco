@@ -14,6 +14,7 @@ import {
   shiftDate,
   useMusicStylesQuery,
 } from '@agenda/core';
+import { ArrowLeftIcon } from '@phosphor-icons/react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -218,9 +219,20 @@ export function EventForm({ event }: { event?: Event }) {
       className="mx-auto flex w-full max-w-4xl flex-col gap-6"
     >
       <header>
-        <h1 className="font-heading text-foreground text-2xl font-bold">
-          {isEditing ? 'Editar evento' : 'Novo evento'}
-        </h1>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => router.push('/eventos')}
+            title="Voltar para os eventos"
+            aria-label="Voltar para os eventos"
+            className="text-muted-foreground hover:text-foreground -ml-1 shrink-0 transition-colors"
+          >
+            <ArrowLeftIcon size={22} weight="regular" aria-hidden />
+          </button>
+          <h1 className="font-heading text-foreground text-2xl font-bold">
+            {isEditing ? 'Editar evento' : 'Novo evento'}
+          </h1>
+        </div>
         <p className="text-muted-foreground mt-1 text-sm">
           Rascunhos ficam só para você; eventos publicados aparecem no app dos usuários.
         </p>
@@ -414,23 +426,25 @@ export function EventForm({ event }: { event?: Event }) {
       <div className="flex items-center justify-end gap-4">
         {errorMessage ? (
           <p className="text-destructive flex-1 text-[13px]">{errorMessage}</p>
-        ) : blockedReason ? (
-          <p className="text-muted-foreground flex-1 text-[13px]">{blockedReason}</p>
         ) : null}
 
-        <Button variant="ghost" onClick={() => router.push('/eventos')} disabled={busy !== null}>
-          Cancelar
-        </Button>
-        <Button
-          variant="ghost"
-          onClick={() => void handleSave('draft')}
-          disabled={!canSave || busy !== null}
-        >
-          {busy === 'draft' ? 'Salvando…' : 'Salvar rascunho'}
-        </Button>
-        <Button onClick={() => void handleSave('published')} disabled={!canSave || busy !== null}>
-          {busy === 'published' ? 'Publicando…' : 'Publicar evento'}
-        </Button>
+        {/* O title vai no wrapper, não no <button>: navegador não mostra tooltip
+            de elemento desabilitado, e o motivo do bloqueio é justamente o que o
+            dono precisa ler quando o botão está bloqueado. */}
+        <span title={blockedReason ?? undefined}>
+          <Button
+            variant="ghost"
+            onClick={() => void handleSave('draft')}
+            disabled={!canSave || busy !== null}
+          >
+            {busy === 'draft' ? 'Salvando…' : 'Salvar rascunho'}
+          </Button>
+        </span>
+        <span title={blockedReason ?? undefined}>
+          <Button onClick={() => void handleSave('published')} disabled={!canSave || busy !== null}>
+            {busy === 'published' ? 'Publicando…' : 'Publicar evento'}
+          </Button>
+        </span>
       </div>
     </form>
   );

@@ -12,3 +12,5 @@
 - Botão de espiar leva à página pública do evento e fica indisponível enquanto ele for rascunho
 - Quando o bar ainda não tem nenhum evento, a tela convida a cadastrar o primeiro
 - Atalho "Novo evento" da barra lateral passa a abrir direto o formulário de cadastro
+- Formulário de evento ganha seta de voltar ao lado do título, no lugar do botão "Cancelar"
+- O que falta para salvar aparece ao passar o mouse sobre o botão bloqueado, em vez de ocupar espaço fixo na tela
