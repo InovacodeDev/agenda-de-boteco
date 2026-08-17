@@ -421,6 +421,19 @@ describe('catalog service — caminho Supabase (client fake)', () => {
       expect(semInstagram?.instagram).not.toBeNull();
     });
 
+    it('passa na validação Zod mesmo com logo_url e cover_url vazios', () => {
+      const base = ESTABLISHMENTS[0];
+      const parsed = establishmentSchema.parse({
+        ...base,
+        logo_url: '',
+        cover_url: '',
+        menu_photo_urls: ['relative/path.png'],
+      });
+      expect(parsed.logo_url).toBe('');
+      expect(parsed.cover_url).toBe('');
+      expect(parsed.menu_photo_urls).toEqual(['relative/path.png']);
+    });
+
     it('passa na validação Zod', async () => {
       const establishments = await listEstablishments();
       expect(() =>
