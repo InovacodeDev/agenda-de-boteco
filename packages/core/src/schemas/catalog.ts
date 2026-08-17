@@ -70,8 +70,8 @@ export const establishmentSchema = z.object({
   id: z.string(),
   name: z.string(),
   description: z.string(),
-  logo_url: z.string().url(),
-  cover_url: z.string().url(),
+  logo_url: z.string(),
+  cover_url: z.string(),
   address: z.string(),
   neighborhood: z.string(),
   city_id: z.string(),
@@ -87,8 +87,8 @@ export const establishmentSchema = z.object({
   rating_count: z.number().int().nonnegative(),
   attributes: z.array(establishmentAttributeSchema).default([]),
   slug: z.string().optional(),
-  menu_pdf_url: z.string().url().nullable().optional(),
-  menu_photo_urls: z.array(z.string().url()).default([]),
+  menu_pdf_url: z.string().nullable().optional(),
+  menu_photo_urls: z.array(z.string()).default([]),
 });
 
 export const eventSchema = z.object({
@@ -96,8 +96,8 @@ export const eventSchema = z.object({
   name: z.string(),
   attraction: z.string(),
   description: z.string(),
-  banner_url: z.string().url(),
-  photo_urls: z.array(z.string().url()).default([]),
+  banner_url: z.string(),
+  photo_urls: z.array(z.string()).default([]),
   music_style_ids: z.array(z.string()),
   establishment_id: z.string(),
   starts_at: z.string().datetime({ offset: true }),
