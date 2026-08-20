@@ -1,0 +1,6 @@
+{
+  "/(painel)/eventos/page": "app/(painel)/eventos/page.js",
+  "/(painel)/eventos/novo/page": "app/(painel)/eventos/novo/page.js",
+  "/(painel)/page": "app/(painel)/page.js",
+  "/(painel)/perfil/page": "app/(painel)/perfil/page.js"
+}
