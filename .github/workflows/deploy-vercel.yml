@@ -28,17 +28,34 @@ jobs:
         id: filter
         run: |
           set -euo pipefail
-          before="${{ github.event.before }}"
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ] \
-             || [ -z "$before" ] \
-             || [ "$before" = "0000000000000000000000000000000000000000" ]; then
-            # Sem faixa confiável de comparação: deploya todos.
-            changed="apps/web apps/admin apps/landing packages/core"
+
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            # Disparo manual é intencional: deploya todos, sem gate.
+            changed="apps/web/x apps/admin/x apps/landing/x"
           else
-            changed=$(git diff --name-only "$before..${GITHUB_SHA}")
+            before="${{ github.event.before }}"
+            # Primeiro push da branch (before = zeros) ou faixa indisponível:
+            # cai para o último commit em vez de deployar tudo.
+            if [ -z "$before" ] || [ "$before" = "0000000000000000000000000000000000000000" ] \
+               || ! git cat-file -e "$before^{commit}" 2>/dev/null; then
+              range="${GITHUB_SHA}~1..${GITHUB_SHA}"
+            else
+              range="$before..${GITHUB_SHA}"
+            fi
+            changed=$(git diff --name-only "$range")
           fi
+
+          # Arquivos que não afetam o build publicado: markdown, CI, scripts.
+          # Um commit só com eles não deploya nada.
+          changed=$(echo "$changed" | grep -vE '(\.md$|^\.github/|^scripts/)' || true)
+
           # packages/core é consumido pelos três apps: mudança nele redeploya todos.
-          shared=$(echo "$changed" | grep -qE '^(packages/core/|pnpm-lock.yaml|turbo.json)' && echo true || echo false)
+          if echo "$changed" | grep -qE '^(packages/core/|pnpm-lock\.yaml$|pnpm-workspace\.yaml$|turbo\.json$|package\.json$)'; then
+            shared=true
+          else
+            shared=false
+          fi
+
           for app in web admin landing; do
             if [ "$shared" = "true" ] || echo "$changed" | grep -qE "^apps/$app/"; then
               echo "$app=true" >> "$GITHUB_OUTPUT"
@@ -46,6 +63,7 @@ jobs:
               echo "$app=false" >> "$GITHUB_OUTPUT"
             fi
           done
+          echo "Arquivos considerados:"; echo "$changed"
 
   deploy:
     name: Deploy ${{ matrix.app }}
