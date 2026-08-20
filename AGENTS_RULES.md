@@ -401,7 +401,9 @@ Regras derivadas, não negociáveis:
 - **`upsert: false`** no upload — nome gerado por UUID nunca sobrescreve arquivo existente.
 - **Deleção de conta** é assíncrona por design: `request_account_deletion` (`SECURITY DEFINER`) enfileira `auth.uid()`; um job apaga depois. A `anon key` **não pode** e não deve apagar `auth.users`.
 - **Rate limit** de OTP é do GoTrue; a UI apenas traduz o erro (`getFriendlyErrorMessage` já cobre `rate limit` / `too many requests`). Não implemente retry automático em falha de auth.
-- **CORS / headers:** os apps Next servem sob `basePath` (`/app`, `/admin`). Não relaxe CORS nem adicione `Access-Control-Allow-Origin: *` em nenhuma rota. Ao adicionar headers de segurança (CSP, HSTS, `X-Frame-Options`), faça-o em `next.config.ts` via `headers()` — e peça autorização antes, é mudança de configuração.
+- **CORS / headers:** os apps Next servem sob `basePath` (`/app`, `/admin`). Não relaxe CORS nem adicione `Access-Control-Allow-Origin: *` em nenhuma rota. Os headers de segurança (CSP, HSTS, `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`) já vivem em `headers()` nos três `next.config.ts` — alterá-los exige autorização.
+- **A CSP é escopada por app.** Só `apps/web` libera os tiles do OpenStreetMap em `img-src` e `geolocation=(self)`; só `apps/admin` libera `blob:` (preview de upload) e envia `X-Robots-Tag: noindex`. Ao adicionar uma origem externa nova (CDN, fonte, script de terceiro), a diretiva correspondente **precisa** ser atualizada no mesmo commit — caso contrário o recurso é bloqueado silenciosamente em produção.
+- **`connect-src` deriva de `NEXT_PUBLIC_SUPABASE_URL`.** Sem a variável, a origem do banco (e o `wss://` do realtime) sai da CSP e todas as chamadas são bloqueadas pelo navegador. Por isso `apps/web/next.config.ts` e `apps/admin/next.config.ts` **lançam erro no build quando `process.env.VERCEL` está definido** e a variável falta; em dev e no CI (que buildam sem env, com o app degradando para mock) apenas avisam. Não remova esse guard nem o troque por um fallback silencioso.
 - **Deep links** (`expo-linking`) são entrada não confiável: valide o parâmetro com Zod antes de usá-lo em navegação ou query.
 
 ### Testes
@@ -869,7 +871,31 @@ Violação de qualquer item **bloqueia** a entrega ou o merge.
 
 ---
 
-### 22. ❌ `console`/logger em produção usado como observabilidade
+### 22. ❌ Origem externa nova sem atualizar a CSP, ou guard de env removido
+
+**Regra:** adicionar CDN, fonte, script de terceiro ou endpoint novo exige atualizar a diretiva correspondente nos `next.config.ts` no mesmo commit. O guard que derruba o build de deploy sem `NEXT_PUBLIC_SUPABASE_URL` não pode virar fallback silencioso.
+**Prompt de correção:** "Adicione a origem à diretiva de CSP correspondente no `next.config.ts` do app afetado, ou restaure o guard de env que falha o build de deploy."
+
+```diff
+  const CSP = [
+    "default-src 'self'",
+-   "img-src 'self' data: blob: https://*.tile.openstreetmap.org https:",
++   "img-src 'self' data: blob: https://*.tile.openstreetmap.org https://cdn.novo-servico.com https:",
+  ]
+```
+```diff
+  if (!SUPABASE_ORIGIN) {
+-   // segue sem a origem — chamadas ao banco morrem em silêncio
++   if (process.env.VERCEL) {
++     throw new Error(message);
++   }
++   console.warn(`[@agenda/web] ${message}`);
+  }
+```
+
+---
+
+### 23. ❌ `console`/logger em produção usado como observabilidade
 
 **Regra:** `logErrorToTerminal` é **no-op em produção**. Não confie nele para diagnosticar incidentes — e não remova o guard `isProduction()` para "ver o log em prod", isso vaza contexto sensível.
 **Prompt de correção:** "Restaure o guard `isProduction()` e trate o erro na UI com `getFriendlyErrorMessage`; observabilidade de produção exige decisão de arquitetura à parte."

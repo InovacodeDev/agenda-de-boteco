@@ -1,9 +1,21 @@
 import type { NextConfig } from 'next';
 
-// A origem do Supabase entra na CSP a partir da env pública; sem ela a app já
-// não fala com o banco, então a CSP degrada junto e não mascara o problema.
-// wss:// é o realtime; o Storage sai pela mesma origem.
+// A origem do Supabase entra na CSP a partir da env pública. Sem ela, o
+// connect-src sairia sem o banco e a CSP bloquearia as chamadas em silêncio —
+// por isso o build de deploy falha alto em vez de publicar um site quebrado.
+// Dev e CI (que buildam sem env, com o app degradando para mock) só avisam.
 const SUPABASE_ORIGIN = process.env.NEXT_PUBLIC_SUPABASE_URL ?? '';
+
+if (!SUPABASE_ORIGIN) {
+  const message =
+    'NEXT_PUBLIC_SUPABASE_URL ausente: a CSP sairá sem a origem do Supabase e ' +
+    'todas as chamadas ao banco serão bloqueadas pelo navegador.';
+  if (process.env.VERCEL) {
+    throw new Error(message);
+  }
+  console.warn(`[@agenda/web] ${message} Seguindo com dados de exemplo.`);
+}
+
 const SUPABASE_WS = SUPABASE_ORIGIN.replace(/^https:/, 'wss:');
 
 // 'unsafe-inline'/'unsafe-eval' em script-src são exigidos pelo runtime do
