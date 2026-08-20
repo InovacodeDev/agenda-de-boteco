@@ -6,3 +6,4 @@
 - Passamos a medir de forma anônima quais telas do painel são mais usadas
 - Cadastro de evento ganhou o campo "Post do Instagram", onde você cola o link do post ou reel que divulga o evento
 - As fontes do painel passam a ser servidas pelo próprio servidor, sem depender do Google
+- Painel passa a enviar proteções extras de segurança ao navegador e deixa de ser indexado por buscadores

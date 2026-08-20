@@ -78,6 +78,48 @@ describe('errors utility', () => {
     });
   });
 
+  describe('redação de PII e credenciais nos args', () => {
+    function logWith(args: Record<string, unknown>): string {
+      logErrorToTerminal(new Error('boom'), { method: 'auth.verifyEmailOtp', args });
+      return consoleErrorSpy.mock.calls[0][0] as string;
+    }
+
+    it('nunca imprime o token do OTP', () => {
+      const output = logWith({ email: 'tito@exemplo.com', token: '123456' });
+      expect(output).not.toContain('123456');
+      expect(output).toContain('[REDACTED]');
+    });
+
+    it('mascara o e-mail preservando o domínio', () => {
+      const output = logWith({ email: 'tito@exemplo.com' });
+      expect(output).not.toContain('tito@exemplo.com');
+      expect(output).toContain('t***@exemplo.com');
+    });
+
+    it('redige credenciais e documentos independente do caixa da chave', () => {
+      const output = logWith({
+        Authorization: 'Bearer abc.def',
+        refresh_token: 'rt-secreto',
+        CPF: '12345678901',
+      });
+      expect(output).not.toContain('Bearer abc.def');
+      expect(output).not.toContain('rt-secreto');
+      expect(output).not.toContain('12345678901');
+    });
+
+    it('preserva args não sensíveis', () => {
+      const output = logWith({ id: 'bar-do-tito', cityId: 'floripa' });
+      expect(output).toContain('bar-do-tito');
+      expect(output).toContain('floripa');
+    });
+
+    it('redige também no bloco copiável de AI debug', () => {
+      const output = logWith({ token: '999888' });
+      const aiBlock = output.slice(output.indexOf('AI DEBUG ASSISTANT'));
+      expect(aiBlock).not.toContain('999888');
+    });
+  });
+
   describe('getFriendlyErrorMessage', () => {
     it('returns friendly message for NetworkError', () => {
       const err = new TypeError('Network request failed');

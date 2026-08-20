@@ -8,6 +8,51 @@ export interface ErrorContext {
   args?: Record<string, unknown>;
 }
 
+/**
+ * Chaves de `ErrorContext.args` cujo valor nunca pode ir para o terminal:
+ * credenciais (token/OTP) e PII. A redação acontece aqui, no logger, e não em
+ * cada chamador — assim um `args` novo com PII nasce protegido.
+ */
+const REDACTED_KEYS = [
+  'token',
+  'access_token',
+  'refresh_token',
+  'password',
+  'secret',
+  'apikey',
+  'authorization',
+  'cpf',
+  'cnpj',
+  'phone',
+  'whatsapp',
+];
+
+const EMAIL_KEYS = ['email', 'e-mail'];
+
+/** `tito@exemplo.com` → `t***@exemplo.com`. Preserva o domínio para debug. */
+function maskEmail(value: string): string {
+  const at = value.indexOf('@');
+  if (at <= 0) {
+    return '***';
+  }
+  return `${value[0]}***${value.slice(at)}`;
+}
+
+function redactArgs(args: Record<string, unknown>): Record<string, unknown> {
+  const safe: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(args)) {
+    const normalized = key.toLowerCase();
+    if (REDACTED_KEYS.includes(normalized)) {
+      safe[key] = '[REDACTED]';
+    } else if (EMAIL_KEYS.includes(normalized) && typeof value === 'string') {
+      safe[key] = maskEmail(value);
+    } else {
+      safe[key] = value;
+    }
+  }
+  return safe;
+}
+
 function isPostgrestError(error: unknown): error is PostgrestError {
   return (
     error !== null &&
@@ -85,13 +130,14 @@ export function logErrorToTerminal(error: unknown, context: ErrorContext): void 
   const code = getErrorCode(error);
   const hint = getErrorHint(error);
   const message = error instanceof Error ? error.message : String(error);
+  const safeArgs = redactArgs(context.args ?? {});
 
   console.error(`
 ======================================================================
 🚨 [Agenda de Boteco] SUPABASE/TANSTACK QUERY ERROR
 ======================================================================
 Method: ${context.method}
-Arguments: ${JSON.stringify(context.args || {}, null, 2)}
+Arguments: ${JSON.stringify(safeArgs, null, 2)}
 Error Type: ${errorType}
 Message: ${message}
 Code: ${code}
@@ -104,7 +150,7 @@ Stack: ${error instanceof Error ? error.stack : 'No stack trace'}
 ----------------------------------------------------------------------
 I encountered an error in my Expo/React Native app with Supabase.
 Context: method "${context.method}"
-Parameters: ${JSON.stringify(context.args || {})}
+Parameters: ${JSON.stringify(safeArgs)}
 Error Type: ${errorType}
 Message: "${message}"
 Code: "${code}"

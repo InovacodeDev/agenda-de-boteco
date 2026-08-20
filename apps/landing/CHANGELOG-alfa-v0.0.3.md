@@ -9,3 +9,4 @@
 - Menu no topo com atalhos para recursos, seção de bares e app web
 - Link compartilhado da página agora exibe título, descrição e imagem corretos
 - Cadastro de bares e acesso ao painel aparecem como "em breve" enquanto não estão liberados para estabelecimentos
+- Site passa a enviar proteções extras de segurança ao navegador, bloqueando scripts e conteúdos de origens não autorizadas
