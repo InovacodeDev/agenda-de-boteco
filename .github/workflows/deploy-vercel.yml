@@ -1,0 +1,120 @@
+name: CD - Deploy Web to Vercel
+
+on:
+  push:
+    branches:
+      - alfa
+      - release
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-vercel-${{ github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  changes:
+    name: Detect changed apps
+    runs-on: ubuntu-latest
+    outputs:
+      web: ${{ steps.filter.outputs.web }}
+      admin: ${{ steps.filter.outputs.admin }}
+      landing: ${{ steps.filter.outputs.landing }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Filter changed paths
+        id: filter
+        run: |
+          set -euo pipefail
+          before="${{ github.event.before }}"
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] \
+             || [ -z "$before" ] \
+             || [ "$before" = "0000000000000000000000000000000000000000" ]; then
+            # Sem faixa confiável de comparação: deploya todos.
+            changed="apps/web apps/admin apps/landing packages/core"
+          else
+            changed=$(git diff --name-only "$before..${GITHUB_SHA}")
+          fi
+          # packages/core é consumido pelos três apps: mudança nele redeploya todos.
+          shared=$(echo "$changed" | grep -qE '^(packages/core/|pnpm-lock.yaml|turbo.json)' && echo true || echo false)
+          for app in web admin landing; do
+            if [ "$shared" = "true" ] || echo "$changed" | grep -qE "^apps/$app/"; then
+              echo "$app=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "$app=false" >> "$GITHUB_OUTPUT"
+            fi
+          done
+
+  deploy:
+    name: Deploy ${{ matrix.app }}
+    runs-on: ubuntu-latest
+    needs: changes
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - app: web
+            project_id_secret: VERCEL_PROJECT_ID_WEB
+          - app: admin
+            project_id_secret: VERCEL_PROJECT_ID_ADMIN
+          - app: landing
+            project_id_secret: VERCEL_PROJECT_ID_LANDING
+
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets[matrix.project_id_secret] }}
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      # release = produção; alfa = preview.
+      TARGET: ${{ github.ref_name == 'release' && 'production' || 'preview' }}
+
+    steps:
+      - name: Skip if unchanged
+        id: gate
+        run: |
+          changed="${{ needs.changes.outputs[matrix.app] }}"
+          echo "changed=$changed" >> "$GITHUB_OUTPUT"
+          [ "$changed" = "true" ] || echo "apps/${{ matrix.app }} não mudou — pulando deploy."
+
+      - uses: actions/checkout@v4
+        if: steps.gate.outputs.changed == 'true'
+
+      - uses: pnpm/action-setup@v4
+        if: steps.gate.outputs.changed == 'true'
+        with:
+          version: 10.20.0
+
+      - uses: actions/setup-node@v4
+        if: steps.gate.outputs.changed == 'true'
+        with:
+          node-version: 22
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        if: steps.gate.outputs.changed == 'true'
+        run: pnpm install --frozen-lockfile
+
+      - name: Pull Vercel environment
+        if: steps.gate.outputs.changed == 'true'
+        run: pnpm dlx vercel@latest pull --yes --environment=$TARGET --token=$VERCEL_TOKEN
+
+      - name: Build
+        if: steps.gate.outputs.changed == 'true'
+        run: |
+          if [ "$TARGET" = "production" ]; then
+            pnpm dlx vercel@latest build --prod --token=$VERCEL_TOKEN
+          else
+            pnpm dlx vercel@latest build --token=$VERCEL_TOKEN
+          fi
+
+      - name: Deploy
+        if: steps.gate.outputs.changed == 'true'
+        run: |
+          if [ "$TARGET" = "production" ]; then
+            url=$(pnpm dlx vercel@latest deploy --prebuilt --prod --token=$VERCEL_TOKEN)
+          else
+            url=$(pnpm dlx vercel@latest deploy --prebuilt --token=$VERCEL_TOKEN)
+          fi
+          echo "## ${{ matrix.app }} → $TARGET" >> "$GITHUB_STEP_SUMMARY"
+          echo "$url" >> "$GITHUB_STEP_SUMMARY"
