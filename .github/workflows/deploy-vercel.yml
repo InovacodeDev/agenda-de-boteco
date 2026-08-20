@@ -117,6 +117,49 @@ jobs:
         if: steps.gate.outputs.changed == 'true'
         run: pnpm dlx vercel@latest pull --yes --environment=$TARGET --token=$VERCEL_TOKEN
 
+      # As chaves vêm do .env.example do app (fonte de verdade); os valores, do
+      # GitHub, sob o nome prefixado <APP_UPPER>_<CHAVE> — ex. WEB_NEXT_PUBLIC_SUPABASE_URL.
+      # Secret ganha de variable. Chave sem valor no GitHub falha o job.
+      - name: Materialize env from GitHub secrets/variables
+        if: steps.gate.outputs.changed == 'true'
+        env:
+          APP: ${{ matrix.app }}
+          ALL_SECRETS: ${{ toJSON(secrets) }}
+          ALL_VARS: ${{ toJSON(vars) }}
+        run: |
+          set -euo pipefail
+          example="apps/$APP/.env.example"
+          if [ ! -f "$example" ]; then
+            echo "::error::$example não existe — crie-o listando as variáveis do build."
+            exit 1
+          fi
+
+          prefix=$(echo "$APP" | tr 'a-z-' 'A-Z_')
+          keys=$(sed -n 's/^\([A-Za-z_][A-Za-z0-9_]*\)=.*$/\1/p' "$example" | sort -u)
+
+          APP_PREFIX="$prefix" KEYS="$keys" node -e '
+            const fs = require("fs");
+            const secrets = JSON.parse(process.env.ALL_SECRETS);
+            const vars = JSON.parse(process.env.ALL_VARS);
+            const prefix = process.env.APP_PREFIX;
+            const keys = process.env.KEYS.split("\n").filter(Boolean);
+
+            const missing = [];
+            const lines = [];
+            for (const key of keys) {
+              const name = `${prefix}_${key}`;
+              const value = secrets[name] ?? vars[name] ?? "";
+              if (!value) { missing.push(name); continue; }
+              lines.push(`${key}=${value}`);
+            }
+            if (missing.length) {
+              console.log(`::error::Faltam no GitHub secrets/variables: ${missing.join(", ")}`);
+              process.exit(1);
+            }
+            fs.writeFileSync(`apps/${process.env.APP}/.env.production.local`, lines.join("\n") + "\n");
+            console.log(`Variáveis injetadas: ${keys.join(", ")}`);
+          '
+
       - name: Build
         if: steps.gate.outputs.changed == 'true'
         run: |
