@@ -13,31 +13,59 @@ import { colors } from '@/theme/colors';
 import { headingLetterSpacing } from '@/theme/typography';
 import { Pressable, Text, View } from '@/tw';
 
+/**
+ * Link para a política de privacidade. Exigido pelas lojas e exibido nos dois
+ * estados do perfil — logado e deslogado.
+ */
+function PrivacyLink({ className }: { className?: string }) {
+  const router = useRouter();
+  return (
+    <Pressable
+      onPress={() => router.push('/privacidade')}
+      className={`active:bg-surface/50 flex-row items-center justify-between px-4 py-4 ${className ?? ''}`}
+    >
+      <View className="flex-row items-center gap-3">
+        <Icon name="shield-check" color={colors.primary} size={18} />
+        <Text className="font-body-medium text-foreground text-[15px]">
+          Política de privacidade
+        </Text>
+      </View>
+      <Icon name="chevron-right" color={colors.mutedForeground} size={16} />
+    </Pressable>
+  );
+}
+
 function SignedOutProfile() {
   const router = useRouter();
   return (
-    <View className="flex-1 items-center gap-4 px-8 pt-16">
-      <View className="bg-surface-elevated h-16 w-16 items-center justify-center rounded-2xl">
-        <Icon name="user" variant="regular" color={colors.mutedForeground} size={28} />
+    <View className="flex-1 gap-4 px-8 pt-16">
+      <View className="items-center gap-4">
+        <View className="bg-surface-elevated h-16 w-16 items-center justify-center rounded-2xl">
+          <Icon name="user" variant="regular" color={colors.mutedForeground} size={28} />
+        </View>
+        <View className="items-center gap-2">
+          <Text
+            className="font-heading text-foreground text-[20px]"
+            style={{ letterSpacing: headingLetterSpacing(20) }}
+          >
+            Entre na sua conta
+          </Text>
+          <Text className="font-body text-muted-foreground text-center text-[14px]">
+            Para favoritar, avaliar e receber avisos dos bares que você ama.
+          </Text>
+        </View>
+        <Button
+          label="Entrar"
+          fullWidth
+          onPress={() => router.push('/login')}
+          className="mt-2"
+          style={{ backgroundColor: colors.primary }}
+        />
       </View>
-      <View className="items-center gap-2">
-        <Text
-          className="font-heading text-foreground text-[20px]"
-          style={{ letterSpacing: headingLetterSpacing(20) }}
-        >
-          Entre na sua conta
-        </Text>
-        <Text className="font-body text-muted-foreground text-center text-[14px]">
-          Para favoritar, avaliar e receber avisos dos bares que você ama.
-        </Text>
+
+      <View className="bg-card mt-2 overflow-hidden rounded-2xl">
+        <PrivacyLink />
       </View>
-      <Button
-        label="Entrar"
-        fullWidth
-        onPress={() => router.push('/login')}
-        className="mt-2"
-        style={{ backgroundColor: colors.primary }}
-      />
     </View>
   );
 }
@@ -126,7 +154,7 @@ function SignedInProfile() {
 
         <Pressable
           onPress={() => router.push('/city')}
-          className="active:bg-surface/50 flex-row items-center justify-between px-4 py-4"
+          className="border-border active:bg-surface/50 flex-row items-center justify-between border-b px-4 py-4"
         >
           <View className="flex-row items-center gap-3">
             <Icon name="location-dot" color={colors.primary} size={18} />
@@ -134,6 +162,8 @@ function SignedInProfile() {
           </View>
           <Icon name="chevron-right" color={colors.mutedForeground} size={16} />
         </Pressable>
+
+        <PrivacyLink />
       </View>
 
       <View className="flex-1" />
