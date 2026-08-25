@@ -96,8 +96,8 @@ function mapEstablishment(row: EstablishmentRow): Establishment {
     id: row.id,
     name: row.name,
     description: row.description,
-    logo_url: row.logo_url,
-    cover_url: row.cover_url,
+    logo_url: row.logo_url ?? '',
+    cover_url: row.cover_url ?? '',
     address: row.address,
     neighborhood: row.neighborhood,
     city_id: row.city_id,
@@ -114,7 +114,7 @@ function mapEstablishment(row: EstablishmentRow): Establishment {
     attributes: row.attributes,
     slug: nullToUndefined(row.slug),
     menu_pdf_url: nullToUndefined(row.menu_pdf_url),
-    menu_photo_urls: row.menu_photo_urls,
+    menu_photo_urls: row.menu_photo_urls ?? [],
   });
 }
 
@@ -124,7 +124,7 @@ function mapEvent(row: EventRow): Event {
     name: row.name,
     attraction: row.attraction,
     description: row.description,
-    banner_url: row.banner_url,
+    banner_url: row.banner_url ?? '',
     photo_urls: (row as { photo_urls?: string[] }).photo_urls ?? [],
     music_style_ids: row.music_style_ids,
     establishment_id: row.establishment_id,

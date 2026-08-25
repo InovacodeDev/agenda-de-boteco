@@ -91,8 +91,8 @@ export const establishmentSchema = z.object({
   rating_count: z.number().int().nonnegative(),
   attributes: z.array(establishmentAttributeSchema).default([]),
   slug: z.string().optional(),
-  menu_pdf_url: z.string().url().nullable().optional(),
-  menu_photo_urls: z.array(z.string().url()).default([]),
+  menu_pdf_url: z.string().nullable().optional(),
+  menu_photo_urls: z.array(z.string()).default([]),
 });
 
 /** Espelha `event_status_enum` do banco. 'draft' não aparece no feed público. */

@@ -68,7 +68,7 @@
     "tsconfig.json": "tsconfig.*.json, *-env.d.ts",
     "app.config.ts": "app.json",
     ".env": ".env.*",
-    "README.md": "AGENTS.md, CLAUDE.md, LICENSE, CHANGELOG.md",
+    "README.md": "*.md, LICENSE",
     "index.html": "favicon.ico"
   },
   // Pastas com filho único aparecem compactadas (ex.: src/lib) — menos níveis para navegar
