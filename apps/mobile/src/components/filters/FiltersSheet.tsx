@@ -41,6 +41,40 @@ const SORT_OPTIONS: Array<{ label: string; value: SortBy }> = [
 
 const MAX_PRICE_LIMIT = 100;
 
+/**
+ * Chip que abre um modal de busca, não um chip de seleção. Identidade âmbar
+ * (accent) + lupa porque `selected` verde aqui significaria "filtro aplicado",
+ * e o gesto é "abrir lista" — o contador entra no rótulo.
+ */
+function SearchChip({
+  label,
+  active,
+  onPress,
+}: {
+  label: string;
+  active: boolean;
+  onPress: () => void;
+}) {
+  return (
+    <Chip
+      label={label}
+      onPress={onPress}
+      icon={
+        <Icon
+          name="magnifying-glass"
+          size={14}
+          color={active ? colors.background : colors.accent}
+        />
+      }
+      className={cn(
+        'border-accent border',
+        active ? 'bg-accent' : 'bg-surface-elevated',
+      )}
+      textClassName={active ? 'text-accent-foreground' : 'text-accent'}
+    />
+  );
+}
+
 export interface FiltersSheetProps {
   visible: boolean;
   onClose: () => void;
@@ -287,13 +321,13 @@ export function FiltersSheet({ visible, onClose, showEventFilters = true }: Filt
                         onPress={() => toggleDraftCity(city.id)}
                       />
                     ))}
-                  <Chip
+                  <SearchChip
                     label={
                       draftCityIds.length > 0
                         ? `Buscar cidade (${draftCityIds.length})`
                         : 'Buscar cidade'
                     }
-                    selected={draftCityIds.length > 0}
+                    active={draftCityIds.length > 0}
                     onPress={() => setIsCitySearchOpen(true)}
                   />
                 </View>
@@ -342,13 +376,13 @@ export function FiltersSheet({ visible, onClose, showEventFilters = true }: Filt
                       onPress={() => toggleDraftAttribute(meta.id)}
                     />
                   ))}
-                  <Chip
+                  <SearchChip
                     label={
                       draftAttributeIds.length > 0
                         ? `Buscar diferencial (${draftAttributeIds.length})`
                         : 'Buscar diferencial'
                     }
-                    selected={draftAttributeIds.length > 0}
+                    active={draftAttributeIds.length > 0}
                     onPress={() => setIsAttributeSearchOpen(true)}
                   />
                 </View>

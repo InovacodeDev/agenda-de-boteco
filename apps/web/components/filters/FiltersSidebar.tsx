@@ -14,7 +14,7 @@ import {
   useFiltersStore,
   useMusicStylesQuery,
 } from '@agenda/core';
-import { useEffect, useState } from 'react';
+import { type ReactNode, useEffect, useState } from 'react';
 
 import { AttributeSearchModal } from '@/components/filters/AttributeSearchModal';
 import { CitySearchModal } from '@/components/filters/CitySearchModal';
@@ -22,7 +22,7 @@ import { DateRangeField } from '@/components/filters/DateRangeField';
 import { FilterSection } from '@/components/filters/FilterSection';
 import { FilterSlider } from '@/components/filters/FilterSlider';
 import { SwitchRow } from '@/components/filters/SwitchRow';
-import { InfoIcon, XIcon } from '@/components/ui/icons';
+import { InfoIcon, SearchIcon, XIcon } from '@/components/ui/icons';
 import { cn } from '@/lib/cn';
 
 const DATE_OPTIONS: Array<{ label: string; bucket: DateBucket }> = [
@@ -46,12 +46,17 @@ function Chip({
   selected,
   onClick,
   title,
+  className,
+  icon,
 }: {
   label: string;
   selected: boolean;
   onClick: () => void;
   /** Tooltip nativa — usada pelos chips de atributo para explicar o que filtram. */
   title?: string;
+  className?: string;
+  /** Glifo à esquerda do rótulo — usado pelos chips que abrem uma busca. */
+  icon?: ReactNode;
 }) {
   return (
     <button
@@ -60,12 +65,42 @@ function Chip({
       onClick={onClick}
       title={title}
       className={cn(
-        'h-9 shrink-0 whitespace-nowrap rounded-full px-4 text-[13px] font-[family-name:var(--font-body)] font-medium transition-colors',
+        'inline-flex h-9 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-4 text-[13px] font-[family-name:var(--font-body)] font-medium transition-colors',
         selected ? 'bg-primary text-primary-foreground' : 'bg-surface-elevated text-muted-foreground',
+        className,
       )}
     >
+      {icon}
       {label}
     </button>
+  );
+}
+
+/**
+ * Chip que abre um modal de busca, não um chip de seleção. Identidade âmbar
+ * (accent) + lupa porque `selected` verde aqui significaria "filtro aplicado",
+ * e o gesto é "abrir lista" — o contador entra no rótulo.
+ */
+function SearchChip({
+  label,
+  active,
+  onClick,
+}: {
+  label: string;
+  active: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <Chip
+      label={label}
+      selected={false}
+      onClick={onClick}
+      icon={<SearchIcon size={14} />}
+      className={cn(
+        'border border-accent',
+        active ? 'bg-accent text-accent-foreground' : 'bg-surface-elevated text-accent',
+      )}
+    />
   );
 }
 
@@ -257,13 +292,13 @@ export function FiltersSidebar({
                     onClick={() => toggleDraftCity(city.id)}
                   />
                 ))}
-              <Chip
+              <SearchChip
                 label={
                   draft.cityIds.length > 0
                     ? `Buscar cidade (${draft.cityIds.length})`
                     : 'Buscar cidade'
                 }
-                selected={draft.cityIds.length > 0}
+                active={draft.cityIds.length > 0}
                 onClick={() => setIsCitySearchOpen(true)}
               />
             </div>
@@ -310,13 +345,13 @@ export function FiltersSidebar({
                   onClick={() => toggleDraftAttribute(meta.id)}
                 />
               ))}
-              <Chip
+              <SearchChip
                 label={
                   draft.attributeIds.length > 0
                     ? `Buscar diferencial (${draft.attributeIds.length})`
                     : 'Buscar diferencial'
                 }
-                selected={draft.attributeIds.length > 0}
+                active={draft.attributeIds.length > 0}
                 onClick={() => setIsAttributeSearchOpen(true)}
               />
             </div>

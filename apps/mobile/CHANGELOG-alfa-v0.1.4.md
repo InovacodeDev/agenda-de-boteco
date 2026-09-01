@@ -1,4 +1,3 @@
-# Changelog 0.0.3 (alfa)
+# Changelog 0.1.4 (alfa)
 
-- Botão de alternância dos filtros ("Aberto agora", "Mostrar eventos passados") não fica mais colado na borda quando ligado
 - Botões "Buscar cidade" e "Buscar diferencial" nos filtros ganham cor de destaque e ícone de lupa, deixando claro que abrem uma lista de busca em vez de marcar um filtro
