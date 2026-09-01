@@ -54,6 +54,27 @@ export function configureAuthRedirect(fn: () => string): void {
   authRedirect = fn;
 }
 
+/**
+ * OAuth por redirect de browser. Usa o mesmo `authRedirect()` do magic-link,
+ * para que o app não tenha uma segunda fonte de verdade do destino de volta —
+ * era isso que fazia o web cair fora do seu basePath e perder a sessão.
+ * O mobile tem fluxo próprio (WebBrowser/Apple nativo) e não passa por aqui.
+ */
+export async function signInWithOAuth(provider: AuthProvider): Promise<void> {
+  const client = requireClient();
+  try {
+    const { error } = await client.auth.signInWithOAuth({
+      provider,
+      options: { redirectTo: authRedirect() },
+    });
+    if (error) {
+      throw error;
+    }
+  } catch (error) {
+    return handleServiceError(error, { method: 'auth.signInWithOAuth', args: { provider } });
+  }
+}
+
 export async function signInWithEmailOtp(email: string): Promise<void> {
   const client = requireClient();
   try {
