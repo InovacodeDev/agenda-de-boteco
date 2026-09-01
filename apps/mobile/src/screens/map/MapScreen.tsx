@@ -13,7 +13,7 @@ import { useActiveCity } from '@/hooks/useActiveCity';
 import { useUserLocation } from '@/hooks/useUserLocation';
 import { colors } from '@/theme/colors';
 import { ScrollView, Text, View } from '@/tw';
-import { haversineDistanceKm, type LatLng } from '@/utils/geo';
+import { haversineDistanceKm, type LatLng, resolveMapOrigin } from '@/utils/geo';
 
 import { EstablishmentCarousel } from './EstablishmentCarousel';
 
@@ -46,10 +46,11 @@ function MissingKeyFallback({ establishments }: { establishments: Establishment[
 }
 
 export function MapScreen() {
-  const { coords, request } = useUserLocation();
+  const { coords, status, request } = useUserLocation();
 
   const mapRef = useRef<MapView>(null);
   const carouselRef = useRef<FlashListRef<Establishment>>(null);
+  const hasCenteredRef = useRef(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
 
   useEffect(() => {
@@ -57,21 +58,36 @@ export function MapScreen() {
   }, [request]);
 
   const city = useActiveCity();
-  const centerLat = coords?.lat ?? city?.lat ?? 0;
-  const centerLng = coords?.lng ?? city?.lng ?? 0;
-  const center: LatLng = { lat: centerLat, lng: centerLng };
+  const origin = resolveMapOrigin(coords, status, city);
+
+  // `initialRegion` só é lido no primeiro render; cidade e GPS resolvem depois,
+  // então centraliza uma vez via ref — sem brigar com o pan seguinte do usuário.
+  useEffect(() => {
+    if (!origin || hasCenteredRef.current) {
+      return;
+    }
+    hasCenteredRef.current = true;
+    mapRef.current?.animateToRegion({ latitude: origin.lat, longitude: origin.lng, ...DELTA }, 300);
+  }, [origin]);
 
   const { data: cityEstablishments } = useEstablishmentsQuery(city?.id);
 
-  // bares da cidade ordenados por distância de onde o usuário está
+  const originLat = origin?.lat;
+  const originLng = origin?.lng;
+
+  // bares da cidade ordenados por distância da origem do mapa
   const establishments = useMemo(() => {
-    const reference: LatLng = { lat: centerLat, lng: centerLng };
-    return [...(cityEstablishments ?? [])].sort(
+    const list = [...(cityEstablishments ?? [])];
+    if (originLat === undefined || originLng === undefined) {
+      return list;
+    }
+    const reference: LatLng = { lat: originLat, lng: originLng };
+    return list.sort(
       (a, b) =>
         haversineDistanceKm(reference, { lat: a.lat, lng: a.lng }) -
         haversineDistanceKm(reference, { lat: b.lat, lng: b.lng }),
     );
-  }, [cityEstablishments, centerLat, centerLng]);
+  }, [cityEstablishments, originLat, originLng]);
 
   const focusEstablishment = (index: number) => {
     setSelectedIndex(index);
@@ -103,11 +119,9 @@ export function MapScreen() {
 
   const provider = Platform.OS === 'ios' ? PROVIDER_DEFAULT : PROVIDER_GOOGLE;
 
-  const initialRegion: Region = {
-    latitude: center.lat,
-    longitude: center.lng,
-    ...DELTA,
-  };
+  const initialRegion: Region | undefined = origin
+    ? { latitude: origin.lat, longitude: origin.lng, ...DELTA }
+    : undefined;
 
   return (
     <Screen header={<ScreenHeader title="Mapa" showLogo />}>
