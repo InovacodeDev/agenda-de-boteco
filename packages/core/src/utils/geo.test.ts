@@ -9,6 +9,7 @@ import {
   type LatLng,
   nearestCity,
   resolveCityFromLocation,
+  resolveMapOrigin,
   resolveNearbyOrigin,
 } from './geo';
 
@@ -109,6 +110,49 @@ describe('resolveNearbyOrigin', () => {
         lng: city.lng,
       });
     }
+  });
+});
+
+describe('resolveMapOrigin', () => {
+  const city: City = {
+    id: 'fln',
+    name: 'Florianópolis',
+    uf: 'SC',
+    lat: -27.5954,
+    lng: -48.548,
+  };
+  const cityCenter: LatLng = { lat: city.lat, lng: city.lng };
+  const nearby: LatLng = { lat: -27.591, lng: -48.523 };
+
+  it('retorna as coords quando o usuário está dentro do raio da cidade ativa', () => {
+    expect(resolveMapOrigin(nearby, 'granted', city)).toEqual(nearby);
+  });
+
+  it('cai para o centro da cidade quando o usuário está fora do raio', () => {
+    // Curitiba/PR — ~250 km de Florianópolis, muito além dos 40 km.
+    const faraway: LatLng = { lat: -25.4284, lng: -49.2733 };
+    expect(resolveMapOrigin(faraway, 'granted', city)).toEqual(cityCenter);
+  });
+
+  it('cai para o centro da cidade quando o status não é granted', () => {
+    const statuses: LocationStatus[] = ['idle', 'loading', 'denied'];
+    for (const status of statuses) {
+      expect(resolveMapOrigin(nearby, status, city)).toEqual(cityCenter);
+    }
+  });
+
+  it('cai para o centro da cidade quando não há coords', () => {
+    expect(resolveMapOrigin(null, 'granted', city)).toEqual(cityCenter);
+  });
+
+  it('retorna null quando a cidade ativa ainda não resolveu', () => {
+    expect(resolveMapOrigin(nearby, 'granted', undefined)).toBeNull();
+  });
+
+  it('usa as coords do usuário quando a cidade ativa é virtual (mesma posição)', () => {
+    const coords: LatLng = { lat: -3.119, lng: -60.0217 };
+    const virtual = buildVirtualCity(coords, { city: 'Manaus', uf: 'AM' });
+    expect(resolveMapOrigin(coords, 'granted', virtual)).toEqual(coords);
   });
 });
 

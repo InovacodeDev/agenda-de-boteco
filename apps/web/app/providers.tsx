@@ -15,6 +15,7 @@ import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client
 import { useEffect } from 'react';
 
 import { useAppSync } from '@/hooks/useAppSync';
+import { appBaseUrl } from '@/lib/basePath';
 import { webQueryStorage, webStorage } from '@/lib/storage';
 import { getSupabase } from '@/lib/supabase';
 
@@ -26,7 +27,7 @@ function bootstrap() {
   bootstrapped = true;
   configureAppStorage(webStorage);
   configureSupabase(getSupabase);
-  configureAuthRedirect(() => (typeof window !== 'undefined' ? window.location.origin : ''));
+  configureAuthRedirect(appBaseUrl);
   configureQueryErrorHandler((error) => {
     // Web: por ora console.error; um toast pode ser plugado depois.
     console.error('[query]', error);

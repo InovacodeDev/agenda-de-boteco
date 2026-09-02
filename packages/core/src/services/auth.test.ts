@@ -97,6 +97,32 @@ describe('signInWithEmailOtp', () => {
   });
 });
 
+describe('signInWithOAuth', () => {
+  it('lança AuthUnavailableError sem Supabase configurado', async () => {
+    mockGetSupabase.mockReturnValue(null);
+    await expect(signInWithOAuth('google')).rejects.toBeInstanceOf(AuthUnavailableError);
+  });
+
+  it('usa o redirect configurado, e não a origin nua', async () => {
+    configureAuthRedirect(() => 'https://exemplo.com/app');
+    const client = makeClient();
+    mockGetSupabase.mockReturnValue(client);
+    await signInWithOAuth('google');
+    expect(client.auth.signInWithOAuth).toHaveBeenCalledWith({
+      provider: 'google',
+      options: { redirectTo: 'https://exemplo.com/app' },
+    });
+  });
+
+  it('propaga erro do Supabase', async () => {
+    const client = makeClient({
+      signInWithOAuth: jest.fn().mockResolvedValue({ data: null, error: new Error('boom') }),
+    });
+    mockGetSupabase.mockReturnValue(client);
+    await expect(signInWithOAuth('apple')).rejects.toThrow('boom');
+  });
+});
+
 describe('signOut', () => {
   it('é no-op sem Supabase configurado', async () => {
     mockGetSupabase.mockReturnValue(null);

@@ -1,8 +1,14 @@
 'use client';
 
-import { FEATURES, useActiveCity, useEstablishmentsQuery } from '@agenda/core';
+import {
+  FEATURES,
+  type LatLng,
+  resolveMapOrigin,
+  useActiveCity,
+  useEstablishmentsQuery,
+} from '@agenda/core';
 import dynamic from 'next/dynamic';
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { EstablishmentCard } from '@/components/establishment/EstablishmentCard';
 import { UnderConstruction } from '@/components/feedback/UnderConstruction';
@@ -18,14 +24,29 @@ const FALLBACK_CENTER: [number, number] = [-27.5954, -48.548];
 
 function MapContent() {
   const city = useActiveCity();
+  const [userCoords, setUserCoords] = useState<LatLng | null>(null);
   const { data: establishments } = useEstablishmentsQuery(city?.id);
+
+  useEffect(() => {
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        queueMicrotask(() => {
+          setUserCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        });
+      },
+      () => {},
+      { enableHighAccuracy: true },
+    );
+  }, []);
 
   const cityEstablishments = useMemo(
     () => (city ? (establishments ?? []).filter((e) => e.city_id === city.id) : (establishments ?? [])),
     [establishments, city],
   );
 
-  const center: [number, number] = city ? [city.lat, city.lng] : FALLBACK_CENTER;
+  const origin = resolveMapOrigin(userCoords, userCoords ? 'granted' : 'idle', city);
+  const center: [number, number] = origin ? [origin.lat, origin.lng] : FALLBACK_CENTER;
 
   return (
     <section className="flex flex-col gap-4 pt-2">

@@ -60,6 +60,20 @@
       "problemMatcher": ["$tsc"]
     },
     {
+      "label": "supabase: start",
+      "detail": "Start the local Supabase stack (Docker) — API :54321, DB :54322, Studio :54323",
+      "type": "shell",
+      "command": "supabase start",
+      "problemMatcher": []
+    },
+    {
+      "label": "supabase: stop",
+      "detail": "Stop the local Supabase stack",
+      "type": "shell",
+      "command": "supabase stop",
+      "problemMatcher": []
+    },
+    {
       "label": "lint",
       "detail": "turbo lint (ESLint)",
       "type": "shell",

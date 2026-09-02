@@ -14,7 +14,7 @@ import {
   useFiltersStore,
   useMusicStylesQuery,
 } from '@agenda/core';
-import { useEffect, useState } from 'react';
+import { type ReactNode, useEffect, useState } from 'react';
 
 import { AttributeSearchModal } from '@/components/filters/AttributeSearchModal';
 import { CitySearchModal } from '@/components/filters/CitySearchModal';
@@ -22,7 +22,7 @@ import { DateRangeField } from '@/components/filters/DateRangeField';
 import { FilterSection } from '@/components/filters/FilterSection';
 import { FilterSlider } from '@/components/filters/FilterSlider';
 import { SwitchRow } from '@/components/filters/SwitchRow';
-import { InfoIcon, XIcon } from '@/components/ui/icons';
+import { InfoIcon, SearchIcon, XIcon } from '@/components/ui/icons';
 import { cn } from '@/lib/cn';
 
 const DATE_OPTIONS: Array<{ label: string; bucket: DateBucket }> = [
@@ -46,12 +46,17 @@ function Chip({
   selected,
   onClick,
   title,
+  className,
+  icon,
 }: {
   label: string;
   selected: boolean;
   onClick: () => void;
   /** Tooltip nativa — usada pelos chips de atributo para explicar o que filtram. */
   title?: string;
+  className?: string;
+  /** Glifo à esquerda do rótulo — usado pelos chips que abrem uma busca. */
+  icon?: ReactNode;
 }) {
   return (
     <button
@@ -60,12 +65,42 @@ function Chip({
       onClick={onClick}
       title={title}
       className={cn(
-        'h-9 shrink-0 whitespace-nowrap rounded-full px-4 text-[13px] font-[family-name:var(--font-body)] font-medium transition-colors',
+        'inline-flex h-9 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-4 text-[13px] font-[family-name:var(--font-body)] font-medium transition-colors',
         selected ? 'bg-primary text-primary-foreground' : 'bg-surface-elevated text-muted-foreground',
+        className,
       )}
     >
+      {icon}
       {label}
     </button>
+  );
+}
+
+/**
+ * Chip que abre um modal de busca, não um chip de seleção. Identidade âmbar
+ * (accent) + lupa porque `selected` verde aqui significaria "filtro aplicado",
+ * e o gesto é "abrir lista" — o contador entra no rótulo.
+ */
+function SearchChip({
+  label,
+  active,
+  onClick,
+}: {
+  label: string;
+  active: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <Chip
+      label={label}
+      selected={false}
+      onClick={onClick}
+      icon={<SearchIcon size={14} />}
+      className={cn(
+        'border border-accent',
+        active ? 'bg-accent text-accent-foreground' : 'bg-surface-elevated text-accent',
+      )}
+    />
   );
 }
 
@@ -167,14 +202,17 @@ export function FiltersSidebar({
       <div
         onClick={onClose}
         className={cn(
-          'fixed inset-0 bg-background/60 backdrop-blur-xs z-50 transition-opacity duration-300',
+          'fixed inset-0 bg-background/60 backdrop-blur-xs z-[60] transition-opacity duration-300',
           isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
         )}
       />
 
+      {/* z-[60]: a BottomNav é z-50 e vem depois no DOM (o painel é montado dentro
+          do <main>), então empate de z-index a deixava por cima dos botões de ação.
+          Mesmo nível dos modais de busca, que são irmãos posteriores e seguem acima. */}
       <aside
         className={cn(
-          'fixed top-0 right-0 bottom-0 z-50 w-full sm:w-[40vw] sm:min-w-[360px] sm:max-w-[560px] bg-card border-l border-border h-full flex flex-col shadow-2xl transition-transform duration-300 ease-out',
+          'fixed top-0 right-0 bottom-0 z-[60] w-full sm:w-[40vw] sm:min-w-[360px] sm:max-w-[560px] bg-card border-l border-border h-full flex flex-col shadow-2xl transition-transform duration-300 ease-out',
           isOpen ? 'translate-x-0' : 'translate-x-full'
         )}
       >
@@ -257,13 +295,13 @@ export function FiltersSidebar({
                     onClick={() => toggleDraftCity(city.id)}
                   />
                 ))}
-              <Chip
+              <SearchChip
                 label={
                   draft.cityIds.length > 0
                     ? `Buscar cidade (${draft.cityIds.length})`
                     : 'Buscar cidade'
                 }
-                selected={draft.cityIds.length > 0}
+                active={draft.cityIds.length > 0}
                 onClick={() => setIsCitySearchOpen(true)}
               />
             </div>
@@ -310,13 +348,13 @@ export function FiltersSidebar({
                   onClick={() => toggleDraftAttribute(meta.id)}
                 />
               ))}
-              <Chip
+              <SearchChip
                 label={
                   draft.attributeIds.length > 0
                     ? `Buscar diferencial (${draft.attributeIds.length})`
                     : 'Buscar diferencial'
                 }
-                selected={draft.attributeIds.length > 0}
+                active={draft.attributeIds.length > 0}
                 onClick={() => setIsAttributeSearchOpen(true)}
               />
             </div>
@@ -366,7 +404,11 @@ export function FiltersSidebar({
           ) : null}
         </div>
 
-        <div className="border-t border-border px-6 py-4 bg-card flex gap-3">
+        {/* O painel cobre a BottomNav, então encosta no home indicator do iPhone. */}
+        <div
+          className="border-t border-border px-6 py-4 bg-card flex gap-3"
+          style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom))' }}
+        >
           <button
             type="button"
             onClick={() => setDraft(DEFAULT_EVENT_FILTERS)}
