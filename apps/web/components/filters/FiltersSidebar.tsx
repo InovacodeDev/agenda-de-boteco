@@ -202,14 +202,17 @@ export function FiltersSidebar({
       <div
         onClick={onClose}
         className={cn(
-          'fixed inset-0 bg-background/60 backdrop-blur-xs z-50 transition-opacity duration-300',
+          'fixed inset-0 bg-background/60 backdrop-blur-xs z-[60] transition-opacity duration-300',
           isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
         )}
       />
 
+      {/* z-[60]: a BottomNav é z-50 e vem depois no DOM (o painel é montado dentro
+          do <main>), então empate de z-index a deixava por cima dos botões de ação.
+          Mesmo nível dos modais de busca, que são irmãos posteriores e seguem acima. */}
       <aside
         className={cn(
-          'fixed top-0 right-0 bottom-0 z-50 w-full sm:w-[40vw] sm:min-w-[360px] sm:max-w-[560px] bg-card border-l border-border h-full flex flex-col shadow-2xl transition-transform duration-300 ease-out',
+          'fixed top-0 right-0 bottom-0 z-[60] w-full sm:w-[40vw] sm:min-w-[360px] sm:max-w-[560px] bg-card border-l border-border h-full flex flex-col shadow-2xl transition-transform duration-300 ease-out',
           isOpen ? 'translate-x-0' : 'translate-x-full'
         )}
       >
@@ -401,7 +404,11 @@ export function FiltersSidebar({
           ) : null}
         </div>
 
-        <div className="border-t border-border px-6 py-4 bg-card flex gap-3">
+        {/* O painel cobre a BottomNav, então encosta no home indicator do iPhone. */}
+        <div
+          className="border-t border-border px-6 py-4 bg-card flex gap-3"
+          style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom))' }}
+        >
           <button
             type="button"
             onClick={() => setDraft(DEFAULT_EVENT_FILTERS)}
