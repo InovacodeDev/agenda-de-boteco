@@ -37,6 +37,7 @@ export * from './hooks/useActiveCity';
 export * from './hooks/useConnectivity';
 export * from './hooks/useGuardedPress';
 export * from './hooks/useNearbyEstablishments';
+export * from './hooks/useRecordView';
 export * from './hooks/useStatusLight';
 export * from './lib/queryClient';
 export * from './lib/queryPersister';
