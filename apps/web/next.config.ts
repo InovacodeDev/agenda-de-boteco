@@ -19,6 +19,8 @@ const config: NextConfig = {
       { source: '/favoritos', destination: '/favorites', permanent: true },
       { source: '/cidade', destination: '/city', permanent: true },
       { source: '/perfil', destination: '/profile', permanent: true },
+      { source: '/privacidade', destination: '/privacy', permanent: true },
+      { source: '/excluir-conta', destination: '/delete-account', permanent: true },
     ];
   },
 };

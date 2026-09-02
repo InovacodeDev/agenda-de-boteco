@@ -13,7 +13,9 @@
  *     compartilhado.
  *  4. Paths que JÁ são rotas internas conhecidas → INTACTOS. Inclui o próprio
  *     deep link de scheme (`agenda-de-boteco://event/e1` chega aqui como
- *     `/event/e1`, que já é rota válida e não pode virar `/`).
+ *     `/event/e1`, que já é rota válida e não pode virar `/`). Inclui também
+ *     `/privacy`/`/delete-account` (novos) e `/privacidade`/`/excluir-conta`
+ *     (antigos, alias permanente — mesma exigência de loja das rotas acima).
  *  5. Qualquer outro path desconhecido → `/` (home).
  *
  * Parsing simples e seguro por split('/') — sem dependências de runtime.
@@ -37,6 +39,10 @@ const INTERNAL_EXACT_ROUTES = [
   '/notifications',
   '/map',
   '/profile',
+  '/privacy',
+  '/delete-account',
+  '/privacidade',
+  '/excluir-conta',
 ] as const;
 
 function isAuthUrl(path: string): boolean {

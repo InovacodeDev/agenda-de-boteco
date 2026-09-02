@@ -21,7 +21,7 @@ function PrivacyLink({ className }: { className?: string }) {
   const router = useRouter();
   return (
     <Pressable
-      onPress={() => router.push('/privacidade')}
+      onPress={() => router.push('/privacy')}
       className={`active:bg-surface/50 flex-row items-center justify-between px-4 py-4 ${className ?? ''}`}
     >
       <View className="flex-row items-center gap-3">

@@ -151,8 +151,8 @@ export default function RootLayout() {
             <Stack.Screen name="city" />
             <Stack.Screen name="login" />
             {/* Rotas públicas: acessíveis sem onboarding (URLs exigidas pelas lojas + crawler). */}
-            <Stack.Screen name="privacidade" />
-            <Stack.Screen name="excluir-conta" />
+            <Stack.Screen name="privacy" />
+            <Stack.Screen name="delete-account" />
           </Stack>
         </ErrorBoundary>
       </SafeAreaProvider>

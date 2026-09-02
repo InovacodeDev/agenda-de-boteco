@@ -25,7 +25,8 @@ import { getFriendlyErrorMessage } from '@/utils/errors';
  * fila e apaga as contas (ver supabase/migrations/...account_deletion_queue).
  *
  * Servida pelo target web (web.output: 'static') em
- * https://agenda-de-boteco.expo.app/excluir-conta e também renderiza no app.
+ * https://agenda-de-boteco.expo.app/delete-account e também renderiza no app
+ * (`/excluir-conta` continua funcionando como alias — ver deepLinks.ts).
  */
 
 const APP_NAME = 'Agenda de Boteco';

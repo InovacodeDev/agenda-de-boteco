@@ -9,7 +9,8 @@ import { ScrollView, Text, View } from '@/tw';
  * Esta rota existe para satisfazer o requisito de URL HTTPS de política de
  * privacidade exigido por Google Play e App Store (ver docs/plano-de-acao-fase-5.md
  * tarefa 5.1.5). É servida pelo target web (web.output: 'static') em
- * https://agenda-de-boteco.expo.app/privacidade e renderiza no app também.
+ * https://agenda-de-boteco.expo.app/privacy e renderiza no app também
+ * (`/privacidade` continua funcionando como alias — ver deepLinks.ts).
  *
  * O conteúdo deve permanecer consistente com o Data Safety (Google) e o App
  * Privacy (Apple): localização precisa para funcionalidade, e-mail/nome via login,

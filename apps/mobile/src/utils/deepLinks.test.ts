@@ -80,6 +80,16 @@ describe('mapWebPathToRoute', () => {
         expect(mapWebPathToRoute(route)).toBe(route);
       }
     });
+
+    it('preserva /privacy e /delete-account (rotas novas)', () => {
+      expect(mapWebPathToRoute('/privacy')).toBe('/privacy');
+      expect(mapWebPathToRoute('/delete-account')).toBe('/delete-account');
+    });
+
+    it('preserva /privacidade e /excluir-conta (alias das rotas antigas)', () => {
+      expect(mapWebPathToRoute('/privacidade')).toBe('/privacidade');
+      expect(mapWebPathToRoute('/excluir-conta')).toBe('/excluir-conta');
+    });
   });
 
   describe('URLs de auth passam intactas', () => {

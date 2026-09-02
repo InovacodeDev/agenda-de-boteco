@@ -146,7 +146,7 @@ function SignedInProfile() {
           label="Mudar cidade"
         />
         <MenuItem
-          href="/privacidade"
+          href="/privacy"
           icon={<ShieldIcon size={18} className="text-primary" />}
           label="Privacidade"
         />
@@ -167,7 +167,7 @@ function SignedInProfile() {
         </button>
 
         <Link
-          href="/excluir-conta"
+          href="/delete-account"
           className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-transparent transition-colors hover:bg-card/50"
         >
           <TrashIcon size={16} className="text-muted-foreground" />
