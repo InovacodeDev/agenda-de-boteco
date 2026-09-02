@@ -18,8 +18,12 @@ import { useOwnedEvents } from './use-owned-events';
 export const metricsKeys = {
   owned: (establishmentId: string, sinceDays: number) =>
     ['panel', 'metrics', 'owned', establishmentId, sinceDays] as const,
+  // Ordenado antes de entrar na key: reagendar um evento reordena o array de
+  // listOwnedEvents sem mudar o conjunto, e um array-spread sensível à ordem
+  // invalidaria o cache à toa (TanStack Query só normaliza ordem de chave em
+  // objeto plano, não em array).
   favoritesCount: (eventIds: string[]) =>
-    ['panel', 'metrics', 'favorites-count', ...eventIds] as const,
+    ['panel', 'metrics', 'favorites-count', ...[...eventIds].sort()] as const,
 };
 
 /** Linhas cruas de métrica do bar do dono, no período pedido. */
@@ -58,6 +62,13 @@ export interface DayBucket {
   clicks: number;
 }
 
+const ZERO_CLICKS_BY_KIND: Record<MetricKind, number> = {
+  view: 0,
+  click_map: 0,
+  click_contact: 0,
+  click_share: 0,
+};
+
 /** Agrega linhas cruas em: totais por evento, série diária, totais do bar. */
 export function aggregateMetrics(
   rows: MetricEvent[],
@@ -71,10 +82,7 @@ export function aggregateMetrics(
   const byDayMap = new Map<string, DayBucket>();
   const totals = {
     views: 0,
-    clicksByKind: { view: 0, click_map: 0, click_contact: 0, click_share: 0 } as Record<
-      MetricKind,
-      number
-    >,
+    clicksByKind: { ...ZERO_CLICKS_BY_KIND },
     favorites: 0,
   };
 
@@ -94,7 +102,7 @@ export function aggregateMetrics(
       const eventSummary = byEventMap.get(row.eventId) ?? {
         eventId: row.eventId,
         views: 0,
-        clicksByKind: { view: 0, click_map: 0, click_contact: 0, click_share: 0 },
+        clicksByKind: { ...ZERO_CLICKS_BY_KIND },
         favorites: favoritesByEvent[row.eventId] ?? 0,
       };
       if (row.kind === 'view') {
