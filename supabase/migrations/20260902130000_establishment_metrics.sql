@@ -53,7 +53,10 @@ SECURITY DEFINER
 SET search_path = public
 AS $fn$
 BEGIN
-  IF p_kind NOT IN ('view', 'click_map', 'click_contact', 'click_share') THEN
+  -- p_kind IS NULL explícito: NULL NOT IN (...) avalia NULL (não TRUE), então um
+  -- caller passando kind=NULL sem essa checagem cairia direto no NOT NULL da
+  -- coluna em vez da mensagem amigável abaixo.
+  IF p_kind IS NULL OR p_kind NOT IN ('view', 'click_map', 'click_contact', 'click_share') THEN
     RAISE EXCEPTION 'Tipo de métrica inválido' USING ERRCODE = '22023';
   END IF;
 
