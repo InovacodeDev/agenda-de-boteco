@@ -113,6 +113,32 @@ export function buildVirtualCity(coords: LatLng, geocode: ReverseGeocode): City 
 export const CATALOG_CITY_RADIUS_KM = 40;
 
 /**
+ * Origem do mapa: a localização do usuário só vale quando ele está dentro do
+ * raio da cidade ativa — quem escolheu outra cidade quer ver aquela cidade, não
+ * onde está. Sem cidade resolvida devolve `null` para o chamador aplicar o
+ * próprio fallback (nunca 0,0). Para cidade virtual as coords da city já são as
+ * do usuário, então a distância é ~0 e a regra converge naturalmente.
+ */
+export function resolveMapOrigin(
+  coords: LatLng | null,
+  status: LocationStatus,
+  city: City | undefined,
+): LatLng | null {
+  if (!city) {
+    return null;
+  }
+  const cityCenter: LatLng = { lat: city.lat, lng: city.lng };
+  if (
+    status === 'granted' &&
+    coords !== null &&
+    haversineDistanceKm(coords, cityCenter) <= CATALOG_CITY_RADIUS_KM
+  ) {
+    return coords;
+  }
+  return cityCenter;
+}
+
+/**
  * Decide qual cidade representar a partir das coordenadas do usuário:
  * - a cidade do catálogo mais próxima, se estiver dentro de CATALOG_CITY_RADIUS_KM;
  * - senão, uma cidade virtual (geocode) com as coords reais.
