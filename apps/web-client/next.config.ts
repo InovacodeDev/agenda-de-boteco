@@ -16,6 +16,10 @@ const config: NextConfig = {
       { source: '/artistas', destination: '/artists', permanent: true },
       { source: '/configuracoes', destination: '/settings', permanent: true },
       { source: '/nova-senha', destination: '/new-password', permanent: true },
+      { source: '/eventos', destination: '/events', permanent: true },
+      { source: '/eventos/novo', destination: '/events/new', permanent: true },
+      { source: '/eventos/:id', destination: '/events/:id', permanent: true },
+      { source: '/perfil', destination: '/profile', permanent: true },
     ];
   },
 };

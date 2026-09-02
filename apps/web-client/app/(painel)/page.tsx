@@ -21,14 +21,14 @@ const SHORTCUTS: {
   disabled?: boolean;
 }[] = [
   {
-    href: '/eventos',
+    href: '/events',
     title: 'Eventos',
     description: 'Crie e gerencie suas agendas',
     cta: 'Gerenciar eventos',
     icon: CalendarBlankIcon,
   },
   {
-    href: '/perfil',
+    href: '/profile',
     title: 'Perfil do bar',
     description: 'Edite informações e mídia',
     cta: 'Editar perfil',
@@ -57,9 +57,9 @@ export default function DashboardPage() {
         <p className="mt-2 max-w-xl text-[16px] leading-relaxed opacity-90">
           Seu painel está pronto. Cadastre o primeiro evento e apareça no feed dos amantes da noite.
         </p>
-        {/* ponytail: aponta para a listagem até a Fase 3 criar /eventos/novo. */}
+        {/* ponytail: aponta para a listagem até a Fase 3 criar /events/new. */}
         <Link
-          href="/eventos"
+          href="/events"
           className="bg-background text-foreground mt-5 inline-flex items-center justify-center gap-2 rounded-[14px] px-4 py-2 text-sm font-medium transition-opacity hover:opacity-90"
         >
           <PlusIcon size={14} weight="bold" />

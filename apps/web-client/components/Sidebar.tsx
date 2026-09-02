@@ -20,9 +20,9 @@ import logo from '@/public/logo.png';
 // Ordem confirmada na spec (seção 10).
 const NAV: { href: string; label: string; icon: Icon }[] = [
   { href: '/', label: 'Dashboard', icon: SquaresFourIcon },
-  { href: '/eventos', label: 'Eventos', icon: CalendarBlankIcon },
+  { href: '/events', label: 'Eventos', icon: CalendarBlankIcon },
   { href: '/artists', label: 'Artistas', icon: MicrophoneStageIcon },
-  { href: '/perfil', label: 'Perfil', icon: StorefrontIcon },
+  { href: '/profile', label: 'Perfil', icon: StorefrontIcon },
   { href: '/metrics', label: 'Métricas', icon: ChartBarIcon },
   { href: '/reviews', label: 'Avaliações', icon: StarIcon },
   { href: '/settings', label: 'Configurações', icon: GearIcon },
@@ -72,7 +72,7 @@ export function Sidebar() {
       </nav>
 
       <Link
-        href="/eventos/novo"
+        href="/events/new"
         className="bg-primary text-primary-foreground shadow-neon mt-4 inline-flex shrink-0 items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-medium transition-opacity hover:opacity-90"
       >
         <PlusIcon size={16} weight="bold" />

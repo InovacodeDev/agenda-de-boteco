@@ -61,7 +61,7 @@ export default function EventosPage() {
             Gerencie a programação do seu bar.
           </p>
         </div>
-        <Link href="/eventos/novo" className={NEW_EVENT_BUTTON}>
+        <Link href="/events/new" className={NEW_EVENT_BUTTON}>
           <PlusIcon size={16} weight="bold" aria-hidden />
           Novo evento
         </Link>
@@ -82,7 +82,7 @@ export default function EventosPage() {
           icon={<CalendarBlankIcon size={32} weight="regular" aria-hidden />}
           message="Nenhum evento por aqui ainda. Cadastre o primeiro e apareça no feed."
         >
-          <Link href="/eventos/novo" className={NEW_EVENT_BUTTON}>
+          <Link href="/events/new" className={NEW_EVENT_BUTTON}>
             <PlusIcon size={16} weight="bold" aria-hidden />
             Criar primeiro evento
           </Link>

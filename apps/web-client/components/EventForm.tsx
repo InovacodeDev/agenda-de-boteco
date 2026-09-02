@@ -211,7 +211,7 @@ export function EventForm({ event }: { event?: Event }) {
       }
       // Prefixo 'events' cobre owned, detail e byEstablishment de uma vez.
       await queryClient.invalidateQueries({ queryKey: catalogKeys.events.root });
-      router.push('/eventos');
+      router.push('/events');
     } catch (error: unknown) {
       setErrorMessage(getFriendlyErrorMessage(error));
       setBusy(null);
@@ -227,7 +227,7 @@ export function EventForm({ event }: { event?: Event }) {
         <div className="flex items-center gap-3">
           <button
             type="button"
-            onClick={() => router.push('/eventos')}
+            onClick={() => router.push('/events')}
             title="Voltar para os eventos"
             aria-label="Voltar para os eventos"
             className="text-muted-foreground hover:text-foreground -ml-1 shrink-0 transition-colors"
