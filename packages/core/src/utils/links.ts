@@ -51,7 +51,7 @@ function normalizeBaseUrl(baseUrl: string): string {
 /**
  * Monta a URL de compartilhamento de um evento.
  * - Sem `baseUrl` → deep link nativo `agenda-de-boteco://event/{slugOrId}`.
- * - Com `baseUrl` → URL https pública `{baseUrl}/eventos/{citySlug}/{slug}`
+ * - Com `baseUrl` → URL https pública `{baseUrl}/events/{citySlug}/{slug}`
  *   (o segmento `citySlug` é omitido quando ausente).
  * Os segmentos de path são URL-encoded.
  */
@@ -64,13 +64,13 @@ export function buildEventShareUrl(target: ShareTarget, baseUrl?: string): strin
   const citySegment = target.citySlug
     ? `${encodeURIComponent(target.citySlug)}/`
     : '';
-  return `${base}/eventos/${citySegment}${slug}`;
+  return `${base}/events/${citySegment}${slug}`;
 }
 
 /**
  * Monta a URL de compartilhamento de um estabelecimento.
  * - Sem `baseUrl` → deep link nativo `agenda-de-boteco://establishment/{slugOrId}`.
- * - Com `baseUrl` → URL https pública `{baseUrl}/bares/{citySlug}/{slug}`
+ * - Com `baseUrl` → URL https pública `{baseUrl}/establishments/{citySlug}/{slug}`
  *   (o segmento `citySlug` é omitido quando ausente).
  * Os segmentos de path são URL-encoded.
  */
@@ -86,5 +86,5 @@ export function buildEstablishmentShareUrl(
   const citySegment = target.citySlug
     ? `${encodeURIComponent(target.citySlug)}/`
     : '';
-  return `${base}/bares/${citySegment}${slug}`;
+  return `${base}/establishments/${citySegment}${slug}`;
 }

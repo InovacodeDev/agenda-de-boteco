@@ -4,8 +4,13 @@
  * Tabela de roteamento (ordem de avaliação):
  *  1. URLs de auth (contêm `access_token`/`refresh_token`/`code`) → INTACTAS.
  *     O fluxo de auth depende de receber a URL original (tokens em query/hash).
- *  2. `/eventos/{cidade}/{slug}` → `/event/{slug}`   (reescrita web → app).
- *  3. `/bares/{cidade}/{slug}`   → `/establishment/{slug}` (reescrita web → app).
+ *  2. `/events/{cidade}/{slug}` (novo) ou `/eventos/{cidade}/{slug}` (antigo,
+ *     alias permanente) → `/event/{slug}` (reescrita web → app).
+ *  3. `/establishments/{cidade}/{slug}` (novo) ou `/bares/{cidade}/{slug}`
+ *     (antigo, alias permanente) → `/establishment/{slug}` (reescrita web → app).
+ *     Sem `redirects()` no Expo Router, o path antigo precisa continuar
+ *     reconhecido para sempre — é a única forma de não quebrar link já
+ *     compartilhado.
  *  4. Paths que JÁ são rotas internas conhecidas → INTACTOS. Inclui o próprio
  *     deep link de scheme (`agenda-de-boteco://event/e1` chega aqui como
  *     `/event/e1`, que já é rota válida e não pode virar `/`).
@@ -74,10 +79,10 @@ export function mapWebPathToRoute(path: string): string {
   if (segments.length >= 2) {
     const [first, , third] = segments;
     const slug = third ?? segments[1];
-    if (first === 'eventos') {
+    if (first === 'events' || first === 'eventos') {
       return `/event/${slug}`;
     }
-    if (first === 'bares') {
+    if (first === 'establishments' || first === 'bares') {
       return `/establishment/${slug}`;
     }
   }
