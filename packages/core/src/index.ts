@@ -63,6 +63,7 @@ export {
 export * from './services/connectivity';
 export * from './services/establishment-owner';
 export * from './services/favorites';
+export * from './services/metrics';
 export * from './services/moderation';
 export * from './services/musician-leads';
 export * from './services/owned-events';
