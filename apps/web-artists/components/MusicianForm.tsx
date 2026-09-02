@@ -211,7 +211,7 @@ export function MusicianForm() {
             return (
               <label
                 key={style.id}
-                className={`flex cursor-pointer items-center gap-1.5 rounded-full border px-3 py-1.5 text-[13px] transition-colors focus-within:ring-2 focus-within:ring-primary ${
+                className={`relative flex cursor-pointer items-center gap-1.5 rounded-full border px-3 py-1.5 text-[13px] transition-colors focus-within:ring-2 focus-within:ring-primary ${
                   selected
                     ? 'border-primary bg-primary/10 text-primary'
                     : 'border-border bg-surface-elevated text-muted-foreground hover:text-foreground'

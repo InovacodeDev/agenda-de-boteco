@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@agenda/core": "workspace:*",
+    "@agenda/shared-ui": "workspace:*",
     "@vercel/analytics": "^2.0.1",
     "next": "^15.1.0",
     "react": "19.2.3",

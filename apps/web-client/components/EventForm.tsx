@@ -15,6 +15,15 @@ import {
   useMusicStylesQuery,
 } from '@agenda/core';
 import {
+  Button,
+  DatePicker,
+  Field,
+  Select,
+  TextArea,
+  TextInput,
+  TimePicker,
+} from '@agenda/shared-ui';
+import {
   ArrowLeftIcon,
   ArrowsClockwiseIcon,
   FloppyDiskIcon,
@@ -24,12 +33,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-import { Button } from '@/components/ui/Button';
-import { Field } from '@/components/ui/Field';
 import { ImageDrop } from '@/components/ui/ImageDrop';
-import { Select } from '@/components/ui/Select';
-import { TextArea } from '@/components/ui/TextArea';
-import { TextInput } from '@/components/ui/TextInput';
 import { useOwnedEstablishmentId } from '@/hooks/use-owned-establishment';
 
 /**
@@ -46,9 +50,9 @@ const NO_STYLE = '';
 interface EventDraft {
   bannerUrl: string;
   name: string;
-  /** 'YYYY-MM-DD' — valor cru do <input type="date">. */
+  /** 'YYYY-MM-DD', mesmo formato de <input type="date">. */
   date: string;
-  /** 'HH:MM' — valor cru do <input type="time">; vazio = 00:00. */
+  /** 'HH:MM', mesmo formato de <input type="time">; vazio = 00:00. */
   time: string;
   description: string;
   attraction: string;
@@ -269,19 +273,11 @@ export function EventForm({ event }: { event?: Event }) {
 
         <div className="grid grid-cols-2 gap-6">
           <Field label="Data *">
-            <TextInput
-              type="date"
-              value={draft.date}
-              onChange={(e) => set('date', e.target.value)}
-            />
+            <DatePicker value={draft.date} onValueChange={(v) => set('date', v)} />
           </Field>
 
           <Field label="Horário">
-            <TextInput
-              type="time"
-              value={draft.time}
-              onChange={(e) => set('time', e.target.value)}
-            />
+            <TimePicker value={draft.time} onValueChange={(v) => set('time', v)} />
           </Field>
         </div>
 
@@ -306,13 +302,14 @@ export function EventForm({ event }: { event?: Event }) {
           <Field label="Estilo musical">
             <Select
               value={draft.musicStyleId}
-              onChange={(e) => set('musicStyleId', e.target.value)}
+              className="pr-3"
+              onValueChange={(v) => set('musicStyleId', v)}
             >
-              <option value={NO_STYLE}>Selecione</option>
+              <Select.Option value={NO_STYLE}>Selecione</Select.Option>
               {musicStyles.map((style) => (
-                <option key={style.id} value={style.id}>
+                <Select.Option key={style.id} value={style.id}>
                   {style.emoji} {style.name}
-                </option>
+                </Select.Option>
               ))}
             </Select>
           </Field>
@@ -367,8 +364,11 @@ export function EventForm({ event }: { event?: Event }) {
           <h2 className="font-heading text-foreground mb-5 text-lg font-bold">Repetição</h2>
 
           {/* Switch em vez de checkbox nativo: o controle do sistema ignora os
-              tokens do tema e ficava claro demais no painel escuro. */}
-          <label className="flex cursor-pointer items-start justify-between gap-6">
+              tokens do tema e ficava claro demais no painel escuro. relative:
+              contém o input sr-only (position: absolute) — sem ancestral
+              posicionado ele escapa pro <html> e infla o scrollHeight do
+              documento, criando uma barra de rolagem fantasma na página inteira. */}
+          <label className="relative flex cursor-pointer items-start justify-between gap-6">
             <span className="flex flex-col gap-1">
               <span className="text-foreground text-sm font-medium">Repetir este evento</span>
               <span className="text-muted-foreground text-[13px]">
@@ -393,15 +393,15 @@ export function EventForm({ event }: { event?: Event }) {
                 <Field label="Frequência">
                   <Select
                     value={recurrence.frequency}
-                    onChange={(e) =>
+                    onValueChange={(v) =>
                       setRecurrence((current) => ({
                         ...current,
-                        frequency: e.target.value === 'monthly' ? 'monthly' : 'weekly',
+                        frequency: v === 'monthly' ? 'monthly' : 'weekly',
                       }))
                     }
                   >
-                    <option value="weekly">Toda semana</option>
-                    <option value="monthly">Todo mês</option>
+                    <Select.Option value="weekly">Toda semana</Select.Option>
+                    <Select.Option value="monthly">Todo mês</Select.Option>
                   </Select>
                 </Field>
 

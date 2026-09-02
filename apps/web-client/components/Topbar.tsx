@@ -22,7 +22,7 @@ export function Topbar() {
         type="button"
         onClick={() => void signOut()}
         title="Sair da conta"
-        className="flex items-center gap-3 rounded-full transition-opacity hover:opacity-80"
+        className="relative flex items-center gap-3 rounded-full transition-opacity hover:opacity-80"
       >
         <span
           aria-hidden

@@ -15,19 +15,14 @@ import {
   useCitiesQuery,
   useEstablishmentsQuery,
 } from '@agenda/core';
+import { Button, Field, PageHeader, Select, TextArea, TextInput } from '@agenda/shared-ui';
 import { useQueryClient } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
 
-import { Button } from '@/components/ui/Button';
-import { type Column,DataTable } from '@/components/ui/DataTable';
-import { Field } from '@/components/ui/Field';
+import { type Column, DataTable } from '@/components/ui/DataTable';
 import { ImageUpload, ImageUploadMulti } from '@/components/ui/ImageUpload';
 import { Modal } from '@/components/ui/Modal';
-import { PageHeader } from '@/components/ui/PageHeader';
 import { PdfUpload } from '@/components/ui/PdfUpload';
-import { Select } from '@/components/ui/Select';
-import { TextArea } from '@/components/ui/TextArea';
-import { TextInput } from '@/components/ui/TextInput';
 import { issuesToErrors } from '@/lib/formErrors';
 
 const PRICE_RANGES: PriceRange[] = ['$', '$$', '$$$', '$$$$'];
@@ -212,11 +207,11 @@ export default function EstabelecimentosPage() {
       <PageHeader title="Estabelecimentos" onNew={openNew} />
 
       {establishments.isLoading ? (
-        <p className="text-[14px] text-muted-foreground">Carregando…</p>
+        <p className="text-muted-foreground text-[14px]">Carregando…</p>
       ) : establishments.error ? (
-        <p className="text-[14px] text-destructive">Erro ao carregar estabelecimentos.</p>
+        <p className="text-destructive text-[14px]">Erro ao carregar estabelecimentos.</p>
       ) : (establishments.data ?? []).length === 0 ? (
-        <p className="text-[14px] text-muted-foreground">Nenhum item ainda.</p>
+        <p className="text-muted-foreground text-[14px]">Nenhum item ainda.</p>
       ) : (
         <DataTable
           columns={columns}
@@ -232,9 +227,7 @@ export default function EstabelecimentosPage() {
         onClose={() => setOpen(false)}
         footer={
           <div className="flex flex-col gap-3">
-            {submitError ? (
-              <p className="text-[13px] text-destructive">{submitError}</p>
-            ) : null}
+            {submitError ? <p className="text-destructive text-[13px]">{submitError}</p> : null}
             <div className="flex justify-end gap-2">
               <Button variant="ghost" onClick={() => setOpen(false)}>
                 Cancelar
@@ -251,15 +244,12 @@ export default function EstabelecimentosPage() {
             <TextInput value={form.name} onChange={(e) => set('name', e.target.value)} />
           </Field>
           <Field label="Cidade" error={errors.city_id}>
-            <Select
-              value={form.city_id}
-              onChange={(e) => set('city_id', e.target.value)}
-            >
-              <option value="">Selecione…</option>
+            <Select value={form.city_id} onValueChange={(v) => set('city_id', v)}>
+              <Select.Option value="">Selecione…</Select.Option>
               {(cities.data ?? []).map((c) => (
-                <option key={c.id} value={c.id}>
+                <Select.Option key={c.id} value={c.id}>
                   {c.name}
-                </option>
+                </Select.Option>
               ))}
             </Select>
           </Field>
@@ -301,10 +291,7 @@ export default function EstabelecimentosPage() {
             />
           </Field>
           <Field label="Instagram (opcional)" error={errors.instagram}>
-            <TextInput
-              value={form.instagram}
-              onChange={(e) => set('instagram', e.target.value)}
-            />
+            <TextInput value={form.instagram} onChange={(e) => set('instagram', e.target.value)} />
           </Field>
           <Field label="Horário de funcionamento" error={errors.opening_hours}>
             <TextInput
@@ -315,12 +302,12 @@ export default function EstabelecimentosPage() {
           <Field label="Faixa de preço" error={errors.price_range}>
             <Select
               value={form.price_range}
-              onChange={(e) => set('price_range', e.target.value as PriceRange)}
+              onValueChange={(v) => set('price_range', v as PriceRange)}
             >
               {PRICE_RANGES.map((p) => (
-                <option key={p} value={p}>
+                <Select.Option key={p} value={p}>
                   {PRICE_RANGE_LABELS[p]}
-                </option>
+                </Select.Option>
               ))}
             </Select>
           </Field>
@@ -334,10 +321,7 @@ export default function EstabelecimentosPage() {
           </div>
           <div className="sm:col-span-2 lg:col-span-3">
             <Field label="Ambiente" error={errors.ambiance}>
-              <TextInput
-                value={form.ambiance}
-                onChange={(e) => set('ambiance', e.target.value)}
-              />
+              <TextInput value={form.ambiance} onChange={(e) => set('ambiance', e.target.value)} />
             </Field>
           </div>
           <div className="sm:col-span-2 lg:col-span-3">
@@ -347,17 +331,17 @@ export default function EstabelecimentosPage() {
                   <label
                     key={attribute.id}
                     title={attribute.description}
-                    className="flex cursor-pointer items-start gap-2 rounded-lg px-2 py-1.5 text-sm hover:bg-muted/50"
+                    className="hover:bg-muted/50 flex cursor-pointer items-start gap-2 rounded-lg px-2 py-1.5 text-sm"
                   >
                     <input
                       type="checkbox"
-                      className="mt-0.5 h-4 w-4 shrink-0 accent-primary"
+                      className="accent-primary mt-0.5 h-4 w-4 shrink-0"
                       checked={form.attributes.includes(attribute.id)}
                       onChange={() => toggleAttribute(attribute.id)}
                     />
                     <span className="leading-tight">
-                      <span className="block text-foreground">{attribute.label}</span>
-                      <span className="block text-xs text-muted-foreground">
+                      <span className="text-foreground block">{attribute.label}</span>
+                      <span className="text-muted-foreground block text-xs">
                         {attribute.description}
                       </span>
                     </span>
@@ -382,7 +366,11 @@ export default function EstabelecimentosPage() {
           </div>
           <div className="sm:col-span-2 lg:col-span-3">
             <Field label="Fotos do Cardápio (opcional)" error={errors.menu_photo_urls}>
-              <ImageUploadMulti value={form.menu_photo_urls} onChange={(urls) => set('menu_photo_urls', urls)} pathPrefix="menus" />
+              <ImageUploadMulti
+                value={form.menu_photo_urls}
+                onChange={(urls) => set('menu_photo_urls', urls)}
+                pathPrefix="menus"
+              />
             </Field>
           </div>
         </div>

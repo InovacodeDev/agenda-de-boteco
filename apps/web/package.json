@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@agenda/core": "workspace:*",
+    "@agenda/shared-ui": "workspace:*",
     "@phosphor-icons/react": "^2.1.10",
     "@supabase/supabase-js": "^2.106.2",
     "@tanstack/query-async-storage-persister": "^5.101.0",

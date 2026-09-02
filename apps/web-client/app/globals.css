@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+@import '@agenda/shared-ui/scrollbar.css';
 
 @theme {
   /* Tema dark-only do painel do estabelecimento (spec seção 2). Mesma paleta de

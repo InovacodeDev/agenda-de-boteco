@@ -6,8 +6,33 @@ import { useMemo, useRef, useState } from 'react';
 
 /** UFs para a cidade nova. `cities` exige a sigla, e o dono só digita o nome. */
 const UFS = [
-  'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG',
-  'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO',
+  'AC',
+  'AL',
+  'AP',
+  'AM',
+  'BA',
+  'CE',
+  'DF',
+  'ES',
+  'GO',
+  'MA',
+  'MT',
+  'MS',
+  'MG',
+  'PA',
+  'PB',
+  'PR',
+  'PE',
+  'PI',
+  'RJ',
+  'RN',
+  'RS',
+  'RO',
+  'RR',
+  'SC',
+  'SP',
+  'SE',
+  'TO',
 ] as const;
 
 /** Mesma normalização do slugify do banco, para o filtro casar com a dedup. */
@@ -110,11 +135,11 @@ export function CityCombobox({
       <CaretDownIcon
         size={16}
         aria-hidden
-        className="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 text-muted-foreground"
+        className="text-muted-foreground pointer-events-none absolute top-1/2 right-3 -translate-y-1/2"
       />
 
       {open ? (
-        <div className="absolute z-10 mt-1.5 max-h-64 w-full overflow-auto rounded-xl border border-border bg-popover p-1.5 shadow-[var(--shadow-card)]">
+        <div className="border-border bg-popover absolute z-10 mt-1.5 max-h-64 w-full overflow-auto rounded-xl border p-1.5 shadow-[var(--shadow-card)]">
           {matches.map((city) => (
             <button
               key={city.id}
@@ -123,22 +148,22 @@ export function CityCombobox({
                 onSelect(city.id);
                 close();
               }}
-              className="flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2 text-left text-[14px] text-foreground transition-colors hover:bg-surface-elevated"
+              className="text-foreground hover:bg-surface-elevated flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2 text-left text-[14px] transition-colors"
             >
               {city.name}
-              <span className="text-[12px] text-muted-foreground">{city.uf}</span>
+              <span className="text-muted-foreground text-[12px]">{city.uf}</span>
             </button>
           ))}
 
           {matches.length === 0 && !canOfferCreate ? (
-            <p className="px-3 py-2 text-[13px] text-muted-foreground">
+            <p className="text-muted-foreground px-3 py-2 text-[13px]">
               Nenhuma cidade encontrada.
             </p>
           ) : null}
 
           {canOfferCreate ? (
-            <div className="mt-1 flex flex-col gap-2 border-t border-border px-3 pb-1 pt-2.5">
-              <span className="text-[13px] text-muted-foreground">
+            <div className="border-border mt-1 flex flex-col gap-2 border-t px-3 pt-2.5 pb-1">
+              <span className="text-muted-foreground text-[13px]">
                 Cadastrar <span className="text-foreground">{query.trim()}</span> — escolha o
                 estado:
               </span>
@@ -147,7 +172,7 @@ export function CityCombobox({
                   value={uf}
                   onChange={(e) => setUf(e.target.value)}
                   aria-label="Estado da nova cidade"
-                  className="h-10 rounded-lg border border-border bg-surface px-2.5 text-[14px] text-foreground outline-none focus:border-primary"
+                  className="border-border bg-surface text-foreground focus:border-primary h-10 rounded-lg border px-2.5 text-[14px] outline-none"
                 >
                   <option value="">UF</option>
                   {UFS.map((item) => (
@@ -160,7 +185,7 @@ export function CityCombobox({
                   type="button"
                   disabled={!uf || creating}
                   onClick={() => void handleCreate()}
-                  className="h-10 flex-1 rounded-lg bg-primary px-3 text-[14px] font-semibold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
+                  className="bg-primary text-primary-foreground h-10 flex-1 rounded-lg px-3 text-[14px] font-semibold transition-opacity hover:opacity-90 disabled:opacity-50"
                 >
                   {creating ? 'Cadastrando…' : 'Cadastrar cidade'}
                 </button>

@@ -4,22 +4,25 @@ import { CaretDownIcon, CheckIcon } from '@phosphor-icons/react';
 import * as RadixSelect from '@radix-ui/react-select';
 import type { ReactNode } from 'react';
 
-// Radix não aceita Item com value="" (reservado para "sem seleção" no runtime
-// interno). Opções vazias ("Selecione") usam este sentinel por fora, convertido
-// de volta a "" na fronteira do SelectField.
-const EMPTY_VALUE = '__select-field-empty__';
+import { SELECT_CLASS } from './styles';
 
-type SelectFieldOptionProps = {
+// Radix não aceita Item com value="" (reservado para "sem seleção" no runtime
+// interno). Opções vazias ("Nenhum"/"Selecione…") usam este sentinel por fora,
+// convertido de volta a "" na fronteira do Select — a API pública continua
+// aceitando value="" como qualquer outro <select> controlado.
+const EMPTY_VALUE = '__select-empty__';
+
+type SelectOptionProps = {
   value: string;
   children: ReactNode;
   className?: string;
 };
 
-function SelectFieldOption({ value, children, className = '' }: SelectFieldOptionProps) {
+function SelectOption({ value, children, className = '' }: SelectOptionProps) {
   return (
     <RadixSelect.Item
       value={value === '' ? EMPTY_VALUE : value}
-      className={`relative flex h-10 cursor-pointer select-none items-center rounded-lg pl-4 pr-9 text-sm text-foreground outline-none data-[highlighted]:bg-surface/40 data-[highlighted]:outline-none ${className}`}
+      className={`relative flex h-10 cursor-pointer select-none items-center rounded-lg pl-4 pr-9 text-[14px] text-foreground outline-none data-[highlighted]:bg-surface-elevated data-[highlighted]:outline-none ${className}`}
     >
       <RadixSelect.ItemText>{children}</RadixSelect.ItemText>
       <RadixSelect.ItemIndicator className="absolute right-3 inline-flex items-center">
@@ -29,19 +32,13 @@ function SelectFieldOption({ value, children, className = '' }: SelectFieldOptio
   );
 }
 
-/**
- * Mesma âncora visual do campo de cidade (borda + bg translúcido do
- * FIELD_CLASS), agora sobre o Radix Select em vez do <select> nativo.
- */
-export function SelectField({
-  id,
+export function Select({
   value,
   onValueChange,
   children,
   className = '',
   placeholder,
 }: {
-  id?: string;
   value: string;
   onValueChange: (value: string) => void;
   children: ReactNode;
@@ -59,8 +56,7 @@ export function SelectField({
         onValueChange={(next) => onValueChange(next === EMPTY_VALUE ? '' : next)}
       >
         <RadixSelect.Trigger
-          id={id}
-          className={`${className} flex items-center justify-between gap-2 appearance-none`}
+          className={`${SELECT_CLASS} flex items-center justify-between ${className}`}
         >
           <RadixSelect.Value placeholder={placeholder} />
           <RadixSelect.Icon className="text-muted-foreground">
@@ -81,4 +77,4 @@ export function SelectField({
   );
 }
 
-SelectField.Option = SelectFieldOption;
+Select.Option = SelectOption;
