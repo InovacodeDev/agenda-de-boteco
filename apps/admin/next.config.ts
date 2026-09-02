@@ -13,6 +13,7 @@ const config: NextConfig = {
       { source: '/avisos', destination: '/notices', permanent: true },
       { source: '/estabelecimentos', destination: '/establishments', permanent: true },
       { source: '/eventos', destination: '/events', permanent: true },
+      { source: '/privacidade', destination: '/privacy', permanent: true },
     ];
   },
 };

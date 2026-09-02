@@ -151,7 +151,7 @@ export default function LoginPage() {
         )}
 
         <Link
-          href="/privacidade"
+          href="/privacy"
           className="text-center text-[12px] text-muted-foreground underline-offset-2 hover:underline"
         >
           Política de Privacidade
