@@ -134,13 +134,13 @@ function SignedInProfile() {
 
       <div className="overflow-hidden rounded-2xl bg-card">
         <MenuItem
-          href="/favoritos"
+          href="/favorites"
           border
           icon={<HeartIcon filled size={18} className="text-primary" />}
           label="Meus favoritos"
         />
         <MenuItem
-          href="/cidade"
+          href="/city"
           border
           icon={<MapPinIcon size={18} className="text-primary" />}
           label="Mudar cidade"

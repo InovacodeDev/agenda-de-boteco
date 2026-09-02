@@ -21,7 +21,7 @@ export function BottomNav() {
     >
       {NAV_ITEMS.map((item) => {
         const active = isActive(item.href, pathname);
-        const showBadge = item.href === '/avisos' && unreadCount > 0;
+        const showBadge = item.href === '/notices' && unreadCount > 0;
         return (
           <Link
             key={item.href}
