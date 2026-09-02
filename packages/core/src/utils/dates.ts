@@ -36,6 +36,36 @@ export function buildEventDate(
   return date.toISOString();
 }
 
+/**
+ * Desloca um ISO em N semanas ou N meses preservando o horário local.
+ *
+ * 'monthly' clampa no último dia do mês em vez de transbordar: 31/jan + 1 mês é
+ * 28/fev (ou 29 em ano bissexto), não 3/mar — `setMonth` sozinho transbordaria,
+ * e uma recorrência mensal que pula para o mês seguinte deixa de ser mensal.
+ */
+export function shiftDate(
+  iso: string,
+  amount: number,
+  unit: 'weekly' | 'monthly',
+): string {
+  const date = new Date(iso);
+  if (unit === 'weekly') {
+    date.setDate(date.getDate() + amount * 7);
+    return date.toISOString();
+  }
+  const targetDay = date.getDate();
+  // Dia 1 antes de mover o mês: evita o transbordo intermediário do setMonth.
+  date.setDate(1);
+  date.setMonth(date.getMonth() + amount);
+  const lastDayOfTargetMonth = new Date(
+    date.getFullYear(),
+    date.getMonth() + 1,
+    0,
+  ).getDate();
+  date.setDate(Math.min(targetDay, lastDayOfTargetMonth));
+  return date.toISOString();
+}
+
 function startOfDay(date: Date): Date {
   const d = new Date(date);
   d.setHours(0, 0, 0, 0);
@@ -59,6 +89,22 @@ export function formatRelativeDay(iso: string, now: Date = new Date()): string {
   const date = new Date(iso);
   if (diff > 1 && diff <= 6) return WEEKDAYS_PT[date.getDay()];
   return `${String(date.getDate()).padStart(2, '0')} De ${MONTHS_PT[date.getMonth()]}.`;
+}
+
+/**
+ * 'Qui., 22 de out.' — dia da semana abreviado + dia + mês, formato da agenda do
+ * painel do dono. Diferente de formatRelativeDay (que troca por 'Hoje'/'Amanhã'
+ * e some com o mês na semana corrente): aqui o dono compara datas de uma lista,
+ * então toda linha precisa mostrar a data inteira.
+ *
+ * Com `withTime`, anexa o horário: 'Sex., 25 de set. • 18:00'.
+ */
+export function formatEventDate(iso: string, withTime = false): string {
+  const date = new Date(iso);
+  const weekday = WEEKDAYS_PT[date.getDay()];
+  const month = MONTHS_PT[date.getMonth()].toLowerCase();
+  const day = `${weekday}., ${date.getDate()} de ${month}.`;
+  return withTime ? `${day} • ${formatTime(iso)}` : day;
 }
 
 /** '20:00' no fuso local */

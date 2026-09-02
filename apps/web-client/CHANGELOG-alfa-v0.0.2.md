@@ -1,0 +1,19 @@
+# Changelog 0.0.2 (alfa)
+
+- Agenda de eventos no ar: o dono do bar cria, edita e exclui a própria programação pelo painel
+- Tela de eventos mostra os cards com banner, data, horário e a marcação de publicado ou rascunho
+- Rascunho fica visível só para o dono: o evento só aparece no aplicativo e no site depois de publicado
+- Publicar exige nome e data do evento, e a tela diz o que falta quando o botão está bloqueado
+- Formulário de evento reúne banner, nome, data, horário, descrição, atração principal, estilo musical, entrada, capacidade, cortesia e promoção
+- Estilos musicais vêm da lista oficial da plataforma, com emoji, em vez de digitação livre
+- Evento pode ser repetido toda semana ou todo mês, até 52 ocorrências, com aviso de quantos eventos serão criados e a data do último
+- Repetição mensal iniciada em dia 31 cai no último dia dos meses mais curtos, em vez de pular para o mês seguinte
+- Excluir um evento pede confirmação; em eventos que se repetem, é possível apagar só aquela data ou a série inteira a partir de hoje
+- Botão de espiar leva à página pública do evento e fica indisponível enquanto ele for rascunho
+- Quando o bar ainda não tem nenhum evento, a tela convida a cadastrar o primeiro
+- Atalho "Novo evento" da barra lateral passa a abrir direto o formulário de cadastro
+- Formulário de evento ganha seta de voltar ao lado do título, no lugar do botão "Cancelar"
+- O que falta para salvar aparece ao passar o mouse sobre o botão bloqueado, em vez de ocupar espaço fixo na tela
+- Seção de repetição do evento ganha título, chave de liga/desliga na cor da marca e resumo destacado de quantos eventos serão criados
+- Menu lateral fica fixo na tela: rolar uma página longa não move mais o menu, que só rola por conta própria quando não couber na altura da janela
+- Aba do navegador passa a exibir a logo do Agenda de Boteco
