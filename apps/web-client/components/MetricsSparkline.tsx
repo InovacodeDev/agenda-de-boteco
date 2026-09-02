@@ -23,13 +23,13 @@ export function MetricsSparkline({ data }: { data: DayBucket[] }) {
     return `${x.toFixed(1)},${y.toFixed(1)}`;
   });
 
+  // Resumo, não enumeração: listar cada dia no aria-label vira ruído em vez de
+  // ajuda em leitor de tela quando o período tem dezenas de pontos (ex: 90 dias).
+  const totalViews = data.reduce((sum, day) => sum + day.views, 0);
+  const label = `Evolução de visualizações de ${data[0].date} a ${data[data.length - 1].date}: ${totalViews} no total`;
+
   return (
-    <svg
-      viewBox={`0 0 ${width} ${height}`}
-      className="h-20 w-full"
-      role="img"
-      aria-label={`Evolução de visualizações: ${data.map((day) => `${day.date} ${day.views}`).join(', ')}`}
-    >
+    <svg viewBox={`0 0 ${width} ${height}`} className="h-20 w-full" role="img" aria-label={label}>
       <polyline
         points={points.join(' ')}
         fill="none"
