@@ -37,6 +37,7 @@ export * from './hooks/useActiveCity';
 export * from './hooks/useConnectivity';
 export * from './hooks/useGuardedPress';
 export * from './hooks/useNearbyEstablishments';
+export * from './hooks/useRecordView';
 export * from './hooks/useStatusLight';
 export * from './lib/queryClient';
 export * from './lib/queryPersister';
@@ -63,6 +64,7 @@ export {
 export * from './services/connectivity';
 export * from './services/establishment-owner';
 export * from './services/favorites';
+export * from './services/metrics';
 export * from './services/moderation';
 export * from './services/musician-leads';
 export * from './services/owned-events';

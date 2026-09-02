@@ -5,6 +5,7 @@ export * from './DateTimePicker';
 export * from './Field';
 export * from './PageHeader';
 export * from './Select';
+export * from './Sidebar';
 export * from './styles';
 export * from './TextArea';
 export * from './TextInput';

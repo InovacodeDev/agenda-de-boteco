@@ -11,3 +11,4 @@
 - O mapa acompanha a troca de cidade em vez de ficar travado no primeiro carregamento
 - Filtro de intervalo de datas ganha calendário com a cara do app, no lugar do seletor genérico do navegador
 - Barra de rolagem ganha visual discreto e combinando com o app, no lugar do estilo padrão do navegador
+- Registra automaticamente visitas e cliques em "Como chegar"/WhatsApp nas páginas de evento e estabelecimento, para métricas do painel do dono

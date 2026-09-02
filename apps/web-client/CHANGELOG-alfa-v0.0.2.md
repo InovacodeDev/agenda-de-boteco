@@ -28,3 +28,8 @@
 - Avatar no topo do painel abre um menu com o e-mail da conta e o botão de sair, que agora pede confirmação antes de encerrar a sessão
 - Botão "Sair" da tela de cadastro do estabelecimento também passa a pedir confirmação antes de encerrar a sessão
 - Botão de confirmação de sair e a opção de apagar só uma ocorrência de evento recorrente ganham a cor de ação destrutiva, consistente com o resto do painel
+- Base visual da tela de Métricas: gráfico de evolução de visualizações por dia
+- Tela de Métricas ganha o detalhe por evento: visualizações, cliques por tipo (mapa, contato, compartilhar) e favoritos, com painel lateral de aprofundamento
+- Tela de Métricas mostra visualizações, cliques e favoritos do bar e de cada evento, com seletor de período de 7, 30 ou 90 dias
+- Descrição do gráfico de evolução para leitor de tela fica mais curta e clara em períodos longos
+- Endereço da tela de Métricas passa a ser /metrics, em vez de /metricas

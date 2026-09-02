@@ -1,3 +1,4 @@
+import { recordMetricEvent, useRecordView } from '@agenda/core';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMemo } from 'react';
 import { Linking, Share } from 'react-native';
@@ -41,6 +42,7 @@ export default function EventDetailScreen() {
   const { data: musicStyles } = useMusicStylesQuery();
   const stylesById = useMemo(() => indexById(musicStyles ?? []), [musicStyles]);
   const { data: attractions } = useEventAttractionsQuery(event?.id ?? '');
+  useRecordView({ establishmentId: event?.establishment_id, eventId: event?.id });
   const photos = useMemo(
     () => [event?.banner_url, ...(event?.photo_urls ?? [])].filter(Boolean) as string[],
     [event],
@@ -113,6 +115,11 @@ export default function EventDetailScreen() {
     const text = `${event.name} — ${event.attraction} no ${establishment.name}. Bora?`;
     // No Android o campo `url` é ignorado, por isso a URL vai também no message.
     Share.share({ message: `${text}\n${url}`, url });
+    void recordMetricEvent({
+      establishmentId: establishment.id,
+      eventId: event.id,
+      kind: 'click_share',
+    });
   };
 
   return (
@@ -268,9 +275,14 @@ export default function EventDetailScreen() {
           className="border-foreground/50 flex-1 border-[0.5px]"
           style={{ backgroundColor: colors.background }}
           icon={<Icon name="location-arrow" color={colors.foreground} size={16} />}
-          onPress={() =>
-            Linking.openURL(buildDirectionsUrl({ lat: establishment.lat, lng: establishment.lng }))
-          }
+          onPress={() => {
+            Linking.openURL(buildDirectionsUrl({ lat: establishment.lat, lng: establishment.lng }));
+            void recordMetricEvent({
+              establishmentId: establishment.id,
+              eventId: event.id,
+              kind: 'click_map',
+            });
+          }}
         />
         <Button
           label="Ver estabelecimento"

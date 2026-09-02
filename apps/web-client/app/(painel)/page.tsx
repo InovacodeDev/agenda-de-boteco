@@ -35,7 +35,7 @@ const SHORTCUTS: {
     icon: StorefrontIcon,
   },
   {
-    href: '/metricas',
+    href: '/metrics',
     title: 'Métricas',
     description: 'Acompanhe visualizações e cliques',
     cta: 'Em breve',
