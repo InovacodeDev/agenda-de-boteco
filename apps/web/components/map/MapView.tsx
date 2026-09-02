@@ -5,7 +5,8 @@ import 'leaflet/dist/leaflet.css';
 import { type Establishment } from '@agenda/core';
 import L from 'leaflet';
 import Link from 'next/link';
-import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet';
+import { useEffect } from 'react';
+import { MapContainer, Marker, Popup, TileLayer, useMap } from 'react-leaflet';
 
 export interface MapViewProps {
   establishments: Establishment[];
@@ -22,6 +23,19 @@ const markerIcon = L.divIcon({
   popupAnchor: [0, -9],
 });
 
+/**
+ * `MapContainer center` só é lido na montagem: cidade e GPS resolvem depois, e
+ * sem isto o mapa ficaria travado no primeiro centro (o fallback).
+ */
+function RecenterOnChange({ center }: { center: [number, number] }) {
+  const map = useMap();
+  const [lat, lng] = center;
+  useEffect(() => {
+    map.setView([lat, lng]);
+  }, [map, lat, lng]);
+  return null;
+}
+
 /** Mapa interativo (OpenStreetMap) com um marker por bar da cidade ativa. */
 export default function MapView({ establishments, center }: MapViewProps) {
   return (
@@ -31,6 +45,7 @@ export default function MapView({ establishments, center }: MapViewProps) {
       scrollWheelZoom
       className="h-[60vh] min-h-[400px] w-full rounded-2xl"
     >
+      <RecenterOnChange center={center} />
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
