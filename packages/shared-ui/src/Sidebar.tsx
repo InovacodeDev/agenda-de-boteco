@@ -18,10 +18,13 @@ export function Sidebar({
   return (
     <RadixDialog.Root open={open} onOpenChange={onOpenChange}>
       <RadixDialog.Portal>
-        {/* ponytail: sem tailwindcss-animate no repo (nenhum @plugin/animate-in existente) — transição via
-            CSS puro do Tailwind v4 em vez de enter/exit orquestrado por data-state. */}
-        <RadixDialog.Overlay className="fixed inset-0 z-50 bg-black/70 transition-opacity" />
-        <RadixDialog.Content className="fixed inset-y-0 right-0 z-50 flex h-full w-full max-w-md flex-col border-l border-border bg-card p-6 shadow-lg transition-transform">
+        {/* ponytail: sem tailwindcss-animate no repo (nenhum @plugin/animate-in existente) — sem
+            classes de enter/exit orquestradas por data-state (adicionar quando o plugin entrar). */}
+        <RadixDialog.Overlay className="fixed inset-0 z-50 bg-black/70" />
+        <RadixDialog.Content
+          aria-describedby={undefined}
+          className="fixed inset-y-0 right-0 z-50 flex h-full w-full max-w-md flex-col border-l border-border bg-card p-6 shadow-lg"
+        >
           <div className="mb-4 flex items-center justify-between gap-4">
             <RadixDialog.Title className="font-heading text-lg font-bold text-foreground">
               {title}
