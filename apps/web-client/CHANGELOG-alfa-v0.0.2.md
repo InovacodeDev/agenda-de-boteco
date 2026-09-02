@@ -29,3 +29,4 @@
 - Botão "Sair" da tela de cadastro do estabelecimento também passa a pedir confirmação antes de encerrar a sessão
 - Botão de confirmação de sair e a opção de apagar só uma ocorrência de evento recorrente ganham a cor de ação destrutiva, consistente com o resto do painel
 - Base visual da tela de Métricas: gráfico de evolução de visualizações por dia
+- Tela de Métricas ganha o detalhe por evento: visualizações, cliques por tipo (mapa, contato, compartilhar) e favoritos, com painel lateral de aprofundamento
