@@ -25,8 +25,9 @@ export function MetricsSparkline({ data }: { data: DayBucket[] }) {
 
   // Resumo, não enumeração: listar cada dia no aria-label vira ruído em vez de
   // ajuda em leitor de tela quando o período tem dezenas de pontos (ex: 90 dias).
-  const totalViews = data.reduce((sum, day) => sum + day.views, 0);
-  const label = `Evolução de visualizações de ${data[0].date} a ${data[data.length - 1].date}: ${totalViews} no total`;
+  const first = data[0];
+  const last = data[data.length - 1];
+  const label = `Evolução de visualizações: ${first.views} em ${first.date}, chegando a ${last.views} em ${last.date}`;
 
   return (
     <svg viewBox={`0 0 ${width} ${height}`} className="h-20 w-full" role="img" aria-label={label}>
