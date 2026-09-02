@@ -11,9 +11,9 @@ import logo from '@/public/logo.png';
 
 const NAV = [
   { href: '/', label: 'Dashboard' },
-  { href: '/estabelecimentos', label: 'Estabelecimentos' },
-  { href: '/eventos', label: 'Eventos' },
-  { href: '/avisos', label: 'Avisos' },
+  { href: '/establishments', label: 'Estabelecimentos' },
+  { href: '/events', label: 'Eventos' },
+  { href: '/notices', label: 'Avisos' },
 ];
 
 export function Sidebar() {
