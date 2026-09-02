@@ -34,6 +34,11 @@ export function MusicianForm() {
   const [busy, setBusy] = useState(false);
   const [failure, setFailure] = useState('');
   const [done, setDone] = useState(false);
+  // Enquanto false, nenhum campo mostra erro: quem está preenchendo pela
+  // primeira vez não deve ser corrigido antes de terminar. A primeira tentativa
+  // de cadastro liga a revalidação por campo, para o músico ver o erro sumir
+  // conforme conserta em vez de só no clique seguinte.
+  const [submitted, setSubmitted] = useState(false);
   const successRef = useRef<HTMLParagraphElement>(null);
 
   useEffect(() => {
@@ -41,12 +46,16 @@ export function MusicianForm() {
   }, [done]);
 
   function set<K extends keyof Draft>(key: K, value: Draft[K]) {
-    setDraft((current) => ({ ...current, [key]: value }));
-    setErrors((current) => {
-      if (!current[key]) return current;
-      const { [key]: _removed, ...rest } = current;
-      return rest;
-    });
+    const next = { ...draft, [key]: value };
+    setDraft(next);
+    if (!submitted) {
+      return;
+    }
+    const parsed = musicianLeadSchema.safeParse(next);
+    const fresh = parsed.success ? {} : issuesToErrors(parsed.error);
+    // Só o campo editado é reavaliado: os demais mantêm o veredito da última
+    // tentativa, senão mexer num campo apagaria o erro que ainda vale nos outros.
+    setErrors((current) => ({ ...current, [key]: fresh[key] ?? '' }));
   }
 
   function toggleStyle(id: string) {
@@ -61,6 +70,7 @@ export function MusicianForm() {
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
     setFailure('');
+    setSubmitted(true);
 
     const parsed = musicianLeadSchema.safeParse(draft);
     if (!parsed.success) {
@@ -73,6 +83,7 @@ export function MusicianForm() {
     try {
       await createMusicianLead(parsed.data);
       setDraft(EMPTY_DRAFT);
+      setSubmitted(false);
       setDone(true);
     } catch (error) {
       // O parse já passou aqui; um ZodError neste ponto seria bug nosso, e a
