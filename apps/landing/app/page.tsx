@@ -414,7 +414,7 @@ export default function LandingPage() {
 
           <p className="mt-8 text-center text-[14px] text-muted-foreground">
             Não achou o que procurava?{' '}
-            <a href="/suporte" className="text-primary underline-offset-4 hover:underline">
+            <a href="/support" className="text-primary underline-offset-4 hover:underline">
               Vá para o suporte
             </a>
             .
@@ -498,7 +498,7 @@ export default function LandingPage() {
 
           <div className="flex flex-col gap-2.5">
             <p className="text-[13px] font-bold text-foreground">Ajuda e legal</p>
-            <a href="/suporte" className="text-[13px] text-muted-foreground hover:text-foreground">
+            <a href="/support" className="text-[13px] text-muted-foreground hover:text-foreground">
               Suporte
             </a>
             <a
