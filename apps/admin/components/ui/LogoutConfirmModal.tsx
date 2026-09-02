@@ -14,9 +14,11 @@ export function LogoutConfirmModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-6">
       <div className="border-border bg-card shadow-[var(--shadow-card)] w-full max-w-sm rounded-2xl border p-6">
-        <h2 className="font-heading text-foreground text-[18px] font-600">Sair da conta</h2>
+        <h2 className="font-[family-name:var(--font-heading)] text-foreground text-[18px] font-bold">
+          Sair da conta
+        </h2>
         <p className="text-muted-foreground mt-2 text-[14px]">
-          Você precisará entrar novamente para acessar o painel.
+          Você precisará entrar novamente para acessar o admin.
         </p>
         <div className="mt-6 flex justify-end gap-3">
           <button

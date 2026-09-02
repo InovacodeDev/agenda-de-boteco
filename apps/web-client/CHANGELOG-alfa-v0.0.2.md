@@ -26,3 +26,5 @@
 - Barra de rolagem ganha visual discreto e combinando com o painel, no lugar do estilo padrão do navegador
 - Painel do dono ganha tela de listagem de artistas cadastrados, com busca, ordenação e contato via WhatsApp e Instagram
 - Avatar no topo do painel abre um menu com o e-mail da conta e o botão de sair, que agora pede confirmação antes de encerrar a sessão
+- Botão "Sair" da tela de cadastro do estabelecimento também passa a pedir confirmação antes de encerrar a sessão
+- Botão de confirmação de sair e a opção de apagar só uma ocorrência de evento recorrente ganham a cor de ação destrutiva, consistente com o resto do painel
