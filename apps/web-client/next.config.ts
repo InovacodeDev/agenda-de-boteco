@@ -8,6 +8,16 @@ const config: NextConfig = {
   experimental: {
     optimizePackageImports: ['@phosphor-icons/react'],
   },
+  // Convivência das rotas migradas PT → EN (issue #68). basePath já é
+  // aplicado pelo Next em source/destination — não duplicar aqui.
+  async redirects() {
+    return [
+      { source: '/avaliacoes', destination: '/reviews', permanent: true },
+      { source: '/artistas', destination: '/artists', permanent: true },
+      { source: '/configuracoes', destination: '/settings', permanent: true },
+      { source: '/nova-senha', destination: '/new-password', permanent: true },
+    ];
+  },
 };
 
 export default config;

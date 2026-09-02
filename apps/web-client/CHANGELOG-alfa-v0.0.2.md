@@ -35,3 +35,5 @@
 - Endereço da tela de Métricas passa a ser /metrics, em vez de /metricas
 - Cards de artistas ficam mais compactos e cabem três lado a lado; nome, região e preço (quando informado) aparecem juntos no topo do card, com o preço em destaque à direita
 - Card de artista mostra a região abaixo do nome, para nomes longos não espremerem o preço
+- Endereços das telas de Avaliações, Artistas e Configurações passam a ser /reviews, /artists e /settings (links antigos continuam funcionando)
+- Endereço de redefinição de senha passa a ser /new-password, em vez de /nova-senha (link antigo continua funcionando)

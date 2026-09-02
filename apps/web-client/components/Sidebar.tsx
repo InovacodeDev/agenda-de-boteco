@@ -21,11 +21,11 @@ import logo from '@/public/logo.png';
 const NAV: { href: string; label: string; icon: Icon }[] = [
   { href: '/', label: 'Dashboard', icon: SquaresFourIcon },
   { href: '/eventos', label: 'Eventos', icon: CalendarBlankIcon },
-  { href: '/artistas', label: 'Artistas', icon: MicrophoneStageIcon },
+  { href: '/artists', label: 'Artistas', icon: MicrophoneStageIcon },
   { href: '/perfil', label: 'Perfil', icon: StorefrontIcon },
   { href: '/metrics', label: 'Métricas', icon: ChartBarIcon },
-  { href: '/avaliacoes', label: 'Avaliações', icon: StarIcon },
-  { href: '/configuracoes', label: 'Configurações', icon: GearIcon },
+  { href: '/reviews', label: 'Avaliações', icon: StarIcon },
+  { href: '/settings', label: 'Configurações', icon: GearIcon },
 ];
 
 export function Sidebar() {
