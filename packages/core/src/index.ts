@@ -64,6 +64,7 @@ export * from './services/connectivity';
 export * from './services/establishment-owner';
 export * from './services/favorites';
 export * from './services/moderation';
+export * from './services/musician-leads';
 export * from './services/owned-events';
 export * from './services/proximity';
 export * from './services/queryKeys';
