@@ -2,12 +2,19 @@
 
 import type { Event } from '@agenda/core';
 import { Sidebar } from '@agenda/shared-ui';
-import { EyeIcon, HeartIcon, MapPinIcon, PhoneIcon, ShareNetworkIcon } from '@phosphor-icons/react';
+import {
+  EyeIcon,
+  HeartIcon,
+  type Icon,
+  MapPinIcon,
+  PhoneIcon,
+  ShareNetworkIcon,
+} from '@phosphor-icons/react';
 
 import { MetricsSparkline } from '@/components/MetricsSparkline';
 import type { DayBucket, EventMetricsSummary } from '@/hooks/use-owned-metrics';
 
-const CLICK_ROWS: { key: 'click_map' | 'click_contact' | 'click_share'; label: string; icon: typeof MapPinIcon }[] = [
+const CLICK_ROWS: { key: 'click_map' | 'click_contact' | 'click_share'; label: string; icon: Icon }[] = [
   { key: 'click_map', label: 'Como chegar', icon: MapPinIcon },
   { key: 'click_contact', label: 'WhatsApp/telefone', icon: PhoneIcon },
   { key: 'click_share', label: 'Compartilhar', icon: ShareNetworkIcon },
