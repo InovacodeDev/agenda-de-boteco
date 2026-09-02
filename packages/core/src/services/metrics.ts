@@ -45,3 +45,77 @@ export async function recordMetricEvent(input: RecordMetricEventInput): Promise<
     logErrorToTerminal(error, { method: 'metrics.recordMetricEvent' });
   }
 }
+
+const metricRowSchema = z.object({
+  establishment_id: z.string(),
+  event_id: z.string().nullable(),
+  kind: metricKindSchema,
+  created_at: z.string(),
+});
+
+export interface MetricEvent {
+  establishmentId: string;
+  eventId: string | null;
+  kind: MetricKind;
+  createdAt: string;
+}
+
+/**
+ * Linhas cruas do período pedido, só do bar do dono (RLS owner_select_establishment_metrics).
+ * Sem RPC de agregação: o volume por bar é pequeno o bastante (dezenas de
+ * eventos, no máximo alguns milhares de linhas/mês) para agregar em memória no
+ * hook consumidor, sem manter um GROUP BY em SQL.
+ */
+export async function listOwnedMetrics(
+  establishmentId: string,
+  { sinceDays }: { sinceDays: number },
+): Promise<MetricEvent[]> {
+  const client = getConfiguredSupabase();
+  if (client === null) {
+    return [];
+  }
+  const since = new Date(Date.now() - sinceDays * 24 * 60 * 60 * 1000).toISOString();
+  const { data, error } = await rawClient(client)
+    .from('establishment_metrics')
+    .select('establishment_id, event_id, kind, created_at')
+    .eq('establishment_id', establishmentId)
+    .gte('created_at', since);
+  if (error) {
+    throw error;
+  }
+  const rows = z.array(metricRowSchema).parse(data ?? []);
+  return rows.map((row) => ({
+    establishmentId: row.establishment_id,
+    eventId: row.event_id,
+    kind: row.kind,
+    createdAt: row.created_at,
+  }));
+}
+
+/**
+ * Contagem de favoritos por evento, lida direto de user_favorites — sem
+ * duplicar escrita em establishment_metrics quando o usuário favorita (spec
+ * "Favoritar como métrica"). [] de entrada evita `.in('target_id', [])`, que o
+ * Postgrest trata como filtro vazio (retornaria tudo, não nada).
+ */
+export async function listOwnedFavoritesCount(
+  eventIds: string[],
+): Promise<Record<string, number>> {
+  const client = getConfiguredSupabase();
+  if (client === null || eventIds.length === 0) {
+    return {};
+  }
+  const { data, error } = await rawClient(client)
+    .from('user_favorites')
+    .select('target_id')
+    .eq('target_type', 'event')
+    .in('target_id', eventIds);
+  if (error) {
+    throw error;
+  }
+  const rows = z.array(z.object({ target_id: z.string() })).parse(data ?? []);
+  return rows.reduce<Record<string, number>>((acc, row) => {
+    acc[row.target_id] = (acc[row.target_id] ?? 0) + 1;
+    return acc;
+  }, {});
+}
