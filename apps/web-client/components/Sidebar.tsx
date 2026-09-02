@@ -5,6 +5,7 @@ import {
   ChartBarIcon,
   GearIcon,
   type Icon,
+  MicrophoneStageIcon,
   PlusIcon,
   SquaresFourIcon,
   StarIcon,
@@ -20,6 +21,7 @@ import logo from '@/public/logo.png';
 const NAV: { href: string; label: string; icon: Icon }[] = [
   { href: '/', label: 'Dashboard', icon: SquaresFourIcon },
   { href: '/eventos', label: 'Eventos', icon: CalendarBlankIcon },
+  { href: '/artistas', label: 'Artistas', icon: MicrophoneStageIcon },
   { href: '/perfil', label: 'Perfil', icon: StorefrontIcon },
   { href: '/metricas', label: 'Métricas', icon: ChartBarIcon },
   { href: '/avaliacoes', label: 'Avaliações', icon: StarIcon },

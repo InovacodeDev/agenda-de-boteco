@@ -1,8 +1,36 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 
-import { type MusicianLeadInput, musicianLeadSchema } from '../schemas/musician-lead';
+import {
+  type MusicianLeadInput,
+  type MusicianLeadRow,
+  musicianLeadRowSchema,
+  musicianLeadSchema,
+} from '../schemas/musician-lead';
 import { getConfiguredSupabase } from '../supabase/client';
 import { handleServiceError } from '../utils/errors';
+
+/** Espelha o DEFAULT 40 de `list_musician_leads` — o teto de página é o da RPC. */
+export const MUSICIAN_LEADS_PAGE_SIZE = 40;
+
+export interface MusicianLeadFilters {
+  search?: string;
+  musicStyleId?: string;
+  region?: string;
+}
+
+export type MusicianLeadSort = 'recent' | 'name' | 'region';
+
+export interface MusicianLeadCursor {
+  createdAt: string;
+  name: string;
+  region: string;
+  id: string;
+}
+
+export interface MusicianLeadPage {
+  items: MusicianLeadRow[];
+  nextCursor: MusicianLeadCursor | null;
+}
 
 /**
  * Registra o cadastro de um músico feito no portal do artista (issue #59).
@@ -42,5 +70,53 @@ export async function createMusicianLead(input: MusicianLeadInput): Promise<stri
     // Sem `args`: nome, telefone e Instagram do músico são PII e o contexto é
     // serializado inteiro no log (§9.2). O `method` já localiza a falha.
     return handleServiceError(error, { method: 'musicianLeads.createMusicianLead' });
+  }
+}
+
+/**
+ * Lista leads de músico para o painel (ainda sem app consumidor nesta task —
+ * ver plano). Leitura, não escrita: sem client configurado devolve página
+ * vazia em vez de lançar, o mesmo padrão de `establishment-owner.ts`.
+ *
+ * Paginação por cursor composto — ver docblock da migração
+ * `20260902120000_list_musician_leads_rpc.sql` para o porquê (estável sob
+ * inserção concorrente, ao contrário de OFFSET).
+ */
+export async function listMusicianLeads(
+  filters: MusicianLeadFilters,
+  sort: MusicianLeadSort,
+  cursor: MusicianLeadCursor | null,
+): Promise<MusicianLeadPage> {
+  const client = getConfiguredSupabase();
+  if (!client) {
+    return { items: [], nextCursor: null };
+  }
+  try {
+    // Escape hatch documentado: list_musician_leads ainda não está em
+    // database.types.ts (arquivo gerado). Regenerar os tipos é a correção.
+    const { data, error } = await (client as SupabaseClient).rpc('list_musician_leads', {
+      p_search: filters.search ?? null,
+      p_music_style_id: filters.musicStyleId ?? null,
+      p_region: filters.region ?? null,
+      p_sort: sort,
+      p_cursor_created_at: cursor?.createdAt ?? null,
+      p_cursor_name: cursor?.name ?? null,
+      p_cursor_region: cursor?.region ?? null,
+      p_cursor_id: cursor?.id ?? null,
+      p_limit: MUSICIAN_LEADS_PAGE_SIZE,
+    });
+    if (error) {
+      throw error;
+    }
+    const items = musicianLeadRowSchema.array().parse(data ?? []);
+    const last = items.at(-1);
+    const nextCursor =
+      items.length < MUSICIAN_LEADS_PAGE_SIZE || !last
+        ? null
+        : { createdAt: last.created_at, name: last.name, region: last.region, id: last.id };
+    return { items, nextCursor };
+  } catch (error) {
+    // Sem `args`: nome/telefone/instagram das linhas retornadas são PII.
+    return handleServiceError(error, { method: 'musicianLeads.listMusicianLeads' });
   }
 }

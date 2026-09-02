@@ -24,3 +24,4 @@
 - Telas com formulário longo (Perfil) não mostram mais uma segunda barra de rolagem na borda da janela; a rolagem fica só no conteúdo, com o menu e o topo sempre fixos
 - Corrige a mesma barra de rolagem extra na tela de novo evento, ao ativar "Repetir este evento"
 - Barra de rolagem ganha visual discreto e combinando com o painel, no lugar do estilo padrão do navegador
+- Painel do dono ganha tela de listagem de artistas cadastrados, com busca, ordenação e contato via WhatsApp e Instagram
