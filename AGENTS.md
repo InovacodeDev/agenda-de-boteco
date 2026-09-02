@@ -225,6 +225,8 @@ Duas convenções coexistem por camada — respeite a do diretório onde está e
 | Testes | `<arquivo>.test.ts(x)` ao lado do fonte | `packages/core/src/services/owned-events.test.ts` |
 | Migrações SQL | `<timestamp>_snake_case.sql` | `supabase/migrations/20260813120000_event_status_and_recurrence.sql` |
 
+**Rotas novas em inglês.** Pastas de rota criadas a partir de agora (App Router e Expo Router) usam segmento em inglês (`metrics`, não `metricas`) — a maior parte das rotas existentes ainda está em português (`eventos`, `perfil`, `avaliacoes`); não renomeie rota existente só para adequar à regra, migração é caso a caso e quebra URL pública/deep link em uso. As **strings de UI continuam em pt-BR** (Seção 3, "Strings de interface") — a regra é só sobre o segmento de path.
+
 ### Símbolos
 
 - **Tipos/interfaces/componentes:** `PascalCase` (`OwnedEventInput`, `SupabaseStorageAdapter`, `CreateOwnedEstablishmentInput`, `AuthUnavailableError`).
