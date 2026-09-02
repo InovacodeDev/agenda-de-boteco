@@ -5,3 +5,4 @@
 - Estando na cidade escolhida, o mapa abre na sua localização
 - Corrige o mapa que às vezes abria no meio do oceano enquanto a cidade carregava
 - Ajustes internos de acompanhamento de uso na tela de evento (compartilhar e traçar rota)
+- Ajustes internos de acompanhamento de uso na tela de estabelecimento (compartilhar, WhatsApp e traçar rota)
