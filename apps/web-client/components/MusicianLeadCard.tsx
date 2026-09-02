@@ -27,10 +27,12 @@ export function MusicianLeadCard({
   return (
     <article className="shadow-card border-border bg-card flex flex-col gap-2.5 rounded-2xl border p-4">
       <div className="flex items-start justify-between gap-3">
-        <p className="text-foreground line-clamp-2 min-w-0 text-sm leading-snug">
-          <span className="font-heading font-bold">{lead.name}</span>
-          <span className="text-muted-foreground">, {lead.region}</span>
-        </p>
+        <div className="min-w-0">
+          <p className="font-heading text-foreground line-clamp-2 text-sm font-bold leading-snug">
+            {lead.name}
+          </p>
+          <p className="text-muted-foreground truncate text-[13px] leading-snug">{lead.region}</p>
+        </div>
 
         {lead.price_range ? (
           <span className="text-primary shrink-0 whitespace-nowrap text-right text-sm font-semibold">

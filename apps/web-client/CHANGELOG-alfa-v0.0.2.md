@@ -34,3 +34,4 @@
 - Descrição do gráfico de evolução para leitor de tela fica mais curta e clara em períodos longos
 - Endereço da tela de Métricas passa a ser /metrics, em vez de /metricas
 - Cards de artistas ficam mais compactos e cabem três lado a lado; nome, região e preço (quando informado) aparecem juntos no topo do card, com o preço em destaque à direita
+- Card de artista mostra a região abaixo do nome, para nomes longos não espremerem o preço
