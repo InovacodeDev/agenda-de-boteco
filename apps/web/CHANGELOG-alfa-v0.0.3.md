@@ -9,3 +9,5 @@
 - O mapa abre focado na cidade que você escolheu, mesmo se você estiver em outra cidade
 - Estando na cidade escolhida, o mapa passa a abrir na sua localização
 - O mapa acompanha a troca de cidade em vez de ficar travado no primeiro carregamento
+- Filtro de intervalo de datas ganha calendário com a cara do app, no lugar do seletor genérico do navegador
+- Barra de rolagem ganha visual discreto e combinando com o app, no lugar do estilo padrão do navegador

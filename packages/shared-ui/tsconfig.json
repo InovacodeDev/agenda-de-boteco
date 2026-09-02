@@ -1,0 +1,9 @@
+{
+  "extends": "@agenda/typescript-config/base.json",
+  "compilerOptions": {
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "jsx": "preserve",
+    "types": ["react"]
+  },
+  "include": ["src/**/*"]
+}

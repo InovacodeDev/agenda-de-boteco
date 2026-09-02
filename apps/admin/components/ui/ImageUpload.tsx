@@ -1,9 +1,8 @@
 'use client';
 
 import { MAX_IMAGE_BYTES, uploadImage } from '@agenda/core';
+import { INPUT_CLASS } from '@agenda/shared-ui';
 import { useCallback, useRef, useState } from 'react';
-
-import { INPUT_CLASS } from './styles';
 
 // Dropzone + preview para os campos de imagem do catálogo. Sobe o arquivo ao
 // bucket catalog-images e devolve a URL pública via onChange. Dropzone nativa
@@ -52,7 +51,7 @@ function Dropzone({
         setDragging(false);
         pick(e.dataTransfer.files);
       }}
-      className={`flex min-h-[7rem] cursor-pointer flex-col items-center justify-center gap-1.5 rounded-2xl border-2 border-dashed px-4 py-6 text-center transition-colors ${
+      className={`relative flex min-h-[7rem] cursor-pointer flex-col items-center justify-center gap-1.5 rounded-2xl border-2 border-dashed px-4 py-6 text-center transition-colors ${
         dragging
           ? 'border-primary bg-primary/5'
           : 'border-border bg-surface-elevated hover:border-primary/60'

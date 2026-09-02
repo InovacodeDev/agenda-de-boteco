@@ -1,11 +1,9 @@
 'use client';
 
 import { getFriendlyErrorMessage, updatePassword, useAuthStore } from '@agenda/core';
+import { Button, INPUT_CLASS } from '@agenda/shared-ui';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-
-import { Button } from '@/components/ui/Button';
-import { INPUT_CLASS } from '@/components/ui/styles';
 
 /**
  * Destino do link de recuperação. O Supabase entrega a sessão de recovery pela

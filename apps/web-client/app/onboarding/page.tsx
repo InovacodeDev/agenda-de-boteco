@@ -20,6 +20,7 @@ import {
   LocationFields,
   OperationFields,
 } from '@/components/EstablishmentFields';
+import { LogoutConfirmModal } from '@/components/ui/LogoutConfirmModal';
 import { panelKeys } from '@/hooks/use-owned-establishment';
 import logo from '@/public/logo.png';
 
@@ -34,6 +35,7 @@ export default function OnboardingPage() {
   const [draft, setDraft] = useState<EstablishmentDraft>(EMPTY_DRAFT);
   const [busy, setBusy] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [confirmSignOut, setConfirmSignOut] = useState(false);
 
   // Mesma regra do painel: sem sessão ou sem a flag de dono, volta ao login.
   useEffect(() => {
@@ -105,12 +107,18 @@ export default function OnboardingPage() {
           </h1>
           <button
             type="button"
-            onClick={() => void signOut()}
+            onClick={() => setConfirmSignOut(true)}
             className="text-sm text-muted-foreground transition-colors hover:text-foreground"
           >
             Sair
           </button>
         </header>
+
+        <LogoutConfirmModal
+          open={confirmSignOut}
+          onCancel={() => setConfirmSignOut(false)}
+          onConfirm={() => void signOut()}
+        />
 
         <div className="mt-7">
           <div className="flex items-center justify-between text-sm">

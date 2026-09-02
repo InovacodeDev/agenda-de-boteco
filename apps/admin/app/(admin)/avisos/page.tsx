@@ -12,17 +12,12 @@ import {
   useEventsQuery,
   useNotificationsQuery,
 } from '@agenda/core';
+import { Button, Field, PageHeader, Select, TextArea, TextInput } from '@agenda/shared-ui';
 import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 
-import { Button } from '@/components/ui/Button';
-import { type Column,DataTable } from '@/components/ui/DataTable';
-import { Field } from '@/components/ui/Field';
+import { type Column, DataTable } from '@/components/ui/DataTable';
 import { Modal } from '@/components/ui/Modal';
-import { PageHeader } from '@/components/ui/PageHeader';
-import { Select } from '@/components/ui/Select';
-import { TextArea } from '@/components/ui/TextArea';
-import { TextInput } from '@/components/ui/TextInput';
 import { issuesToErrors } from '@/lib/formErrors';
 
 const TYPES: NotificationType[] = ['style', 'city', 'favorite', 'promo'];
@@ -135,11 +130,11 @@ export default function AvisosPage() {
       <PageHeader title="Avisos" onNew={openNew} />
 
       {notifications.isLoading ? (
-        <p className="text-[14px] text-muted-foreground">Carregando…</p>
+        <p className="text-muted-foreground text-[14px]">Carregando…</p>
       ) : notifications.error ? (
-        <p className="text-[14px] text-destructive">Erro ao carregar avisos.</p>
+        <p className="text-destructive text-[14px]">Erro ao carregar avisos.</p>
       ) : (notifications.data ?? []).length === 0 ? (
-        <p className="text-[14px] text-muted-foreground">Nenhum item ainda.</p>
+        <p className="text-muted-foreground text-[14px]">Nenhum item ainda.</p>
       ) : (
         <DataTable
           columns={columns}
@@ -155,9 +150,7 @@ export default function AvisosPage() {
         onClose={() => setOpen(false)}
         footer={
           <div className="flex flex-col gap-3">
-            {submitError ? (
-              <p className="text-[13px] text-destructive">{submitError}</p>
-            ) : null}
+            {submitError ? <p className="text-destructive text-[13px]">{submitError}</p> : null}
             <div className="flex justify-end gap-2">
               <Button variant="ghost" onClick={() => setOpen(false)}>
                 Cancelar
@@ -181,40 +174,31 @@ export default function AvisosPage() {
             </Field>
           </div>
           <Field label="Tipo" error={errors.type}>
-            <Select
-              value={form.type}
-              onChange={(e) => set('type', e.target.value as NotificationType)}
-            >
+            <Select value={form.type} onValueChange={(v) => set('type', v as NotificationType)}>
               {TYPES.map((t) => (
-                <option key={t} value={t}>
+                <Select.Option key={t} value={t}>
                   {NOTIFICATION_TYPE_LABELS[t]}
-                </option>
+                </Select.Option>
               ))}
             </Select>
           </Field>
           <Field label="Evento (opcional)" error={errors.event_id}>
-            <Select
-              value={form.event_id}
-              onChange={(e) => set('event_id', e.target.value)}
-            >
-              <option value="">Nenhum</option>
+            <Select value={form.event_id} onValueChange={(v) => set('event_id', v)}>
+              <Select.Option value="">Nenhum</Select.Option>
               {(events.data ?? []).map((e) => (
-                <option key={e.id} value={e.id}>
+                <Select.Option key={e.id} value={e.id}>
                   {e.name}
-                </option>
+                </Select.Option>
               ))}
             </Select>
           </Field>
           <Field label="Estabelecimento (opcional)" error={errors.establishment_id}>
-            <Select
-              value={form.establishment_id}
-              onChange={(e) => set('establishment_id', e.target.value)}
-            >
-              <option value="">Nenhum</option>
+            <Select value={form.establishment_id} onValueChange={(v) => set('establishment_id', v)}>
+              <Select.Option value="">Nenhum</Select.Option>
               {(establishments.data ?? []).map((e) => (
-                <option key={e.id} value={e.id}>
+                <Select.Option key={e.id} value={e.id}>
                   {e.name}
-                </option>
+                </Select.Option>
               ))}
             </Select>
           </Field>

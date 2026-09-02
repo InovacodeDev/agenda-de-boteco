@@ -17,6 +17,9 @@
     "@agenda/core#build": {
       "outputs": []
     },
+    "@agenda/shared-ui#build": {
+      "outputs": []
+    },
     "dev": {
       "cache": false,
       "persistent": true

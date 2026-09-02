@@ -1,3 +1,5 @@
+import type { MusicianLeadFilters, MusicianLeadSort } from './musician-leads';
+
 /**
  * Factory hierárquica de query keys do catálogo. A hierarquia importa para
  * invalidação por prefixo: `['events']` deve casar com `['events','detail',id]`
@@ -35,4 +37,9 @@ export const catalogKeys = {
   musicStyles: ['music-styles'] as const,
   cities: ['cities'] as const,
   notifications: ['notifications'] as const,
+  musicianLeads: {
+    root: ['musician-leads'] as const,
+    list: (filters: MusicianLeadFilters, sort: MusicianLeadSort) =>
+      ['musician-leads', 'list', filters, sort] as const,
+  },
 } as const;

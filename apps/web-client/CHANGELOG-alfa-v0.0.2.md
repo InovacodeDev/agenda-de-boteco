@@ -17,3 +17,14 @@
 - Seção de repetição do evento ganha título, chave de liga/desliga na cor da marca e resumo destacado de quantos eventos serão criados
 - Menu lateral fica fixo na tela: rolar uma página longa não move mais o menu, que só rola por conta própria quando não couber na altura da janela
 - Aba do navegador passa a exibir a logo do Agenda de Boteco
+- Seletores de estilo musical, frequência de repetição, faixa de preço e tipo de ambiente ganham menu com a cara do painel, no lugar do menu genérico do navegador
+- Campos de data e horário do formulário de evento ganham calendário e lista de horários com a cara do painel, no lugar dos seletores genéricos do navegador
+- Menu lateral não mostra mais barra de rolagem própria; a rolagem da tela fica só no conteúdo
+- Lista de horários do seletor de horário perde a barra de rolagem visível, mantendo o gesto de rolar normalmente
+- Telas com formulário longo (Perfil) não mostram mais uma segunda barra de rolagem na borda da janela; a rolagem fica só no conteúdo, com o menu e o topo sempre fixos
+- Corrige a mesma barra de rolagem extra na tela de novo evento, ao ativar "Repetir este evento"
+- Barra de rolagem ganha visual discreto e combinando com o painel, no lugar do estilo padrão do navegador
+- Painel do dono ganha tela de listagem de artistas cadastrados, com busca, ordenação e contato via WhatsApp e Instagram
+- Avatar no topo do painel abre um menu com o e-mail da conta e o botão de sair, que agora pede confirmação antes de encerrar a sessão
+- Botão "Sair" da tela de cadastro do estabelecimento também passa a pedir confirmação antes de encerrar a sessão
+- Botão de confirmação de sair e a opção de apagar só uma ocorrência de evento recorrente ganham a cor de ação destrutiva, consistente com o resto do painel

@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+@import '@agenda/shared-ui/scrollbar.css';
 
 @theme {
   /* Design tokens espelhando o mobile (apps/mobile/src/global.css). */

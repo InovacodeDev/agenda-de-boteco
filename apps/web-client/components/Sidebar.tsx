@@ -5,6 +5,7 @@ import {
   ChartBarIcon,
   GearIcon,
   type Icon,
+  MicrophoneStageIcon,
   PlusIcon,
   SquaresFourIcon,
   StarIcon,
@@ -20,6 +21,7 @@ import logo from '@/public/logo.png';
 const NAV: { href: string; label: string; icon: Icon }[] = [
   { href: '/', label: 'Dashboard', icon: SquaresFourIcon },
   { href: '/eventos', label: 'Eventos', icon: CalendarBlankIcon },
+  { href: '/artistas', label: 'Artistas', icon: MicrophoneStageIcon },
   { href: '/perfil', label: 'Perfil', icon: StorefrontIcon },
   { href: '/metricas', label: 'Métricas', icon: ChartBarIcon },
   { href: '/avaliacoes', label: 'Avaliações', icon: StarIcon },
@@ -31,8 +33,8 @@ export function Sidebar() {
 
   return (
     /* h-full + overflow-hidden: a sidebar ocupa a altura da tela e não acompanha
-       o scroll do conteúdo. Quem rola, se o menu não couber, é só o <nav> —
-       logo e "Novo evento" ficam sempre à vista. */
+       o scroll do conteúdo. O scroll da página vive só no <main> do layout —
+       a sidebar é estática, o menu de 6 itens nunca precisa rolar por conta própria. */
     <aside className="border-border bg-sidebar hidden h-full w-64 shrink-0 flex-col overflow-hidden border-r p-4 md:flex">
       <div className="mb-8 flex shrink-0 items-center gap-3">
         <Image
@@ -47,7 +49,7 @@ export function Sidebar() {
         </span>
       </div>
 
-      <nav className="-mr-1 flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto pr-1">
+      <nav className="flex flex-1 flex-col gap-1">
         {NAV.map((item) => {
           const active = item.href === '/' ? pathname === '/' : pathname.startsWith(item.href);
           const ItemIcon = item.icon;

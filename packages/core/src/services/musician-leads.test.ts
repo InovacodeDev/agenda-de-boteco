@@ -1,5 +1,10 @@
 import type { MusicianLeadInput } from '../schemas/musician-lead';
-import { createMusicianLead } from './musician-leads';
+import {
+  createMusicianLead,
+  listMusicianLeads,
+  MUSICIAN_LEADS_PAGE_SIZE,
+  type MusicianLeadCursor,
+} from './musician-leads';
 
 const mockGetSupabase = jest.fn();
 jest.mock('../supabase/client', () => ({
@@ -124,5 +129,117 @@ describe('createMusicianLead', () => {
       await expect(createMusicianLead({ ...INPUT, name: '' })).rejects.toThrow();
       expect(client.rpc).not.toHaveBeenCalled();
     });
+  });
+});
+
+function makeRow(overrides: Partial<Record<string, unknown>> = {}) {
+  return {
+    id: 'lead-1',
+    name: 'Trio do Cais',
+    phone: '48999991234',
+    region: 'Grande Florianópolis',
+    music_style_ids: ['samba'],
+    instagram: 'triodocais',
+    price_range: 'R$ 500 a R$ 800',
+    created_at: '2026-09-01T12:00:00.000Z',
+    ...overrides,
+  };
+}
+
+function makeListClient(options: { rpcError?: Error; rows?: unknown[] } = {}) {
+  const rpc = jest
+    .fn()
+    .mockResolvedValue({ data: options.rows ?? [], error: options.rpcError ?? null });
+  return { rpc };
+}
+
+const CURSOR: MusicianLeadCursor = {
+  createdAt: '2026-08-01T00:00:00.000Z',
+  name: 'Anterior',
+  region: 'Norte',
+  id: 'lead-0',
+};
+
+describe('listMusicianLeads', () => {
+  it('retorna página vazia sem Supabase configurado', async () => {
+    mockGetSupabase.mockReturnValue(null);
+    await expect(listMusicianLeads({}, 'recent', null)).resolves.toEqual({
+      items: [],
+      nextCursor: null,
+    });
+  });
+
+  it('monta os parâmetros da RPC a partir de filtros, sort e cursor', async () => {
+    const client = makeListClient();
+    mockGetSupabase.mockReturnValue(client);
+
+    await listMusicianLeads(
+      { search: 'trio', musicStyleId: 'samba', region: 'Floripa' },
+      'name',
+      CURSOR,
+    );
+
+    expect(client.rpc).toHaveBeenCalledWith('list_musician_leads', {
+      p_search: 'trio',
+      p_music_style_id: 'samba',
+      p_region: 'Floripa',
+      p_sort: 'name',
+      p_cursor_created_at: CURSOR.createdAt,
+      p_cursor_name: CURSOR.name,
+      p_cursor_region: CURSOR.region,
+      p_cursor_id: CURSOR.id,
+      p_limit: MUSICIAN_LEADS_PAGE_SIZE,
+    });
+  });
+
+  it('usa null para filtros e cursor ausentes', async () => {
+    const client = makeListClient();
+    mockGetSupabase.mockReturnValue(client);
+
+    await listMusicianLeads({}, 'recent', null);
+
+    expect(client.rpc).toHaveBeenCalledWith(
+      'list_musician_leads',
+      expect.objectContaining({
+        p_search: null,
+        p_music_style_id: null,
+        p_region: null,
+        p_cursor_created_at: null,
+        p_cursor_name: null,
+        p_cursor_region: null,
+        p_cursor_id: null,
+      }),
+    );
+  });
+
+  it('nextCursor é null quando a página vem menor que o tamanho máximo', async () => {
+    mockGetSupabase.mockReturnValue(makeListClient({ rows: [makeRow()] }));
+
+    const page = await listMusicianLeads({}, 'recent', null);
+    expect(page.items).toHaveLength(1);
+    expect(page.nextCursor).toBeNull();
+  });
+
+  it('monta nextCursor a partir do último item quando a página vem cheia', async () => {
+    const rows = Array.from({ length: MUSICIAN_LEADS_PAGE_SIZE }, (_, i) =>
+      makeRow({ id: `lead-${i}`, name: `Banda ${i}`, region: `Região ${i}` }),
+    );
+    mockGetSupabase.mockReturnValue(makeListClient({ rows }));
+
+    const page = await listMusicianLeads({}, 'recent', null);
+    const last = rows.at(-1) as ReturnType<typeof makeRow>;
+    expect(page.nextCursor).toEqual({
+      createdAt: last.created_at,
+      name: last.name,
+      region: last.region,
+      id: last.id,
+    });
+  });
+
+  it('propaga erro do Postgrest', async () => {
+    mockGetSupabase.mockReturnValue(
+      makeListClient({ rpcError: new Error('permission denied') }),
+    );
+    await expect(listMusicianLeads({}, 'recent', null)).rejects.toThrow('permission denied');
   });
 });

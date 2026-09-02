@@ -87,7 +87,7 @@ export function PdfUpload({
             setDragging(false);
             pick(e.dataTransfer.files);
           }}
-          className={`flex min-h-28 cursor-pointer flex-col items-center justify-center gap-1.5 rounded-2xl border-2 border-dashed px-4 py-6 text-center transition-colors ${
+          className={`relative flex min-h-28 cursor-pointer flex-col items-center justify-center gap-1.5 rounded-2xl border-2 border-dashed px-4 py-6 text-center transition-colors ${
             dragging
               ? 'border-primary bg-primary/5'
               : 'border-border bg-surface-elevated hover:border-primary/60'

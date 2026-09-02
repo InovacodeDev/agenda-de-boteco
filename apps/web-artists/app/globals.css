@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+@import '@agenda/shared-ui/scrollbar.css';
 
 @theme {
   /* Mesma paleta de marca dos demais apps, em superfícies escuras. O portal do

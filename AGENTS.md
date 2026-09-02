@@ -68,6 +68,8 @@ Monorepo **pnpm workspaces + Turborepo 2**, TypeScript estrito: quatro clientes 
 | Sessão nativa | `expo-secure-store` | `^56.0.4` |
 | Ícones | `@phosphor-icons/react` / `phosphor-react-native` | `^2.1.10` / `^3.0.6` |
 | Mapas | `react-leaflet` + `leaflet` / `react-native-maps` | `^5.0.0` + `^1.9.4` / `1.27.2` |
+| Dropdown/popover (web) | `@radix-ui/react-select`, `@radix-ui/react-popover` | `^2.3.7` / `^1.1.23` |
+| Calendário (web) | `react-day-picker` | `^10.0.1` (traz `date-fns@^4` como dependência transitiva) |
 | Lint | ESLint flat config + typescript-eslint | `^9.39.4` / `^8.60.1` |
 | Format | Prettier + `prettier-plugin-tailwindcss` | `^3.8.4` / `^0.8.0` |
 | Testes | Jest + ts-jest (core) / jest-expo + `@testing-library/react-native` (mobile) | `~29.7.0` |
@@ -83,9 +85,12 @@ Monorepo **pnpm workspaces + Turborepo 2**, TypeScript estrito: quatro clientes 
 | `@agenda/admin` | `apps/admin` | `8089` | `/admin` | `1.0.1` | Painel administrativo interno | localStorage |
 | `@agenda/landing` | `apps/landing` | `8087` | — | `0.0.3` | Landing institucional | — (sem auth) |
 | `@agenda/core` | `packages/core` | — | — | `1.0.0` | Núcleo compartilhado (source-only) | — |
+| `@agenda/shared-ui` | `packages/shared-ui` | — | — | `0.0.1` | Componentes de UI puros compartilhados (source-only) | — |
 | `@agenda/typescript-config` | `packages/typescript-config` | — | — | `1.0.0` | `base.json` compartilhado | — |
 
-`@agenda/core` **não é buildado** (`"build": "echo 'core is a source-only internal package'"`); todo app Next que o consome declara `transpilePackages: ['@agenda/core']`. Só `apps/landing` não declara `optimizePackageImports` — não usa Phosphor.
+`@agenda/core` e `@agenda/shared-ui` **não são buildados** (`"build": "echo '... is a source-only internal package'"`); todo app Next que os consome declara `transpilePackages: ['@agenda/core', '@agenda/shared-ui']`. Só `apps/landing` não declara `optimizePackageImports` — não usa Phosphor.
+
+`@agenda/shared-ui` existe para **componentes de UI sem lógica de negócio** (recebem só props, sem `useQuery`/`useMutation`/chamada a `@agenda/core` em runtime) que sejam idênticos ou quase-idênticos entre painéis — hoje `Button`, `Field`, `TextInput`, `TextArea`, `Select`, `PageHeader` e `styles.ts` (`INPUT_CLASS`/`SELECT_CLASS`/`BTN_*`), migrados de `admin` e `web-client` onde eram cópias literais. Os tokens de tema (`bg-surface-elevated`, `text-foreground`, `bg-primary`...) têm os mesmos nomes em todos os apps — só o valor no `@theme` de cada `globals.css` muda entre claro (admin) e escuro (web-client/web/landing) — por isso o mesmo componente funciona nos dois temas sem alteração. Componentes com dado/serviço embutido (upload, autocomplete de atributos, combobox de cidade) **ficam locais** no app: extrair exigiria primeiro separar UI pura de container, o que não foi feito.
 
 ### Onde roda teste
 
@@ -100,8 +105,9 @@ agenda-de-boteco/
 │   │   ├── app/(admin)/                # avisos, estabelecimentos, eventos, layout, page
 │   │   ├── app/login/  app/privacidade/  app/providers.tsx  app/layout.tsx  app/globals.css
 │   │   ├── components/Sidebar.tsx
-│   │   ├── components/ui/              # Button, DataTable, Field, ImageUpload, Modal,
-│   │   │                               # PageHeader, PdfUpload, Select, TextArea, TextInput, styles.ts
+│   │   ├── components/ui/              # DataTable, ImageUpload, Modal, PdfUpload
+│   │   │                               # (Button/Field/PageHeader/Select/TextArea/TextInput/styles
+│   │   │                               #  vêm de @agenda/shared-ui)
 │   │   ├── lib/                        # formErrors.ts, storage.ts, supabase.ts
 │   │   └── next.config.ts  postcss.config.mjs  .env.example
 │   ├── landing/                        # Landing (Next 15, :8087) — sem autenticação
@@ -135,9 +141,10 @@ agenda-de-boteco/
 │       ├── app/login/ onboarding/ nova-senha/ providers.tsx layout.tsx globals.css
 │       ├── components/                 # EventForm.tsx, EventCard.tsx, EstablishmentFields.tsx,
 │       │                               # Sidebar.tsx, Topbar.tsx, ComingSoon.tsx, GoogleIcon.tsx
-│       ├── components/ui/              # AttributeAutocomplete, AttributeIcon, Button, CityCombobox,
-│       │                               # EmptyState, Field, ImageDrop, PageHeader, Select,
-│       │                               # SelectField, TextArea, TextInput, styles.ts
+│       ├── components/ui/              # AttributeAutocomplete, AttributeIcon, CityCombobox,
+│       │                               # EmptyState, ImageDrop, SelectField
+│       │                               # (Button/Field/PageHeader/Select/TextArea/TextInput/styles
+│       │                               #  vêm de @agenda/shared-ui)
 │       ├── hooks/                      # use-owned-establishment.ts, use-owned-events.ts
 │       └── lib/                        # formErrors.ts, storage.ts, supabase.ts  |  .env.example
 ├── packages/
@@ -164,6 +171,10 @@ agenda-de-boteco/
 │   │       └── utils/                  # auth, cn, dates, env, errors, events, filters, format,
 │   │                                   # geo, images, links, masks, moderation, platform,
 │   │                                   # pressGuard, responsiveType, slug, status-light
+│   ├── shared-ui/src/                  # Button, Field, PageHeader, Select, styles.ts,
+│   │                                   # TextArea, TextInput, Calendar, DatePicker,
+│   │                                   # DateTimePicker, TimePicker — puros, sem @agenda/core
+│   │                                   # scrollbar.css — subpath @agenda/shared-ui/scrollbar.css
 │   └── typescript-config/base.json     # tsconfig compartilhado (strict)
 ├── supabase/
 │   ├── migrations/                     # 17 migrações — RLS, policies e RPCs SECURITY DEFINER
@@ -425,22 +436,28 @@ Para o usuário, o único texto permitido é o de `getFriendlyErrorMessage`, que
 31. `hooks/` — `useActiveCity`, `useConnectivity`, `useGuardedPress`, `useNearbyEstablishments`, `useStatusLight`, `hooks/queries.ts`
 32. `data/establishment-attributes.ts` — `ESTABLISHMENT_ATTRIBUTES`
 
+**UI compartilhada entre painéis Next (`packages/shared-ui/src/`)**
+
+33. `Button`, `Field`, `PageHeader`, `Select`, `TextArea`, `TextInput`, `styles.ts` (`INPUT_CLASS`/`SELECT_CLASS`/`BTN_PRIMARY`/`BTN_GHOST`/`BTN_DANGER`) — usados por `admin` e `web-client` hoje; qualquer app Next pode consumir (precisa entrar em `transpilePackages` e declarar os tokens de tema que o componente usa). `Select`/`SelectField` embrulham `@radix-ui/react-select` (dropdown com cara de produto, não o `<select>` nativo do navegador).
+34. `DatePicker`, `TimePicker`, `DateTimePicker`, `Calendar` — substituem `<input type="date">`/`<input type="time">` nativos. `Calendar` embrulha `react-day-picker` (locale `ptBR`, ícones de navegação Phosphor); `DatePicker`/`TimePicker` embrulham `@radix-ui/react-popover` sobre o mesmo `SELECT_CLASS` do `Select`. Valor de `DatePicker` é string `'YYYY-MM-DD'` e de `TimePicker` é `'HH:MM'` — mesmo formato dos inputs nativos que substituem, para trocar sem mudar o schema/parsing do form. Usados hoje em `web-client/EventForm.tsx` e `web/DateRangeField.tsx`. `TimePicker` é lista de horários (`stepMinutes`, default 30), não seletor de hora/minuto separado.
+35. `scrollbar.css` (importe como `@agenda/shared-ui/scrollbar.css`, subpath — não faz parte de `src/index.ts`) — scrollbar custom (trilho invisível, thumb no tom de `--color-border`, destaque em `--color-muted-foreground` no hover) via `::-webkit-scrollbar`/`scrollbar-color`, CSS puro sem lib nova. Usa só os tokens de tema já declarados no `@theme` de cada app, então funciona nos temas claro (admin) e escuro (web-client/web/landing/web-artists) sem alteração. Importado no topo do `globals.css` de **todos os 5 apps Next**, logo após `@import 'tailwindcss'` — inclui `landing` e `web-artists`, que por isso ganharam `@agenda/shared-ui` em `transpilePackages`/dependencies mesmo sem consumir nenhum componente React do pacote ainda.
+
 **UI mobile (`apps/mobile/src/components/ui/`)**
 
-33. `Button`, `Chip`, `CircleIconButton`, `ConfirmDialog`, `EmptyState`, `GradientBadge`, `GuardedPressable`, `Icon`/`iconMap`, `InfoCard`, `OfflineBanner`, `RatingStars`, `SectionLabel`, `SegmentedTabs`, `StatusLightBadge`, `AttributeChips`
-34. `apps/mobile/src/tw/` — fachada styled (`View`, `Text`, `Image`, `Pressable`, `ScrollView`, `TextInput`) sobre `react-native-css`. **Importe daqui, não de `react-native`, em componente com `className`.**
+36. `Button`, `Chip`, `CircleIconButton`, `ConfirmDialog`, `EmptyState`, `GradientBadge`, `GuardedPressable`, `Icon`/`iconMap`, `InfoCard`, `OfflineBanner`, `RatingStars`, `SectionLabel`, `SegmentedTabs`, `StatusLightBadge`, `AttributeChips`
+37. `apps/mobile/src/tw/` — fachada styled (`View`, `Text`, `Image`, `Pressable`, `ScrollView`, `TextInput`) sobre `react-native-css`. **Importe daqui, não de `react-native`, em componente com `className`.**
 
-**UI web-client (`apps/web-client/components/ui/`)**
+**UI web-client (`apps/web-client/components/ui/`)** — só o que fica local (o resto é `@agenda/shared-ui`, itens 33-35)
 
-35. `Button`, `TextInput`, `TextArea`, `Select`, `SelectField`, `Field`, `PageHeader`, `EmptyState`, `ImageDrop`, `CityCombobox`, `AttributeAutocomplete`, `AttributeIcon`, `styles.ts` (`BTN_PRIMARY`/`BTN_GHOST`/`BTN_DANGER`)
+38. `SelectField`, `EmptyState`, `ImageDrop`, `CityCombobox`, `AttributeAutocomplete`, `AttributeIcon`
 
-**UI admin (`apps/admin/components/ui/`)**
+**UI admin (`apps/admin/components/ui/`)** — só o que fica local (o resto é `@agenda/shared-ui`, itens 33-35)
 
-36. `Button`, `DataTable`, `Field`, `Modal`, `PageHeader`, `Select`, `TextInput`, `TextArea`, `ImageUpload`, `PdfUpload`, `styles.ts`
+39. `DataTable`, `Modal`, `ImageUpload`, `PdfUpload`
 
 **UI web (`apps/web/components/`)**
 
-37. `ui/GradientBadge`, `ui/SectionLabel`, `ui/SegmentedTabs`, `ui/StatusLightBadge`, `ui/AttributeChips`, `feedback/EmptyState`, `feedback/UnderConstruction`, `shell/AppShell`, `shell/Sidebar`, `shell/BottomNav`, `shell/NavBadge`, `shell/navItems.ts`
+40. `ui/GradientBadge`, `ui/SectionLabel`, `ui/SegmentedTabs`, `ui/StatusLightBadge`, `ui/AttributeChips`, `feedback/EmptyState`, `feedback/UnderConstruction`, `shell/AppShell`, `shell/Sidebar`, `shell/BottomNav`, `shell/NavBadge`, `shell/navItems.ts`
 
 **Ícones:** fachada única por app (`iconMap.ts` no mobile, `icons.tsx` no web/landing). Trocar ícone toca só a fachada. Todo app Next com Phosphor **precisa** de `experimental.optimizePackageImports: ['@phosphor-icons/react']` (sem isso o dev server transpila 9k+ módulos por build).
 

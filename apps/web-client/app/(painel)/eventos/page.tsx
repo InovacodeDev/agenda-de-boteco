@@ -109,7 +109,7 @@ export default function EventosPage() {
                 type="button"
                 disabled={busy}
                 onClick={() => void run(deleteEvent.mutateAsync(pendingSeries.id))}
-                className="bg-surface-elevated text-foreground rounded-xl px-4 py-2.5 text-sm font-medium transition-opacity hover:opacity-80 disabled:opacity-50"
+                className="bg-destructive text-destructive-foreground rounded-xl px-4 py-2.5 text-sm font-medium transition-opacity hover:opacity-80 disabled:opacity-50"
               >
                 Apagar só esta ocorrência
               </button>

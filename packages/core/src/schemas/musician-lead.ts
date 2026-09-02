@@ -55,3 +55,21 @@ export const musicianLeadSchema = z.object({
 });
 
 export type MusicianLeadInput = z.infer<typeof musicianLeadSchema>;
+
+/**
+ * Linha de `musician_leads` como a RPC `list_musician_leads` retorna: colunas
+ * snake_case cruas do Postgres, não o input camelCase do formulário acima.
+ * Schema separado de propósito — mesma tabela, shapes incompatíveis.
+ */
+export const musicianLeadRowSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  phone: z.string(),
+  region: z.string(),
+  music_style_ids: z.array(z.string()),
+  instagram: z.string(),
+  price_range: z.string().nullable(),
+  created_at: z.string(),
+});
+
+export type MusicianLeadRow = z.infer<typeof musicianLeadRowSchema>;

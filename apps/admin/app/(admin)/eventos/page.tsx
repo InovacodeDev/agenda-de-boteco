@@ -14,18 +14,13 @@ import {
   useEventsQuery,
   useMusicStylesQuery,
 } from '@agenda/core';
+import { Button, Field, PageHeader, Select, TextArea, TextInput } from '@agenda/shared-ui';
 import { useQueryClient } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
 
-import { Button } from '@/components/ui/Button';
-import { type Column,DataTable } from '@/components/ui/DataTable';
-import { Field } from '@/components/ui/Field';
+import { type Column, DataTable } from '@/components/ui/DataTable';
 import { ImageUpload, ImageUploadMulti } from '@/components/ui/ImageUpload';
 import { Modal } from '@/components/ui/Modal';
-import { PageHeader } from '@/components/ui/PageHeader';
-import { Select } from '@/components/ui/Select';
-import { TextArea } from '@/components/ui/TextArea';
-import { TextInput } from '@/components/ui/TextInput';
 import { issuesToErrors } from '@/lib/formErrors';
 
 // ISO com offset <-> valor do <input type="datetime-local"> ('YYYY-MM-DDTHH:mm').
@@ -209,11 +204,11 @@ export default function EventosPage() {
       <PageHeader title="Eventos" onNew={openNew} />
 
       {events.isLoading ? (
-        <p className="text-[14px] text-muted-foreground">Carregando…</p>
+        <p className="text-muted-foreground text-[14px]">Carregando…</p>
       ) : events.error ? (
-        <p className="text-[14px] text-destructive">Erro ao carregar eventos.</p>
+        <p className="text-destructive text-[14px]">Erro ao carregar eventos.</p>
       ) : (events.data ?? []).length === 0 ? (
-        <p className="text-[14px] text-muted-foreground">Nenhum item ainda.</p>
+        <p className="text-muted-foreground text-[14px]">Nenhum item ainda.</p>
       ) : (
         <DataTable
           columns={columns}
@@ -229,9 +224,7 @@ export default function EventosPage() {
         onClose={() => setOpen(false)}
         footer={
           <div className="flex flex-col gap-3">
-            {submitError ? (
-              <p className="text-[13px] text-destructive">{submitError}</p>
-            ) : null}
+            {submitError ? <p className="text-destructive text-[13px]">{submitError}</p> : null}
             <div className="flex justify-end gap-2">
               <Button variant="ghost" onClick={() => setOpen(false)}>
                 Cancelar
@@ -254,15 +247,12 @@ export default function EventosPage() {
             />
           </Field>
           <Field label="Estabelecimento" error={errors.establishment_id}>
-            <Select
-              value={form.establishment_id}
-              onChange={(e) => set('establishment_id', e.target.value)}
-            >
-              <option value="">Selecione…</option>
+            <Select value={form.establishment_id} onValueChange={(v) => set('establishment_id', v)}>
+              <Select.Option value="">Selecione…</Select.Option>
               {(establishments.data ?? []).map((e) => (
-                <option key={e.id} value={e.id}>
+                <Select.Option key={e.id} value={e.id}>
                   {e.name}
-                </option>
+                </Select.Option>
               ))}
             </Select>
           </Field>
@@ -334,7 +324,7 @@ export default function EventosPage() {
                   return (
                     <label
                       key={s.id}
-                      className={`flex h-9 cursor-pointer items-center gap-1.5 rounded-full px-4 text-[13px] font-medium transition-colors ${
+                      className={`relative flex h-9 cursor-pointer items-center gap-1.5 rounded-full px-4 text-[13px] font-medium transition-colors ${
                         checked
                           ? 'bg-primary text-primary-foreground'
                           : 'bg-surface-elevated text-muted-foreground hover:text-foreground'

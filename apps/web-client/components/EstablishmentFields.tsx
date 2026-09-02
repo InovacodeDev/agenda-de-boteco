@@ -255,14 +255,14 @@ export function OperationFields({ draft, set }: FieldGroupProps) {
           <SelectField
             id="priceRange"
             value={draft.priceRange}
-            onChange={(e) => set('priceRange', e.target.value)}
-            className={`${FIELD_CLASS} ${draft.priceRange ? '' : 'text-muted-foreground'}`}
+            onValueChange={(v) => set('priceRange', v)}
+            placeholder="Selecione"
+            className={`${FIELD_CLASS} data-[placeholder]:text-muted-foreground`}
           >
-            <option value="">Selecione</option>
             {Object.entries(PRICE_RANGE_LABELS).map(([value, label]) => (
-              <option key={value} value={value} className="text-foreground">
+              <SelectField.Option key={value} value={value}>
                 {label}
-              </option>
+              </SelectField.Option>
             ))}
           </SelectField>
         </Labelled>
@@ -271,14 +271,14 @@ export function OperationFields({ draft, set }: FieldGroupProps) {
           <SelectField
             id="ambiance"
             value={draft.ambiance}
-            onChange={(e) => set('ambiance', e.target.value)}
-            className={`${FIELD_CLASS} ${draft.ambiance ? '' : 'text-muted-foreground'}`}
+            onValueChange={(v) => set('ambiance', v)}
+            placeholder="Selecione"
+            className={`${FIELD_CLASS} data-[placeholder]:text-muted-foreground`}
           >
-            <option value="">Selecione</option>
             {AMBIANCES.map((item) => (
-              <option key={item} value={item} className="text-foreground">
+              <SelectField.Option key={item} value={item}>
                 {item}
-              </option>
+              </SelectField.Option>
             ))}
           </SelectField>
         </Labelled>
