@@ -30,6 +30,12 @@
       "runtimeExecutable": "pnpm",
       "runtimeArgs": ["--filter", "@agenda/landing", "dev"],
       "port": 8087
+    },
+    {
+      "name": "agenda-web-artists",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter", "@agenda/web-artists", "dev"],
+      "port": 8091
     }
   ]
 }
