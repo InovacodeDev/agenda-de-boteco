@@ -88,7 +88,7 @@ export default function ArtistasPage() {
           placeholder="Buscar por nome..."
         />
 
-        <Select value={musicStyleId} onValueChange={setMusicStyleId}>
+        <Select value={musicStyleId} onValueChange={setMusicStyleId} className="pr-3">
           <Select.Option value="">Todos os estilos</Select.Option>
           {musicStyles.map((style) => (
             <Select.Option key={style.id} value={style.id}>
@@ -103,7 +103,7 @@ export default function ArtistasPage() {
           placeholder="Buscar por região..."
         />
 
-        <Select value={sort} onValueChange={(v) => setSort(v as MusicianLeadSort)}>
+        <Select value={sort} onValueChange={(v) => setSort(v as MusicianLeadSort)} className="pr-3">
           <Select.Option value="recent">Mais recentes</Select.Option>
           <Select.Option value="name">Nome</Select.Option>
           <Select.Option value="region">Região</Select.Option>
