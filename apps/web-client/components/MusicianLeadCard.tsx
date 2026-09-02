@@ -10,7 +10,7 @@ import {
 import { InstagramLogoIcon, WhatsappLogoIcon } from '@phosphor-icons/react';
 
 const LINK_ACTION =
-  'flex h-10 flex-1 items-center justify-center gap-2 rounded-xl bg-surface-elevated text-sm font-medium text-foreground transition-opacity hover:opacity-80';
+  'flex h-9 flex-1 items-center justify-center gap-1.5 rounded-xl bg-surface-elevated text-[13px] font-medium text-foreground transition-opacity hover:opacity-80';
 
 export function MusicianLeadCard({
   lead,
@@ -25,12 +25,18 @@ export function MusicianLeadCard({
   const instagramHandle = formatInstagramHandle(lead.instagram);
 
   return (
-    <article className="shadow-card border-border bg-card flex flex-col gap-3 rounded-2xl border p-5">
-      <div>
-        <h2 className="font-heading text-foreground text-[17px] font-bold leading-snug">
-          {lead.name}
-        </h2>
-        <p className="text-muted-foreground text-sm">{lead.region}</p>
+    <article className="shadow-card border-border bg-card flex flex-col gap-2.5 rounded-2xl border p-4">
+      <div className="flex items-start justify-between gap-3">
+        <p className="text-foreground line-clamp-2 min-w-0 text-sm leading-snug">
+          <span className="font-heading font-bold">{lead.name}</span>
+          <span className="text-muted-foreground">, {lead.region}</span>
+        </p>
+
+        {lead.price_range ? (
+          <span className="text-primary shrink-0 whitespace-nowrap text-right text-sm font-semibold">
+            {lead.price_range}
+          </span>
+        ) : null}
       </div>
 
       <div className="flex flex-wrap gap-1.5">
@@ -47,11 +53,7 @@ export function MusicianLeadCard({
         })}
       </div>
 
-      {lead.price_range ? (
-        <p className="text-muted-foreground text-sm">{lead.price_range}</p>
-      ) : null}
-
-      <div className="mt-auto flex items-center gap-2 pt-2">
+      <div className="mt-auto flex items-center gap-2 pt-1">
         <a
           href={whatsappUrl}
           target="_blank"

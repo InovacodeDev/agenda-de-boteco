@@ -114,7 +114,7 @@ export default function ArtistasPage() {
         <p className="text-muted-foreground text-sm">Carregando…</p>
       ) : items.length > 0 ? (
         <>
-          <section className="grid gap-4 lg:grid-cols-2">
+          <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {items.map((lead) => (
               <MusicianLeadCard key={lead.id} lead={lead} styleById={styleById} />
             ))}
