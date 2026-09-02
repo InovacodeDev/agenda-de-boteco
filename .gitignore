@@ -12,6 +12,11 @@ node_modules/
 .npm/
 
 # -----------------------------------------------------------------------------
+#  Git worktrees (superpowers subagent-driven development)
+# -----------------------------------------------------------------------------
+.worktrees/
+
+# -----------------------------------------------------------------------------
 #  ENVIRONMENT & SECRETS  —  NEVER commit these
 #  (Supabase service_role key, anon key, API tokens, etc. live here)
 # -----------------------------------------------------------------------------
