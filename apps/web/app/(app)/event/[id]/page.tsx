@@ -10,11 +10,13 @@ import {
   formatTimeRange,
   indexById,
   musicStylesForEvent,
+  recordMetricEvent,
   useEstablishmentQuery,
   useEventAttractionsQuery,
   useEventQuery,
   useFavoritesStore,
   useMusicStylesQuery,
+  useRecordView,
 } from '@agenda/core';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
@@ -98,6 +100,7 @@ export default function EventDetailPage() {
   const { data: musicStyles } = useMusicStylesQuery();
   const stylesById = useMemo(() => indexById(musicStyles ?? []), [musicStyles]);
   const { data: attractions } = useEventAttractionsQuery(event?.id ?? '');
+  useRecordView({ establishmentId: event?.establishment_id, eventId: event?.id });
   const photos = useMemo(
     () => [event?.banner_url, ...(event?.photo_urls ?? [])].filter(Boolean) as string[],
     [event],
@@ -265,6 +268,13 @@ export default function EventDetailPage() {
           href={buildDirectionsUrl({ lat: establishment.lat, lng: establishment.lng })}
           target="_blank"
           rel="noopener noreferrer"
+          onClick={() =>
+            void recordMetricEvent({
+              establishmentId: establishment.id,
+              eventId: event.id,
+              kind: 'click_map',
+            })
+          }
           className="flex flex-1 items-center justify-center gap-2 rounded-full border-[0.5px] border-foreground/50 bg-background px-4 py-3 text-[14px] font-[family-name:var(--font-body)] font-medium text-foreground transition-opacity hover:opacity-80"
         >
           <NavIcon size={16} />
