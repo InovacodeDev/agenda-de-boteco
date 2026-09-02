@@ -23,7 +23,7 @@ const NAV: { href: string; label: string; icon: Icon }[] = [
   { href: '/eventos', label: 'Eventos', icon: CalendarBlankIcon },
   { href: '/artistas', label: 'Artistas', icon: MicrophoneStageIcon },
   { href: '/perfil', label: 'Perfil', icon: StorefrontIcon },
-  { href: '/metricas', label: 'Métricas', icon: ChartBarIcon },
+  { href: '/metrics', label: 'Métricas', icon: ChartBarIcon },
   { href: '/avaliacoes', label: 'Avaliações', icon: StarIcon },
   { href: '/configuracoes', label: 'Configurações', icon: GearIcon },
 ];
