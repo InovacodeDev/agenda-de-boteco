@@ -21,9 +21,13 @@ export default function MetricasPage() {
   const [sinceDays, setSinceDays] = useState('30');
   const [activeEvent, setActiveEvent] = useState<Event | null>(null);
 
-  const { data: events } = useOwnedEvents();
-  const { data: rows, isPending } = useOwnedMetrics(Number(sinceDays));
+  const { data: events, isPending: eventsPending } = useOwnedEvents();
+  const { data: rows, isPending: metricsPending } = useOwnedMetrics(Number(sinceDays));
   const { data: favoritesByEvent } = useOwnedFavoritesCount();
+  // Espera as duas queries: se só metricsPending resolver, a tabela vê linhas
+  // órfãs (eventsById ainda vazio) e pula todas via `if (!event) return null`,
+  // sem cair no estado vazio nem no de carregando — uma tabela em branco.
+  const isPending = metricsPending || eventsPending;
 
   const { byEvent, byDay, totals } = useMemo(
     () => aggregateMetrics(rows ?? [], favoritesByEvent ?? {}),
