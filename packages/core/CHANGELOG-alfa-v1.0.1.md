@@ -15,3 +15,4 @@
 - Filtro de bares passa a aplicar distância, avaliação mínima e "aberto agora", que antes eram ignorados nessa lista
 - Lista de estabelecimentos volta a carregar mesmo quando as imagens (logo e capa) estão vazias ou em formatos alternativos
 - Login por Google e Apple no navegador passa a usar o mesmo destino de retorno do acesso por e-mail
+- Nova regra compartilhada entre app e site para decidir onde o mapa abre: sua localização quando você está na cidade escolhida, ou o centro dela quando está em outra
