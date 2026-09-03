@@ -30,14 +30,14 @@ upsert_var() {
   fi
 }
 
-upsert_var "$ROOT/apps/web/.env.local" NEXT_PUBLIC_SUPABASE_URL "$api_url"
-upsert_var "$ROOT/apps/web/.env.local" NEXT_PUBLIC_SUPABASE_ANON_KEY "$anon_key"
+upsert_var "$ROOT/apps/web/.env" NEXT_PUBLIC_SUPABASE_URL "$api_url"
+upsert_var "$ROOT/apps/web/.env" NEXT_PUBLIC_SUPABASE_ANON_KEY "$anon_key"
 
-upsert_var "$ROOT/apps/web-client/.env.local" NEXT_PUBLIC_SUPABASE_URL "$api_url"
-upsert_var "$ROOT/apps/web-client/.env.local" NEXT_PUBLIC_SUPABASE_ANON_KEY "$anon_key"
+upsert_var "$ROOT/apps/web-client/.env" NEXT_PUBLIC_SUPABASE_URL "$api_url"
+upsert_var "$ROOT/apps/web-client/.env" NEXT_PUBLIC_SUPABASE_ANON_KEY "$anon_key"
 
-upsert_var "$ROOT/apps/admin/.env.local" NEXT_PUBLIC_SUPABASE_URL "$api_url"
-upsert_var "$ROOT/apps/admin/.env.local" NEXT_PUBLIC_SUPABASE_ANON_KEY "$anon_key"
+upsert_var "$ROOT/apps/admin/.env" NEXT_PUBLIC_SUPABASE_URL "$api_url"
+upsert_var "$ROOT/apps/admin/.env" NEXT_PUBLIC_SUPABASE_ANON_KEY "$anon_key"
 
 upsert_var "$ROOT/apps/mobile/.env" EXPO_PUBLIC_SUPABASE_URL "$api_url"
 upsert_var "$ROOT/apps/mobile/.env" EXPO_PUBLIC_SUPABASE_ANON_KEY "$anon_key"
