@@ -1,7 +1,7 @@
 import type { NextConfig } from 'next';
 
 const config: NextConfig = {
-  transpilePackages: ['@agenda/core', '@agenda/shared-ui'],
+  transpilePackages: ['@agenda/core'],
   async redirects() {
     return [
       {

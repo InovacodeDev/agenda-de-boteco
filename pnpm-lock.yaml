@@ -133,9 +133,6 @@ importers:
       '@agenda/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@agenda/shared-ui':
-        specifier: workspace:*
-        version: link:../../packages/shared-ui
       next:
         specifier: ^15.1.0
         version: 15.5.19(@babel/core@7.29.7)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
