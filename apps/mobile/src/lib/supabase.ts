@@ -44,6 +44,3 @@ export function getSupabase(): SupabaseClient | null {
   return client;
 }
 
-export function isSupabaseConfigured(): boolean {
-  return getSupabase() !== null;
-}
