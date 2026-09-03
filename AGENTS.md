@@ -3,8 +3,8 @@
 ## 0. 🚨 REGRAS DE OURO DA IA (DIRETRIZES INVIOLÁVEIS & SOC 2)
 
 1. **PREVENÇÃO ABSOLUTA DE VAZAMENTO DE DADOS (SECRETS & PII):**
-   - **Zero hardcoded secrets.** Proibido literal de chave, senha, token, JWT, private key, `service_role` key ou connection string em código, teste, comentário ou `.md`. Toda credencial entra por env do app (`NEXT_PUBLIC_*` / `EXPO_PUBLIC_*`), lida **apenas** no `lib/supabase.ts` de cada app e no `apps/mobile/app.config.ts`. O `.gitignore` já bloqueia `.env` e `.env.*` com exceção de `.env.example` — mantenha assim.
-   - **`SUPABASE_SERVICE_ROLE_KEY` nunca entra num app cliente.** Todos os cinco apps deste repo rodam no browser/dispositivo: qualquer chave neles é pública por definição. A anon key é pública **por design** (a proteção real é RLS); a service_role key ignora RLS e não tem lugar aqui.
+   - **Zero hardcoded secrets.** Proibido literal de chave, senha, token, JWT, private key, `service_role` key ou connection string em código, teste, comentário ou `.md`. Toda credencial entra por env do app (`NEXT_PUBLIC_*` / `EXPO_PUBLIC_*`), lida **apenas** no `lib/supabase.ts` de cada app e no `app.config.ts` dos apps Expo (hoje `apps/mobile/app.config.ts`). O `.gitignore` já bloqueia `.env` e `.env.*` com exceção de `.env.example` — mantenha assim.
+   - **`SUPABASE_SERVICE_ROLE_KEY` nunca entra num app cliente.** Todos os apps clientes deste repo (hoje 6 apps — 5 Next.js e 1 Expo — com expansão planejada para 8 com `mobile-artists` e `mobile-client`) rodam no browser/dispositivo: qualquer chave neles é pública por definição. A anon key é pública **por design** (a proteção real é RLS); a service_role key ignora RLS e não tem lugar aqui.
    - **Mascaramento de PII em log.** Proibido registrar e-mail, telefone, CPF/CNPJ, token OTP, senha ou coordenada exata de usuário em `args` de erro, log ou mensagem de UI. Ver a dívida real registrada na Seção 5 (`auth.verifyEmailOtp` hoje loga `{ email, token }`) e a regra de `ErrorContext.args`.
    - **⚠️ Não confunda `utils/masks.ts` com mascaramento de PII.** `maskPhoneBR`/`maskCPF`/`maskCNPJ` são **máscaras de digitação** (formatam o input do usuário na tela) — elas *exibem* o dado, não o ocultam. Não existe utilitário de redaction neste repo; a regra é **não logar** o dado, não "mascarar antes de logar".
    - **Nunca exiba no chat** valor real de token, chave ou dado de cliente lido de arquivo/banco.
@@ -43,7 +43,7 @@
 
 ## 2. Visão Geral da Arquitetura & Ecossistema (Versões Exatas Instaladas)
 
-Monorepo **pnpm workspaces + Turborepo 2**, TypeScript estrito: quatro clientes Next.js, um cliente Expo, um núcleo agnóstico de plataforma. **Não há backend próprio** — o servidor é o Supabase (Postgres + Auth + Storage + Realtime), e a fronteira de segurança é a RLS.
+Monorepo **pnpm workspaces + Turborepo 2**, TypeScript estrito: cinco clientes Next.js, um cliente Expo (com expansão planejada para 8 apps via `mobile-artists` e `mobile-client`, ambos em Expo), um núcleo agnóstico de plataforma. **Não há backend próprio** — o servidor é o Supabase (Postgres + Auth + Storage + Realtime), e a fronteira de segurança é a RLS.
 
 ### Versões exatas (dos `package.json` deste repo)
 
@@ -80,21 +80,24 @@ Monorepo **pnpm workspaces + Turborepo 2**, TypeScript estrito: quatro clientes 
 | Pacote | Diretório | Porta | `basePath` | Versão | Papel | Sessão persistida em |
 |---|---|---|---|---|---|---|
 | `@agenda/mobile` | `apps/mobile` | `10002` | — | `0.1.1` | App do consumidor (iOS/Android/web) | `expo-secure-store` |
+| `@agenda/mobile-artists` | `apps/mobile-artists` | *tbd* | — | *planejado* | App do músico/artista (iOS/Android) [Expo] | `expo-secure-store` |
+| `@agenda/mobile-client` | `apps/mobile-client` | *tbd* | — | *planejado* | App do dono do bar (iOS/Android) [Expo] | `expo-secure-store` |
 | `@agenda/web` | `apps/web` | `8088` | `/app` | `0.0.2` | Web pública do consumidor | localStorage |
 | `@agenda/web-client` | `apps/web-client` | `8090` | `/client` | `0.0.1` | **Painel do dono do bar** | localStorage |
+| `@agenda/web-artists` | `apps/web-artists` | `8091` | `/artists` | `0.0.1` | Portal de captação de músicos/artistas | — (sem auth ativa / localStorage) |
 | `@agenda/admin` | `apps/admin` | `8089` | `/admin` | `1.0.1` | Painel administrativo interno | localStorage |
 | `@agenda/landing` | `apps/landing` | `8087` | — | `0.0.3` | Landing institucional | — (sem auth) |
 | `@agenda/core` | `packages/core` | — | — | `1.0.0` | Núcleo compartilhado (source-only) | — |
 | `@agenda/shared-ui` | `packages/shared-ui` | — | — | `0.0.1` | Componentes de UI puros compartilhados (source-only) | — |
 | `@agenda/typescript-config` | `packages/typescript-config` | — | — | `1.0.0` | `base.json` compartilhado | — |
 
-`@agenda/core` e `@agenda/shared-ui` **não são buildados** (`"build": "echo '... is a source-only internal package'"`); todo app Next que os consome declara `transpilePackages: ['@agenda/core', '@agenda/shared-ui']`. Só `apps/landing` não declara `optimizePackageImports` — não usa Phosphor.
+`@agenda/core` e `@agenda/shared-ui` **não são buildados** (`"build": "echo '... is a source-only internal package'"`); todo app Next que os consome declara `transpilePackages: ['@agenda/core', '@agenda/shared-ui']`. Só `apps/landing` e `apps/web-artists` não declaram `optimizePackageImports` — landing não usa Phosphor e web-artists usa formulário único com ícones SVG inline.
 
-`@agenda/shared-ui` existe para **componentes de UI sem lógica de negócio** (recebem só props, sem `useQuery`/`useMutation`/chamada a `@agenda/core` em runtime) que sejam idênticos ou quase-idênticos entre painéis — hoje `Button`, `Field`, `TextInput`, `TextArea`, `Select`, `PageHeader` e `styles.ts` (`INPUT_CLASS`/`SELECT_CLASS`/`BTN_*`), migrados de `admin` e `web-client` onde eram cópias literais. Os tokens de tema (`bg-surface-elevated`, `text-foreground`, `bg-primary`...) têm os mesmos nomes em todos os apps — só o valor no `@theme` de cada `globals.css` muda entre claro (admin) e escuro (web-client/web/landing) — por isso o mesmo componente funciona nos dois temas sem alteração. Componentes com dado/serviço embutido (upload, autocomplete de atributos, combobox de cidade) **ficam locais** no app: extrair exigiria primeiro separar UI pura de container, o que não foi feito.
+`@agenda/shared-ui` existe para **componentes de UI sem lógica de negócio** (recebem só props, sem `useQuery`/`useMutation`/chamada a `@agenda/core` em runtime) que sejam idênticos ou quase-idênticos entre painéis — hoje `Button`, `Field`, `TextInput`, `TextArea`, `Select`, `PageHeader` e `styles.ts` (`INPUT_CLASS`/`SELECT_CLASS`/`BTN_*`), migrados de `admin` e `web-client` onde eram cópias literais. Os tokens de tema (`bg-surface-elevated`, `text-foreground`, `bg-primary`...) têm os mesmos nomes em todos os apps — só o valor no `@theme` de cada `globals.css` muda entre claro (admin) e escuro (web-client/web/landing/web-artists) — por isso o mesmo componente funciona nos dois temas sem alteração. Componentes com dado/serviço embutido (upload, autocomplete de atributos, combobox de cidade) **ficam locais** no app: extrair exigiria primeiro separar UI pura de container, o que não foi feito.
 
 ### Onde roda teste
 
-Só `@agenda/core` (`jest --passWithNoTests`) e `@agenda/mobile` (`jest`) têm script `test`. **Os quatro apps Next não têm suíte.** Consequência de segurança: regra de autorização ou validação escrita dentro de um app Next é regra sem teste — ela pertence ao core.
+Só `@agenda/core` (`jest --passWithNoTests`) e `@agenda/mobile` (`jest`) têm script `test`. **Os cinco apps Next não têm suíte** (quando criados, `mobile-artists` e `mobile-client` seguirão a mesma estrutura de testes com `jest-expo` do mobile). Consequência de segurança: regra de autorização ou validação escrita dentro de um app Next é regra sem teste — ela pertence ao core.
 
 ### Árvore de diretórios real
 
@@ -114,7 +117,7 @@ agenda-de-boteco/
 │   │   ├── app/                        # page.tsx, suporte/page.tsx, layout.tsx, globals.css
 │   │   ├── components/                 # AppPreview.tsx, DownloadButtons.tsx, icons.tsx
 │   │   └── next.config.ts  vercel.json  .env.example
-│   ├── mobile/                         # App Expo 56 (:10002)
+│   ├── mobile/                         # App Expo 56 (:10002) — Consumidor
 │   │   ├── app.config.ts               # versão vem do package.json; chaves de mapa vêm do EAS
 │   │   ├── app/                        # (tabs)/{_layout,index,favorites,map,notifications,profile},
 │   │   │                               # city, establishment/[id], event/[id], login, onboarding,
@@ -127,6 +130,8 @@ agenda-de-boteco/
 │   │   │   ├── tw/                     # fachada styled do react-native-css
 │   │   │   └── global.css              # @theme do Tailwind v4 para NativeWind
 │   │   └── jest.config.js  .env.example
+│   ├── mobile-artists/                 # [Planejado] App Expo do músico/artista
+│   ├── mobile-client/                  # [Planejado] App Expo do dono do bar
 │   ├── web/                            # Web pública (Next 15, :8088, basePath /app)
 │   │   ├── app/(app)/                  # page (feed), avisos, cidade, favoritos, mapa, perfil,
 │   │   │                               # establishment/[id], event/[id], layout
@@ -135,6 +140,11 @@ agenda-de-boteco/
 │   │   │                               # filters/, map/, notification/, profile/, shell/, ui/
 │   │   ├── hooks/                      # useAppSync.ts, useRequireAuth.ts, useUnreadCount.ts
 │   │   └── lib/                        # cn.ts, storage.ts, supabase.ts  |  .env.example
+│   ├── web-artists/                    # Portal de captação de músicos/artistas (Next 15, :8091, basePath /artists)
+│   │   ├── app/                        # page.tsx, layout.tsx, globals.css, providers.tsx
+│   │   ├── components/                 # MusicianForm.tsx, ui/ (Button, Field, TextInput, styles)
+│   │   ├── lib/                        # analytics.ts, formErrors.ts, supabase.ts
+│   │   └── next.config.ts  postcss.config.mjs  .env.example
 │   └── web-client/                     # Painel do dono (Next 15, :8090, basePath /client)
 │       ├── app/(painel)/               # page (dashboard), eventos/, eventos/novo, eventos/[id],
 │       │                               # avaliacoes, metricas, perfil, configuracoes, layout
@@ -204,7 +214,7 @@ Idem `utils/cn.ts`, `dates.ts`, `errors.ts`, `format.ts`, `geo.ts`, `links.ts`, 
 pnpm typecheck && pnpm lint && pnpm test
 ```
 
-Individuais: `pnpm dev:web`, `pnpm dev:admin`, `pnpm dev:landing`, `pnpm dev:mobile`, `pnpm --filter @agenda/web-client dev`.
+Individuais: `pnpm dev:web`, `pnpm dev:admin`, `pnpm dev:landing`, `pnpm dev:mobile`, `pnpm --filter @agenda/web-client dev`, `pnpm --filter @agenda/web-artists dev`.
 
 ---
 
@@ -492,7 +502,7 @@ Para o usuário, o único texto permitido é o de `getFriendlyErrorMessage`, que
 - **Env:**
   - No **core**, proibido `process.env` e `__DEV__` diretos — use `isProduction()` de `utils/env` (acesso direto quebra o typecheck dos apps sem `@types/node`).
   - Nos **apps**, `process.env.*` só em `lib/supabase.ts`, `app.config.ts` e nos poucos pontos de URL base (`apps/landing/app/layout.tsx`, `apps/landing/app/page.tsx`, `apps/mobile/app/event/[id].tsx`, `apps/mobile/app/establishment/[id].tsx`). Não espalhe leitura de env pela UI.
-  - Toda variável nova entra no `.env.example` do app correspondente (raiz, `apps/web`, `apps/web-client`, `apps/admin`, `apps/mobile`, `apps/landing`), **com placeholder, nunca valor real**.
+  - Toda variável nova entra no `.env.example` do app correspondente (raiz, `apps/web`, `apps/web-client`, `apps/web-artists`, `apps/admin`, `apps/mobile`, `apps/landing` — e futuros `apps/mobile-artists`, `apps/mobile-client`), **com placeholder, nunca valor real**.
   - `.env`/`.env.local` reais: **leitura e escrita proibidas**.
 - **Segredos de build** (`GOOGLE_MAPS_API_KEY_IOS`, `GOOGLE_MAPS_API_KEY_ANDROID`) vivem no **EAS**, injetados em `apps/mobile/app.config.ts` — nunca no git.
 - **`supabase start` só sob pedido explícito.** Nunca teste credencial real contra endpoint remoto.
@@ -500,7 +510,7 @@ Para o usuário, o único texto permitido é o de `getFriendlyErrorMessage`, que
 ### Testes
 
 - **Core:** `packages/core/jest.config.js` — `ts-jest`, `testEnvironment: 'node'`, `testMatch: ['**/*.test.ts']`, `moduleNameMapper` de `@agenda/core` → `src/index.ts`, `jest.setup.ts` injetando storage em memória via `configureAppStorage`.
-- **Mobile:** `apps/mobile/jest.config.js` — `jest-expo`, `testMatch: ['<rootDir>/src/**/*.test.ts']` (só `src/`, não `app/`), `transformIgnorePatterns` liberando `@agenda/*`, `@supabase/*`, `@tanstack/*`, `zustand`, `nativewind`, `react-native-css`.
+- **Mobile:** `apps/mobile/jest.config.js` — `jest-expo`, `testMatch: ['<rootDir>/src/**/*.test.ts']` (só `src/`, não `app/`), `transformIgnorePatterns` liberando `@agenda/*`, `@supabase/*`, `@tanstack/*`, `zustand`, `nativewind`, `react-native-css` (mesmo padrão para futuros `mobile-artists` e `mobile-client`).
 - **Apps Next não têm suíte** — lógica que merece teste pertence ao core.
 - Teste ao lado do fonte. Mock de Supabase no módulo do client:
   ```typescript
@@ -688,8 +698,11 @@ const VARIANTS: Record<Variant, string> = {
 | Mudança em | CHANGELOG a atualizar |
 |---|---|
 | `apps/mobile/` | `apps/mobile/CHANGELOG-<branch>-v<próxima-versão>.md` |
+| `apps/mobile-artists/` | `apps/mobile-artists/CHANGELOG-<branch>-v<próxima-versão>.md` *(quando ativo)* |
+| `apps/mobile-client/` | `apps/mobile-client/CHANGELOG-<branch>-v<próxima-versão>.md` *(quando ativo)* |
 | `apps/web/` | `apps/web/CHANGELOG-<branch>-v<próxima-versão>.md` |
 | `apps/web-client/` | `apps/web-client/CHANGELOG-<branch>-v<próxima-versão>.md` |
+| `apps/web-artists/` | `apps/web-artists/CHANGELOG-<branch>-v<próxima-versão>.md` |
 | `apps/admin/` | `apps/admin/CHANGELOG-<branch>-v<próxima-versão>.md` |
 | `apps/landing/` | `apps/landing/CHANGELOG-<branch>-v<próxima-versão>.md` |
 | `packages/core/` | `packages/core/CHANGELOG-<branch>-v<próxima-versão>.md` |
