@@ -1,10 +1,10 @@
 'use client';
 
+import { cn } from '@agenda/core';
 import Image from 'next/image';
 import Link from 'next/link';
 
 import { useUnreadCount } from '@/hooks/useUnreadCount';
-import { cn } from '@/lib/cn';
 import logo from '@/public/logo.png';
 
 import { NavIcon } from './icons';

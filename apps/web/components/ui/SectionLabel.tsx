@@ -1,4 +1,4 @@
-import { cn } from '@/lib/cn';
+import { cn } from '@agenda/core';
 
 export interface SectionLabelProps {
   children: string;
