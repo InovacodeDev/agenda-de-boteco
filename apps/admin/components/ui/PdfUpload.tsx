@@ -1,6 +1,6 @@
 'use client';
 
-import { MAX_IMAGE_BYTES, uploadImage } from '@agenda/core';
+import { deleteImage, MAX_IMAGE_BYTES, uploadImage } from '@agenda/core';
 import { useCallback, useState } from 'react';
 
 type PendingState = { previewName: string } | { error: string } | null;
@@ -35,6 +35,9 @@ export function PdfUpload({
       setPending({ previewName: file.name });
       try {
         const url = await uploadImage(file, { pathPrefix });
+        if (value) {
+          void deleteImage(value).catch(() => {});
+        }
         onChange(url);
       } catch (e: unknown) {
         setPending({ error: e instanceof Error ? e.message : 'Falha no upload.' });
@@ -42,7 +45,7 @@ export function PdfUpload({
       }
       setPending(null);
     },
-    [onChange, pathPrefix],
+    [onChange, pathPrefix, value],
   );
 
   const pick = (list: FileList | null) => {
@@ -69,7 +72,12 @@ export function PdfUpload({
           </div>
           <button
             type="button"
-            onClick={() => onChange('')}
+            onClick={() => {
+              if (value) {
+                void deleteImage(value).catch(() => {});
+              }
+              onChange('');
+            }}
             className="rounded-full bg-black/10 px-2 py-1 text-[12px] font-bold text-muted-foreground hover:bg-black/20 hover:text-foreground"
           >
             Remover

@@ -262,6 +262,7 @@ export function EventForm({ event }: { event?: Event }) {
           label="Banner do evento"
           value={draft.bannerUrl}
           onChange={(url) => set('bannerUrl', url)}
+          pathPrefix="events"
           className="h-[200px]"
         />
 

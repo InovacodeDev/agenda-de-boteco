@@ -1,6 +1,6 @@
 'use client';
 
-import { MAX_IMAGE_BYTES, uploadImage } from '@agenda/core';
+import { deleteImage, MAX_IMAGE_BYTES, uploadImage } from '@agenda/core';
 import { UploadSimpleIcon } from '@phosphor-icons/react';
 import { useState } from 'react';
 
@@ -14,11 +14,13 @@ export function ImageDrop({
   onChange,
   label,
   className = '',
+  pathPrefix = 'establishments',
 }: {
   value: string;
   onChange: (url: string) => void;
   label: string;
   className?: string;
+  pathPrefix?: string;
 }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -36,7 +38,11 @@ export function ImageDrop({
     setError(null);
     setBusy(true);
     try {
-      onChange(await uploadImage(file, { pathPrefix: 'establishments' }));
+      const url = await uploadImage(file, { pathPrefix });
+      if (value) {
+        void deleteImage(value).catch(() => {});
+      }
+      onChange(url);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Falha no upload.');
     } finally {
