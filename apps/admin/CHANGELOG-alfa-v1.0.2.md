@@ -8,3 +8,4 @@
 - URL da Política de Privacidade passa a ser em inglês; link antigo continua funcionando por redirecionamento automático
 - Métricas de uso do painel agora coletadas via PostHog, no lugar do Vercel Analytics
 - Criação, edição e exclusão de estabelecimentos passam a gerar evento de uso para acompanhamento interno
+- Janela de confirmação ao sair da conta unificada ao padrão visual dos demais modais do painel
