@@ -118,13 +118,3 @@ export const useFavoritesStore = create<FavoritesState>()(
 registerRehydrator(() => {
   void useFavoritesStore.persist.rehydrate();
 });
-
-/** Selector puro: o evento está favoritado? */
-export function isEventFavorite(state: FavoritesState, id: string): boolean {
-  return state.eventIds.includes(id);
-}
-
-/** Selector puro: o estabelecimento está favoritado? */
-export function isEstablishmentFavorite(state: FavoritesState, id: string): boolean {
-  return state.establishmentIds.includes(id);
-}

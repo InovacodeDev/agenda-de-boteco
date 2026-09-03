@@ -276,7 +276,7 @@ export type EstablishmentAttributeMeta = (typeof ESTABLISHMENT_ATTRIBUTES)[numbe
  * Os cinco atributos que ganham chip no filtro rápido do feed. Os demais só
  * pelo modal de busca — 36 chips na horizontal não é filtro, é lista.
  */
-export const QUICK_ATTRIBUTES: readonly EstablishmentAttribute[] = [
+const QUICK_ATTRIBUTES: readonly EstablishmentAttribute[] = [
   'pet-friendly',
   'kids-area',
   'outdoor-space',
