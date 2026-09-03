@@ -33,12 +33,14 @@ function SelectOption({ value, children, className = '' }: SelectOptionProps) {
 }
 
 export function Select({
+  id,
   value,
   onValueChange,
   children,
   className = '',
   placeholder,
 }: {
+  id?: string;
   value: string;
   onValueChange: (value: string) => void;
   children: ReactNode;
@@ -56,7 +58,8 @@ export function Select({
         onValueChange={(next) => onValueChange(next === EMPTY_VALUE ? '' : next)}
       >
         <RadixSelect.Trigger
-          className={`${SELECT_CLASS} flex items-center justify-between ${className}`}
+          id={id}
+          className={`${SELECT_CLASS} data-[placeholder]:text-muted-foreground flex items-center justify-between ${className}`}
         >
           <RadixSelect.Value placeholder={placeholder} />
           <RadixSelect.Icon className="text-muted-foreground">

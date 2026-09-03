@@ -9,13 +9,13 @@ import {
   maskPhoneBR,
   PRICE_RANGE_LABELS,
 } from '@agenda/core';
+import { Select } from '@agenda/shared-ui';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 
 import { AttributeAutocomplete } from '@/components/ui/AttributeAutocomplete';
 import { CityCombobox } from '@/components/ui/CityCombobox';
 import { ImageDrop } from '@/components/ui/ImageDrop';
-import { SelectField } from '@/components/ui/SelectField';
 
 /**
  * Campos do estabelecimento, compartilhados pelo wizard de onboarding (Fase 1,
@@ -252,35 +252,33 @@ export function OperationFields({ draft, set }: FieldGroupProps) {
 
       <div className="grid grid-cols-2 gap-6">
         <Labelled htmlFor="priceRange" label="Faixa de preço">
-          <SelectField
+          <Select
             id="priceRange"
             value={draft.priceRange}
             onValueChange={(v) => set('priceRange', v)}
             placeholder="Selecione"
-            className={`${FIELD_CLASS} data-[placeholder]:text-muted-foreground`}
           >
             {Object.entries(PRICE_RANGE_LABELS).map(([value, label]) => (
-              <SelectField.Option key={value} value={value}>
+              <Select.Option key={value} value={value}>
                 {label}
-              </SelectField.Option>
+              </Select.Option>
             ))}
-          </SelectField>
+          </Select>
         </Labelled>
 
         <Labelled htmlFor="ambiance" label="Tipo de ambiente">
-          <SelectField
+          <Select
             id="ambiance"
             value={draft.ambiance}
             onValueChange={(v) => set('ambiance', v)}
             placeholder="Selecione"
-            className={`${FIELD_CLASS} data-[placeholder]:text-muted-foreground`}
           >
             {AMBIANCES.map((item) => (
-              <SelectField.Option key={item} value={item}>
+              <Select.Option key={item} value={item}>
                 {item}
-              </SelectField.Option>
+              </Select.Option>
             ))}
-          </SelectField>
+          </Select>
         </Labelled>
       </div>
 
