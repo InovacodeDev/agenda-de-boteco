@@ -51,3 +51,40 @@ export function identifyAnalyticsUser(userId: string): void {
 export function resetAnalytics(): void {
   adapter?.reset();
 }
+
+export interface PostHogBrowserClient {
+  init(apiKey: string, config?: Record<string, unknown>): void;
+  capture(event: string, properties?: Record<string, unknown>): void;
+  identify(distinctId: string): void;
+  reset(): void;
+  isFeatureEnabled(key: string): boolean | undefined;
+  onFeatureFlags(callback: () => void): () => void;
+}
+
+export interface PostHogBrowserConfig {
+  apiKey?: string;
+  apiHost?: string;
+}
+
+export function createPostHogBrowserAdapter(
+  client: PostHogBrowserClient,
+  config: PostHogBrowserConfig,
+): AnalyticsAdapter | null {
+  if (!config.apiKey) return null;
+
+  client.init(config.apiKey, {
+    api_host: config.apiHost,
+    capture_pageview: false,
+    person_profiles: 'identified_only',
+  });
+
+  return {
+    capturePageview: (path) => client.capture('$pageview', { $current_url: path }),
+    captureEvent: (name, properties) => client.capture(name, properties),
+    identify: (userId) => client.identify(userId),
+    reset: () => client.reset(),
+    isFeatureEnabled: (key) => client.isFeatureEnabled(key) ?? false,
+    onFeatureFlags: (callback) => client.onFeatureFlags(callback),
+  };
+}
+

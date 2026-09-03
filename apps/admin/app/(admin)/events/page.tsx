@@ -7,6 +7,7 @@ import {
   type EventStatus,
   type EventWriteInput,
   eventWriteSchema,
+  issuesToErrors,
   maskCurrencyBR,
   parseCurrencyBR,
   upsertEvent,
@@ -21,7 +22,6 @@ import { useMemo, useState } from 'react';
 import { type Column, DataTable } from '@/components/ui/DataTable';
 import { ImageUpload, ImageUploadMulti } from '@/components/ui/ImageUpload';
 import { Modal } from '@/components/ui/Modal';
-import { issuesToErrors } from '@/lib/formErrors';
 
 // ISO com offset <-> valor do <input type="datetime-local"> ('YYYY-MM-DDTHH:mm').
 // O input dá hora local; toISOString() devolve UTC com offset que o schema exige.
