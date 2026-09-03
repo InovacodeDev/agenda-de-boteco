@@ -30,6 +30,10 @@ GRANT SELECT ON public.establishment_owners TO authenticated;
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.moderation_queue TO authenticated;
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.moderation_terms TO authenticated;
 
--- account_deletion_queue, musician_leads e establishment_metrics não têm
--- policy de acesso direto: a única porta de escrita é RPC SECURITY DEFINER,
--- que roda como owner da função e não precisa de GRANT na tabela.
+-- account_deletion_queue e musician_leads não têm policy de acesso direto: a
+-- única porta de escrita é RPC SECURITY DEFINER, que roda como owner da
+-- função e não precisa de GRANT na tabela.
+--
+-- establishment_metrics é diferente: escrita é só via RPC SECURITY DEFINER,
+-- mas leitura tem policy própria (owner_select_establishment_metrics,
+-- 20260902130000) — corrigido em 20260902213000_grant_establishment_metrics_select.sql.
