@@ -18,6 +18,7 @@ export * from './utils/errors';
 export * from './utils/events';
 export * from './utils/filters';
 export * from './utils/format';
+export * from './utils/formErrors';
 export * from './utils/geo';
 export * from './utils/images';
 export * from './utils/links';

@@ -1,8 +1,10 @@
 import {
   type AnalyticsAdapter,
   configureAnalytics,
+  createPostHogBrowserAdapter,
   getConfiguredAnalytics,
   identifyAnalyticsUser,
+  type PostHogBrowserClient,
   resetAnalytics,
   trackEvent,
   trackPageview,
@@ -100,3 +102,95 @@ describe('com adapter configurado', () => {
     expect(adapter.reset).toHaveBeenCalledTimes(1);
   });
 });
+
+function makeBrowserClient(): jest.Mocked<PostHogBrowserClient> {
+  return {
+    init: jest.fn(),
+    capture: jest.fn(),
+    identify: jest.fn(),
+    reset: jest.fn(),
+    isFeatureEnabled: jest.fn().mockReturnValue(true),
+    onFeatureFlags: jest.fn().mockReturnValue(() => {}),
+  };
+}
+
+describe('createPostHogBrowserAdapter', () => {
+  it('retorna null se apiKey não for informada ou vazia', () => {
+    const client = makeBrowserClient();
+    expect(createPostHogBrowserAdapter(client, {})).toBeNull();
+    expect(createPostHogBrowserAdapter(client, { apiKey: '' })).toBeNull();
+    expect(client.init).not.toHaveBeenCalled();
+  });
+
+  it('inicializa o cliente PostHog com as configurações corretas', () => {
+    const client = makeBrowserClient();
+    const adapter = createPostHogBrowserAdapter(client, {
+      apiKey: 'ph_test_key',
+      apiHost: 'https://app.posthog.com',
+    });
+
+    expect(adapter).not.toBeNull();
+    expect(client.init).toHaveBeenCalledWith('ph_test_key', {
+      api_host: 'https://app.posthog.com',
+      capture_pageview: false,
+      person_profiles: 'identified_only',
+    });
+  });
+
+  it('capturePageview chama client.capture com $pageview e url', () => {
+    const client = makeBrowserClient();
+    const adapter = createPostHogBrowserAdapter(client, { apiKey: 'key' });
+
+    adapter?.capturePageview('/events');
+    expect(client.capture).toHaveBeenCalledWith('$pageview', {
+      $current_url: '/events',
+    });
+  });
+
+  it('captureEvent chama client.capture com nome e propriedades', () => {
+    const client = makeBrowserClient();
+    const adapter = createPostHogBrowserAdapter(client, { apiKey: 'key' });
+
+    adapter?.captureEvent('filter_applied', { category: 'rock' });
+    expect(client.capture).toHaveBeenCalledWith('filter_applied', {
+      category: 'rock',
+    });
+  });
+
+  it('identify chama client.identify com userId', () => {
+    const client = makeBrowserClient();
+    const adapter = createPostHogBrowserAdapter(client, { apiKey: 'key' });
+
+    adapter?.identify('user-456');
+    expect(client.identify).toHaveBeenCalledWith('user-456');
+  });
+
+  it('reset chama client.reset', () => {
+    const client = makeBrowserClient();
+    const adapter = createPostHogBrowserAdapter(client, { apiKey: 'key' });
+
+    adapter?.reset();
+    expect(client.reset).toHaveBeenCalledTimes(1);
+  });
+
+  it('isFeatureEnabled retorna valor do client ou false como fallback', () => {
+    const client = makeBrowserClient();
+    const adapter = createPostHogBrowserAdapter(client, { apiKey: 'key' });
+
+    expect(adapter?.isFeatureEnabled('new-nav')).toBe(true);
+    expect(client.isFeatureEnabled).toHaveBeenCalledWith('new-nav');
+
+    client.isFeatureEnabled.mockReturnValueOnce(undefined);
+    expect(adapter?.isFeatureEnabled('undefined-flag')).toBe(false);
+  });
+
+  it('onFeatureFlags delega para client.onFeatureFlags', () => {
+    const client = makeBrowserClient();
+    const adapter = createPostHogBrowserAdapter(client, { apiKey: 'key' });
+    const cb = jest.fn();
+
+    adapter?.onFeatureFlags(cb);
+    expect(client.onFeatureFlags).toHaveBeenCalledWith(cb);
+  });
+});
+

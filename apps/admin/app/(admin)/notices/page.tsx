@@ -3,6 +3,7 @@
 import {
   type AppNotification,
   deleteNotification,
+  issuesToErrors,
   NOTIFICATION_TYPE_LABELS,
   type NotificationType,
   type NotificationWriteInput,
@@ -18,7 +19,6 @@ import { useState } from 'react';
 
 import { type Column, DataTable } from '@/components/ui/DataTable';
 import { Modal } from '@/components/ui/Modal';
-import { issuesToErrors } from '@/lib/formErrors';
 
 const TYPES: NotificationType[] = ['style', 'city', 'favorite', 'promo'];
 

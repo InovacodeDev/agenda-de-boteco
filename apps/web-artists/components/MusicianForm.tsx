@@ -3,6 +3,7 @@
 import {
   createMusicianLead,
   getFriendlyErrorMessage,
+  issuesToErrors,
   isSupabaseConfigured,
   maskPhoneBR,
   MUSIC_STYLES,
@@ -16,7 +17,6 @@ import { ZodError } from 'zod';
 import { Button } from '@/components/ui/Button';
 import { Field } from '@/components/ui/Field';
 import { TextInput } from '@/components/ui/TextInput';
-import { issuesToErrors } from '@/lib/formErrors';
 
 type Draft = Omit<MusicianLeadInput, 'musicStyleIds'> & { musicStyleIds: string[] };
 

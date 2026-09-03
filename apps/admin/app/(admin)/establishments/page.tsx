@@ -7,6 +7,7 @@ import {
   type EstablishmentAttribute,
   type EstablishmentWriteInput,
   establishmentWriteSchema,
+  issuesToErrors,
   maskPhoneBR,
   type MenuItem,
   PRICE_RANGE_LABELS,
@@ -24,7 +25,6 @@ import { type Column, DataTable } from '@/components/ui/DataTable';
 import { ImageUpload, ImageUploadMulti } from '@/components/ui/ImageUpload';
 import { Modal } from '@/components/ui/Modal';
 import { PdfUpload } from '@/components/ui/PdfUpload';
-import { issuesToErrors } from '@/lib/formErrors';
 
 const PRICE_RANGES: PriceRange[] = ['$', '$$', '$$$', '$$$$'];
 

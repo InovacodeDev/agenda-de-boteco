@@ -61,3 +61,31 @@ export const appJsonStorage: PersistStorage<unknown> = {
     getAppStorage()?.removeItem(name);
   },
 } as PersistStorage<unknown>;
+
+export interface WebQueryStorage {
+  getItem: (key: string) => Promise<string | null>;
+  setItem: (key: string, value: string) => Promise<void>;
+  removeItem: (key: string) => Promise<void>;
+}
+
+export const webStorage: StateStorage = {
+  getItem: (key) => (typeof window === 'undefined' ? null : window.localStorage.getItem(key)),
+  setItem: (key, value) => {
+    if (typeof window !== 'undefined') window.localStorage.setItem(key, value);
+  },
+  removeItem: (key) => {
+    if (typeof window !== 'undefined') window.localStorage.removeItem(key);
+  },
+};
+
+export const webQueryStorage: WebQueryStorage = {
+  getItem: async (key: string) =>
+    typeof window === 'undefined' ? null : window.localStorage.getItem(key),
+  setItem: async (key: string, value: string) => {
+    if (typeof window !== 'undefined') window.localStorage.setItem(key, value);
+  },
+  removeItem: async (key: string) => {
+    if (typeof window !== 'undefined') window.localStorage.removeItem(key);
+  },
+};
+
