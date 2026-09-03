@@ -1,6 +1,6 @@
 'use client';
 
-import { MAX_IMAGE_BYTES, uploadImage } from '@agenda/core';
+import { deleteImage, MAX_IMAGE_BYTES, uploadImage } from '@agenda/core';
 import { INPUT_CLASS } from '@agenda/shared-ui';
 import { useCallback, useRef, useState } from 'react';
 
@@ -167,6 +167,9 @@ export function ImageUpload({
       setPending({ preview });
       try {
         const url = await uploadImage(file, { pathPrefix });
+        if (value) {
+          void deleteImage(value).catch(() => {});
+        }
         onChange(url);
       } catch (e: unknown) {
         setPending({ error: e instanceof Error ? e.message : 'Falha no upload.' });
@@ -176,7 +179,7 @@ export function ImageUpload({
       }
       setPending(null);
     },
-    [onChange, pathPrefix],
+    [onChange, pathPrefix, value],
   );
 
   const busy = pending !== null && 'preview' in pending;
@@ -192,7 +195,14 @@ export function ImageUpload({
               Enviando…
             </div>
           ) : (
-            <RemoveButton onClick={() => onChange('')} />
+            <RemoveButton
+              onClick={() => {
+                if (value) {
+                  void deleteImage(value).catch(() => {});
+                }
+                onChange('');
+              }}
+            />
           )}
         </div>
       ) : (
@@ -201,7 +211,14 @@ export function ImageUpload({
       {pending && 'error' in pending ? (
         <span className="text-[12px] text-destructive">{pending.error}</span>
       ) : null}
-      <PasteUrl onAdd={onChange} />
+      <PasteUrl
+        onAdd={(url) => {
+          if (value) {
+            void deleteImage(value).catch(() => {});
+          }
+          onChange(url);
+        }}
+      />
     </div>
   );
 }
@@ -258,7 +275,13 @@ export function ImageUploadMulti({
     [onChange, pathPrefix, value],
   );
 
-  const removeAt = (i: number) => onChange(value.filter((_, idx) => idx !== i));
+  const removeAt = (i: number) => {
+    const url = value[i];
+    if (url) {
+      void deleteImage(url).catch(() => {});
+    }
+    onChange(value.filter((_, idx) => idx !== i));
+  };
 
   // ponytail: HTML5 drag nativo para reorder; trocar por dnd-kit se a UX incomodar.
   const reorder = (from: number, to: number) => {
