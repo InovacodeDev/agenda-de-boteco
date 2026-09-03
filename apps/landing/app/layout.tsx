@@ -1,8 +1,9 @@
 import './globals.css';
 
 import { fontVariables } from '@agenda/core/next-fonts';
-import { Analytics } from '@vercel/analytics/next';
 import type { Metadata } from 'next';
+
+import { Providers } from './providers';
 
 const DESCRIPTION =
   'Descubra shows, samba, sertanejo e transmissão de jogo nos bares da sua cidade. ' +
@@ -43,8 +44,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="pt-BR" className={fontVariables} suppressHydrationWarning>
       <body suppressHydrationWarning>
-        {children}
-        <Analytics />
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

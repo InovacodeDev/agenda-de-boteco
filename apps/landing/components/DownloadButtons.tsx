@@ -1,6 +1,6 @@
 'use client';
 
-import { detectPlatform, type Platform, STORE_URLS } from '@agenda/core';
+import { detectPlatform, type Platform, STORE_URLS, trackEvent } from '@agenda/core';
 import { useSyncExternalStore } from 'react';
 
 import { AppleIcon, PlayIcon } from '@/components/icons';
@@ -31,6 +31,7 @@ function StoreButton({ store, children }: { store: 'android' | 'ios'; children: 
       aria-disabled={disabled}
       aria-label={disabled ? `${label} (em breve)` : label}
       className={`${BTN} bg-foreground text-background`}
+      onClick={disabled ? undefined : () => trackEvent('store_badge_clicked', { store })}
     >
       {children}
     </a>
