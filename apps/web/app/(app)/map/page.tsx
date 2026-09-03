@@ -4,6 +4,7 @@ import {
   FEATURES,
   type LatLng,
   resolveMapOrigin,
+  trackEvent,
   useActiveCity,
   useEstablishmentsQuery,
 } from '@agenda/core';
@@ -38,6 +39,10 @@ function MapContent() {
       () => {},
       { enableHighAccuracy: true },
     );
+  }, []);
+
+  useEffect(() => {
+    trackEvent('map_opened');
   }, []);
 
   const cityEstablishments = useMemo(

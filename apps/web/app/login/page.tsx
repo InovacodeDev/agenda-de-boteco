@@ -4,6 +4,7 @@ import {
   type AuthProvider,
   detectPlatform,
   getFriendlyErrorMessage,
+  identifyAnalyticsUser,
   type Platform,
   signInWithEmailOtp,
   signInWithOAuth,
@@ -36,6 +37,7 @@ function usePlatform(): Platform {
 export default function LoginPage() {
   const router = useRouter();
   const status = useAuthStore((state) => state.status);
+  const userId = useAuthStore((state) => state.user?.id);
   const platform = usePlatform();
 
   const [emailStep, setEmailStep] = useState<EmailStep>('hidden');
@@ -48,9 +50,10 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (status === 'signedIn') {
+      if (userId) identifyAnalyticsUser(userId);
       router.replace('/');
     }
-  }, [status, router]);
+  }, [status, userId, router]);
 
   // OAuth no web: o supabase-js redireciona o browser (não há fluxo RN nativo).
   // A sessão volta pela URL (detectSessionInUrl no client) e o authStore observa.

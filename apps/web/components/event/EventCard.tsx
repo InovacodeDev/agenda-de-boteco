@@ -11,6 +11,7 @@ import {
   haversineDistanceKm,
   type LatLng,
   type MusicStyle,
+  trackEvent,
   useEventStatusLight,
   useFavoritesStore,
 } from '@agenda/core';
@@ -118,7 +119,10 @@ export function EventCard({
               onClick={(clickEvent) => {
                 clickEvent.preventDefault();
                 clickEvent.stopPropagation();
-                requireAuth(() => toggleEvent(event.id));
+                requireAuth(() => {
+                  toggleEvent(event.id);
+                  trackEvent('favorite_toggled', { isFavorite: !isFavorite });
+                });
               }}
               className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-background/40 transition-opacity hover:opacity-80"
             >

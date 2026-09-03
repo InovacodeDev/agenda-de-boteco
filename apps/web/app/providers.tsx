@@ -2,6 +2,7 @@
 
 import {
   CACHE_BUSTER,
+  configureAnalytics,
   configureAppStorage,
   configureAuthRedirect,
   configureQueryErrorHandler,
@@ -10,11 +11,14 @@ import {
   queryClient,
   setupOnlineManager,
   shouldDehydrateQuery,
+  trackPageview,
 } from '@agenda/core';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
+import { usePathname } from 'next/navigation';
 import { useEffect } from 'react';
 
 import { useAppSync } from '@/hooks/useAppSync';
+import { initAnalytics } from '@/lib/analytics';
 import { appBaseUrl } from '@/lib/basePath';
 import { webQueryStorage, webStorage } from '@/lib/storage';
 import { getSupabase } from '@/lib/supabase';
@@ -28,12 +32,24 @@ function bootstrap() {
   configureAppStorage(webStorage);
   configureSupabase(getSupabase);
   configureAuthRedirect(appBaseUrl);
+  configureAnalytics(initAnalytics());
   configureQueryErrorHandler((error) => {
     // Web: por ora console.error; um toast pode ser plugado depois.
     console.error('[query]', error);
   });
 }
 bootstrap();
+
+/** Dispara pageview a cada troca de rota — o App Router não gera navegação full-reload. */
+function PostHogPageview() {
+  const pathname = usePathname();
+
+  useEffect(() => {
+    trackPageview(pathname);
+  }, [pathname]);
+
+  return null;
+}
 
 const persister = createQueryPersister(webQueryStorage);
 
@@ -70,6 +86,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       }}
     >
       <AppSyncBridge />
+      <PostHogPageview />
       {children}
     </PersistQueryClientProvider>
   );
