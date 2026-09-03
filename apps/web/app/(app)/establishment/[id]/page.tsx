@@ -9,11 +9,13 @@ import {
   getAttributeMeta,
   indexById,
   musicStylesForEvent,
+  recordMetricEvent,
   upcomingEventsForEstablishment,
   useEstablishmentQuery,
   useEventsByEstablishmentQuery,
   useFavoritesStore,
   useMusicStylesQuery,
+  useRecordView,
 } from '@agenda/core';
 import { useParams, useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
@@ -86,6 +88,7 @@ function EstablishmentDetailContent() {
   const { data: agendaData } = useEventsByEstablishmentQuery(id);
   const { data: musicStyles } = useMusicStylesQuery();
   const stylesById = useMemo(() => indexById(musicStyles ?? []), [musicStyles]);
+  useRecordView({ establishmentId: establishment?.id });
 
   const upcoming = useMemo(
     () => upcomingEventsForEstablishment(agendaData ?? [], id, new Date(), 5),
@@ -325,6 +328,9 @@ function EstablishmentDetailContent() {
             href={buildWhatsAppUrl(establishment.whatsapp)}
             target="_blank"
             rel="noreferrer"
+            onClick={() =>
+              void recordMetricEvent({ establishmentId: establishment.id, kind: 'click_contact' })
+            }
             className="flex h-11 flex-1 items-center justify-center rounded-full bg-primary text-[15px] font-[family-name:var(--font-body)] font-semibold text-primary-foreground transition-opacity hover:opacity-90"
           >
             WhatsApp
@@ -334,6 +340,9 @@ function EstablishmentDetailContent() {
             target="_blank"
             rel="noreferrer"
             aria-label="Como chegar"
+            onClick={() =>
+              void recordMetricEvent({ establishmentId: establishment.id, kind: 'click_map' })
+            }
             className="flex h-11 items-center justify-center rounded-full border-[0.5px] border-foreground/50 bg-background px-4 text-[15px] font-[family-name:var(--font-body)] font-semibold text-foreground transition-opacity hover:opacity-90"
           >
             <MapPinIcon size={16} />

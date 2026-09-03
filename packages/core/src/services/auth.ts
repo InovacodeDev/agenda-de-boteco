@@ -106,6 +106,62 @@ export async function verifyEmailOtp(email: string, token: string): Promise<void
   }
 }
 
+export async function signInWithPassword(email: string, password: string): Promise<void> {
+  const client = requireClient();
+  try {
+    const { error } = await client.auth.signInWithPassword({ email, password });
+    if (error) {
+      throw error;
+    }
+  } catch (error) {
+    // ponytail: args sem a senha de propósito — o contexto de erro vai para o log
+    return handleServiceError(error, { method: 'auth.signInWithPassword', args: { email } });
+  }
+}
+
+export async function signUpWithPassword(email: string, password: string): Promise<void> {
+  const client = requireClient();
+  try {
+    const { error } = await client.auth.signUp({
+      email,
+      password,
+      options: { emailRedirectTo: authRedirect() },
+    });
+    if (error) {
+      throw error;
+    }
+  } catch (error) {
+    return handleServiceError(error, { method: 'auth.signUpWithPassword', args: { email } });
+  }
+}
+
+export async function sendPasswordReset(email: string): Promise<void> {
+  const client = requireClient();
+  try {
+    const { error } = await client.auth.resetPasswordForEmail(email, {
+      redirectTo: authRedirect(),
+    });
+    if (error) {
+      throw error;
+    }
+  } catch (error) {
+    return handleServiceError(error, { method: 'auth.sendPasswordReset', args: { email } });
+  }
+}
+
+/** Usada na tela de nova senha, após o usuário abrir o link enviado por e-mail. */
+export async function updatePassword(newPassword: string): Promise<void> {
+  const client = requireClient();
+  try {
+    const { error } = await client.auth.updateUser({ password: newPassword });
+    if (error) {
+      throw error;
+    }
+  } catch (error) {
+    return handleServiceError(error, { method: 'auth.updatePassword' });
+  }
+}
+
 export async function signOut(): Promise<void> {
   const client = getConfiguredSupabase();
   if (!client) {

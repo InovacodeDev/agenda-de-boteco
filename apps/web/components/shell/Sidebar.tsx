@@ -38,7 +38,7 @@ export function Sidebar() {
               >
                 <NavIcon name={item.icon} />
                 <span className="text-base">{item.label}</span>
-                {item.href === '/avisos' ? <NavBadge count={unreadCount} /> : null}
+                {item.href === '/notices' ? <NavBadge count={unreadCount} /> : null}
               </Link>
             );
           })}

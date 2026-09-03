@@ -1,7 +1,6 @@
 import './globals.css';
 
 import { fontVariables } from '@agenda/core/next-fonts';
-import { Analytics } from '@vercel/analytics/next';
 import type { Metadata } from 'next';
 
 import { Providers } from '@/app/providers';
@@ -16,7 +15,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="pt-BR" className={fontVariables} suppressHydrationWarning>
       <body suppressHydrationWarning>
         <Providers>{children}</Providers>
-        <Analytics />
       </body>
     </html>
   );

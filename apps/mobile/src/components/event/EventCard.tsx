@@ -1,4 +1,4 @@
-import { haversineDistanceKm, type LatLng,useEventStatusLight } from '@agenda/core';
+import { haversineDistanceKm, type LatLng, trackEvent, useEventStatusLight } from '@agenda/core';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { memo, type ReactNode, useMemo } from 'react';
@@ -112,7 +112,12 @@ export const EventCard = memo(function EventCard({
             <GuardedPressable
               accessibilityRole="button"
               accessibilityLabel={isFavorite ? 'Remover dos favoritos' : 'Favoritar evento'}
-              onPress={() => requireAuth(() => toggleEvent(event.id))}
+              onPress={() =>
+                requireAuth(() => {
+                  toggleEvent(event.id);
+                  trackEvent('favorite_toggled', { isFavorite: !isFavorite });
+                })
+              }
               hitSlop={8}
               className="bg-background/40 h-9 w-9 items-center justify-center rounded-full active:opacity-80"
             >

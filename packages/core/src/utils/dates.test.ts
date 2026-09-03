@@ -1,11 +1,13 @@
 import {
   buildEventDate,
+  formatEventDate,
   formatRelativeDay,
   formatTime,
   formatTimeRange,
   isOpenNow,
   isWeekend,
   relativeTime,
+  shiftDate,
 } from './dates';
 
 // Quarta-feira, 10 de junho de 2026, 12:00 local — base fixa para determinismo.
@@ -20,6 +22,41 @@ function localIso(
 ): string {
   return new Date(year, monthIndex, day, hour, minute, 0, 0).toISOString();
 }
+
+describe('shiftDate', () => {
+  it('desloca N semanas preservando o horário local', () => {
+    const iso = localIso(2026, 8, 4, 22, 0);
+    expect(shiftDate(iso, 0, 'weekly')).toBe(iso);
+    expect(shiftDate(iso, 2, 'weekly')).toBe(localIso(2026, 8, 18, 22, 0));
+  });
+
+  it('desloca N meses preservando dia e horário', () => {
+    const iso = localIso(2026, 2, 10, 20, 30);
+    expect(shiftDate(iso, 2, 'monthly')).toBe(localIso(2026, 4, 10, 20, 30));
+  });
+
+  // 31/jan + 1 mês não deve virar 3/mar: uma recorrência mensal que pula de mês
+  // deixa de ser mensal. Clampa no último dia do mês de destino.
+  it('clampa no último dia do mês quando o dia não existe no destino', () => {
+    const iso = localIso(2026, 0, 31, 21, 0);
+    expect(shiftDate(iso, 1, 'monthly')).toBe(localIso(2026, 1, 28, 21, 0));
+    // Volta ao dia 31 quando o mês comporta — o clamp é por ocorrência, não
+    // acumulativo (o input original é sempre a base).
+    expect(shiftDate(iso, 2, 'monthly')).toBe(localIso(2026, 2, 31, 21, 0));
+  });
+
+  it('clampa em 29 de fevereiro em ano bissexto', () => {
+    expect(shiftDate(localIso(2028, 0, 31, 21, 0), 1, 'monthly')).toBe(
+      localIso(2028, 1, 29, 21, 0),
+    );
+  });
+
+  it('atravessa a virada de ano', () => {
+    expect(shiftDate(localIso(2026, 11, 15, 22, 0), 1, 'monthly')).toBe(
+      localIso(2027, 0, 15, 22, 0),
+    );
+  });
+});
 
 describe('buildEventDate', () => {
   const base = new Date(2026, 5, 10, 12, 34, 56, 789);
@@ -67,6 +104,27 @@ describe('formatRelativeDay', () => {
   it('retorna data abreviada a partir de 7 dias', () => {
     expect(formatRelativeDay(localIso(2026, 5, 17), FIXED_NOW)).toBe('17 De Jun.');
     expect(formatRelativeDay(localIso(2026, 6, 5), FIXED_NOW)).toBe('05 De Jul.');
+  });
+});
+
+describe('formatEventDate', () => {
+  it('formata dia da semana, dia e mês em minúsculas', () => {
+    expect(formatEventDate(localIso(2026, 9, 22))).toBe('Qui., 22 de out.');
+    expect(formatEventDate(localIso(2026, 8, 25))).toBe('Sex., 25 de set.');
+  });
+
+  it('não preenche o dia com zero à esquerda', () => {
+    expect(formatEventDate(localIso(2026, 5, 5))).toBe('Sex., 5 de jun.');
+  });
+
+  it('anexa o horário quando pedido', () => {
+    expect(formatEventDate(localIso(2026, 8, 25, 18, 0), true)).toBe(
+      'Sex., 25 de set. • 18:00',
+    );
+  });
+
+  it('mantém sábado com acento', () => {
+    expect(formatEventDate(localIso(2026, 0, 3))).toBe('Sáb., 3 de jan.');
   });
 });
 

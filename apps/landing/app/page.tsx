@@ -17,6 +17,8 @@ import {
 // vercel.json), então o path relativo basta. Em dev, apontar para as URLs dos
 // apps rodando em portas próprias via env (o basePath deles já inclui /app|/admin).
 const WEB_BASE = process.env.NEXT_PUBLIC_WEB_URL ?? '';
+const ARTISTS_BASE = process.env.NEXT_PUBLIC_ARTISTS_URL ?? '';
+const WEB_CLIENT_BASE = process.env.NEXT_PUBLIC_WEB_CLIENT_URL ?? '';
 const CONTACT_EMAIL = 'contato@inovacode.dev';
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
@@ -412,7 +414,7 @@ export default function LandingPage() {
 
           <p className="mt-8 text-center text-[14px] text-muted-foreground">
             Não achou o que procurava?{' '}
-            <a href="/suporte" className="text-primary underline-offset-4 hover:underline">
+            <a href="/support" className="text-primary underline-offset-4 hover:underline">
               Vá para o suporte
             </a>
             .
@@ -441,7 +443,7 @@ export default function LandingPage() {
 
       {/* ---------------- Footer ---------------- */}
       <footer className="border-t border-border">
-        <div className="mx-auto grid w-full max-w-6xl gap-10 px-6 py-14 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mx-auto grid w-full max-w-6xl gap-10 px-6 py-14 sm:grid-cols-2 lg:grid-cols-5">
           <div className="flex flex-col gap-3">
             <Image
               src="/logo.png"
@@ -476,14 +478,27 @@ export default function LandingPage() {
             <a href="#para-bares" className="text-[13px] text-muted-foreground hover:text-foreground">
               Para donos de bar
             </a>
-            <span className="text-[13px] text-muted-foreground/60" title={OWNER_CTA_SOON}>
-              Painel administrativo (em breve)
-            </span>
+            <a
+              href={`${WEB_CLIENT_BASE}/client`}
+              className="text-[13px] text-muted-foreground hover:text-foreground"
+            >
+              Painel administrativo
+            </a>
+          </div>
+
+          <div className="flex flex-col gap-2.5">
+            <p className="text-[13px] font-bold text-foreground">Para Artistas</p>
+            <a
+              href={`${ARTISTS_BASE}/artists`}
+              className="text-[13px] text-muted-foreground hover:text-foreground"
+            >
+              Cadastre-se
+            </a>
           </div>
 
           <div className="flex flex-col gap-2.5">
             <p className="text-[13px] font-bold text-foreground">Ajuda e legal</p>
-            <a href="/suporte" className="text-[13px] text-muted-foreground hover:text-foreground">
+            <a href="/support" className="text-[13px] text-muted-foreground hover:text-foreground">
               Suporte
             </a>
             <a

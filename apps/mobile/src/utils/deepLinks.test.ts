@@ -25,6 +25,30 @@ describe('mapWebPathToRoute', () => {
         '/establishment/boteco-do-ze',
       );
     });
+
+    it('mapeia /events/{cidade}/{slug} (path novo) → /event/{slug}', () => {
+      expect(mapWebPathToRoute('/events/floripa/samba-na-varanda')).toBe(
+        '/event/samba-na-varanda',
+      );
+    });
+
+    it('mapeia /establishments/{cidade}/{slug} (path novo) → /establishment/{slug}', () => {
+      expect(mapWebPathToRoute('/establishments/floripa/boteco-do-ze')).toBe(
+        '/establishment/boteco-do-ze',
+      );
+    });
+
+    it('mapeia /events/{slug} (path novo, sem cidade) → /event/{slug}', () => {
+      expect(mapWebPathToRoute('/events/samba-na-varanda')).toBe(
+        '/event/samba-na-varanda',
+      );
+    });
+
+    it('mapeia /establishments/{slug} (path novo, sem cidade) → /establishment/{slug}', () => {
+      expect(mapWebPathToRoute('/establishments/boteco-do-ze')).toBe(
+        '/establishment/boteco-do-ze',
+      );
+    });
   });
 
   describe('paths que já são rotas internas conhecidas passam intactos', () => {
@@ -55,6 +79,16 @@ describe('mapWebPathToRoute', () => {
       ]) {
         expect(mapWebPathToRoute(route)).toBe(route);
       }
+    });
+
+    it('preserva /privacy e /delete-account (rotas novas)', () => {
+      expect(mapWebPathToRoute('/privacy')).toBe('/privacy');
+      expect(mapWebPathToRoute('/delete-account')).toBe('/delete-account');
+    });
+
+    it('preserva /privacidade e /excluir-conta (alias das rotas antigas)', () => {
+      expect(mapWebPathToRoute('/privacidade')).toBe('/privacidade');
+      expect(mapWebPathToRoute('/excluir-conta')).toBe('/excluir-conta');
     });
   });
 
