@@ -2,6 +2,7 @@
 
 import {
   type City,
+  cn,
   type DateBucket,
   DEFAULT_EVENT_FILTERS,
   type EstablishmentAttribute,
@@ -23,7 +24,6 @@ import { FilterSection } from '@/components/filters/FilterSection';
 import { FilterSlider } from '@/components/filters/FilterSlider';
 import { SwitchRow } from '@/components/filters/SwitchRow';
 import { InfoIcon, SearchIcon, XIcon } from '@/components/ui/icons';
-import { cn } from '@/lib/cn';
 
 const DATE_OPTIONS: Array<{ label: string; bucket: DateBucket }> = [
   { label: 'Qualquer dia', bucket: 'any' },

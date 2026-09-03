@@ -1,8 +1,6 @@
 'use client';
 
-import type { MusicStyle } from '@agenda/core';
-
-import { cn } from '@/lib/cn';
+import { cn, type MusicStyle } from '@agenda/core';
 
 export interface StyleCardProps {
   style: MusicStyle;

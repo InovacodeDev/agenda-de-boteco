@@ -1,11 +1,9 @@
 'use client';
 
 import type { City } from '@agenda/core';
-import { resolveCityFromLocation, useCitiesQuery, usePreferencesStore } from '@agenda/core';
+import { cn, resolveCityFromLocation, useCitiesQuery, usePreferencesStore } from '@agenda/core';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-
-import { cn } from '@/lib/cn';
 
 function CheckIcon({ size = 18 }: { size?: number }) {
   return (
