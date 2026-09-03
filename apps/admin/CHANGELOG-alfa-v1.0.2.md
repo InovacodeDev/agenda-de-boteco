@@ -6,3 +6,5 @@
 - Botão "Sair" do menu lateral passa a pedir confirmação antes de encerrar a sessão
 - URLs de Estabelecimentos, Eventos e Avisos passam a ser em inglês; links antigos continuam funcionando por redirecionamento automático
 - URL da Política de Privacidade passa a ser em inglês; link antigo continua funcionando por redirecionamento automático
+- Métricas de uso do painel agora coletadas via PostHog, no lugar do Vercel Analytics
+- Criação, edição e exclusão de estabelecimentos passam a gerar evento de uso para acompanhamento interno

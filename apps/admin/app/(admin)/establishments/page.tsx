@@ -11,6 +11,7 @@ import {
   type MenuItem,
   PRICE_RANGE_LABELS,
   type PriceRange,
+  trackEvent,
   upsertEstablishment,
   useCitiesQuery,
   useEstablishmentsQuery,
@@ -150,6 +151,7 @@ export default function EstabelecimentosPage() {
   const handleDelete = async (row: Establishment) => {
     if (!confirm(`Excluir "${row.name}"?`)) return;
     await deleteEstablishment(row.id);
+    trackEvent('establishment_deleted');
     await qc.invalidateQueries({ queryKey: ['establishments'] });
   };
 
@@ -186,6 +188,7 @@ export default function EstabelecimentosPage() {
     setSubmitError(null);
     try {
       await upsertEstablishment(result.data);
+      trackEvent('establishment_saved', { mode: editingId ? 'edit' : 'create' });
       await qc.invalidateQueries({ queryKey: ['establishments'] });
       setOpen(false);
     } catch (error: unknown) {

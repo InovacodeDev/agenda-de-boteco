@@ -2,6 +2,7 @@
 
 import {
   getFriendlyErrorMessage,
+  identifyAnalyticsUser,
   signInWithEmailOtp,
   useAuthStore,
   verifyEmailOtp,
@@ -28,6 +29,7 @@ const BTN_GHOST = `${BTN_GHOST_BASE} w-full`;
 export default function LoginPage() {
   const router = useRouter();
   const status = useAuthStore((state) => state.status);
+  const userId = useAuthStore((state) => state.user?.id);
 
   const [step, setStep] = useState<EmailStep>('editing');
   const [email, setEmail] = useState('');
@@ -39,9 +41,10 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (status === 'signedIn') {
+      if (userId) identifyAnalyticsUser(userId);
       router.replace('/');
     }
-  }, [status, router]);
+  }, [status, userId, router]);
 
   const handleSendCode = async () => {
     if (!email.trim()) return;
