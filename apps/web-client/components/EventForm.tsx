@@ -12,6 +12,7 @@ import {
   saveOwnedEvent,
   saveRecurringOwnedEvents,
   shiftDate,
+  trackEvent,
   useMusicStylesQuery,
 } from '@agenda/core';
 import {
@@ -211,6 +212,7 @@ export function EventForm({ event }: { event?: Event }) {
       }
       // Prefixo 'events' cobre owned, detail e byEstablishment de uma vez.
       await queryClient.invalidateQueries({ queryKey: catalogKeys.events.root });
+      trackEvent('event_saved', { isEdit: Boolean(event?.id) });
       router.push('/events');
     } catch (error: unknown) {
       setErrorMessage(getFriendlyErrorMessage(error));

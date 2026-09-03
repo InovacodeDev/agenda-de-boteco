@@ -5,6 +5,7 @@ import {
   getFriendlyErrorMessage,
   isCurrentUserEstablishmentOwner,
   signOut,
+  trackEvent,
   useAuthStore,
 } from '@agenda/core';
 import { ArrowLeftIcon, ArrowRightIcon } from '@phosphor-icons/react';
@@ -81,6 +82,7 @@ export default function OnboardingPage() {
         attributes: draft.attributes,
       });
       await queryClient.invalidateQueries({ queryKey: panelKeys.ownedEstablishmentId });
+      trackEvent('establishment_claimed');
       router.replace('/');
     } catch (error: unknown) {
       setErrorMessage(getFriendlyErrorMessage(error));

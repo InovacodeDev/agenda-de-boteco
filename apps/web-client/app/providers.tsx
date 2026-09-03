@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  configureAnalytics,
   configureAppStorage,
   configureAuthRedirect,
   configureQueryErrorHandler,
@@ -8,11 +9,14 @@ import {
   logErrorToTerminal,
   queryClient,
   subscribeToCatalogChanges,
+  trackPageview,
   useAuthStore,
 } from '@agenda/core';
 import { QueryClientProvider } from '@tanstack/react-query';
+import { usePathname } from 'next/navigation';
 import { useEffect } from 'react';
 
+import { initAnalytics } from '@/lib/analytics';
 import { webStorage } from '@/lib/storage';
 import { getSupabase } from '@/lib/supabase';
 
@@ -23,6 +27,7 @@ function bootstrap() {
   bootstrapped = true;
   configureAppStorage(webStorage);
   configureSupabase(getSupabase);
+  configureAnalytics(initAnalytics());
   // O painel roda sob basePath /client — o retorno do OAuth/magic link precisa
   // cair em /client/login, não na raiz do domínio (que é o site público).
   configureAuthRedirect(() =>
@@ -56,10 +61,22 @@ function AppSyncBridge() {
   return null;
 }
 
+/** Pageview manual por rota — capture_pageview fica desligado no init (SPA/App Router). */
+function PostHogPageview() {
+  const pathname = usePathname();
+
+  useEffect(() => {
+    trackPageview(pathname);
+  }, [pathname]);
+
+  return null;
+}
+
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
       <AppSyncBridge />
+      <PostHogPageview />
       {children}
     </QueryClientProvider>
   );

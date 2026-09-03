@@ -38,3 +38,5 @@
 - Endereços das telas de Avaliações, Artistas e Configurações passam a ser /reviews, /artists e /settings (links antigos continuam funcionando)
 - Endereço de redefinição de senha passa a ser /new-password, em vez de /nova-senha (link antigo continua funcionando)
 - Endereços das telas de Eventos e Perfil passam a ser /events e /profile, em vez de /eventos e /perfil (links antigos continuam funcionando)
+- Telas de Métricas, Avaliações e Configurações ficam ocultas no menu até serem liberadas para o seu bar
+- Painel passa a medir uso de forma anônima para orientar melhorias (sem coletar e-mail, telefone ou outro dado pessoal)
