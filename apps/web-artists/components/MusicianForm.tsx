@@ -11,12 +11,11 @@ import {
   musicianLeadSchema,
   trackEvent,
 } from '@agenda/core';
+import { Button, TextInput } from '@agenda/shared-ui';
 import { useEffect, useRef, useState } from 'react';
 import { ZodError } from 'zod';
 
-import { Button } from '@/components/ui/Button';
 import { Field } from '@/components/ui/Field';
-import { TextInput } from '@/components/ui/TextInput';
 
 type Draft = Omit<MusicianLeadInput, 'musicStyleIds'> & { musicStyleIds: string[] };
 
