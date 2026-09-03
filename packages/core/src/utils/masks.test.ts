@@ -1,7 +1,5 @@
 import {
   currencyToMask,
-  maskCNPJ,
-  maskCPF,
   maskCurrencyBR,
   maskPhoneBR,
   parseCurrencyBR,
@@ -31,38 +29,6 @@ describe('maskPhoneBR', () => {
 
   it('vazio → vazio', () => {
     expect(maskPhoneBR('')).toBe('');
-  });
-});
-
-describe('maskCPF', () => {
-  it('formata como XXX.XXX.XXX-XX', () => {
-    expect(maskCPF('12345678901')).toBe('123.456.789-01');
-  });
-
-  it('formata parcial', () => {
-    expect(maskCPF('123')).toBe('123');
-    expect(maskCPF('1234')).toBe('123.4');
-    expect(maskCPF('1234567')).toBe('123.456.7');
-  });
-
-  it('ignora não-dígitos e trunca em 11', () => {
-    expect(maskCPF('123.456.789-0199')).toBe('123.456.789-01');
-  });
-});
-
-describe('maskCNPJ', () => {
-  it('formata como XX.XXX.XXX/XXXX-XX', () => {
-    expect(maskCNPJ('11222333000181')).toBe('11.222.333/0001-81');
-  });
-
-  it('formata parcial', () => {
-    expect(maskCNPJ('11')).toBe('11');
-    expect(maskCNPJ('112')).toBe('11.2');
-    expect(maskCNPJ('112223330001')).toBe('11.222.333/0001');
-  });
-
-  it('ignora não-dígitos e trunca em 14', () => {
-    expect(maskCNPJ('11.222.333/0001-8199')).toBe('11.222.333/0001-81');
   });
 });
 

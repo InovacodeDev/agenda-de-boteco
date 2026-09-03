@@ -5,11 +5,6 @@ export function indexById<T extends { id: string }>(items: T[]): Record<string, 
   return Object.fromEntries(items.map((item) => [item.id, item]));
 }
 
-/** Cidade correspondente ao id, com fallback para a primeira do catálogo. */
-export function cityByIdOrDefault(cities: City[], id: string): City {
-  return cities.find((city) => city.id === id) ?? cities[0];
-}
-
 /**
  * Resolve a cidade ativa a partir do estado de preferências. Quando `cityId`
  * aponta para uma cidade do catálogo, retorna-a (ou a primeira como fallback).

@@ -1,9 +1,5 @@
 import type { FavoriteTarget } from '../services/favorites';
-import {
-  isEstablishmentFavorite,
-  isEventFavorite,
-  useFavoritesStore,
-} from './useFavoritesStore';
+import { useFavoritesStore } from './useFavoritesStore';
 
 const mockAddServerFavorite = jest.fn<Promise<void>, [string, FavoriteTarget]>(() =>
   Promise.resolve(),
@@ -55,16 +51,6 @@ describe('useFavoritesStore', () => {
     expect(useFavoritesStore.getState().establishmentIds).toEqual(['e1']);
     useFavoritesStore.getState().toggleEstablishment('e1');
     expect(useFavoritesStore.getState().establishmentIds).toEqual([]);
-  });
-
-  it('selectors puros refletem o estado', () => {
-    useFavoritesStore.getState().toggleEvent('ev2');
-    useFavoritesStore.getState().toggleEstablishment('e3');
-    const state = useFavoritesStore.getState();
-    expect(isEventFavorite(state, 'ev2')).toBe(true);
-    expect(isEventFavorite(state, 'ev1')).toBe(false);
-    expect(isEstablishmentFavorite(state, 'e3')).toBe(true);
-    expect(isEstablishmentFavorite(state, 'e1')).toBe(false);
   });
 
   it('toggleEvent enfileira uma op pendente de add', () => {
