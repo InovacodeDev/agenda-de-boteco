@@ -34,7 +34,6 @@ const INTERNAL_EXACT_ROUTES = [
   '/',
   '/city',
   '/login',
-  '/onboarding',
   '/favorites',
   '/notifications',
   '/map',

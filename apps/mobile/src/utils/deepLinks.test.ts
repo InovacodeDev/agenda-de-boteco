@@ -71,7 +71,6 @@ describe('mapWebPathToRoute', () => {
     it('preserva demais rotas de nível superior', () => {
       for (const route of [
         '/login',
-        '/onboarding',
         '/favorites',
         '/notifications',
         '/map',
@@ -136,6 +135,10 @@ describe('mapWebPathToRoute', () => {
     // /filters deixou de ser rota (virou componente no feed) — cai na home.
     it('mapeia /filters para / (não é mais rota)', () => {
       expect(mapWebPathToRoute('/filters')).toBe('/');
+    });
+
+    it('mapeia /onboarding para / (não é mais rota)', () => {
+      expect(mapWebPathToRoute('/onboarding')).toBe('/');
     });
   });
 

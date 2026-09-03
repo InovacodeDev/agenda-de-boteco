@@ -16,16 +16,15 @@ import { SegmentedTabs } from '@/components/ui/SegmentedTabs';
 import { indexById, musicStylesForEvent } from '@/data/lookup';
 import type { Event } from '@/data/schemas';
 import {
-  useCitiesQuery,
   useEstablishmentsQuery,
   useEventsQuery,
   useMusicStylesQuery,
 } from '@/hooks/queries';
 import { useActiveCity } from '@/hooks/useActiveCity';
+import { useFirstLaunchLocation } from '@/hooks/useFirstLaunchLocation';
 import { useNearbyEstablishments } from '@/hooks/useNearbyEstablishments';
 import { useUserLocation } from '@/hooks/useUserLocation';
 import { useFiltersStore } from '@/store/useFiltersStore';
-import { usePreferencesStore } from '@/store/usePreferencesStore';
 import { headingLetterSpacing } from '@/theme/typography';
 import { ScrollView, Text, View } from '@/tw';
 import {
@@ -37,7 +36,7 @@ import {
   type EstablishmentSortBy,
   hasActiveFilters,
 } from '@/utils/filters';
-import { type LatLng, resolveCityFromLocation, resolveNearbyOrigin } from '@/utils/geo';
+import { type LatLng, resolveNearbyOrigin } from '@/utils/geo';
 
 const ItemSeparator = () => <View className="h-4" />;
 
@@ -51,11 +50,6 @@ export default function FeedScreen() {
   const setQuery = useFiltersStore((state) => state.setQuery);
   const toggleStyle = useFiltersStore((state) => state.toggleStyle);
 
-  const hasOnboarded = usePreferencesStore((state) => state.hasOnboarded);
-  const completeOnboarding = usePreferencesStore((state) => state.completeOnboarding);
-  const setCity = usePreferencesStore((state) => state.setCity);
-  const setCustomCity = usePreferencesStore((state) => state.setCustomCity);
-  const { data: cities } = useCitiesQuery();
 
   const { data: events } = useEventsQuery();
   const { data: establishments } = useEstablishmentsQuery();
@@ -118,29 +112,7 @@ export default function FeedScreen() {
   // Sem nearMe a query fica desabilitada (origin null) — zero custo.
   const { coords, status, request } = useUserLocation();
 
-  // Se o usuário nunca fez o onboarding, pede a localização no mount e
-  // configura a cidade automaticamente.
-  useEffect(() => {
-    if (!hasOnboarded) {
-      const handleFirstLaunchLocation = async () => {
-        const result = await request();
-        if (result) {
-          const { city, isCatalog } = resolveCityFromLocation(result.coords, result.geocode, cities ?? []);
-          queueMicrotask(() => {
-            if (isCatalog) {
-              setCity(city.id);
-            } else {
-              setCustomCity(city);
-            }
-          });
-        }
-        queueMicrotask(() => {
-          completeOnboarding();
-        });
-      };
-      handleFirstLaunchLocation();
-    }
-  }, [hasOnboarded, request, cities, setCity, setCustomCity, completeOnboarding]);
+  useFirstLaunchLocation(request);
 
   // Pede a localização ao ligar "Perto de mim"; se negada, resolveNearbyOrigin
   // cai para o centro da cidade (a tela nunca fica vazia).
