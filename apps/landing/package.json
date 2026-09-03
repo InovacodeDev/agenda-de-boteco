@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@agenda/core": "workspace:*",
+    "@agenda/shared-ui": "workspace:*",
     "next": "^15.1.0",
     "posthog-js": "^1",
     "react": "19.2.3",
