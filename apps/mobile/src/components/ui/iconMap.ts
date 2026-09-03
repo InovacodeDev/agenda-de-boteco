@@ -2,7 +2,6 @@ import type { AttributeIconName } from '@agenda/core';
 import {
   AppleLogoIcon,
   ArrowLeftIcon,
-  AtIcon,
   BabyIcon,
   BeerSteinIcon,
   BellIcon,
@@ -63,7 +62,6 @@ import {
   WifiHighIcon,
   WindIcon,
   WineIcon,
-  WrenchIcon,
   XIcon,
 } from 'phosphor-react-native';
 
@@ -95,7 +93,6 @@ const ICON_MAP = {
   // UI e navegação
   apple: AppleLogoIcon,
   'arrow-left': ArrowLeftIcon,
-  at: AtIcon,
   bell: BellIcon,
   calendar: CalendarBlankIcon,
   check: CheckIcon,
@@ -115,7 +112,6 @@ const ICON_MAP = {
   'magnifying-glass': MagnifyingGlassIcon,
   music: MusicNotesIcon,
   'right-from-bracket': SignOutIcon,
-  'screwdriver-wrench': WrenchIcon,
   'share-nodes': ShareNetworkIcon,
   'shield-check': ShieldCheckIcon,
   sliders: SlidersHorizontalIcon,

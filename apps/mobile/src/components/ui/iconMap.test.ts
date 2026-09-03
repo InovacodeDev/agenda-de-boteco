@@ -12,7 +12,6 @@ import {
 const UI_ICON_NAMES = [
   'apple',
   'arrow-left',
-  'at',
   'bell',
   'calendar',
   'check',
@@ -32,7 +31,6 @@ const UI_ICON_NAMES = [
   'magnifying-glass',
   'music',
   'right-from-bracket',
-  'screwdriver-wrench',
   'share-nodes',
   'sliders',
   'star',
