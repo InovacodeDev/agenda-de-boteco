@@ -18,19 +18,19 @@
     },
     {
       "source": "/artists",
-      "destination": "https://agenda-de-boteco-web-artists.vercel.app/artists"
+      "destination": "https://agenda-de-boteco-artists.vercel.app/artists"
     },
     {
       "source": "/artists/:path*",
-      "destination": "https://agenda-de-boteco-web-artists.vercel.app/artists/:path*"
+      "destination": "https://agenda-de-boteco-artists.vercel.app/artists/:path*"
     },
     {
       "source": "/client",
-      "destination": "https://agenda-de-boteco-web-client.vercel.app/client"
+      "destination": "https://agenda-de-boteco-client.vercel.app/client"
     },
     {
       "source": "/client/:path*",
-      "destination": "https://agenda-de-boteco-web-client.vercel.app/client/:path*"
+      "destination": "https://agenda-de-boteco-client.vercel.app/client/:path*"
     }
   ]
 }
