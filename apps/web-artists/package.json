@@ -13,8 +13,8 @@
   "dependencies": {
     "@agenda/core": "workspace:*",
     "@agenda/shared-ui": "workspace:*",
-    "@vercel/analytics": "^2.0.1",
     "next": "^15.1.0",
+    "posthog-js": "^1",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "zod": "3.23.8"

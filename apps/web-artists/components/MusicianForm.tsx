@@ -8,6 +8,7 @@ import {
   MUSIC_STYLES,
   type MusicianLeadInput,
   musicianLeadSchema,
+  trackEvent,
 } from '@agenda/core';
 import { useEffect, useRef, useState } from 'react';
 import { ZodError } from 'zod';
@@ -82,6 +83,7 @@ export function MusicianForm() {
     setBusy(true);
     try {
       await createMusicianLead(parsed.data);
+      trackEvent('musician_lead_submitted');
       setDraft(EMPTY_DRAFT);
       setSubmitted(false);
       setDone(true);
