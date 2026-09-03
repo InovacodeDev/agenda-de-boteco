@@ -4,6 +4,7 @@ import '@/store/storage';
 // bootstrap: registra client supabase, redirect de auth e handler de erro — NÃO remover
 import '@/lib/bootstrap';
 
+import { identifyAnalyticsUser, resetAnalytics, trackPageview } from '@agenda/core';
 import {
   Inter_400Regular,
   Inter_500Medium,
@@ -16,7 +17,7 @@ import { onlineManager } from '@tanstack/react-query';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { useFonts } from 'expo-font';
 import * as Linking from 'expo-linking';
-import { Stack } from 'expo-router';
+import { Stack, usePathname } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
@@ -41,6 +42,17 @@ SplashScreen.preventAutoHideAsync();
 /** Liga o realtime ao cache. Montado dentro do provider para garantir contexto. */
 function RealtimeBridge() {
   useRealtimeSync();
+  return null;
+}
+
+/** Equivalente mobile do pageview: dispara `trackPageview` a cada troca de rota. */
+function PostHogScreenTracker() {
+  const pathname = usePathname();
+
+  useEffect(() => {
+    trackPageview(pathname);
+  }, [pathname]);
+
   return null;
 }
 
@@ -87,6 +99,9 @@ export default function RootLayout() {
       const nextUserId = user?.id ?? null;
       if (nextUserId !== null && nextUserId !== lastUserId) {
         mergeLocalIntoServer(nextUserId);
+        identifyAnalyticsUser(nextUserId);
+      } else if (nextUserId === null && lastUserId !== null) {
+        resetAnalytics();
       }
       lastUserId = nextUserId;
     });
@@ -137,6 +152,7 @@ export default function RootLayout() {
       <SafeAreaProvider>
         <ErrorBoundary>
           <RealtimeBridge />
+          <PostHogScreenTracker />
           <StatusBar style="light" />
           <OfflineBanner />
           <Stack
