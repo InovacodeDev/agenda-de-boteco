@@ -36,16 +36,22 @@ export function decodeCursor(cursor: string | null): CatalogCursor | null {
   if (separatorIndex === -1) {
     return null;
   }
-  const value = cursor.slice(0, separatorIndex);
-  const id = cursor.slice(separatorIndex + 1);
-  // cursor e input externo (pageParam do useInfiniteQuery); value/id vao sem
-  // escaping para o .or() do PostgREST na query layer — rejeitar caracteres
-  // que quebrariam a sintaxe do filtro em vez de confiar so no formato de
-  // quem gerou o cursor.
-  if (/[,()]/.test(value) || /[,()]/.test(id)) {
-    return null;
-  }
-  return { value, id };
+  return {
+    value: cursor.slice(0, separatorIndex),
+    id: cursor.slice(separatorIndex + 1),
+  };
+}
+
+/**
+ * cursor e input externo (pageParam do useInfiniteQuery); value/id vao sem
+ * escaping para o .or() do PostgREST na query layer. Citar em vez de rejeitar
+ * caracteres perigosos (`,`/`(`/`)`): rejeitar faria decodeCursor devolver
+ * null para um cursor valido (ex. nome de bar com virgula), que a query layer
+ * trata como "sem cursor" — reiniciando a pagina 1 pra sempre, um loop
+ * infinito de paginacao em vez de uma falha visivel.
+ */
+export function quoteCursorValue(value: string): string {
+  return `"${value.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`;
 }
 
 /**

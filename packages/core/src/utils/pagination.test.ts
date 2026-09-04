@@ -4,6 +4,7 @@ import {
   DEFAULT_PAGE_SIZE,
   encodeCursor,
   flattenPages,
+  quoteCursorValue,
 } from './pagination';
 
 describe('flattenPages', () => {
@@ -52,9 +53,26 @@ describe('cursor', () => {
     expect(decodeCursor(encoded)).toEqual({ value: 'Bar do Ze | Centro', id: 'est-9' });
   });
 
-  it('rejeita cursor com caracteres que quebrariam o filtro OR do PostgREST', () => {
-    const encoded = encodeCursor({ value: 'x,and(status.eq.published)', id: 'evt-1' });
+  it('nao rejeita valor com virgula/parenteses — decodeCursor so separa, nao valida', () => {
+    const encoded = encodeCursor({ value: 'Bar do Ze, Cia (Centro)', id: 'evt-1' });
 
-    expect(decodeCursor(encoded)).toBeNull();
+    expect(decodeCursor(encoded)).toEqual({ value: 'Bar do Ze, Cia (Centro)', id: 'evt-1' });
+  });
+});
+
+describe('quoteCursorValue', () => {
+  it('envolve o valor em aspas', () => {
+    expect(quoteCursorValue('2026-09-03T20:00:00Z')).toBe('"2026-09-03T20:00:00Z"');
+  });
+
+  it('escapa aspas e barras invertidas para nao fechar a citacao antecipadamente', () => {
+    expect(quoteCursorValue('Bar "Zé" \\ Vinho')).toBe('"Bar \\"Zé\\" \\\\ Vinho"');
+  });
+
+  it('nao precisa rejeitar virgula/parenteses — citar neutraliza o terminador do PostgREST', () => {
+    // Regressao: decodeCursor rejeitava esses caracteres retornando null, que a
+    // query layer tratava como "sem cursor" — reiniciando a pagina 1 pra
+    // sempre (loop infinito de paginacao) em vez de citar o valor.
+    expect(quoteCursorValue('Bar do Ze, Cia (Centro)')).toBe('"Bar do Ze, Cia (Centro)"');
   });
 });

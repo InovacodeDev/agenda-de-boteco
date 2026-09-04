@@ -358,18 +358,23 @@ function createQueryBuilder(rows: Row[], injectedError: FakeError | null = null)
     },
     /**
      * Suporte mínimo ao `.or()` do PostgREST no formato que a paginação por
-     * cursor usa: `col.gt.valor,and(col.eq.valor,id.gt.valor)`. Só o
-     * suficiente para o teste — não é um parser geral de filtro.
+     * cursor usa: `col.gt."valor",and(col.eq."valor",id.gt."valor")`. Valores
+     * sempre citados (quoteCursorValue) — unquote reverte `\"`/`\\` antes de
+     * comparar. Só o suficiente para o teste — não é um parser geral de filtro.
      */
     or(expression: string) {
       const pattern = new RegExp(
-        '^(\\w+)\\.(gt|lt)\\.([^,]+),and\\(\\1\\.eq\\.([^,]+),id\\.(?:gt|lt)\\.([^)]+)\\)$',
+        '^(\\w+)\\.(gt|lt)\\."((?:[^"\\\\]|\\\\.)*)",and\\(\\1\\.eq\\."((?:[^"\\\\]|\\\\.)*)",id\\.(?:gt|lt)\\."((?:[^"\\\\]|\\\\.)*)"\\)$',
       );
       const match = pattern.exec(expression);
       if (!match) {
         throw new Error(`fake builder: expressao .or() nao suportada: ${expression}`);
       }
-      const [, column, operator, primary, tie, tieId] = match;
+      const unquote = (v: string) => v.replace(/\\(.)/g, '$1');
+      const [, column, operator, rawPrimary, rawTie, rawTieId] = match;
+      const primary = unquote(rawPrimary);
+      const tie = unquote(rawTie);
+      const tieId = unquote(rawTieId);
       current = current.filter((row) => {
         const value = String(row[column]);
         const beyond = operator === 'gt' ? value > primary : value < primary;
@@ -767,5 +772,44 @@ describe('paginacao por cursor', () => {
     await expect(listEstablishments(undefined, null, 3)).rejects.toEqual(
       POSTGREST_ERROR,
     );
+  });
+
+  it('listEstablishments pagina ate o fim quando o nome do bar tem virgula/parenteses', async () => {
+    // Regressao: decodeCursor rejeitava virgula/parenteses no valor do cursor,
+    // fazendo a query layer tratar "Bar do Ze, Cia (Centro)" como cursor
+    // invalido — reiniciava a pagina 1 pra sempre em vez de avancar. Fix:
+    // quoteCursorValue cita o valor no .or() do PostgREST em vez de rejeitar.
+    const base = establishmentRows[0];
+    const commaRows: Row[] = [
+      { ...base, id: 'e-comma-1', name: 'Ana Bar' },
+      { ...base, id: 'e-comma-2', name: 'Bar do Ze, Cia (Centro)' },
+      { ...base, id: 'e-comma-3', name: 'Zeta Pub' },
+    ];
+    mockGetSupabase.mockReturnValue({
+      from(table: string) {
+        if (table !== 'establishments') {
+          throw new Error(`fake client: tabela desconhecida "${table}"`);
+        }
+        return createQueryBuilder(commaRows);
+      },
+    });
+
+    const first = await listEstablishments(undefined, null, 1);
+    expect(first.items.map((item) => item.id)).toEqual(['e-comma-1']);
+    expect(first.nextCursor).not.toBeNull();
+
+    const second = await listEstablishments(undefined, first.nextCursor, 1);
+    expect(second.items.map((item) => item.id)).toEqual(['e-comma-2']);
+    expect(second.nextCursor).not.toBeNull();
+
+    const third = await listEstablishments(undefined, second.nextCursor, 1);
+    expect(third.items.map((item) => item.id)).toEqual(['e-comma-3']);
+
+    // limit=1 e exatamente 1 item restante: a pagina vem cheia, entao
+    // nextCursor so vira null no round-trip seguinte (comportamento padrao de
+    // keyset pagination, nao um bug do teste).
+    const fourth = await listEstablishments(undefined, third.nextCursor, 1);
+    expect(fourth.items).toEqual([]);
+    expect(fourth.nextCursor).toBeNull();
   });
 });

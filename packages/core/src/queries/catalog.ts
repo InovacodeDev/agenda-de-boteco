@@ -28,6 +28,7 @@ import {
   decodeCursor,
   DEFAULT_PAGE_SIZE,
   encodeCursor,
+  quoteCursorValue,
 } from '../utils/pagination';
 import { slugify } from '../utils/slug';
 
@@ -194,7 +195,7 @@ export async function listEvents(
   const decoded = decodeCursor(cursor);
   const filtered = decoded
     ? base.or(
-        `starts_at.gt.${decoded.value},and(starts_at.eq.${decoded.value},id.gt.${decoded.id})`,
+        `starts_at.gt.${quoteCursorValue(decoded.value)},and(starts_at.eq.${quoteCursorValue(decoded.value)},id.gt.${quoteCursorValue(decoded.id)})`,
       )
     : base;
 
@@ -238,7 +239,7 @@ export async function listEstablishments(
   const withCityFilter = cityId ? base.eq('city_id', cityId) : base;
   const filtered = decoded
     ? withCityFilter.or(
-        `name.gt.${decoded.value},and(name.eq.${decoded.value},id.gt.${decoded.id})`,
+        `name.gt.${quoteCursorValue(decoded.value)},and(name.eq.${quoteCursorValue(decoded.value)},id.gt.${quoteCursorValue(decoded.id)})`,
       )
     : withCityFilter;
 
@@ -289,7 +290,7 @@ export async function listEventsByEstablishment(
   const base = eventsFrom(client).select(EVENT_COLUMNS).eq('establishment_id', establishmentId);
   const filtered = decoded
     ? base.or(
-        `starts_at.${comparison}.${decoded.value},and(starts_at.eq.${decoded.value},id.${comparison}.${decoded.id})`,
+        `starts_at.${comparison}.${quoteCursorValue(decoded.value)},and(starts_at.eq.${quoteCursorValue(decoded.value)},id.${comparison}.${quoteCursorValue(decoded.id)})`,
       )
     : base;
 
@@ -370,7 +371,7 @@ export async function listNotifications(
   const base = client.from('notifications').select(NOTIFICATION_COLUMNS);
   const filtered = decoded
     ? base.or(
-        `created_at.lt.${decoded.value},and(created_at.eq.${decoded.value},id.lt.${decoded.id})`,
+        `created_at.lt.${quoteCursorValue(decoded.value)},and(created_at.eq.${quoteCursorValue(decoded.value)},id.lt.${quoteCursorValue(decoded.id)})`,
       )
     : base;
 
