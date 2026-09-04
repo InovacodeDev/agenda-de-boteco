@@ -188,6 +188,46 @@ export default function FeedScreen() {
     ],
   );
 
+  /**
+   * Filtro por cidade/atributo e client-side sobre o catalogo global
+   * paginado — uma FlashList com 0 itens renderizados nao tem conteudo para
+   * rolar, entao onEndReached nunca dispara. Sem isso, um filtro que zera a
+   * lista visivel trava fetchNextPage pra sempre mesmo havendo paginas com
+   * resultado la na frente.
+   */
+  const {
+    fetchNextPage: fetchNextEvents,
+    hasNextPage: hasNextEvents,
+    isFetchingNextPage: isFetchingNextEvents,
+  } = eventsQuery;
+  useEffect(() => {
+    if (activeTab === 0 && filteredEvents.length === 0 && hasNextEvents && !isFetchingNextEvents) {
+      void fetchNextEvents();
+    }
+  }, [activeTab, filteredEvents.length, fetchNextEvents, hasNextEvents, isFetchingNextEvents]);
+
+  const {
+    fetchNextPage: fetchNextEstablishments,
+    hasNextPage: hasNextEstablishments,
+    isFetchingNextPage: isFetchingNextEstablishments,
+  } = establishmentsQuery;
+  useEffect(() => {
+    if (
+      activeTab === 1 &&
+      cityEstablishments.length === 0 &&
+      hasNextEstablishments &&
+      !isFetchingNextEstablishments
+    ) {
+      void fetchNextEstablishments();
+    }
+  }, [
+    activeTab,
+    cityEstablishments.length,
+    fetchNextEstablishments,
+    hasNextEstablishments,
+    isFetchingNextEstablishments,
+  ]);
+
   // Estável enquanto os índices não mudam: junto com EventCard memoizado e os
   // caches de lookup, evita re-render dos cards visíveis a cada tecla da busca.
   const renderEvent = useCallback(

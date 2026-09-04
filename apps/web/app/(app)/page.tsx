@@ -187,20 +187,31 @@ export default function FeedPage() {
 
           {isLoading ? (
             <FeedLoading />
-          ) : filteredEvents.length === 0 ? (
-            <EmptyState message="Nenhum evento encontrado." />
           ) : (
             <div className="flex flex-col gap-4">
-              {filteredEvents.map((event) => (
-                <EventCard
-                  key={event.id}
-                  event={event}
-                  establishment={establishmentsById[event.establishment_id]}
-                  styles={musicStylesForEvent(event, stylesById)}
-                  userCoords={userCoords}
-                />
-              ))}
-              <div ref={eventsSentinelRef} aria-hidden className="h-px" />
+              {filteredEvents.length === 0 ? (
+                <EmptyState message="Nenhum evento encontrado." />
+              ) : (
+                filteredEvents.map((event) => (
+                  <EventCard
+                    key={event.id}
+                    event={event}
+                    establishment={establishmentsById[event.establishment_id]}
+                    styles={musicStylesForEvent(event, stylesById)}
+                    userCoords={userCoords}
+                  />
+                ))
+              )}
+              {/*
+               * Sentinela sempre montada quando ha proxima pagina, mesmo com a
+               * lista filtrada vazia: o filtro por cidade e client-side sobre
+               * o catalogo global paginado — sem isso, um filtro que zera a
+               * lista visivel esconde a sentinela e trava fetchNextPage pra
+               * sempre, mesmo havendo paginas com resultado la na frente.
+               */}
+              {eventsQuery.hasNextPage ? (
+                <div ref={eventsSentinelRef} aria-hidden className="h-px" />
+              ) : null}
               {eventsQuery.isFetchingNextPage ? (
                 <p className="text-muted-foreground py-4 text-center text-[13px]">Carregando mais…</p>
               ) : null}
@@ -219,14 +230,18 @@ export default function FeedPage() {
 
           {isLoading ? (
             <FeedLoading />
-          ) : cityEstablishments.length === 0 ? (
-            <EmptyState message="Nenhum bar encontrado." />
           ) : (
             <div className="flex flex-col gap-3">
-              {cityEstablishments.map((establishment) => (
-                <EstablishmentCard key={establishment.id} establishment={establishment} />
-              ))}
-              <div ref={establishmentsSentinelRef} aria-hidden className="h-px" />
+              {cityEstablishments.length === 0 ? (
+                <EmptyState message="Nenhum bar encontrado." />
+              ) : (
+                cityEstablishments.map((establishment) => (
+                  <EstablishmentCard key={establishment.id} establishment={establishment} />
+                ))
+              )}
+              {establishmentsQuery.hasNextPage ? (
+                <div ref={establishmentsSentinelRef} aria-hidden className="h-px" />
+              ) : null}
               {establishmentsQuery.isFetchingNextPage ? (
                 <p className="text-muted-foreground py-4 text-center text-[13px]">Carregando mais…</p>
               ) : null}
