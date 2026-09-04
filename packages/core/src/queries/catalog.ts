@@ -267,20 +267,42 @@ export async function getEstablishment(
   return data ? mapEstablishment(data) : null;
 }
 
+/**
+ * Eventos de um bar. `order` 'asc' e a agenda publica (proximos primeiro);
+ * 'desc' e o painel do dono (mais recentes primeiro). O cursor inverte a
+ * comparacao junto com a ordenacao.
+ *
+ * Invariante: a ordenacao default (starts_at asc) deve casar com o fallback
+ * mock em packages/core/src/services/catalog.ts (sortByStartsAtAsc).
+ */
 export async function listEventsByEstablishment(
   client: SupabaseClient<Database>,
   establishmentId: string,
   /** 'asc' (público, próximos primeiro) | 'desc' (painel do dono). */
   order: 'asc' | 'desc' = 'asc',
-): Promise<Event[]> {
-  // Invariante: a ordenação default (starts_at asc) deve casar com o fallback
-  // mock em apps/mobile/src/services/catalog.ts (sortByStartsAtAsc).
-  const { data, error } = await eventsFrom(client)
-    .select(EVENT_COLUMNS)
-    .eq('establishment_id', establishmentId)
-    .order('starts_at', { ascending: order === 'asc' });
+  cursor: string | null = null,
+  limit: number = DEFAULT_PAGE_SIZE,
+): Promise<CatalogPage<Event>> {
+  const ascending = order === 'asc';
+  const comparison = ascending ? 'gt' : 'lt';
+  const decoded = decodeCursor(cursor);
+  const base = eventsFrom(client).select(EVENT_COLUMNS).eq('establishment_id', establishmentId);
+  const filtered = decoded
+    ? base.or(
+        `starts_at.${comparison}.${decoded.value},and(starts_at.eq.${decoded.value},id.${comparison}.${decoded.id})`,
+      )
+    : base;
+
+  const { data, error } = await filtered
+    .order('starts_at', { ascending })
+    .order('id', { ascending })
+    .limit(limit);
   if (error) throw error;
-  return ((data ?? []) as EventRow[]).map(mapEvent);
+  const items = ((data ?? []) as EventRow[]).map(mapEvent);
+  const last = items.at(-1);
+  const nextCursor =
+    items.length < limit || !last ? null : encodeCursor({ value: last.starts_at, id: last.id });
+  return { items, nextCursor };
 }
 
 // Agenda do dono: mesma query da pública, só a ordem muda — daí o parâmetro em
@@ -289,8 +311,10 @@ export async function listEventsByEstablishment(
 export async function listOwnedEvents(
   client: SupabaseClient<Database>,
   establishmentId: string,
-): Promise<Event[]> {
-  return listEventsByEstablishment(client, establishmentId, 'desc');
+  cursor: string | null = null,
+  limit: number = DEFAULT_PAGE_SIZE,
+): Promise<CatalogPage<Event>> {
+  return listEventsByEstablishment(client, establishmentId, 'desc', cursor, limit);
 }
 
 export async function listEventAttractions(
@@ -331,17 +355,35 @@ export async function listCities(
   return (data ?? []).map(mapCity);
 }
 
+/**
+ * Avisos mais recentes primeiro. Cursor desce junto com a ordenacao.
+ *
+ * Invariante: esta ordenacao (created_at desc) deve casar com o fallback mock
+ * em packages/core/src/services/catalog.ts (mockListNotifications).
+ */
 export async function listNotifications(
   client: SupabaseClient<Database>,
-): Promise<AppNotification[]> {
-  // Invariante: esta ordenação (created_at desc) deve casar com o fallback mock
-  // em apps/mobile/src/services/catalog.ts (mockListNotifications).
-  const { data, error } = await client
-    .from('notifications')
-    .select(NOTIFICATION_COLUMNS)
-    .order('created_at', { ascending: false });
+  cursor: string | null = null,
+  limit: number = DEFAULT_PAGE_SIZE,
+): Promise<CatalogPage<AppNotification>> {
+  const decoded = decodeCursor(cursor);
+  const base = client.from('notifications').select(NOTIFICATION_COLUMNS);
+  const filtered = decoded
+    ? base.or(
+        `created_at.lt.${decoded.value},and(created_at.eq.${decoded.value},id.lt.${decoded.id})`,
+      )
+    : base;
+
+  const { data, error } = await filtered
+    .order('created_at', { ascending: false })
+    .order('id', { ascending: false })
+    .limit(limit);
   if (error) throw error;
-  return (data ?? []).map(mapNotification);
+  const items = (data ?? []).map(mapNotification);
+  const last = items.at(-1);
+  const nextCursor =
+    items.length < limit || !last ? null : encodeCursor({ value: last.created_at, id: last.id });
+  return { items, nextCursor };
 }
 
 // --- Escrita (admin) -------------------------------------------------------
