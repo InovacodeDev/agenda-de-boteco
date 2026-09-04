@@ -9,6 +9,9 @@ import type { MusicianLeadFilters, MusicianLeadSort } from './musician-leads';
 export const catalogKeys = {
   events: {
     root: ['events'] as const,
+    // Feed paginado. Primeiro segmento 'events' de proposito: a invalidacao
+    // por prefixo do realtime precisa alcancar esta key tambem.
+    list: ['events', 'list'] as const,
     detail: (id: string) => ['events', 'detail', id] as const,
     byEstablishment: (establishmentId: string) =>
       ['events', 'by-establishment', establishmentId] as const,
