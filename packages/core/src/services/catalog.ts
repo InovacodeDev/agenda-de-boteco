@@ -92,7 +92,9 @@ function mockListEstablishments(cityId?: string): Establishment[] {
   const items = cityId
     ? ESTABLISHMENTS.filter((item) => item.city_id === cityId)
     : ESTABLISHMENTS;
-  return establishmentListSchema.parse(items);
+  return establishmentListSchema
+    .parse(items)
+    .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
 }
 
 function mockGetEstablishment(id: string): Establishment | null {
@@ -162,10 +164,12 @@ export async function listEstablishments(
 ): Promise<CatalogPage<Establishment>> {
   const client = getConfiguredSupabase();
   if (client === null) {
-    const sorted = [...mockListEstablishments(cityId)].sort((a, b) =>
-      a.name.localeCompare(b.name, 'pt-BR'),
+    return paginateMock(
+      mockListEstablishments(cityId),
+      cursor,
+      limit,
+      (establishment) => establishment.name,
     );
-    return paginateMock(sorted, cursor, limit, (establishment) => establishment.name);
   }
   try {
     return await coreQueries.listEstablishments(client, cityId, cursor, limit);
