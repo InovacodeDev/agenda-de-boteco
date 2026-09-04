@@ -1,3 +1,4 @@
+import { flattenPages } from '@agenda/core';
 import { FlashList } from '@shopify/flash-list';
 import * as Location from 'expo-location';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -51,8 +52,10 @@ export default function FeedScreen() {
   const toggleStyle = useFiltersStore((state) => state.toggleStyle);
 
 
-  const { data: events } = useEventsQuery();
-  const { data: establishments } = useEstablishmentsQuery();
+  const eventsQuery = useEventsQuery();
+  const establishmentsQuery = useEstablishmentsQuery();
+  const events = flattenPages(eventsQuery.data);
+  const establishments = flattenPages(establishmentsQuery.data);
   const { data: musicStyles } = useMusicStylesQuery();
 
   // "agora" estável por render da lista, atualizado a cada minuto
@@ -288,6 +291,12 @@ export default function FeedScreen() {
           ItemSeparatorComponent={ItemSeparator}
           ListHeaderComponent={eventsListHeader}
           renderItem={renderEvent}
+          onEndReachedThreshold={0.2}
+          onEndReached={() => {
+            if (eventsQuery.hasNextPage && !eventsQuery.isFetchingNextPage) {
+              void eventsQuery.fetchNextPage();
+            }
+          }}
         />
       ) : (
         <FlashList
@@ -298,6 +307,12 @@ export default function FeedScreen() {
           ItemSeparatorComponent={() => <View className="h-3" />}
           ListHeaderComponent={barsListHeader}
           renderItem={({ item }) => <EstablishmentCard establishment={item} />}
+          onEndReachedThreshold={0.2}
+          onEndReached={() => {
+            if (establishmentsQuery.hasNextPage && !establishmentsQuery.isFetchingNextPage) {
+              void establishmentsQuery.fetchNextPage();
+            }
+          }}
         />
       )}
       <FiltersSheet
