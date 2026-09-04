@@ -1,9 +1,8 @@
--- events.establishment_id e filtrado em toda listagem por bar
--- (listEventsByEstablishment, listOwnedEvents) e nao tinha indice: o Postgres
--- fazia seq scan. Com paginacao por cursor a query passa a rodar mais vezes,
--- em lotes menores, o que torna o indice mais relevante ainda.
-CREATE INDEX IF NOT EXISTS events_establishment_id_idx
-  ON public.events (establishment_id);
+-- events_establishment_id_idx sozinho nao serve a query paginada por bar
+-- (filtra establishment_id, ordena starts_at+id); indice composto cobre as
+-- duas coisas numa unica varredura (listEventsByEstablishment, listOwnedEvents).
+CREATE INDEX IF NOT EXISTS events_establishment_id_starts_at_id_idx
+  ON public.events (establishment_id, starts_at, id);
 
 -- O cursor de eventos ordena por (starts_at, id): indice composto cobre a
 -- ordenacao e o filtro de continuacao numa unica varredura.
