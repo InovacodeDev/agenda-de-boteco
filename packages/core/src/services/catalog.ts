@@ -33,6 +33,12 @@ import {
 } from '../schemas';
 import { getConfiguredSupabase } from '../supabase/client';
 import { handleServiceError } from '../utils/errors';
+import {
+  type CatalogPage,
+  decodeCursor,
+  DEFAULT_PAGE_SIZE,
+  encodeCursor,
+} from '../utils/pagination';
 
 const eventAttractionListSchema = z.array(eventAttractionSchema);
 const eventListSchema = z.array(eventSchema);
@@ -47,6 +53,30 @@ function sortByStartsAtAsc(events: Event[]): Event[] {
   return [...events].sort(
     (a, b) => Date.parse(a.starts_at) - Date.parse(b.starts_at),
   );
+}
+
+/**
+ * Fatiamento do mock equivalente ao cursor da query real, para o app continuar
+ * navegavel sem Supabase configurado. `keyOf` extrai o valor da coluna de
+ * ordenacao de cada item.
+ */
+function paginateMock<T extends { id: string }>(
+  items: T[],
+  cursor: string | null,
+  limit: number,
+  keyOf: (item: T) => string,
+): CatalogPage<T> {
+  const decoded = decodeCursor(cursor);
+  const startIndex = decoded
+    ? items.findIndex((item) => keyOf(item) === decoded.value && item.id === decoded.id) + 1
+    : 0;
+  const page = items.slice(startIndex, startIndex + limit);
+  const last = page.at(-1);
+  const hasMore = startIndex + limit < items.length;
+  return {
+    items: page,
+    nextCursor: hasMore && last ? encodeCursor({ value: keyOf(last), id: last.id }) : null,
+  };
 }
 
 function mockListEvents(): Event[] {
@@ -98,13 +128,16 @@ function mockListNotifications(): AppNotification[] {
     .sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at));
 }
 
-export async function listEvents(): Promise<Event[]> {
+export async function listEvents(
+  cursor: string | null = null,
+  limit: number = DEFAULT_PAGE_SIZE,
+): Promise<CatalogPage<Event>> {
   const client = getConfiguredSupabase();
   if (client === null) {
-    return mockListEvents();
+    return paginateMock(mockListEvents(), cursor, limit, (event) => event.starts_at);
   }
   try {
-    return await coreQueries.listEvents(client);
+    return await coreQueries.listEvents(client, cursor, limit);
   } catch (error) {
     return handleServiceError(error, { method: 'catalog.listEvents' });
   }
@@ -124,15 +157,23 @@ export async function getEvent(id: string): Promise<Event | null> {
 
 export async function listEstablishments(
   cityId?: string,
-): Promise<Establishment[]> {
+  cursor: string | null = null,
+  limit: number = DEFAULT_PAGE_SIZE,
+): Promise<CatalogPage<Establishment>> {
   const client = getConfiguredSupabase();
   if (client === null) {
-    return mockListEstablishments(cityId);
+    const sorted = [...mockListEstablishments(cityId)].sort((a, b) =>
+      a.name.localeCompare(b.name, 'pt-BR'),
+    );
+    return paginateMock(sorted, cursor, limit, (establishment) => establishment.name);
   }
   try {
-    return await coreQueries.listEstablishments(client, cityId);
+    return await coreQueries.listEstablishments(client, cityId, cursor, limit);
   } catch (error) {
-    return handleServiceError(error, { method: 'catalog.listEstablishments', args: { cityId } });
+    return handleServiceError(error, {
+      method: 'catalog.listEstablishments',
+      args: { cityId },
+    });
   }
 }
 
@@ -152,28 +193,51 @@ export async function getEstablishment(
 
 export async function listEventsByEstablishment(
   establishmentId: string,
-): Promise<Event[]> {
+  cursor: string | null = null,
+  limit: number = DEFAULT_PAGE_SIZE,
+): Promise<CatalogPage<Event>> {
   const client = getConfiguredSupabase();
   if (client === null) {
-    return mockListEventsByEstablishment(establishmentId);
+    return paginateMock(
+      mockListEventsByEstablishment(establishmentId),
+      cursor,
+      limit,
+      (event) => event.starts_at,
+    );
   }
   try {
-    return await coreQueries.listEventsByEstablishment(client, establishmentId);
+    return await coreQueries.listEventsByEstablishment(
+      client,
+      establishmentId,
+      'asc',
+      cursor,
+      limit,
+    );
   } catch (error) {
-    return handleServiceError(error, { method: 'catalog.listEventsByEstablishment', args: { establishmentId } });
+    return handleServiceError(error, {
+      method: 'catalog.listEventsByEstablishment',
+      args: { establishmentId },
+    });
   }
 }
 
 /** Agenda de gestão do dono: mais recente primeiro, rascunhos incluídos. */
 export async function listOwnedEvents(
   establishmentId: string,
-): Promise<Event[]> {
+  cursor: string | null = null,
+  limit: number = DEFAULT_PAGE_SIZE,
+): Promise<CatalogPage<Event>> {
   const client = getConfiguredSupabase();
   if (client === null) {
-    return mockListOwnedEvents(establishmentId);
+    return paginateMock(
+      mockListOwnedEvents(establishmentId),
+      cursor,
+      limit,
+      (event) => event.starts_at,
+    );
   }
   try {
-    return await coreQueries.listOwnedEvents(client, establishmentId);
+    return await coreQueries.listOwnedEvents(client, establishmentId, cursor, limit);
   } catch (error) {
     return handleServiceError(error, {
       method: 'catalog.listOwnedEvents',
@@ -206,13 +270,21 @@ export async function listCities(): Promise<City[]> {
   }
 }
 
-export async function listNotifications(): Promise<AppNotification[]> {
+export async function listNotifications(
+  cursor: string | null = null,
+  limit: number = DEFAULT_PAGE_SIZE,
+): Promise<CatalogPage<AppNotification>> {
   const client = getConfiguredSupabase();
   if (client === null) {
-    return mockListNotifications();
+    return paginateMock(
+      mockListNotifications(),
+      cursor,
+      limit,
+      (notification) => notification.created_at,
+    );
   }
   try {
-    return await coreQueries.listNotifications(client);
+    return await coreQueries.listNotifications(client, cursor, limit);
   } catch (error) {
     return handleServiceError(error, { method: 'catalog.listNotifications' });
   }
