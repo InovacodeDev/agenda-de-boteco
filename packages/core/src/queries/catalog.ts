@@ -222,17 +222,34 @@ export async function getEvent(
   return data ? mapEvent(data as EventRow) : null;
 }
 
+/**
+ * Pagina de estabelecimentos ordenada por nome. A ordenacao e nova: antes a
+ * query nao tinha .order() e a ordem vinha indefinida do Postgres. Cursor
+ * exige ordem deterministica, e nome e a ordem que faz sentido para o usuario.
+ */
 export async function listEstablishments(
   client: SupabaseClient<Database>,
   cityId?: string,
-): Promise<Establishment[]> {
-  let query = client.from('establishments').select(ESTABLISHMENT_COLUMNS);
-  if (cityId) {
-    query = query.eq('city_id', cityId);
-  }
-  const { data, error } = await query;
+  cursor: string | null = null,
+  limit: number = DEFAULT_PAGE_SIZE,
+): Promise<CatalogPage<Establishment>> {
+  const decoded = decodeCursor(cursor);
+  const base = client.from('establishments').select(ESTABLISHMENT_COLUMNS);
+  const withCityFilter = cityId ? base.eq('city_id', cityId) : base;
+  const filtered = decoded
+    ? withCityFilter.or(`name.gt.${decoded.value},and(name.eq.${decoded.value},id.gt.${decoded.id})`)
+    : withCityFilter;
+
+  const { data, error } = await filtered
+    .order('name', { ascending: true })
+    .order('id', { ascending: true })
+    .limit(limit);
   if (error) throw error;
-  return (data ?? []).map(mapEstablishment);
+  const items = (data ?? []).map(mapEstablishment);
+  const last = items.at(-1);
+  const nextCursor =
+    items.length < limit || !last ? null : encodeCursor({ value: last.name, id: last.id });
+  return { items, nextCursor };
 }
 
 export async function getEstablishment(
