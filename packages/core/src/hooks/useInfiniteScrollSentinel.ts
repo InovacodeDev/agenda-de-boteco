@@ -5,8 +5,9 @@ export interface InfiniteScrollSentinelOptions {
   hasNextPage: boolean;
   isFetchingNextPage: boolean;
   /**
-   * Antecipacao da busca, como fracao da viewport. 0.2 dispara quando falta
-   * 20% para o fim — o equivalente web do onEndReachedThreshold do FlashList.
+   * Antecipacao da busca, como fracao da viewport (entre 0 e 1). 0.2 dispara
+   * quando falta 20% para o fim — o equivalente web do onEndReachedThreshold
+   * do FlashList.
    */
   threshold?: number;
 }
@@ -14,6 +15,10 @@ export interface InfiniteScrollSentinelOptions {
 /**
  * Dispara a proxima pagina quando o elemento sentinela se aproxima da
  * viewport. Retorna o ref a ser colado num elemento no fim da lista.
+ *
+ * fetchNextPage vai numa ref porque o TanStack Query v5 nao garante
+ * estabilidade referencial entre renders — sem isso o observer seria
+ * recriado a cada digitacao num filtro acima da lista.
  */
 export function useInfiniteScrollSentinel({
   fetchNextPage,
@@ -22,6 +27,8 @@ export function useInfiniteScrollSentinel({
   threshold = 0.2,
 }: InfiniteScrollSentinelOptions) {
   const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const fetchNextPageRef = useRef(fetchNextPage);
+  fetchNextPageRef.current = fetchNextPage;
 
   useEffect(() => {
     if (!hasNextPage || isFetchingNextPage) {
@@ -32,7 +39,7 @@ export function useInfiniteScrollSentinel({
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries.some((entry) => entry.isIntersecting)) {
-          fetchNextPage();
+          fetchNextPageRef.current();
         }
       },
       { rootMargin },
@@ -41,7 +48,7 @@ export function useInfiniteScrollSentinel({
       observer.observe(element);
     }
     return () => observer.disconnect();
-  }, [fetchNextPage, hasNextPage, isFetchingNextPage, threshold]);
+  }, [hasNextPage, isFetchingNextPage, threshold]);
 
   return sentinelRef;
 }
