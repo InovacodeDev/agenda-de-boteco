@@ -1,8 +1,6 @@
 'use client';
 
-import { type DateBucket, QUICK_ATTRIBUTE_METAS, useFiltersStore } from '@agenda/core';
-
-import { cn } from '@/lib/cn';
+import { cn, type DateBucket, QUICK_ATTRIBUTE_METAS, useFiltersStore } from '@agenda/core';
 
 const DATE_CHIPS: Array<{ label: string; bucket: DateBucket }> = [
   { label: 'Hoje', bucket: 'today' },

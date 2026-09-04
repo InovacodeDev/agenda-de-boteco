@@ -10,10 +10,10 @@ export interface NavItem {
 
 export const NAV_ITEMS: NavItem[] = [
   { label: 'Feed', href: '/', icon: 'home', enabled: true },
-  { label: 'Mapa', href: '/mapa', icon: 'map', enabled: FEATURES.map },
-  { label: 'Favoritos', href: '/favoritos', icon: 'heart', enabled: true },
-  { label: 'Avisos', href: '/avisos', icon: 'bell', enabled: FEATURES.notifications },
-  { label: 'Perfil', href: '/perfil', icon: 'user', enabled: true },
+  { label: 'Mapa', href: '/map', icon: 'map', enabled: FEATURES.map },
+  { label: 'Favoritos', href: '/favorites', icon: 'heart', enabled: true },
+  { label: 'Avisos', href: '/notices', icon: 'bell', enabled: FEATURES.notifications },
+  { label: 'Perfil', href: '/profile', icon: 'user', enabled: true },
 ];
 
 /** Rotas de detalhe não têm item próprio: herdam o destaque da aba de onde foram abertas. */

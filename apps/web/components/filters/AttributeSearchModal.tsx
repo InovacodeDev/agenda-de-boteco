@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  cn,
   ESTABLISHMENT_ATTRIBUTES,
   type EstablishmentAttribute,
   type EstablishmentAttributeMeta,
@@ -9,7 +10,6 @@ import {
 import { useMemo, useState } from 'react';
 
 import { AttributeIcon, XIcon } from '@/components/ui/icons';
-import { cn } from '@/lib/cn';
 
 export interface AttributeSearchModalProps {
   isOpen: boolean;

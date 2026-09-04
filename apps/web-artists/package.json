@@ -1,0 +1,31 @@
+{
+  "name": "@agenda/web-artists",
+  "version": "0.0.2",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev --port 8091",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@agenda/core": "workspace:*",
+    "@agenda/shared-ui": "workspace:*",
+    "next": "^15.1.0",
+    "posthog-js": "^1",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "zod": "3.23.8"
+  },
+  "devDependencies": {
+    "@agenda/typescript-config": "workspace:*",
+    "@tailwindcss/postcss": "^4.0.0",
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.2.15",
+    "@types/react-dom": "^19.2.3",
+    "tailwindcss": "^4.0.0",
+    "typescript": "^6.0.3"
+  }
+}

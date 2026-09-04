@@ -1,3 +1,5 @@
+import type { MusicianLeadFilters, MusicianLeadSort } from './musician-leads';
+
 /**
  * Factory hierárquica de query keys do catálogo. A hierarquia importa para
  * invalidação por prefixo: `['events']` deve casar com `['events','detail',id]`
@@ -12,6 +14,10 @@ export const catalogKeys = {
       ['events', 'by-establishment', establishmentId] as const,
     attractions: (eventId: string) =>
       ['events', 'attractions', eventId] as const,
+    // Agenda do painel do dono (inclui rascunho). Começa com 'events' para que
+    // a invalidação por prefixo após salvar/apagar evento também a alcance.
+    owned: (establishmentId: string) =>
+      ['events', 'owned', establishmentId] as const,
   },
   establishments: {
     root: ['establishments'] as const,
@@ -31,4 +37,9 @@ export const catalogKeys = {
   musicStyles: ['music-styles'] as const,
   cities: ['cities'] as const,
   notifications: ['notifications'] as const,
+  musicianLeads: {
+    root: ['musician-leads'] as const,
+    list: (filters: MusicianLeadFilters, sort: MusicianLeadSort) =>
+      ['musician-leads', 'list', filters, sort] as const,
+  },
 } as const;

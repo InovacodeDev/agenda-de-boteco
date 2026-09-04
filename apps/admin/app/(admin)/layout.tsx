@@ -31,7 +31,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   if (status === 'loading' || (status === 'signedIn' && adminCheck === 'checking')) {
     return (
-      <div className="flex min-h-dvh items-center justify-center text-[14px] text-muted-foreground">
+      <div className="text-muted-foreground flex min-h-dvh items-center justify-center text-[14px]">
         Carregando…
       </div>
     );
@@ -41,14 +41,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     return (
       <div className="flex min-h-dvh flex-col items-center justify-center gap-3 p-6 text-center">
         <span className="text-[32px]">🚫</span>
-        <h1 className="text-[18px] font-semibold text-foreground">Acesso negado</h1>
-        <p className="max-w-sm text-[14px] text-muted-foreground">
+        <h1 className="text-foreground text-[18px] font-semibold">Acesso negado</h1>
+        <p className="text-muted-foreground max-w-sm text-[14px]">
           Sua conta não tem permissão de administrador. Fale com o responsável pelo painel.
         </p>
         <button
           type="button"
           onClick={() => void useAuthStore.getState().signOut()}
-          className="rounded-full bg-surface-elevated px-5 py-2.5 text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
+          className="bg-surface-elevated text-muted-foreground hover:text-foreground rounded-full px-5 py-2.5 text-[13px] font-medium transition-colors"
         >
           Sair
         </button>
@@ -61,7 +61,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <div className="flex min-h-dvh">
       <Sidebar />
-      <main className="flex-1 overflow-auto bg-background p-8">{children}</main>
+      <main className="bg-background flex-1 overflow-auto p-8">{children}</main>
     </div>
   );
 }

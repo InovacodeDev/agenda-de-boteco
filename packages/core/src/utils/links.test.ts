@@ -96,13 +96,13 @@ describe('buildEventShareUrl', () => {
         { slugOrId: 'samba-na-varanda', citySlug: 'floripa' },
         'https://agenda.example.com',
       ),
-    ).toBe('https://agenda.example.com/eventos/floripa/samba-na-varanda');
+    ).toBe('https://agenda.example.com/events/floripa/samba-na-varanda');
   });
 
   it('gera URL https sem citySlug (omite o segmento de cidade)', () => {
     expect(
       buildEventShareUrl({ slugOrId: 'samba-na-varanda' }, 'https://agenda.example.com'),
-    ).toBe('https://agenda.example.com/eventos/samba-na-varanda');
+    ).toBe('https://agenda.example.com/events/samba-na-varanda');
   });
 
   it('normaliza a barra final do baseUrl (sem dupla barra)', () => {
@@ -111,14 +111,14 @@ describe('buildEventShareUrl', () => {
         { slugOrId: 'e1', citySlug: 'floripa' },
         'https://agenda.example.com/',
       ),
-    ).toBe('https://agenda.example.com/eventos/floripa/e1');
+    ).toBe('https://agenda.example.com/events/floripa/e1');
   });
 
   it('produz o mesmo resultado com e sem barra final no baseUrl', () => {
     const withSlash = buildEventShareUrl({ slugOrId: 'e1' }, 'https://x.com/');
     const withoutSlash = buildEventShareUrl({ slugOrId: 'e1' }, 'https://x.com');
     expect(withSlash).toBe(withoutSlash);
-    expect(withSlash).toBe('https://x.com/eventos/e1');
+    expect(withSlash).toBe('https://x.com/events/e1');
   });
 
   it('faz URL-encode de slug e citySlug com caracteres especiais', () => {
@@ -127,7 +127,7 @@ describe('buildEventShareUrl', () => {
         { slugOrId: 'samba & forró', citySlug: 'são paulo' },
         'https://x.com',
       ),
-    ).toBe('https://x.com/eventos/s%C3%A3o%20paulo/samba%20%26%20forr%C3%B3');
+    ).toBe('https://x.com/events/s%C3%A3o%20paulo/samba%20%26%20forr%C3%B3');
   });
 
   it('faz URL-encode do slug também no deep link de scheme', () => {
@@ -150,13 +150,13 @@ describe('buildEstablishmentShareUrl', () => {
         { slugOrId: 'boteco-do-ze', citySlug: 'floripa' },
         'https://agenda.example.com',
       ),
-    ).toBe('https://agenda.example.com/bares/floripa/boteco-do-ze');
+    ).toBe('https://agenda.example.com/establishments/floripa/boteco-do-ze');
   });
 
   it('gera URL https sem citySlug (omite o segmento de cidade)', () => {
     expect(
       buildEstablishmentShareUrl({ slugOrId: 'boteco-do-ze' }, 'https://agenda.example.com'),
-    ).toBe('https://agenda.example.com/bares/boteco-do-ze');
+    ).toBe('https://agenda.example.com/establishments/boteco-do-ze');
   });
 
   it('normaliza a barra final do baseUrl (sem dupla barra)', () => {
@@ -165,7 +165,7 @@ describe('buildEstablishmentShareUrl', () => {
         { slugOrId: 'b1', citySlug: 'floripa' },
         'https://agenda.example.com/',
       ),
-    ).toBe('https://agenda.example.com/bares/floripa/b1');
+    ).toBe('https://agenda.example.com/establishments/floripa/b1');
   });
 
   it('faz URL-encode de slug e citySlug com caracteres especiais', () => {
@@ -174,6 +174,6 @@ describe('buildEstablishmentShareUrl', () => {
         { slugOrId: 'bar do zé', citySlug: 'são paulo' },
         'https://x.com',
       ),
-    ).toBe('https://x.com/bares/s%C3%A3o%20paulo/bar%20do%20z%C3%A9');
+    ).toBe('https://x.com/establishments/s%C3%A3o%20paulo/bar%20do%20z%C3%A9');
   });
 });

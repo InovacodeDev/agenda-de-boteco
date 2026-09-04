@@ -79,6 +79,32 @@ export type Database = {
         }
         Relationships: []
       }
+      establishment_owners: {
+        Row: {
+          created_at: string
+          establishment_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          establishment_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          establishment_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "establishment_owners_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       establishments: {
         Row: {
           address: string
@@ -325,18 +351,21 @@ export type Database = {
           email: string | null
           id: string
           is_admin: boolean
+          is_establishment_owner: boolean
         }
         Insert: {
           created_at?: string
           email?: string | null
           id: string
           is_admin?: boolean
+          is_establishment_owner?: boolean
         }
         Update: {
           created_at?: string
           email?: string | null
           id?: string
           is_admin?: boolean
+          is_establishment_owner?: boolean
         }
         Relationships: []
       }
@@ -558,6 +587,30 @@ export type Database = {
             }
             Returns: string
           }
+      claim_establishment_owner: { Args: never; Returns: undefined }
+      create_city_from_panel: {
+        Args: { p_name: string; p_uf: string }
+        Returns: string
+      }
+      create_owned_establishment: {
+        Args: {
+          p_address: string
+          p_ambiance: string
+          p_attributes: Database["public"]["Enums"]["establishment_attribute_enum"][]
+          p_city_id: string
+          p_cover_url: string
+          p_description: string
+          p_instagram: string
+          p_logo_url: string
+          p_menu_url: string
+          p_name: string
+          p_neighborhood: string
+          p_opening_hours: string
+          p_price_range: string
+          p_whatsapp: string
+        }
+        Returns: string
+      }
       disablelongtransactions: { Args: never; Returns: string }
       dropgeometrycolumn:
         | {
@@ -691,6 +744,7 @@ export type Database = {
       geomfromewkt: { Args: { "": string }; Returns: unknown }
       gettransactionid: { Args: never; Returns: unknown }
       is_admin: { Args: never; Returns: boolean }
+      is_establishment_owner: { Args: never; Returns: boolean }
       longtransactionsenabled: { Args: never; Returns: boolean }
       nearby_establishments: {
         Args: {
@@ -723,6 +777,10 @@ export type Database = {
           slug: string
           whatsapp: string
         }[]
+      }
+      owns_establishment: {
+        Args: { target_id: string }
+        Returns: boolean
       }
       populate_geometry_columns:
         | { Args: { tbl_oid: unknown; use_typmod?: boolean }; Returns: number }

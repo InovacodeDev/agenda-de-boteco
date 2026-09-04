@@ -2,16 +2,21 @@
 
 import {
   getFriendlyErrorMessage,
+  identifyAnalyticsUser,
   signInWithEmailOtp,
   useAuthStore,
   verifyEmailOtp,
 } from '@agenda/core';
+import {
+  BTN_GHOST as BTN_GHOST_BASE,
+  BTN_PRIMARY as BTN_PRIMARY_BASE,
+  INPUT_CLASS as INPUT_BASE,
+} from '@agenda/shared-ui';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-import { BTN_GHOST as BTN_GHOST_BASE, BTN_PRIMARY as BTN_PRIMARY_BASE, INPUT_CLASS as INPUT_BASE } from '@/components/ui/styles';
 import logo from '@/public/logo.png';
 
 type EmailStep = 'editing' | 'sent';
@@ -24,6 +29,7 @@ const BTN_GHOST = `${BTN_GHOST_BASE} w-full`;
 export default function LoginPage() {
   const router = useRouter();
   const status = useAuthStore((state) => state.status);
+  const userId = useAuthStore((state) => state.user?.id);
 
   const [step, setStep] = useState<EmailStep>('editing');
   const [email, setEmail] = useState('');
@@ -35,9 +41,10 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (status === 'signedIn') {
+      if (userId) identifyAnalyticsUser(userId);
       router.replace('/');
     }
-  }, [status, router]);
+  }, [status, userId, router]);
 
   const handleSendCode = async () => {
     if (!email.trim()) return;
@@ -68,10 +75,10 @@ export default function LoginPage() {
 
   return (
     <main className="flex min-h-dvh items-center justify-center bg-surface p-6">
-      <div className="flex w-full max-w-sm flex-col gap-6 rounded-2xl border border-border bg-card p-8 shadow-[var(--shadow-card)]">
+      <div className="flex w-full max-w-sm flex-col gap-6 rounded-2xl border border-border bg-card p-8 shadow-(--shadow-card)">
         <div className="flex flex-col gap-1">
           <Image src={logo} alt="Agenda de Boteco" priority className="mb-1 h-auto w-32" />
-          <h1 className="font-[family-name:var(--font-heading)] text-[24px] font-bold leading-tight text-foreground">
+          <h1 className="font-heading text-[24px] font-bold leading-tight text-foreground">
             Painel Admin
           </h1>
           <p className="text-[13px] text-muted-foreground">
@@ -147,7 +154,7 @@ export default function LoginPage() {
         )}
 
         <Link
-          href="/privacidade"
+          href="/privacy"
           className="text-center text-[12px] text-muted-foreground underline-offset-2 hover:underline"
         >
           Política de Privacidade

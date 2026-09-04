@@ -1,4 +1,11 @@
-import { appJsonStorage, configureAppStorage, getAppStorage, registerRehydrator } from './storage';
+import {
+  appJsonStorage,
+  configureAppStorage,
+  getAppStorage,
+  registerRehydrator,
+  webQueryStorage,
+  webStorage,
+} from './storage';
 
 /**
  * Regressão: o `persist` do zustand cria os stores (e dispara hidratação) ANTES
@@ -46,3 +53,82 @@ describe('appJsonStorage tolerante a bootstrap tardio', () => {
     expect(calls).toBeGreaterThan(before);
   });
 });
+
+describe('webStorage', () => {
+  it('lida com ausência de window no servidor (SSR-safe)', () => {
+    expect(webStorage.getItem('key')).toBeNull();
+    expect(() => webStorage.setItem('key', 'val')).not.toThrow();
+    expect(() => webStorage.removeItem('key')).not.toThrow();
+  });
+
+  it('delega para window.localStorage quando disponível no browser', () => {
+    const mem = new Map<string, string>();
+    const fakeLocalStorage = {
+      getItem: jest.fn((k: string) => mem.get(k) ?? null),
+      setItem: jest.fn((k: string, v: string) => {
+        mem.set(k, v);
+      }),
+      removeItem: jest.fn((k: string) => {
+        mem.delete(k);
+      }),
+    };
+
+    const originalWindow = global.window;
+    (global as unknown as { window: unknown }).window = {
+      localStorage: fakeLocalStorage,
+    };
+
+    try {
+      webStorage.setItem('theme', 'dark');
+      expect(fakeLocalStorage.setItem).toHaveBeenCalledWith('theme', 'dark');
+
+      expect(webStorage.getItem('theme')).toBe('dark');
+      expect(fakeLocalStorage.getItem).toHaveBeenCalledWith('theme');
+
+      webStorage.removeItem('theme');
+      expect(fakeLocalStorage.removeItem).toHaveBeenCalledWith('theme');
+    } finally {
+      (global as unknown as { window: unknown }).window = originalWindow;
+    }
+  });
+});
+
+describe('webQueryStorage', () => {
+  it('lida com ausência de window no servidor (SSR-safe)', async () => {
+    expect(await webQueryStorage.getItem('query-key')).toBeNull();
+    await expect(webQueryStorage.setItem('query-key', 'data')).resolves.toBeUndefined();
+    await expect(webQueryStorage.removeItem('query-key')).resolves.toBeUndefined();
+  });
+
+  it('delega para window.localStorage quando disponível no browser', async () => {
+    const mem = new Map<string, string>();
+    const fakeLocalStorage = {
+      getItem: jest.fn((k: string) => mem.get(k) ?? null),
+      setItem: jest.fn((k: string, v: string) => {
+        mem.set(k, v);
+      }),
+      removeItem: jest.fn((k: string) => {
+        mem.delete(k);
+      }),
+    };
+
+    const originalWindow = global.window;
+    (global as unknown as { window: unknown }).window = {
+      localStorage: fakeLocalStorage,
+    };
+
+    try {
+      await webQueryStorage.setItem('cache', '{"data":1}');
+      expect(fakeLocalStorage.setItem).toHaveBeenCalledWith('cache', '{"data":1}');
+
+      expect(await webQueryStorage.getItem('cache')).toBe('{"data":1}');
+      expect(fakeLocalStorage.getItem).toHaveBeenCalledWith('cache');
+
+      await webQueryStorage.removeItem('cache');
+      expect(fakeLocalStorage.removeItem).toHaveBeenCalledWith('cache');
+    } finally {
+      (global as unknown as { window: unknown }).window = originalWindow;
+    }
+  });
+});
+

@@ -1,0 +1,75 @@
+'use client';
+
+import {
+  getOwnedEstablishmentId,
+  isCurrentUserEstablishmentOwner,
+  useAuthStore,
+} from '@agenda/core';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+
+import { Sidebar } from '@/components/Sidebar';
+import { Topbar } from '@/components/Topbar';
+
+type OwnerCheck = 'checking' | 'linked' | 'unlinked';
+
+/**
+ * Guard do painel: sem sessão vai para /login; com sessão mas sem a flag de dono
+ * volta para /login (conta do app público não acessa o painel); com a flag mas
+ * sem bar vinculado vai para o onboarding. O isolamento real é o RLS — este
+ * check é só navegação.
+ */
+export default function PainelLayout({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
+  const status = useAuthStore((state) => state.status);
+  const [check, setCheck] = useState<OwnerCheck>('checking');
+
+  useEffect(() => {
+    if (status === 'loading') return;
+    if (status === 'signedOut' || status === 'unavailable') {
+      router.replace('/login');
+      return;
+    }
+    let active = true;
+    void (async () => {
+      const isOwner = await isCurrentUserEstablishmentOwner();
+      if (!active) return;
+      if (!isOwner) {
+        router.replace('/login');
+        return;
+      }
+      const id = await getOwnedEstablishmentId();
+      if (!active) return;
+      if (id) {
+        setCheck('linked');
+        return;
+      }
+      setCheck('unlinked');
+      router.replace('/onboarding');
+    })();
+    return () => {
+      active = false;
+    };
+  }, [status, router]);
+
+  if (check !== 'linked') {
+    return (
+      <div className="flex min-h-dvh items-center justify-center text-[14px] text-muted-foreground">
+        Carregando…
+      </div>
+    );
+  }
+
+  return (
+    /* h-dvh (e não min-h-dvh): o container precisa ter altura fixa para o scroll
+       acontecer dentro do <main>, não na página. Com min-h a página inteira
+       rolava e levava a sidebar junto. */
+    <div className="flex h-dvh overflow-hidden">
+      <Sidebar />
+      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+        <Topbar />
+        <main className="bg-background flex-1 overflow-y-auto px-8 py-10">{children}</main>
+      </div>
+    </div>
+  );
+}

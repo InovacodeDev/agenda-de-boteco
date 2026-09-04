@@ -1,10 +1,10 @@
 'use client';
 
+import { cn } from '@agenda/core';
 import Image from 'next/image';
 import Link from 'next/link';
 
 import { useUnreadCount } from '@/hooks/useUnreadCount';
-import { cn } from '@/lib/cn';
 import logo from '@/public/logo.png';
 
 import { NavIcon } from './icons';
@@ -38,7 +38,7 @@ export function Sidebar() {
               >
                 <NavIcon name={item.icon} />
                 <span className="text-base">{item.label}</span>
-                {item.href === '/avisos' ? <NavBadge count={unreadCount} /> : null}
+                {item.href === '/notices' ? <NavBadge count={unreadCount} /> : null}
               </Link>
             );
           })}
