@@ -24,6 +24,7 @@ export * from './utils/images';
 export * from './utils/links';
 export * from './utils/masks';
 export * from './utils/moderation';
+export * from './utils/pagination';
 export * from './utils/platform';
 export * from './utils/pressGuard';
 export * from './utils/responsiveType';
