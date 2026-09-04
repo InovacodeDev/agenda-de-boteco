@@ -1,0 +1,8 @@
+branch="$(git symbolic-ref --short HEAD 2>/dev/null)"
+
+case "$branch" in
+  alfa|beta|release)
+    echo "❌ Commit direto bloqueado na branch '$branch'. Crie uma branch derivada da feature antes de codificar."
+    exit 1
+    ;;
+esac
