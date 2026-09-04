@@ -28,7 +28,10 @@ export function useInfiniteScrollSentinel({
 }: InfiniteScrollSentinelOptions) {
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const fetchNextPageRef = useRef(fetchNextPage);
-  fetchNextPageRef.current = fetchNextPage;
+
+  useEffect(() => {
+    fetchNextPageRef.current = fetchNextPage;
+  }, [fetchNextPage]);
 
   useEffect(() => {
     if (!hasNextPage || isFetchingNextPage) {
