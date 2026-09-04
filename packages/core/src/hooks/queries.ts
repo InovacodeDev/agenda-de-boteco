@@ -47,8 +47,7 @@ export function useEstablishmentQuery(id: string) {
 export function useEventsByEstablishmentQuery(establishmentId: string) {
   return useInfiniteQuery({
     queryKey: catalogKeys.events.byEstablishment(establishmentId),
-    queryFn: ({ pageParam }) =>
-      catalog.listEventsByEstablishment(establishmentId, pageParam),
+    queryFn: ({ pageParam }) => catalog.listEventsByEstablishment(establishmentId, pageParam),
     initialPageParam: null as string | null,
     getNextPageParam: (lastPage) => lastPage.nextCursor,
     enabled: !!establishmentId,
