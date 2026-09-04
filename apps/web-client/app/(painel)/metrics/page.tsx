@@ -31,14 +31,11 @@ export default function MetricasPage() {
   }, [enabled, router]);
 
   const eventsQuery = useOwnedEvents();
-  /**
-   * ponytail: agrega só os eventos já carregados (primeira página do infinite
-   * query) — não busca todas as páginas antes de agregar. Para a maioria dos
-   * bares (dezenas de eventos) é invisível; agenda muito longa pode mostrar
-   * totais parciais até existir agregação no banco via RPC.
-   */
   const events = flattenPages(eventsQuery.data);
   const eventsPending = eventsQuery.isPending;
+  // rows (listOwnedMetrics) e favoritesByEvent (getOwnedFavoritesCountByEstablishment)
+  // agregam no banco por establishment_id — totais e byDay já são completos,
+  // independente de paginação.
   const { data: rows, isPending: metricsPending } = useOwnedMetrics(Number(sinceDays));
   const { data: favoritesByEvent } = useOwnedFavoritesCount();
   // Espera as duas queries: se só metricsPending resolver, a tabela vê linhas
@@ -51,6 +48,17 @@ export default function MetricasPage() {
     [rows, favoritesByEvent],
   );
 
+  /**
+   * ponytail: eventsById só cobre a página já carregada de useOwnedEvents
+   * (DEFAULT_PAGE_SIZE = 20). byEvent vem de rows, que é completo — então um
+   * evento com métrica fora da 1ª página fica sem entrada aqui, e a linha
+   * correspondente na tabela some silenciosamente (`if (!event) return null`
+   * abaixo). Não afeta os totais agregados (já corretos), só a exibição de
+   * nome/detalhe por linha. Corrigir exigiria expor o evento de cada métrica
+   * sem depender da paginação da agenda (ex.: tabela dedicada de métrica já
+   * carregando o essencial do evento, ou busca pontual por id) — fora do
+   * escopo desta task.
+   */
   const eventsById = useMemo(() => new Map(events.map((event) => [event.id, event])), [events]);
 
   const activeSummary = activeEvent
