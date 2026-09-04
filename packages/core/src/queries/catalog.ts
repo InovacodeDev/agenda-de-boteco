@@ -23,6 +23,12 @@ import {
   notificationWriteSchema,
 } from '../schemas/catalog';
 import type { Database, Json } from '../types';
+import {
+  type CatalogPage,
+  decodeCursor,
+  DEFAULT_PAGE_SIZE,
+  encodeCursor,
+} from '../utils/pagination';
 import { slugify } from '../utils/slug';
 
 type CityRow = Database['public']['Tables']['cities']['Row'];
@@ -167,21 +173,41 @@ function mapNotification(row: NotificationRow): AppNotification {
   });
 }
 
+/**
+ * Pagina de eventos ordenada por starts_at asc, com id como desempate para o
+ * cursor ser deterministico quando dois eventos comecam no mesmo horario.
+ *
+ * NAO adicione .eq('status','published') aqui: o filtro e da RLS (a policy
+ * select_events de 20260813120000 ja esconde rascunho de quem nao e dono nem
+ * admin). Filtrar de novo na query esconderia o rascunho do proprio dono no
+ * painel, que e justamente quem precisa ve-lo.
+ *
+ * Invariante: esta ordenacao (starts_at asc) deve casar com o fallback mock
+ * em packages/core/src/services/catalog.ts (sortByStartsAtAsc).
+ */
 export async function listEvents(
   client: SupabaseClient<Database>,
-): Promise<Event[]> {
-  // NÃO adicione .eq('status','published') aqui: o filtro é da RLS (a policy
-  // select_events de 20260813120000 já esconde rascunho de quem não é dono nem
-  // admin). Filtrar de novo na query esconderia o rascunho do próprio dono no
-  // painel, que é justamente quem precisa vê-lo.
-  //
-  // Invariante: esta ordenação (starts_at asc) deve casar com o fallback mock
-  // em apps/mobile/src/services/catalog.ts (sortByStartsAtAsc).
-  const { data, error } = await eventsFrom(client)
-    .select(EVENT_COLUMNS)
-    .order('starts_at', { ascending: true });
+  cursor: string | null = null,
+  limit: number = DEFAULT_PAGE_SIZE,
+): Promise<CatalogPage<Event>> {
+  const base = eventsFrom(client).select(EVENT_COLUMNS);
+  const decoded = decodeCursor(cursor);
+  const filtered = decoded
+    ? base.or(
+        `starts_at.gt.${decoded.value},and(starts_at.eq.${decoded.value},id.gt.${decoded.id})`,
+      )
+    : base;
+
+  const { data, error } = await filtered
+    .order('starts_at', { ascending: true })
+    .order('id', { ascending: true })
+    .limit(limit);
   if (error) throw error;
-  return ((data ?? []) as EventRow[]).map(mapEvent);
+  const items = ((data ?? []) as EventRow[]).map(mapEvent);
+  const last = items.at(-1);
+  const nextCursor =
+    items.length < limit || !last ? null : encodeCursor({ value: last.starts_at, id: last.id });
+  return { items, nextCursor };
 }
 
 export async function getEvent(
