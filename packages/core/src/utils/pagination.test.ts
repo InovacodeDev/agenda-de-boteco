@@ -1,7 +1,7 @@
 import {
   type CatalogPage,
-  DEFAULT_PAGE_SIZE,
   decodeCursor,
+  DEFAULT_PAGE_SIZE,
   encodeCursor,
   flattenPages,
 } from './pagination';
