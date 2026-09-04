@@ -406,6 +406,8 @@ Para o usuário, o único texto permitido é o de `getFriendlyErrorMessage`, que
 
 > **⚠️ Dívida de segurança conhecida (não é do seu diff — só corrija se pedirem):** `packages/core/src/services/auth.ts` passa `args: { email }` em cinco pontos e, na linha 84, `args: { email, token }` em `verifyEmailOtp` — o `token` é o **código OTP**, uma credencial de uso único, e o e-mail é PII. Isso só é impresso fora de produção, mas é o padrão a **não** imitar. Ao criar service novo de auth, use `method` sem `args`, como já fazem `auth.updatePassword`, `auth.signOut` e `auth.getCurrentUser`.
 
+> **⚠️ Risco aceito de supply chain (não é do seu diff — só corrija se pedirem):** `image-size` (dependência transitiva do toolchain de build, referenciada só em `pnpm-lock.yaml` — não aparece em nenhum `package.json` direto) tem duas CVEs de DoS por loop infinito nos parsers de ICNS/JXL/HEIF, sem versão corrigida publicada até 2026-09-03. `pnpm.overrides` não resolve porque não há release-alvo para apontar. Ação: revisar a cada `pnpm audit` futuro se já existe fix upstream; não há mitigação de código possível hoje.
+
 **Testar log:** espionar `logErrorToTerminal` não intercepta a chamada interna do módulo. Espione `handleServiceError`.
 
 ### Catálogo de utilitários existentes — reutilize, não recrie
