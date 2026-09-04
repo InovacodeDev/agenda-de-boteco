@@ -14,6 +14,7 @@ import {
   NOTIFICATIONS,
 } from '../data';
 import * as coreQueries from '../queries';
+import type { CatalogCounts } from '../queries/catalog';
 import {
   type AppNotification,
   type City,
@@ -291,6 +292,27 @@ export async function listNotifications(
     return await coreQueries.listNotifications(client, cursor, limit);
   } catch (error) {
     return handleServiceError(error, { method: 'catalog.listNotifications' });
+  }
+}
+
+/**
+ * Totais do catálogo (não paginados) para o dashboard do admin — substitui o
+ * antigo `flattenPages(query.data).length`, que só contava a 1ª página
+ * (DEFAULT_PAGE_SIZE) depois da migração das listagens para useInfiniteQuery.
+ */
+export async function getCatalogCounts(): Promise<CatalogCounts> {
+  const client = getConfiguredSupabase();
+  if (client === null) {
+    return {
+      establishments: ESTABLISHMENTS.length,
+      events: EVENTS.length,
+      notifications: NOTIFICATIONS.length,
+    };
+  }
+  try {
+    return await coreQueries.getCatalogCounts(client);
+  } catch (error) {
+    return handleServiceError(error, { method: 'catalog.getCatalogCounts' });
   }
 }
 

@@ -52,6 +52,7 @@ export {
   deleteEstablishment,
   deleteEvent,
   deleteNotification,
+  getCatalogCounts,
   getEstablishment,
   getEvent,
   listCities,

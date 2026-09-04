@@ -1,12 +1,6 @@
 'use client';
 
-import {
-  type CatalogPage,
-  flattenPages,
-  useEstablishmentsQuery,
-  useEventsQuery,
-  useNotificationsQuery,
-} from '@agenda/core';
+import { useCatalogCountsQuery } from '@agenda/core';
 
 function StatCard({ label, value }: { label: string; value: number | string }) {
   return (
@@ -22,14 +16,8 @@ function StatCard({ label, value }: { label: string; value: number | string }) {
 }
 
 export default function DashboardPage() {
-  const establishmentsQuery = useEstablishmentsQuery();
-  const eventsQuery = useEventsQuery();
-  const notificationsQuery = useNotificationsQuery();
-
-  const count = (q: {
-    isLoading: boolean;
-    data?: { pages: CatalogPage<unknown>[]; pageParams: unknown[] };
-  }) => (q.isLoading ? '…' : flattenPages(q.data).length);
+  const counts = useCatalogCountsQuery();
+  const value = (n: number | undefined) => (counts.isPending ? '…' : (n ?? '…'));
 
   return (
     <div className="flex flex-col gap-6">
@@ -37,9 +25,9 @@ export default function DashboardPage() {
         Dashboard
       </h1>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <StatCard label="Estabelecimentos" value={count(establishmentsQuery)} />
-        <StatCard label="Eventos" value={count(eventsQuery)} />
-        <StatCard label="Avisos" value={count(notificationsQuery)} />
+        <StatCard label="Estabelecimentos" value={value(counts.data?.establishments)} />
+        <StatCard label="Eventos" value={value(counts.data?.events)} />
+        <StatCard label="Avisos" value={value(counts.data?.notifications)} />
       </div>
     </div>
   );

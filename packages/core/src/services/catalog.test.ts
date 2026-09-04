@@ -32,6 +32,7 @@ jest.mock('../supabase/client', () => ({
 }));
 
 import {
+  getCatalogCounts,
   getEstablishment,
   getEvent,
   listCities,
@@ -214,6 +215,17 @@ describe('catalog service — fallback mock (client nulo)', () => {
     it('retorna [] para evento sem atrações', async () => {
       const result = await listEventAttractions('inexistente');
       expect(result).toEqual([]);
+    });
+  });
+
+  describe('getCatalogCounts', () => {
+    it('conta os arrays mock locais', async () => {
+      const counts = await getCatalogCounts();
+      expect(counts).toEqual({
+        establishments: ESTABLISHMENTS.length,
+        events: EVENTS.length,
+        notifications: NOTIFICATIONS.length,
+      });
     });
   });
 });
@@ -421,10 +433,30 @@ function createQueryBuilder(rows: Row[], injectedError: FakeError | null = null)
 }
 
 /**
- * Cria o client fake. `errorsByTable` injeta um erro do PostgREST na query da
- * tabela indicada; as demais tabelas seguem o caminho feliz.
+ * Fake mínimo de `.rpc(name).single()` para get_catalog_counts: resolve
+ * `{ data, error }` direto, sem builder encadeável — a query layer só chama
+ * `.single()` em cima do `.rpc()`.
  */
-function createFakeClient(errorsByTable: Record<string, FakeError> = {}) {
+function createRpcBuilder(row: Row, injectedError: FakeError | null = null) {
+  return {
+    async single() {
+      if (injectedError) {
+        return { data: null, error: injectedError };
+      }
+      return { data: row, error: null };
+    },
+  };
+}
+
+/**
+ * Cria o client fake. `errorsByTable` injeta um erro do PostgREST na query da
+ * tabela indicada; as demais tabelas seguem o caminho feliz. `rpcError`, se
+ * fornecido, é devolvido por qualquer chamada a `.rpc()`.
+ */
+function createFakeClient(
+  errorsByTable: Record<string, FakeError> = {},
+  rpcError: FakeError | null = null,
+) {
   return {
     from(table: string) {
       const rows = TABLE_ROWS[table];
@@ -432,6 +464,16 @@ function createFakeClient(errorsByTable: Record<string, FakeError> = {}) {
         throw new Error(`fake client: tabela desconhecida "${table}"`);
       }
       return createQueryBuilder(rows, errorsByTable[table] ?? null);
+    },
+    rpc(_name: string) {
+      return createRpcBuilder(
+        {
+          establishments_count: establishmentRows.length,
+          events_count: eventRows.length,
+          notifications_count: notificationRows.length,
+        },
+        rpcError,
+      );
     },
   };
 }
@@ -616,6 +658,17 @@ describe('catalog service — caminho Supabase (client fake)', () => {
     });
   });
 
+  describe('getCatalogCounts', () => {
+    it('chama get_catalog_counts e mapeia as 3 colunas', async () => {
+      const counts = await getCatalogCounts();
+      expect(counts).toEqual({
+        establishments: establishmentRows.length,
+        events: eventRows.length,
+        notifications: notificationRows.length,
+      });
+    });
+  });
+
   describe('propagação de erro do PostgREST', () => {
     it('listEvents rejeita quando a query de events retorna error', async () => {
       mockGetSupabase.mockReturnValue(
@@ -643,6 +696,11 @@ describe('catalog service — caminho Supabase (client fake)', () => {
         createFakeClient({ event_attractions: POSTGREST_ERROR }),
       );
       await expect(listEventAttractions('ev1')).rejects.toEqual(POSTGREST_ERROR);
+    });
+
+    it('getCatalogCounts rejeita quando get_catalog_counts retorna error', async () => {
+      mockGetSupabase.mockReturnValue(createFakeClient({}, POSTGREST_ERROR));
+      await expect(getCatalogCounts()).rejects.toEqual(POSTGREST_ERROR);
     });
   });
 });

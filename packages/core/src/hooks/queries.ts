@@ -1,9 +1,10 @@
 /**
  * Hooks finos de leitura sobre o service @/services/catalog. Cada hook envolve
- * uma das 8 funções públicas do service com sua query key da factory. Sem lógica
+ * uma das funções públicas do service com sua query key da factory. Sem lógica
  * própria além de wiring key + queryFn (+ enabled em queries dependentes de id).
  * As listagens paginadas usam useInfiniteQuery: pageParam é o cursor opaco de
  * CatalogPage, e getNextPageParam lê nextCursor direto (null encerra a lista).
+ * useCatalogCountsQuery é a exceção: agregado único, useQuery normal.
  */
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 
@@ -82,5 +83,13 @@ export function useEventAttractionsQuery(eventId: string) {
     queryKey: catalogKeys.events.attractions(eventId),
     queryFn: () => catalog.listEventAttractions(eventId),
     enabled: !!eventId,
+  });
+}
+
+/** Totais do catálogo (dashboard admin) — agregado único, não paginado. */
+export function useCatalogCountsQuery() {
+  return useQuery({
+    queryKey: catalogKeys.counts,
+    queryFn: () => catalog.getCatalogCounts(),
   });
 }

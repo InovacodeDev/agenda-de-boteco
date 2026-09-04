@@ -386,6 +386,41 @@ export async function listNotifications(
   return { items, nextCursor };
 }
 
+export interface CatalogCounts {
+  establishments: number;
+  events: number;
+  notifications: number;
+}
+
+/**
+ * Totais do catálogo para o dashboard do admin — não confundir com paginação:
+ * é um agregado único, não uma CatalogPage. Delega para get_catalog_counts()
+ * (supabase/migrations/20260904130000_catalog_counts_rpc.sql), que roda como
+ * o usuário autenticado: a RLS de is_admin() já libera o admin a contar as 3
+ * tabelas inteiras, sem precisar de SECURITY DEFINER.
+ *
+ * (client as SupabaseClient) sem generic: a função é nova e ainda não está em
+ * database.types.ts (arquivo gerado), mesmo escape hatch de eventsFrom/etc. acima.
+ */
+export async function getCatalogCounts(
+  client: SupabaseClient<Database>,
+): Promise<CatalogCounts> {
+  const { data, error } = await (client as SupabaseClient)
+    .rpc('get_catalog_counts')
+    .single();
+  if (error) throw error;
+  const row = data as {
+    establishments_count: number;
+    events_count: number;
+    notifications_count: number;
+  };
+  return {
+    establishments: Number(row.establishments_count),
+    events: Number(row.events_count),
+    notifications: Number(row.notifications_count),
+  };
+}
+
 // --- Escrita (admin) -------------------------------------------------------
 // location e rating_* não são enviados: o banco gera via trigger/default.
 // id e slug são derivados de name/title quando ausentes (catálogo nasce do admin).
