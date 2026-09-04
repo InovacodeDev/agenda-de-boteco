@@ -1,8 +1,7 @@
 'use client';
 
 import {
-  flattenPages,
-  listOwnedFavoritesCount,
+  getOwnedFavoritesCountByEstablishment,
   listOwnedMetrics,
   type MetricEvent,
   type MetricKind,
@@ -10,7 +9,6 @@ import {
 import { useQuery } from '@tanstack/react-query';
 
 import { useOwnedEstablishmentId } from './use-owned-establishment';
-import { useOwnedEvents } from './use-owned-events';
 
 /**
  * Query keys do painel. Fica local (Regra dos 3 do AGENTS.md): só o web-client
@@ -19,13 +17,8 @@ import { useOwnedEvents } from './use-owned-events';
 export const metricsKeys = {
   owned: (establishmentId: string, sinceDays: number) =>
     ['panel', 'metrics', 'owned', establishmentId, sinceDays] as const,
-  // Ordenado antes de entrar na key: reagendar um evento reordena o array de
-  // listOwnedEvents sem mudar o conjunto, e um array-spread sensível à ordem
-  // invalidaria o cache à toa (TanStack Query só normaliza ordem de chave em
-  // objeto plano, não em array). Cresce conforme o dono rola a agenda: mais
-  // páginas carregadas via infinite query = mais ids nesta key.
-  favoritesCount: (eventIds: string[]) =>
-    ['panel', 'metrics', 'favorites-count', ...[...eventIds].sort()] as const,
+  favoritesCount: (establishmentId: string) =>
+    ['panel', 'metrics', 'favorites-count', establishmentId] as const,
 };
 
 /** Linhas cruas de métrica do bar do dono, no período pedido. */
@@ -39,15 +32,18 @@ export function useOwnedMetrics(sinceDays: number) {
   });
 }
 
-/** Contagem de favoritos por evento do bar do dono. */
+/**
+ * Contagem de favoritos por evento do bar do dono — cobre TODOS os eventos via
+ * RPC agregada no banco (get_owned_favorites_count), não só os já paginados
+ * por useOwnedEvents.
+ */
 export function useOwnedFavoritesCount() {
-  const eventsQuery = useOwnedEvents();
-  const eventIds = flattenPages(eventsQuery.data).map((event) => event.id);
+  const { data: establishmentId } = useOwnedEstablishmentId();
 
   return useQuery({
-    queryKey: metricsKeys.favoritesCount(eventIds),
-    queryFn: () => listOwnedFavoritesCount(eventIds),
-    enabled: eventIds.length > 0,
+    queryKey: metricsKeys.favoritesCount(establishmentId ?? ''),
+    queryFn: () => getOwnedFavoritesCountByEstablishment(establishmentId ?? ''),
+    enabled: Boolean(establishmentId),
   });
 }
 
