@@ -126,8 +126,8 @@ describe('getOwnedFavoritesCountByEstablishment', () => {
     expect(result).toEqual({ ev1: 2, ev2: 1 });
   });
 
-  it('propaga erro do Postgrest (ex.: dono não validado)', async () => {
-    const error = new Error('not authorized');
+  it('propaga o erro 42501 quando a RPC rejeita por falta de posse', async () => {
+    const error = { message: 'Não autorizado', code: '42501', details: '', hint: '' };
     const rpc = jest.fn().mockResolvedValue({ data: null, error });
     mockGetSupabase.mockReturnValue({ rpc });
 
