@@ -28,6 +28,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ios: {
     supportsTablet: true,
     bundleIdentifier: 'com.agenda.boteco',
+    usesAppleSignIn: true,
     config: {
       usesNonExemptEncryption: false,
     },
@@ -50,6 +51,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   plugins: [
     'expo-router',
     'expo-font',
+    'expo-apple-authentication',
     [
       'expo-splash-screen',
       {
@@ -75,6 +77,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       },
     ],
     'expo-image',
+    'expo-localization',
   ],
   experiments: {
     typedRoutes: true,

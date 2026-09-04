@@ -1,5 +1,13 @@
 import type { EstablishmentAttribute } from '../schemas/catalog';
 
+/** Forma de cada entrada, checada por `satisfies` sem alargar os literais. */
+interface AttributeMetaShape {
+  id: EstablishmentAttribute;
+  label: string;
+  description: string;
+  icon: string;
+}
+
 /**
  * Catálogo de atributos de estabelecimento. Fonte única para os três apps:
  * o enum do banco (`establishment_attribute_enum`) define os valores, este
@@ -10,15 +18,13 @@ import type { EstablishmentAttribute } from '../schemas/catalog';
  * significa. `icon` é um nome do iconMap/Phosphor, resolvido por cada app.
  *
  * A ordem daqui é a ordem de exibição em toda a UI (busca, admin, chips).
+ *
+ * `as const satisfies` em vez de anotação de tipo: valida a forma de cada
+ * entrada sem alargar `icon` para `string`, o que permite derivar
+ * AttributeIconName abaixo — e assim o compilador cobra de cada app o ícone de
+ * um atributo novo, em vez de o chip aparecer sem ícone.
  */
-export interface EstablishmentAttributeMeta {
-  id: EstablishmentAttribute;
-  label: string;
-  description: string;
-  icon: string;
-}
-
-export const ESTABLISHMENT_ATTRIBUTES: readonly EstablishmentAttributeMeta[] = [
+export const ESTABLISHMENT_ATTRIBUTES = [
   // Infraestrutura e comodidades
   {
     id: 'pet-friendly',
@@ -255,13 +261,22 @@ export const ESTABLISHMENT_ATTRIBUTES: readonly EstablishmentAttributeMeta[] = [
     description: 'Atendimento rápido em balcão ou balcão externo.',
     icon: 'counter',
   },
-] as const;
+] as const satisfies readonly AttributeMetaShape[];
+
+/**
+ * Nomes de ícone usados pelos atributos, derivados da lista acima. Cada app
+ * tipa o seu mapa de ícones com isto, então acrescentar um atributo com ícone
+ * novo quebra o build de quem ainda não o mapeou — em vez de renderizar nada.
+ */
+export type AttributeIconName = (typeof ESTABLISHMENT_ATTRIBUTES)[number]['icon'];
+
+export type EstablishmentAttributeMeta = (typeof ESTABLISHMENT_ATTRIBUTES)[number];
 
 /**
  * Os cinco atributos que ganham chip no filtro rápido do feed. Os demais só
  * pelo modal de busca — 36 chips na horizontal não é filtro, é lista.
  */
-export const QUICK_ATTRIBUTES: readonly EstablishmentAttribute[] = [
+const QUICK_ATTRIBUTES: readonly EstablishmentAttribute[] = [
   'pet-friendly',
   'kids-area',
   'outdoor-space',

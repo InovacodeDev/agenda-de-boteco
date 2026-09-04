@@ -1,0 +1,57 @@
+@import 'tailwindcss';
+@import '@agenda/shared-ui/scrollbar.css';
+
+@theme {
+  /* Tema dark-only do painel do estabelecimento (spec seção 2). Mesma paleta de
+     marca do app público (primary verde, accent âmbar, destructive rosa), mas
+     em superfícies escuras — identidade de dashboard, não de feed. */
+  --color-background: #0f0f0f;
+  --color-foreground: #fafafa;
+  --color-card: #171717;
+  --color-card-foreground: #fafafa;
+  --color-popover: #141414;
+  --color-popover-foreground: #fafafa;
+  --color-surface: #1c1c1c;
+  --color-surface-elevated: #242424;
+  --color-muted: #242424;
+  --color-muted-foreground: #a6a6a6;
+  --color-input: #242424;
+  --color-secondary: #242424;
+  --color-secondary-foreground: #fafafa;
+  --color-border: #292929;
+  --color-primary: #1dd75e;
+  --color-primary-foreground: #0f0f0f;
+  --color-primary-glow: #3df57d;
+  --color-accent: #f9a91f;
+  --color-accent-foreground: #0f0f0f;
+  --color-destructive: #f53d7a;
+  --color-destructive-foreground: #fafafa;
+  --color-ring: #1dd75e;
+
+  /* Sidebar: um degrau mais escura que os cards, para separar sem borda dura. */
+  --color-sidebar: #141414;
+  --color-sidebar-foreground: #f2f2f2;
+
+  --font-heading: var(--font-space-grotesk), system-ui, sans-serif;
+  --font-body: var(--font-inter), system-ui, sans-serif;
+
+  --shadow-card: 0 12px 30px -10px hsl(0 0% 0% / .6);
+  --shadow-neon: 0 10px 40px -10px hsl(141 76% 48% / .45);
+}
+
+@theme inline {
+  --gradient-primary: linear-gradient(135deg, hsl(141 76% 48%), hsl(170 80% 50%));
+  --gradient-night: linear-gradient(160deg, hsl(260 40% 12%) 0%, hsl(0 0% 6%) 60%);
+  --gradient-card: linear-gradient(180deg, hsl(0 0% 0% / 0) 0%, hsl(0 0% 0% / .85) 100%);
+  --gradient-promo: linear-gradient(135deg, hsl(38 95% 55%), hsl(330 100% 65%));
+}
+
+html,
+body {
+  background: var(--color-background);
+  color: var(--color-foreground);
+}
+
+body {
+  font-family: var(--font-body);
+}

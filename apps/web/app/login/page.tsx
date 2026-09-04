@@ -1,10 +1,13 @@
 'use client';
 
 import {
+  type AuthProvider,
   detectPlatform,
   getFriendlyErrorMessage,
+  identifyAnalyticsUser,
   type Platform,
   signInWithEmailOtp,
+  signInWithOAuth,
   useAuthStore,
   verifyEmailOtp,
 } from '@agenda/core';
@@ -13,7 +16,6 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState, useSyncExternalStore } from 'react';
 
 import { AppleIcon, EnvelopeIcon, GoogleIcon, InfoIcon } from '@/components/auth/icons';
-import { getSupabase } from '@/lib/supabase';
 import logo from '@/public/logo.png';
 
 type EmailStep = 'hidden' | 'editing' | 'sent';
@@ -35,6 +37,7 @@ function usePlatform(): Platform {
 export default function LoginPage() {
   const router = useRouter();
   const status = useAuthStore((state) => state.status);
+  const userId = useAuthStore((state) => state.user?.id);
   const platform = usePlatform();
 
   const [emailStep, setEmailStep] = useState<EmailStep>('hidden');
@@ -47,28 +50,23 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (status === 'signedIn') {
+      if (userId) identifyAnalyticsUser(userId);
       router.replace('/');
     }
-  }, [status, router]);
+  }, [status, userId, router]);
 
   // OAuth no web: o supabase-js redireciona o browser (não há fluxo RN nativo).
   // A sessão volta pela URL (detectSessionInUrl no client) e o authStore observa.
-  const handleProvider = async (provider: 'google' | 'apple') => {
-    const client = getSupabase();
-    if (!client) {
-      setErrorMessage(getFriendlyErrorMessage(new Error('unavailable')));
-      return;
-    }
+  // O `finally` importa mesmo com o redirect em curso: voltar pelo bfcache
+  // restaura a página com o estado antigo e deixaria os botões travados.
+  const handleProvider = async (provider: AuthProvider) => {
     setErrorMessage(null);
     setBusy(true);
     try {
-      const { error } = await client.auth.signInWithOAuth({
-        provider,
-        options: { redirectTo: window.location.origin },
-      });
-      if (error) throw error;
+      await signInWithOAuth(provider);
     } catch (error: unknown) {
       setErrorMessage(getFriendlyErrorMessage(error));
+    } finally {
       setBusy(false);
     }
   };
@@ -145,7 +143,10 @@ export default function LoginPage() {
             <GoogleIcon size={18} />
             Continuar com Google
           </button>
-          {platform !== 'android' ? (
+          {/* Só iOS, como no mobile: em desktop/Android o Sign in with Apple é
+              ruído. O snapshot de server é 'other', então o botão nunca aparece
+              no HTML inicial — surge na hidratação só onde vale. */}
+          {platform === 'ios' ? (
             <button
               type="button"
               disabled={unavailable || busy || emailStep !== 'hidden'}

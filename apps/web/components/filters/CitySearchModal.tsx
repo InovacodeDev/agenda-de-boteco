@@ -1,10 +1,9 @@
 'use client';
 
-import { type City, normalizeText, useCitiesQuery } from '@agenda/core';
+import { type City, cn, normalizeText, useCitiesQuery } from '@agenda/core';
 import { useMemo, useState } from 'react';
 
 import { XIcon } from '@/components/ui/icons';
-import { cn } from '@/lib/cn';
 
 export interface CitySearchModalProps {
   isOpen: boolean;

@@ -77,6 +77,11 @@ function mockListEventsByEstablishment(establishmentId: string): Event[] {
   return sortByStartsAtAsc(eventListSchema.parse(items));
 }
 
+// Mesma ordenação (starts_at desc) do .order() de coreQueries.listOwnedEvents.
+function mockListOwnedEvents(establishmentId: string): Event[] {
+  return mockListEventsByEstablishment(establishmentId).reverse();
+}
+
 function mockListMusicStyles(): MusicStyle[] {
   return musicStyleListSchema.parse(MUSIC_STYLES);
 }
@@ -156,6 +161,24 @@ export async function listEventsByEstablishment(
     return await coreQueries.listEventsByEstablishment(client, establishmentId);
   } catch (error) {
     return handleServiceError(error, { method: 'catalog.listEventsByEstablishment', args: { establishmentId } });
+  }
+}
+
+/** Agenda de gestão do dono: mais recente primeiro, rascunhos incluídos. */
+export async function listOwnedEvents(
+  establishmentId: string,
+): Promise<Event[]> {
+  const client = getConfiguredSupabase();
+  if (client === null) {
+    return mockListOwnedEvents(establishmentId);
+  }
+  try {
+    return await coreQueries.listOwnedEvents(client, establishmentId);
+  } catch (error) {
+    return handleServiceError(error, {
+      method: 'catalog.listOwnedEvents',
+      args: { establishmentId },
+    });
   }
 }
 

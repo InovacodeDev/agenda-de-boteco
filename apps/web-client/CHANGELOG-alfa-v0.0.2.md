@@ -1,0 +1,43 @@
+# Changelog 0.0.2 (alfa)
+
+- Agenda de eventos no ar: o dono do bar cria, edita e exclui a própria programação pelo painel
+- Tela de eventos mostra os cards com banner, data, horário e a marcação de publicado ou rascunho
+- Rascunho fica visível só para o dono: o evento só aparece no aplicativo e no site depois de publicado
+- Publicar exige nome e data do evento, e a tela diz o que falta quando o botão está bloqueado
+- Formulário de evento reúne banner, nome, data, horário, descrição, atração principal, estilo musical, entrada, capacidade, cortesia e promoção
+- Estilos musicais vêm da lista oficial da plataforma, com emoji, em vez de digitação livre
+- Evento pode ser repetido toda semana ou todo mês, até 52 ocorrências, com aviso de quantos eventos serão criados e a data do último
+- Repetição mensal iniciada em dia 31 cai no último dia dos meses mais curtos, em vez de pular para o mês seguinte
+- Excluir um evento pede confirmação; em eventos que se repetem, é possível apagar só aquela data ou a série inteira a partir de hoje
+- Botão de espiar leva à página pública do evento e fica indisponível enquanto ele for rascunho
+- Quando o bar ainda não tem nenhum evento, a tela convida a cadastrar o primeiro
+- Atalho "Novo evento" da barra lateral passa a abrir direto o formulário de cadastro
+- Formulário de evento ganha seta de voltar ao lado do título, no lugar do botão "Cancelar"
+- O que falta para salvar aparece ao passar o mouse sobre o botão bloqueado, em vez de ocupar espaço fixo na tela
+- Seção de repetição do evento ganha título, chave de liga/desliga na cor da marca e resumo destacado de quantos eventos serão criados
+- Menu lateral fica fixo na tela: rolar uma página longa não move mais o menu, que só rola por conta própria quando não couber na altura da janela
+- Aba do navegador passa a exibir a logo do Agenda de Boteco
+- Seletores de estilo musical, frequência de repetição, faixa de preço e tipo de ambiente ganham menu com a cara do painel, no lugar do menu genérico do navegador
+- Campos de data e horário do formulário de evento ganham calendário e lista de horários com a cara do painel, no lugar dos seletores genéricos do navegador
+- Menu lateral não mostra mais barra de rolagem própria; a rolagem da tela fica só no conteúdo
+- Lista de horários do seletor de horário perde a barra de rolagem visível, mantendo o gesto de rolar normalmente
+- Telas com formulário longo (Perfil) não mostram mais uma segunda barra de rolagem na borda da janela; a rolagem fica só no conteúdo, com o menu e o topo sempre fixos
+- Corrige a mesma barra de rolagem extra na tela de novo evento, ao ativar "Repetir este evento"
+- Barra de rolagem ganha visual discreto e combinando com o painel, no lugar do estilo padrão do navegador
+- Painel do dono ganha tela de listagem de artistas cadastrados, com busca, ordenação e contato via WhatsApp e Instagram
+- Avatar no topo do painel abre um menu com o e-mail da conta e o botão de sair, que agora pede confirmação antes de encerrar a sessão
+- Botão "Sair" da tela de cadastro do estabelecimento também passa a pedir confirmação antes de encerrar a sessão
+- Botão de confirmação de sair e a opção de apagar só uma ocorrência de evento recorrente ganham a cor de ação destrutiva, consistente com o resto do painel
+- Base visual da tela de Métricas: gráfico de evolução de visualizações por dia
+- Tela de Métricas ganha o detalhe por evento: visualizações, cliques por tipo (mapa, contato, compartilhar) e favoritos, com painel lateral de aprofundamento
+- Tela de Métricas mostra visualizações, cliques e favoritos do bar e de cada evento, com seletor de período de 7, 30 ou 90 dias
+- Descrição do gráfico de evolução para leitor de tela fica mais curta e clara em períodos longos
+- Endereço da tela de Métricas passa a ser /metrics, em vez de /metricas
+- Cards de artistas ficam mais compactos e cabem três lado a lado; nome, região e preço (quando informado) aparecem juntos no topo do card, com o preço em destaque à direita
+- Card de artista mostra a região abaixo do nome, para nomes longos não espremerem o preço
+- Endereços das telas de Avaliações, Artistas e Configurações passam a ser /reviews, /artists e /settings (links antigos continuam funcionando)
+- Endereço de redefinição de senha passa a ser /new-password, em vez de /nova-senha (link antigo continua funcionando)
+- Endereços das telas de Eventos e Perfil passam a ser /events e /profile, em vez de /eventos e /perfil (links antigos continuam funcionando)
+- Telas de Métricas, Avaliações e Configurações ficam ocultas no menu até serem liberadas para o seu bar
+- Painel passa a medir uso de forma anônima para orientar melhorias (sem coletar e-mail, telefone ou outro dado pessoal)
+- Formulário de estabelecimento passa a usar o seletor visual unificado do painel para faixa de preço e tipo de ambiente

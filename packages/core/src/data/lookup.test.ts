@@ -1,5 +1,5 @@
 import type { Event } from '../schemas';
-import { cityByIdOrDefault, indexById, musicStylesForEvent } from './lookup';
+import { indexById, musicStylesForEvent } from './lookup';
 import { CITIES, ESTABLISHMENTS, EVENTS, MUSIC_STYLES } from './mock';
 
 describe('indexById', () => {
@@ -24,17 +24,6 @@ describe('indexById', () => {
   it('retorna undefined para id inexistente', () => {
     expect(indexById(EVENTS)['nao-existe']).toBeUndefined();
     expect(indexById(ESTABLISHMENTS)['nao-existe']).toBeUndefined();
-  });
-});
-
-describe('cityByIdOrDefault', () => {
-  it('retorna a cidade correspondente quando o id existe', () => {
-    const city = CITIES[1];
-    expect(cityByIdOrDefault(CITIES, city.id)).toBe(city);
-  });
-
-  it('cai na primeira cidade do catálogo quando o id é desconhecido', () => {
-    expect(cityByIdOrDefault(CITIES, 'nao-existe')).toBe(CITIES[0]);
   });
 });
 

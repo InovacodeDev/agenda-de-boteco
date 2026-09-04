@@ -122,6 +122,7 @@ const EVENT_INPUT = {
   starts_at: '2026-07-01T22:00:00-03:00',
   ends_at: '2026-07-02T02:00:00-03:00',
   cover_charge: 0,
+  status: 'published' as const,
 };
 
 const NOTIFICATION_INPUT = {

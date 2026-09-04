@@ -82,7 +82,7 @@ export function pathFromPublicUrl(publicUrl: string): string | null {
   const marker = `/${CATALOG_IMAGES_BUCKET}/`;
   const idx = publicUrl.indexOf(marker);
   if (idx === -1) return null;
-  const path = publicUrl.slice(idx + marker.length);
+  const path = publicUrl.slice(idx + marker.length).split('?')[0].split('#')[0];
   return path.length > 0 ? path : null;
 }
 

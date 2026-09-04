@@ -1,0 +1,37 @@
+/* Scrollbar custom da plataforma — trilho invisível, thumb discreto que ganha
+   contraste no hover. Usa só tokens semânticos (--color-border/-muted-foreground/
+   -surface-elevated), já declarados no @theme de cada app; funciona sem
+   alteração nos temas claro (admin) e escuro (web-client/web/landing/web-artists).
+
+   Firefox lê scrollbar-color/scrollbar-width; Chrome/Safari/Edge (WebKit e
+   Blink) ignoram essas duas propriedades e usam os pseudo-elementos abaixo —
+   as duas APIs coexistem sem conflito, cada engine aplica a sua. */
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: var(--color-border);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-muted-foreground);
+}
+
+*::-webkit-scrollbar-corner {
+  background: transparent;
+}

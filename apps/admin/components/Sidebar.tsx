@@ -4,18 +4,21 @@ import { signOut } from '@agenda/core';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useState } from 'react';
 
+import { LogoutConfirmModal } from '@/components/ui/LogoutConfirmModal';
 import logo from '@/public/logo.png';
 
 const NAV = [
   { href: '/', label: 'Dashboard' },
-  { href: '/estabelecimentos', label: 'Estabelecimentos' },
-  { href: '/eventos', label: 'Eventos' },
-  { href: '/avisos', label: 'Avisos' },
+  { href: '/establishments', label: 'Estabelecimentos' },
+  { href: '/events', label: 'Eventos' },
+  { href: '/notices', label: 'Avisos' },
 ];
 
 export function Sidebar() {
   const pathname = usePathname();
+  const [confirmSignOut, setConfirmSignOut] = useState(false);
 
   return (
     <aside className="flex w-60 shrink-0 flex-col border-r border-border bg-surface">
@@ -48,11 +51,17 @@ export function Sidebar() {
 
       <button
         type="button"
-        onClick={() => void signOut()}
+        onClick={() => setConfirmSignOut(true)}
         className="m-3 rounded-full bg-surface-elevated px-4 py-2.5 text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
       >
         Sair
       </button>
+
+      <LogoutConfirmModal
+        open={confirmSignOut}
+        onCancel={() => setConfirmSignOut(false)}
+        onConfirm={() => void signOut()}
+      />
     </aside>
   );
 }

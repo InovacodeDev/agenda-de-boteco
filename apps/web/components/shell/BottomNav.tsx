@@ -1,9 +1,9 @@
 'use client';
 
+import { cn } from '@agenda/core';
 import Link from 'next/link';
 
 import { useUnreadCount } from '@/hooks/useUnreadCount';
-import { cn } from '@/lib/cn';
 
 import { NavIcon } from './icons';
 import { isActive, NAV_ITEMS } from './navItems';
@@ -21,7 +21,7 @@ export function BottomNav() {
     >
       {NAV_ITEMS.map((item) => {
         const active = isActive(item.href, pathname);
-        const showBadge = item.href === '/avisos' && unreadCount > 0;
+        const showBadge = item.href === '/notices' && unreadCount > 0;
         return (
           <Link
             key={item.href}

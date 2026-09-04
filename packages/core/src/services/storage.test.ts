@@ -102,6 +102,14 @@ describe('pathFromPublicUrl', () => {
   it('retorna null para URL externa (fora do bucket)', () => {
     expect(pathFromPublicUrl('https://images.unsplash.com/photo-123')).toBeNull();
   });
+
+  it('remove query params e hash ao extrair path', () => {
+    expect(
+      pathFromPublicUrl(
+        'https://x.supabase.co/storage/v1/object/public/catalog-images/events/abc.png?t=123#preview',
+      ),
+    ).toBe('events/abc.png');
+  });
 });
 
 describe('deleteImage', () => {
@@ -119,5 +127,24 @@ describe('deleteImage', () => {
     mockGetSupabase.mockReturnValue(client);
     await deleteImage('https://images.unsplash.com/photo-123');
     expect(remove).not.toHaveBeenCalled();
+  });
+
+  it('é no-op para string vazia', async () => {
+    const { client, remove } = makeBucketClient();
+    mockGetSupabase.mockReturnValue(client);
+    await deleteImage('');
+    expect(remove).not.toHaveBeenCalled();
+  });
+
+  it('propaga erro de remoção', async () => {
+    const error = new Error('delete failed');
+    const remove = jest.fn(() => Promise.resolve({ data: null, error }));
+    const from = jest.fn(() => ({ upload: jest.fn(), getPublicUrl: jest.fn(), remove }));
+    mockGetSupabase.mockReturnValue({ storage: { from } });
+    await expect(
+      deleteImage(
+        'https://x.supabase.co/storage/v1/object/public/catalog-images/events/abc.png',
+      ),
+    ).rejects.toBe(error);
   });
 });

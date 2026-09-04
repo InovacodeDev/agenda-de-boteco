@@ -18,10 +18,12 @@ export * from './utils/errors';
 export * from './utils/events';
 export * from './utils/filters';
 export * from './utils/format';
+export * from './utils/formErrors';
 export * from './utils/geo';
 export * from './utils/images';
 export * from './utils/links';
 export * from './utils/masks';
+export * from './utils/moderation';
 export * from './utils/platform';
 export * from './utils/pressGuard';
 export * from './utils/responsiveType';
@@ -34,11 +36,14 @@ export * from './utils/status-light';
 export * from './hooks/queries';
 export * from './hooks/useActiveCity';
 export * from './hooks/useConnectivity';
+export * from './hooks/useFeatureFlag';
 export * from './hooks/useGuardedPress';
 export * from './hooks/useNearbyEstablishments';
+export * from './hooks/useRecordView';
 export * from './hooks/useStatusLight';
 export * from './lib/queryClient';
 export * from './lib/queryPersister';
+export * from './services/analytics';
 export * from './services/auth';
 export * from './services/cachePolicy';
 export {
@@ -54,12 +59,18 @@ export {
   listEventsByEstablishment,
   listMusicStyles,
   listNotifications,
+  listOwnedEvents,
   upsertEstablishment,
   upsertEvent,
   upsertNotification,
 } from './services/catalog';
 export * from './services/connectivity';
+export * from './services/establishment-owner';
 export * from './services/favorites';
+export * from './services/metrics';
+export * from './services/moderation';
+export * from './services/musician-leads';
+export * from './services/owned-events';
 export * from './services/proximity';
 export * from './services/queryKeys';
 export * from './services/realtime';

@@ -1,3 +1,4 @@
+import { recordMetricEvent, useRecordView } from '@agenda/core';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams } from 'expo-router';
 import { useMemo, useState } from 'react';
@@ -69,6 +70,7 @@ function EstablishmentDetailContent() {
   const { data: agendaData } = useEventsByEstablishmentQuery(id ?? '');
   const { data: musicStyles } = useMusicStylesQuery();
   const stylesById = useMemo(() => indexById(musicStyles ?? []), [musicStyles]);
+  useRecordView({ establishmentId: establishment?.id });
 
   const upcoming = useMemo(
     () => upcomingEventsForEstablishment(agendaData ?? [], id ?? '', new Date(), 5),
@@ -113,6 +115,7 @@ function EstablishmentDetailContent() {
     const text = `${establishment.name} no Agenda de Boteco`;
     // No Android o campo `url` é ignorado, por isso a URL vai também no message.
     Share.share({ message: `${text}\n${url}`, url });
+    void recordMetricEvent({ establishmentId: establishment.id, kind: 'click_share' });
   };
 
   return (
@@ -340,16 +343,20 @@ function EstablishmentDetailContent() {
             <Icon name="comment" variant="regular" color={colors.primaryForeground} size={16} />
           }
           style={{ backgroundColor: colors.primary }}
-          onPress={() => Linking.openURL(buildWhatsAppUrl(establishment.whatsapp))}
+          onPress={() => {
+            Linking.openURL(buildWhatsAppUrl(establishment.whatsapp));
+            void recordMetricEvent({ establishmentId: establishment.id, kind: 'click_contact' });
+          }}
         />
         <Button
           variant="outline"
           className="border-foreground/50 border-[0.5px]"
           style={{ backgroundColor: colors.background }}
           icon={<Icon name="location-arrow" color={colors.foreground} size={16} />}
-          onPress={() =>
-            Linking.openURL(buildDirectionsUrl({ lat: establishment.lat, lng: establishment.lng }))
-          }
+          onPress={() => {
+            Linking.openURL(buildDirectionsUrl({ lat: establishment.lat, lng: establishment.lng }));
+            void recordMetricEvent({ establishmentId: establishment.id, kind: 'click_map' });
+          }}
         />
       </View>
 

@@ -54,6 +54,27 @@ export function configureAuthRedirect(fn: () => string): void {
   authRedirect = fn;
 }
 
+/**
+ * OAuth por redirect de browser. Usa o mesmo `authRedirect()` do magic-link,
+ * para que o app não tenha uma segunda fonte de verdade do destino de volta —
+ * era isso que fazia o web cair fora do seu basePath e perder a sessão.
+ * O mobile tem fluxo próprio (WebBrowser/Apple nativo) e não passa por aqui.
+ */
+export async function signInWithOAuth(provider: AuthProvider): Promise<void> {
+  const client = requireClient();
+  try {
+    const { error } = await client.auth.signInWithOAuth({
+      provider,
+      options: { redirectTo: authRedirect() },
+    });
+    if (error) {
+      throw error;
+    }
+  } catch (error) {
+    return handleServiceError(error, { method: 'auth.signInWithOAuth', args: { provider } });
+  }
+}
+
 export async function signInWithEmailOtp(email: string): Promise<void> {
   const client = requireClient();
   try {
@@ -82,6 +103,62 @@ export async function verifyEmailOtp(email: string, token: string): Promise<void
     }
   } catch (error) {
     return handleServiceError(error, { method: 'auth.verifyEmailOtp', args: { email, token } });
+  }
+}
+
+export async function signInWithPassword(email: string, password: string): Promise<void> {
+  const client = requireClient();
+  try {
+    const { error } = await client.auth.signInWithPassword({ email, password });
+    if (error) {
+      throw error;
+    }
+  } catch (error) {
+    // ponytail: args sem a senha de propósito — o contexto de erro vai para o log
+    return handleServiceError(error, { method: 'auth.signInWithPassword', args: { email } });
+  }
+}
+
+export async function signUpWithPassword(email: string, password: string): Promise<void> {
+  const client = requireClient();
+  try {
+    const { error } = await client.auth.signUp({
+      email,
+      password,
+      options: { emailRedirectTo: authRedirect() },
+    });
+    if (error) {
+      throw error;
+    }
+  } catch (error) {
+    return handleServiceError(error, { method: 'auth.signUpWithPassword', args: { email } });
+  }
+}
+
+export async function sendPasswordReset(email: string): Promise<void> {
+  const client = requireClient();
+  try {
+    const { error } = await client.auth.resetPasswordForEmail(email, {
+      redirectTo: authRedirect(),
+    });
+    if (error) {
+      throw error;
+    }
+  } catch (error) {
+    return handleServiceError(error, { method: 'auth.sendPasswordReset', args: { email } });
+  }
+}
+
+/** Usada na tela de nova senha, após o usuário abrir o link enviado por e-mail. */
+export async function updatePassword(newPassword: string): Promise<void> {
+  const client = requireClient();
+  try {
+    const { error } = await client.auth.updateUser({ password: newPassword });
+    if (error) {
+      throw error;
+    }
+  } catch (error) {
+    return handleServiceError(error, { method: 'auth.updatePassword' });
   }
 }
 
