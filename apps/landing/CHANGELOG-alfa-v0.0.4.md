@@ -5,3 +5,4 @@
 - Barra de rolagem ganha visual discreto e combinando com o site, no lugar do estilo padrão do navegador
 - Página de suporte passa a viver em `/support` (link antigo `/suporte` continua funcionando e redireciona automaticamente)
 - Passa a usar o mesmo serviço de métricas de uso dos outros apps do produto
+- Atualizações internas de performance e segurança na base do site
