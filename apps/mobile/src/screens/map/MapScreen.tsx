@@ -1,3 +1,4 @@
+import { flattenPages } from '@agenda/core';
 import type { FlashListRef } from '@shopify/flash-list';
 import Constants from 'expo-constants';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -70,14 +71,15 @@ export function MapScreen() {
     mapRef.current?.animateToRegion({ latitude: origin.lat, longitude: origin.lng, ...DELTA }, 300);
   }, [origin]);
 
-  const { data: cityEstablishments } = useEstablishmentsQuery(city?.id);
+  const establishmentsQuery = useEstablishmentsQuery(city?.id);
+  const cityEstablishments = flattenPages(establishmentsQuery.data);
 
   const originLat = origin?.lat;
   const originLng = origin?.lng;
 
   // bares da cidade ordenados por distância da origem do mapa
   const establishments = useMemo(() => {
-    const list = [...(cityEstablishments ?? [])];
+    const list = [...cityEstablishments];
     if (originLat === undefined || originLng === undefined) {
       return list;
     }

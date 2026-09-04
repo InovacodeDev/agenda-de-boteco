@@ -1,4 +1,4 @@
-import { recordMetricEvent, useRecordView } from '@agenda/core';
+import { flattenPages, recordMetricEvent, useRecordView } from '@agenda/core';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams } from 'expo-router';
 import { useMemo, useState } from 'react';
@@ -67,13 +67,14 @@ function EstablishmentDetailContent() {
   const establishmentQuery = useEstablishmentQuery(id ?? '');
   const establishment = establishmentQuery.data;
   // O service/core já ordena a agenda por starts_at asc.
-  const { data: agendaData } = useEventsByEstablishmentQuery(id ?? '');
+  const agendaQuery = useEventsByEstablishmentQuery(id ?? '');
+  const agendaData = flattenPages(agendaQuery.data);
   const { data: musicStyles } = useMusicStylesQuery();
   const stylesById = useMemo(() => indexById(musicStyles ?? []), [musicStyles]);
   useRecordView({ establishmentId: establishment?.id });
 
   const upcoming = useMemo(
-    () => upcomingEventsForEstablishment(agendaData ?? [], id ?? '', new Date(), 5),
+    () => upcomingEventsForEstablishment(agendaData, id ?? '', new Date(), 5),
     [agendaData, id],
   );
 
