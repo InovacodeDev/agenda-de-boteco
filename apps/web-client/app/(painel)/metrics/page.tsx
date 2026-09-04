@@ -1,7 +1,7 @@
 'use client';
 
 import type { Event } from '@agenda/core';
-import { useFeatureFlag } from '@agenda/core';
+import { flattenPages, useFeatureFlag } from '@agenda/core';
 import { Select } from '@agenda/shared-ui';
 import { EyeIcon, HeartIcon, MapPinIcon } from '@phosphor-icons/react';
 import { useRouter } from 'next/navigation';
@@ -30,7 +30,15 @@ export default function MetricasPage() {
     if (!enabled) router.replace('/');
   }, [enabled, router]);
 
-  const { data: events, isPending: eventsPending } = useOwnedEvents();
+  const eventsQuery = useOwnedEvents();
+  /**
+   * ponytail: agrega só os eventos já carregados (primeira página do infinite
+   * query) — não busca todas as páginas antes de agregar. Para a maioria dos
+   * bares (dezenas de eventos) é invisível; agenda muito longa pode mostrar
+   * totais parciais até existir agregação no banco via RPC.
+   */
+  const events = flattenPages(eventsQuery.data);
+  const eventsPending = eventsQuery.isPending;
   const { data: rows, isPending: metricsPending } = useOwnedMetrics(Number(sinceDays));
   const { data: favoritesByEvent } = useOwnedFavoritesCount();
   // Espera as duas queries: se só metricsPending resolver, a tabela vê linhas
@@ -43,10 +51,7 @@ export default function MetricasPage() {
     [rows, favoritesByEvent],
   );
 
-  const eventsById = useMemo(
-    () => new Map((events ?? []).map((event) => [event.id, event])),
-    [events],
-  );
+  const eventsById = useMemo(() => new Map(events.map((event) => [event.id, event])), [events]);
 
   const activeSummary = activeEvent
     ? (byEvent.find((summary) => summary.eventId === activeEvent.id) ?? null)

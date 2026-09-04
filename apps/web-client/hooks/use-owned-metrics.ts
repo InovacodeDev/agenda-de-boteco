@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  flattenPages,
   listOwnedFavoritesCount,
   listOwnedMetrics,
   type MetricEvent,
@@ -21,7 +22,8 @@ export const metricsKeys = {
   // Ordenado antes de entrar na key: reagendar um evento reordena o array de
   // listOwnedEvents sem mudar o conjunto, e um array-spread sensível à ordem
   // invalidaria o cache à toa (TanStack Query só normaliza ordem de chave em
-  // objeto plano, não em array).
+  // objeto plano, não em array). Cresce conforme o dono rola a agenda: mais
+  // páginas carregadas via infinite query = mais ids nesta key.
   favoritesCount: (eventIds: string[]) =>
     ['panel', 'metrics', 'favorites-count', ...[...eventIds].sort()] as const,
 };
@@ -39,8 +41,8 @@ export function useOwnedMetrics(sinceDays: number) {
 
 /** Contagem de favoritos por evento do bar do dono. */
 export function useOwnedFavoritesCount() {
-  const { data: events } = useOwnedEvents();
-  const eventIds = (events ?? []).map((event) => event.id);
+  const eventsQuery = useOwnedEvents();
+  const eventIds = flattenPages(eventsQuery.data).map((event) => event.id);
 
   return useQuery({
     queryKey: metricsKeys.favoritesCount(eventIds),
