@@ -7,6 +7,7 @@ import {
   ESTABLISHMENT_SORT_LABELS,
   ESTABLISHMENT_SORT_OPTIONS,
   type EstablishmentSortBy,
+  flattenPages,
   hasActiveFilters,
   indexById,
   type LatLng,
@@ -16,6 +17,7 @@ import {
   useEstablishmentsQuery,
   useEventsQuery,
   useFiltersStore,
+  useInfiniteScrollSentinel,
   useMusicStylesQuery,
   useNearbyEstablishments,
 } from '@agenda/core';
@@ -56,9 +58,22 @@ export default function FeedPage() {
   const setQuery = useFiltersStore((state) => state.setQuery);
   const toggleStyle = useFiltersStore((state) => state.toggleStyle);
 
-  const { data: events } = useEventsQuery();
-  const { data: establishments } = useEstablishmentsQuery();
+  const eventsQuery = useEventsQuery();
+  const events = flattenPages(eventsQuery.data);
+  const establishmentsQuery = useEstablishmentsQuery();
+  const establishments = flattenPages(establishmentsQuery.data);
   const { data: musicStyles } = useMusicStylesQuery();
+
+  const eventsSentinelRef = useInfiniteScrollSentinel({
+    fetchNextPage: eventsQuery.fetchNextPage,
+    hasNextPage: eventsQuery.hasNextPage,
+    isFetchingNextPage: eventsQuery.isFetchingNextPage,
+  });
+  const establishmentsSentinelRef = useInfiniteScrollSentinel({
+    fetchNextPage: establishmentsQuery.fetchNextPage,
+    hasNextPage: establishmentsQuery.hasNextPage,
+    isFetchingNextPage: establishmentsQuery.isFetchingNextPage,
+  });
 
   const city = useActiveCity();
 
@@ -126,8 +141,7 @@ export default function FeedPage() {
     ],
   );
 
-  const isLoading =
-    events === undefined || establishments === undefined || musicStyles === undefined;
+  const isLoading = eventsQuery.isPending || establishmentsQuery.isPending || musicStyles === undefined;
 
   return (
     <section className="flex flex-col gap-4 pt-2">
@@ -186,6 +200,10 @@ export default function FeedPage() {
                   userCoords={userCoords}
                 />
               ))}
+              <div ref={eventsSentinelRef} aria-hidden className="h-px" />
+              {eventsQuery.isFetchingNextPage ? (
+                <p className="text-muted-foreground py-4 text-center text-[13px]">Carregando mais…</p>
+              ) : null}
             </div>
           )}
         </>
@@ -208,6 +226,10 @@ export default function FeedPage() {
               {cityEstablishments.map((establishment) => (
                 <EstablishmentCard key={establishment.id} establishment={establishment} />
               ))}
+              <div ref={establishmentsSentinelRef} aria-hidden className="h-px" />
+              {establishmentsQuery.isFetchingNextPage ? (
+                <p className="text-muted-foreground py-4 text-center text-[13px]">Carregando mais…</p>
+              ) : null}
             </div>
           )}
         </>

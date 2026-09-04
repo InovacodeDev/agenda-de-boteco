@@ -3,6 +3,7 @@
 import {
   type AppNotification,
   deleteNotification,
+  flattenPages,
   issuesToErrors,
   NOTIFICATION_TYPE_LABELS,
   type NotificationType,
@@ -51,8 +52,11 @@ function toForm(n: AppNotification): FormState {
 export default function AvisosPage() {
   const qc = useQueryClient();
   const notifications = useNotificationsQuery();
+  const notificationRows = flattenPages(notifications.data);
   const events = useEventsQuery();
+  const eventRows = flattenPages(events.data);
   const establishments = useEstablishmentsQuery();
+  const establishmentRows = flattenPages(establishments.data);
 
   const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -133,12 +137,12 @@ export default function AvisosPage() {
         <p className="text-muted-foreground text-[14px]">Carregando…</p>
       ) : notifications.error ? (
         <p className="text-destructive text-[14px]">Erro ao carregar avisos.</p>
-      ) : (notifications.data ?? []).length === 0 ? (
+      ) : notificationRows.length === 0 ? (
         <p className="text-muted-foreground text-[14px]">Nenhum item ainda.</p>
       ) : (
         <DataTable
           columns={columns}
-          rows={notifications.data ?? []}
+          rows={notificationRows}
           onEdit={openEdit}
           onDelete={(r) => void handleDelete(r)}
         />
@@ -185,7 +189,7 @@ export default function AvisosPage() {
           <Field label="Evento (opcional)" error={errors.event_id}>
             <Select value={form.event_id} onValueChange={(v) => set('event_id', v)}>
               <Select.Option value="">Nenhum</Select.Option>
-              {(events.data ?? []).map((e) => (
+              {eventRows.map((e) => (
                 <Select.Option key={e.id} value={e.id}>
                   {e.name}
                 </Select.Option>
@@ -195,7 +199,7 @@ export default function AvisosPage() {
           <Field label="Estabelecimento (opcional)" error={errors.establishment_id}>
             <Select value={form.establishment_id} onValueChange={(v) => set('establishment_id', v)}>
               <Select.Option value="">Nenhum</Select.Option>
-              {(establishments.data ?? []).map((e) => (
+              {establishmentRows.map((e) => (
                 <Select.Option key={e.id} value={e.id}>
                   {e.name}
                 </Select.Option>

@@ -5,6 +5,7 @@ import {
   buildInstagramProfileUrl,
   buildWhatsAppUrl,
   FEATURES,
+  flattenPages,
   formatInstagramHandle,
   getAttributeMeta,
   indexById,
@@ -85,7 +86,8 @@ function EstablishmentDetailContent() {
   const establishmentQuery = useEstablishmentQuery(id);
   const establishment = establishmentQuery.data;
   // O service/core já ordena a agenda por starts_at asc.
-  const { data: agendaData } = useEventsByEstablishmentQuery(id);
+  const agendaQuery = useEventsByEstablishmentQuery(id);
+  const agendaData = flattenPages(agendaQuery.data);
   const { data: musicStyles } = useMusicStylesQuery();
   const stylesById = useMemo(() => indexById(musicStyles ?? []), [musicStyles]);
   useRecordView({ establishmentId: establishment?.id });

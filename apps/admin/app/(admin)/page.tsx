@@ -1,6 +1,8 @@
 'use client';
 
 import {
+  type CatalogPage,
+  flattenPages,
   useEstablishmentsQuery,
   useEventsQuery,
   useNotificationsQuery,
@@ -20,12 +22,14 @@ function StatCard({ label, value }: { label: string; value: number | string }) {
 }
 
 export default function DashboardPage() {
-  const establishments = useEstablishmentsQuery();
-  const events = useEventsQuery();
-  const notifications = useNotificationsQuery();
+  const establishmentsQuery = useEstablishmentsQuery();
+  const eventsQuery = useEventsQuery();
+  const notificationsQuery = useNotificationsQuery();
 
-  const count = (q: { isLoading: boolean; data?: unknown[] }) =>
-    q.isLoading ? '…' : (q.data?.length ?? 0);
+  const count = (q: {
+    isLoading: boolean;
+    data?: { pages: CatalogPage<unknown>[]; pageParams: unknown[] };
+  }) => (q.isLoading ? '…' : flattenPages(q.data).length);
 
   return (
     <div className="flex flex-col gap-6">
@@ -33,9 +37,9 @@ export default function DashboardPage() {
         Dashboard
       </h1>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <StatCard label="Estabelecimentos" value={count(establishments)} />
-        <StatCard label="Eventos" value={count(events)} />
-        <StatCard label="Avisos" value={count(notifications)} />
+        <StatCard label="Estabelecimentos" value={count(establishmentsQuery)} />
+        <StatCard label="Eventos" value={count(eventsQuery)} />
+        <StatCard label="Avisos" value={count(notificationsQuery)} />
       </div>
     </div>
   );

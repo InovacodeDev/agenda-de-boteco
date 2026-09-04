@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  flattenPages,
   indexById,
   musicStylesForEvent,
   useEstablishmentsQuery,
@@ -24,8 +25,10 @@ export default function FavoritesPage() {
   const eventIds = useFavoritesStore((state) => state.eventIds);
   const establishmentIds = useFavoritesStore((state) => state.establishmentIds);
 
-  const { data: events } = useEventsQuery();
-  const { data: establishments } = useEstablishmentsQuery();
+  const eventsQuery = useEventsQuery();
+  const events = flattenPages(eventsQuery.data);
+  const establishmentsQuery = useEstablishmentsQuery();
+  const establishments = flattenPages(establishmentsQuery.data);
   const { data: musicStyles } = useMusicStylesQuery();
 
   const establishmentsById = useMemo(() => indexById(establishments ?? []), [establishments]);
