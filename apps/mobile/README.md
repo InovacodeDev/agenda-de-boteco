@@ -34,7 +34,7 @@ uma lista (react-native-maps não suporta web).
   `event/[id]`, `establishment/[id]`, `filters` (formSheet), `city`,
   `login`, `onboarding` (gate de primeiro launch via `Stack.Protected`)
 - `src/theme/` — espelho TS dos tokens do `src/global.css` (`@theme`) para
-  props fora do className (ícones, gradientes, mapStyle, boxShadow)
+  props fora do className (ícones, gradientes, boxShadow)
 - `src/data/` — mock tipado com Zod espelhando o protótipo
 - `src/services/catalog.ts` — fachada async (troca por Supabase sem mudar telas)
 - `src/store/` — zustand (cidade, favoritos, filtros, notificações lidas)
