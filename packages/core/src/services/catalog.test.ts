@@ -333,11 +333,53 @@ function createQueryBuilder(rows: Row[], injectedError: FakeError | null = null)
       current = current.filter((row) => row[column] === value);
       return builder;
     },
+    gt(column: string, value: unknown) {
+      current = current.filter((row) => String(row[column]) > String(value));
+      return builder;
+    },
+    lt(column: string, value: unknown) {
+      current = current.filter((row) => String(row[column]) < String(value));
+      return builder;
+    },
+    /**
+     * Suporte mínimo ao `.or()` do PostgREST no formato que a paginação por
+     * cursor usa: `col.gt.valor,and(col.eq.valor,id.gt.valor)`. Só o
+     * suficiente para o teste — não é um parser geral de filtro.
+     */
+    or(expression: string) {
+      const pattern = new RegExp(
+        '^(\\w+)\\.(gt|lt)\\.([^,]+),and\\(\\1\\.eq\\.([^,]+),id\\.(?:gt|lt)\\.([^)]+)\\)$',
+      );
+      const match = pattern.exec(expression);
+      if (!match) {
+        throw new Error(`fake builder: expressao .or() nao suportada: ${expression}`);
+      }
+      const [, column, operator, primary, tie, tieId] = match;
+      current = current.filter((row) => {
+        const value = String(row[column]);
+        const beyond = operator === 'gt' ? value > primary : value < primary;
+        if (beyond) return true;
+        const tieBreak = operator === 'gt' ? String(row.id) > tieId : String(row.id) < tieId;
+        return value === tie && tieBreak;
+      });
+      return builder;
+    },
+    limit(count: number) {
+      current = current.slice(0, count);
+      return builder;
+    },
     order(column: string, options?: { ascending?: boolean }) {
       const ascending = options?.ascending ?? true;
       current = [...current].sort((a, b) => {
-        const left = Date.parse(String(a[column]));
-        const right = Date.parse(String(b[column]));
+        const rawLeft = a[column];
+        const rawRight = b[column];
+        const left = Date.parse(String(rawLeft));
+        const right = Date.parse(String(rawRight));
+        // Colunas nao-data (name, id) caem no comparador de string.
+        if (Number.isNaN(left) || Number.isNaN(right)) {
+          const cmp = String(rawLeft).localeCompare(String(rawRight));
+          return ascending ? cmp : -cmp;
+        }
         return ascending ? left - right : right - left;
       });
       return builder;
