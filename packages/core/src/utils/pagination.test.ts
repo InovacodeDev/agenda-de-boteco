@@ -51,4 +51,10 @@ describe('cursor', () => {
 
     expect(decodeCursor(encoded)).toEqual({ value: 'Bar do Ze | Centro', id: 'est-9' });
   });
+
+  it('rejeita cursor com caracteres que quebrariam o filtro OR do PostgREST', () => {
+    const encoded = encodeCursor({ value: 'x,and(status.eq.published)', id: 'evt-1' });
+
+    expect(decodeCursor(encoded)).toBeNull();
+  });
 });

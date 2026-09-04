@@ -36,10 +36,16 @@ export function decodeCursor(cursor: string | null): CatalogCursor | null {
   if (separatorIndex === -1) {
     return null;
   }
-  return {
-    value: cursor.slice(0, separatorIndex),
-    id: cursor.slice(separatorIndex + 1),
-  };
+  const value = cursor.slice(0, separatorIndex);
+  const id = cursor.slice(separatorIndex + 1);
+  // cursor e input externo (pageParam do useInfiniteQuery); value/id vao sem
+  // escaping para o .or() do PostgREST na query layer — rejeitar caracteres
+  // que quebrariam a sintaxe do filtro em vez de confiar so no formato de
+  // quem gerou o cursor.
+  if (/[,()]/.test(value) || /[,()]/.test(id)) {
+    return null;
+  }
+  return { value, id };
 }
 
 /**
