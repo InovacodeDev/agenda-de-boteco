@@ -237,7 +237,9 @@ export async function listEstablishments(
   const base = client.from('establishments').select(ESTABLISHMENT_COLUMNS);
   const withCityFilter = cityId ? base.eq('city_id', cityId) : base;
   const filtered = decoded
-    ? withCityFilter.or(`name.gt.${decoded.value},and(name.eq.${decoded.value},id.gt.${decoded.id})`)
+    ? withCityFilter.or(
+        `name.gt.${decoded.value},and(name.eq.${decoded.value},id.gt.${decoded.id})`,
+      )
     : withCityFilter;
 
   const { data, error } = await filtered
