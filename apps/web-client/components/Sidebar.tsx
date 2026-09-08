@@ -33,9 +33,11 @@ export function Sidebar() {
   const pathname = usePathname();
   const metricsEnabled = useFeatureFlag('panel-metrics');
   const reviewsEnabled = useFeatureFlag('panel-reviews');
+  const settingsEnabled = useFeatureFlag('panel-settings');
   const flags: Record<string, boolean> = {
     'panel-metrics': metricsEnabled,
     'panel-reviews': reviewsEnabled,
+    'panel-settings': settingsEnabled,
   };
   const nav = NAV.filter((item) => !item.flag || flags[item.flag]);
 

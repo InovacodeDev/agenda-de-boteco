@@ -1,14 +1,23 @@
 'use client';
 
-import { useState } from 'react';
+import { useFeatureFlag } from '@agenda/core';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 import { AccountSection } from '@/components/settings/AccountSection';
 import { DangerZoneSection } from '@/components/settings/DangerZoneSection';
 import { NotificationsSection } from '@/components/settings/NotificationsSection';
-import { SubscriptionSection } from '@/components/settings/SubscriptionSection';
 
 export default function SettingsPage() {
+  const router = useRouter();
+  const enabled = useFeatureFlag('panel-settings');
   const [globalNotice, setGlobalNotice] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!enabled) router.replace('/');
+  }, [enabled, router]);
+
+  if (!enabled) return null;
 
   const showNotice = (message: string) => {
     setGlobalNotice(message);
@@ -23,7 +32,7 @@ export default function SettingsPage() {
         <div>
           <h1 className="font-heading text-foreground text-2xl font-bold">Configurações</h1>
           <p className="text-muted-foreground mt-1 text-sm">
-            Gerencie preferências de conta, notificações e sua assinatura.
+            Gerencie preferências de conta, notificações e privacidade.
           </p>
         </div>
 
@@ -39,7 +48,6 @@ export default function SettingsPage() {
 
       <AccountSection onSuccessNotice={showNotice} />
       <NotificationsSection />
-      <SubscriptionSection />
       <DangerZoneSection />
     </div>
   );

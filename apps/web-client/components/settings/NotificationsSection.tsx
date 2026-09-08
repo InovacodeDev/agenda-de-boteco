@@ -141,7 +141,11 @@ export function NotificationsSection() {
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div className="border-border bg-surface flex items-center justify-between rounded-xl border p-4">
               <div className="flex items-center gap-3">
-                <div className="bg-surface-elevated text-foreground flex h-9 w-9 items-center justify-center rounded-lg">
+                <div
+                  className={`bg-surface-elevated flex h-9 w-9 items-center justify-center rounded-lg transition-colors duration-200 ${
+                    settings.channelEmail ? 'text-foreground' : 'text-foreground/30'
+                  }`}
+                >
                   <EnvelopeSimpleIcon size={20} weight="bold" />
                 </div>
                 <div className="flex flex-col">
@@ -160,7 +164,11 @@ export function NotificationsSection() {
 
             <div className="border-border bg-surface flex items-center justify-between rounded-xl border p-4">
               <div className="flex items-center gap-3">
-                <div className="bg-surface-elevated text-foreground flex h-9 w-9 items-center justify-center rounded-lg">
+                <div
+                  className={`bg-surface-elevated flex h-9 w-9 items-center justify-center rounded-lg transition-colors duration-200 ${
+                    settings.channelPush ? 'text-foreground' : 'text-foreground/30'
+                  }`}
+                >
                   <BellRingingIcon size={20} weight="bold" />
                 </div>
                 <div className="flex flex-col">
@@ -186,7 +194,15 @@ export function NotificationsSection() {
           <div className="divide-border/60 border-border bg-surface divide-y rounded-xl border">
             <div className="flex items-center justify-between p-4">
               <div className="flex items-start gap-3">
-                <StarIcon size={20} weight="bold" className="text-accent mt-0.5 shrink-0" />
+                <StarIcon
+                  size={20}
+                  weight="bold"
+                  className={`mt-0.5 shrink-0 transition-opacity duration-200 ${
+                    settings.alertReviews
+                      ? 'text-foreground opacity-100'
+                      : 'text-foreground opacity-30'
+                  }`}
+                />
                 <div className="flex flex-col">
                   <span className="text-foreground text-sm font-medium">Novas avaliações</span>
                   <span className="text-muted-foreground text-xs">
@@ -206,7 +222,11 @@ export function NotificationsSection() {
                 <MicrophoneStageIcon
                   size={20}
                   weight="bold"
-                  className="text-primary mt-0.5 shrink-0"
+                  className={`mt-0.5 shrink-0 transition-opacity duration-200 ${
+                    settings.alertMusicians
+                      ? 'text-foreground opacity-100'
+                      : 'text-foreground opacity-30'
+                  }`}
                 />
                 <div className="flex flex-col">
                   <span className="text-foreground text-sm font-medium">
@@ -229,7 +249,11 @@ export function NotificationsSection() {
                 <CalendarCheckIcon
                   size={20}
                   weight="bold"
-                  className="text-foreground mt-0.5 shrink-0"
+                  className={`mt-0.5 shrink-0 transition-opacity duration-200 ${
+                    settings.alertEventStatus
+                      ? 'text-foreground opacity-100'
+                      : 'text-foreground opacity-30'
+                  }`}
                 />
                 <div className="flex flex-col">
                   <span className="text-foreground text-sm font-medium">
@@ -252,7 +276,11 @@ export function NotificationsSection() {
                 <CalendarBlankIcon
                   size={20}
                   weight="bold"
-                  className="text-muted-foreground mt-0.5 shrink-0"
+                  className={`mt-0.5 shrink-0 transition-opacity duration-200 ${
+                    settings.alertEmptySchedule
+                      ? 'text-foreground opacity-100'
+                      : 'text-foreground opacity-30'
+                  }`}
                 />
                 <div className="flex flex-col">
                   <span className="text-foreground text-sm font-medium">
@@ -275,7 +303,11 @@ export function NotificationsSection() {
                 <ChartBarIcon
                   size={20}
                   weight="bold"
-                  className="text-muted-foreground mt-0.5 shrink-0"
+                  className={`mt-0.5 shrink-0 transition-opacity duration-200 ${
+                    settings.alertWeeklyDigest
+                      ? 'text-foreground opacity-100'
+                      : 'text-foreground opacity-30'
+                  }`}
                 />
                 <div className="flex flex-col">
                   <span className="text-foreground text-sm font-medium">
