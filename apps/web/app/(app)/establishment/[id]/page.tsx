@@ -15,6 +15,7 @@ import {
   useEstablishmentQuery,
   useEventsByEstablishmentQuery,
   useFavoritesStore,
+  useGuardedClick,
   useMusicStylesQuery,
   useRecordView,
 } from '@agenda/core';
@@ -102,6 +103,11 @@ function EstablishmentDetailContent() {
   );
   const toggleEstablishment = useFavoritesStore((state) => state.toggleEstablishment);
   const requireAuth = useRequireAuth();
+  const guardedToggle = useGuardedClick(
+    establishment
+      ? () => requireAuth(() => toggleEstablishment(establishment.id))
+      : undefined,
+  );
 
   if (establishmentQuery.isLoading) {
     return (
@@ -147,7 +153,7 @@ function EstablishmentDetailContent() {
         <button
           type="button"
           aria-label={isFavorite ? 'Remover dos favoritos' : 'Favoritar estabelecimento'}
-          onClick={() => requireAuth(() => toggleEstablishment(establishment.id))}
+          onClick={() => guardedToggle?.()}
           className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-background/60 transition-opacity hover:opacity-80"
         >
           <HeartIcon
