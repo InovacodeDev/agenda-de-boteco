@@ -12,6 +12,7 @@ import {
   trackEvent,
 } from '@agenda/core';
 import { Button, TextInput } from '@agenda/shared-ui';
+import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { ZodError } from 'zod';
 
@@ -282,7 +283,11 @@ export function MusicianForm() {
 
       <p className="text-[12px] leading-5 text-muted-foreground">
         Seus dados vão só para os estabelecimentos interessados em contratar. Nada é publicado no
-        app nem aparece no seu perfil.
+        app nem aparece no seu perfil. Saiba mais na{' '}
+        <Link href="/privacy" className="underline underline-offset-2 hover:text-foreground">
+          Política de Privacidade
+        </Link>
+        .
       </p>
     </form>
   );
