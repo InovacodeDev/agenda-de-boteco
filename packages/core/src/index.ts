@@ -38,6 +38,7 @@ export * from './hooks/queries';
 export * from './hooks/useActiveCity';
 export * from './hooks/useConnectivity';
 export * from './hooks/useFeatureFlag';
+export * from './hooks/useGuardedClick';
 export * from './hooks/useGuardedPress';
 export * from './hooks/useInfiniteScrollSentinel';
 export * from './hooks/useNearbyEstablishments';
