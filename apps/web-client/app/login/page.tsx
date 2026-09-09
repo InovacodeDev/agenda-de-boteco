@@ -15,6 +15,7 @@ import {
   verifyEmailOtp,
 } from '@agenda/core';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
@@ -412,6 +413,13 @@ export default function LoginPage() {
             Google
           </button>
         </div>
+
+        <Link
+          href="/privacy"
+          className="mt-4 text-center text-[12px] text-muted-foreground underline-offset-2 hover:underline"
+        >
+          Política de Privacidade
+        </Link>
       </div>
     </main>
   );
