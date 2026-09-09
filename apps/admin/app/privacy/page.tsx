@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 
-const LAST_UPDATED = '16 de junho de 2026';
+const LAST_UPDATED = '3 de setembro de 2026';
 const CONTACT_EMAIL = 'contato@inovacode.dev';
 
 export const metadata: Metadata = {
@@ -69,9 +69,10 @@ export default function PrivacyPolicyPage() {
         <Paragraph>Coletamos apenas o necessário para o app funcionar:</Paragraph>
         <Bullet>
           <span className="text-foreground">Localização precisa (GPS).</span> Coletada somente
-          quando você toca para usar sua localização ou ativa o filtro “perto de mim”, para mostrar
+          quando você toca para usar sua localização ou ativa o filtro &ldquo;perto de mim&rdquo;, para mostrar
           bares e eventos próximos. Você pode recusar — nesse caso usamos o centro da cidade que
-          você escolheu. A localização não é armazenada nem usada para rastreamento ou publicidade.
+          você escolheu. A localização não é armazenada nos nossos servidores e é arredondada antes
+          de qualquer uso interno, nunca sendo usada para rastreamento ou publicidade.
         </Bullet>
         <Bullet>
           <span className="text-foreground">E-mail e nome.</span> Coletados apenas se você criar uma
@@ -83,14 +84,34 @@ export default function PrivacyPolicyPage() {
           estabelecimentos que você favorita, a cidade selecionada e seus filtros de busca. Ficam no
           seu dispositivo e, se você estiver logado, também na sua conta para sincronização.
         </Bullet>
+        <Bullet>
+          <span className="text-foreground">Dados de uso do app.</span> Quais telas são abertas e
+          quais ações são realizadas, associados a um identificador aleatório da sua conta — nunca
+          ao seu e-mail, telefone ou documento. Servem para entender o que funciona e o que precisa
+          melhorar. Detalhes no item 5.
+        </Bullet>
         <Paragraph>
           Não coletamos telefone, foto, dados financeiros, dados de saúde, identificadores de
-          publicidade, dados de uso para analytics nem qualquer informação para rastrear você em
-          outros apps ou sites.
+          publicidade nem qualquer informação para rastrear você em outros apps ou sites.
         </Paragraph>
       </Section>
 
-      <Section title="3. Como usamos os dados">
+      <Section title="3. Dados de quem administra o catálogo">
+        <Paragraph>
+          Este painel é de acesso restrito. Para quem entra aqui, também tratamos:
+        </Paragraph>
+        <Bullet>
+          <span className="text-foreground">E-mail de administrador.</span> Usado para autenticar o
+          acesso ao painel e registrar quem pode publicar ou alterar conteúdo do catálogo.
+        </Bullet>
+        <Bullet>
+          <span className="text-foreground">Dados dos estabelecimentos cadastrados.</span> Nome,
+          endereço, WhatsApp, Instagram, fotos e cardápio do bar são informações comerciais,
+          fornecidas para publicação no catálogo público — não são dados pessoais de consumidores.
+        </Bullet>
+      </Section>
+
+      <Section title="4. Como usamos os dados">
         <Bullet>Mostrar bares e eventos relevantes para a sua localização e cidade.</Bullet>
         <Bullet>Manter você conectado e sincronizar seus favoritos entre dispositivos.</Bullet>
         <Bullet>Lembrar suas preferências de busca.</Bullet>
@@ -99,7 +120,7 @@ export default function PrivacyPolicyPage() {
         </Paragraph>
       </Section>
 
-      <Section title="4. Compartilhamento com terceiros">
+      <Section title="5. Compartilhamento com terceiros">
         <Paragraph>
           Usamos provedores de serviço que processam dados estritamente para operar o app:
         </Paragraph>
@@ -115,12 +136,17 @@ export default function PrivacyPolicyPage() {
           <span className="text-foreground">Google e Apple (login social)</span> — apenas se você
           escolher entrar com essas contas, para autenticar você.
         </Bullet>
+        <Bullet>
+          <span className="text-foreground">PostHog</span> — recebe os dados de uso descritos no
+          item 2, identificados apenas por um código aleatório. Nunca enviamos e-mail, telefone,
+          documento ou sua localização exata para esse serviço.
+        </Bullet>
         <Paragraph>
           Não vendemos seus dados pessoais e não os compartilhamos para fins de marketing.
         </Paragraph>
       </Section>
 
-      <Section title="5. Segurança e retenção">
+      <Section title="6. Segurança e retenção">
         <Paragraph>
           O acesso aos dados é protegido por regras de segurança no servidor (cada pessoa só acessa
           os próprios favoritos) e transmitido por conexões criptografadas (HTTPS). Mantemos os
@@ -129,7 +155,7 @@ export default function PrivacyPolicyPage() {
         </Paragraph>
       </Section>
 
-      <Section title="6. Seus direitos">
+      <Section title="7. Seus direitos">
         <Paragraph>
           Você pode, a qualquer momento, acessar, corrigir ou excluir os dados da sua conta, revogar
           a permissão de localização nas configurações do dispositivo e solicitar a exclusão da sua
@@ -138,21 +164,21 @@ export default function PrivacyPolicyPage() {
         </Paragraph>
       </Section>
 
-      <Section title="7. Crianças">
+      <Section title="8. Crianças">
         <Paragraph>
           O app trata de ambientes de vida noturna e bebidas alcoólicas e não se destina a menores
           de 18 anos. Não coletamos conscientemente dados de crianças.
         </Paragraph>
       </Section>
 
-      <Section title="8. Alterações nesta política">
+      <Section title="9. Alterações nesta política">
         <Paragraph>
           Podemos atualizar esta política. Mudanças relevantes serão refletidas nesta página com
           nova data de atualização.
         </Paragraph>
       </Section>
 
-      <Section title="9. Contato">
+      <Section title="10. Contato">
         <Paragraph>
           Dúvidas sobre privacidade ou solicitações sobre seus dados: {CONTACT_EMAIL}.
         </Paragraph>
