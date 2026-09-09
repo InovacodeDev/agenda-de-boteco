@@ -43,6 +43,7 @@ export * from './hooks/useGuardedPress';
 export * from './hooks/useInfiniteScrollSentinel';
 export * from './hooks/useNearbyEstablishments';
 export * from './hooks/useRecordView';
+export * from './hooks/useResendCooldown';
 export * from './hooks/useStatusLight';
 export * from './lib/queryClient';
 export * from './lib/queryPersister';
