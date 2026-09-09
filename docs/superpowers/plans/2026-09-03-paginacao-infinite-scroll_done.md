@@ -48,11 +48,11 @@ Sem isto, nenhum teste de paginação consegue rodar. Task isolada e primeira de
 **Files:**
 - Modify: `packages/core/src/services/catalog.test.ts`
 
-- [ ] **Step 1: Localizar o builder fake atual**
+- [x] **Step 1: Localizar o builder fake atual**
 
 Abra `packages/core/src/services/catalog.test.ts` e localize a função `createQueryBuilder` (por volta da linha 306). Ela hoje implementa `select`, `eq`, `order`, `maybeSingle` e `then`.
 
-- [ ] **Step 2: Substituir `createQueryBuilder` pela versão estendida**
+- [x] **Step 2: Substituir `createQueryBuilder` pela versão estendida**
 
 Mantém tudo que já existia e acrescenta `gt`, `lt`, `or` e `limit`:
 
@@ -139,12 +139,12 @@ function createQueryBuilder(rows: Row[], injectedError: FakeError | null = null)
 }
 ```
 
-- [ ] **Step 3: Rodar a suíte existente para garantir que nada quebrou**
+- [x] **Step 3: Rodar a suíte existente para garantir que nada quebrou**
 
 Run: `pnpm --filter @agenda/core test -- catalog.test.ts`
 Expected: PASS — todos os testes que já existiam continuam passando. O builder ganhou métodos novos mas os antigos não mudaram de comportamento.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add packages/core/src/services/catalog.test.ts
@@ -160,7 +160,7 @@ git commit -m "Extend fake PostgREST builder for pagination tests"
 - Test: `packages/core/src/utils/pagination.test.ts`
 - Modify: `packages/core/src/index.ts`
 
-- [ ] **Step 1: Escrever o teste que falha**
+- [x] **Step 1: Escrever o teste que falha**
 
 Crie `packages/core/src/utils/pagination.test.ts`:
 
@@ -221,12 +221,12 @@ describe('cursor', () => {
 });
 ```
 
-- [ ] **Step 2: Rodar o teste para ver falhar**
+- [x] **Step 2: Rodar o teste para ver falhar**
 
 Run: `pnpm --filter @agenda/core test -- pagination.test.ts`
 Expected: FAIL com "Cannot find module './pagination'"
 
-- [ ] **Step 3: Implementar o utilitário**
+- [x] **Step 3: Implementar o utilitário**
 
 Crie `packages/core/src/utils/pagination.ts`:
 
@@ -289,12 +289,12 @@ export function flattenPages<T>(
 }
 ```
 
-- [ ] **Step 4: Rodar o teste para ver passar**
+- [x] **Step 4: Rodar o teste para ver passar**
 
 Run: `pnpm --filter @agenda/core test -- pagination.test.ts`
 Expected: PASS — 7 testes.
 
-- [ ] **Step 5: Exportar na fachada pública do core**
+- [x] **Step 5: Exportar na fachada pública do core**
 
 Em `packages/core/src/index.ts`, o bloco de utils é alfabético. Adicione entre `export * from './utils/moderation';` e `export * from './utils/platform';`:
 
@@ -302,12 +302,12 @@ Em `packages/core/src/index.ts`, o bloco de utils é alfabético. Adicione entre
 export * from './utils/pagination';
 ```
 
-- [ ] **Step 6: Rodar typecheck**
+- [x] **Step 6: Rodar typecheck**
 
 Run: `pnpm --filter @agenda/core typecheck`
 Expected: sem erros.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add packages/core/src/utils/pagination.ts packages/core/src/utils/pagination.test.ts packages/core/src/index.ts
@@ -321,7 +321,7 @@ git commit -m "Add cursor pagination utilities to core"
 **Files:**
 - Modify: `packages/core/src/queries/catalog.ts`
 
-- [ ] **Step 1: Adicionar o import do utilitário**
+- [x] **Step 1: Adicionar o import do utilitário**
 
 No topo de `packages/core/src/queries/catalog.ts`, após `import { slugify } from '../utils/slug';`:
 
@@ -334,7 +334,7 @@ import {
 } from '../utils/pagination';
 ```
 
-- [ ] **Step 2: Substituir `listEvents` pela versão paginada**
+- [x] **Step 2: Substituir `listEvents` pela versão paginada**
 
 ```ts
 /**
@@ -377,12 +377,12 @@ export async function listEvents(
 }
 ```
 
-- [ ] **Step 3: Rodar typecheck e confirmar que a fachada quebrou**
+- [x] **Step 3: Rodar typecheck e confirmar que a fachada quebrou**
 
 Run: `pnpm --filter @agenda/core typecheck`
 Expected: FAIL — `packages/core/src/services/catalog.ts` reclama que `Promise<CatalogPage<Event>>` não é `Promise<Event[]>`. Isso é esperado; a Task 6 conserta a fachada. **Não conserte agora.**
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add packages/core/src/queries/catalog.ts
@@ -398,7 +398,7 @@ Esta é a única listagem sem `.order()` hoje. Adicionar ordenação é obrigat�
 **Files:**
 - Modify: `packages/core/src/queries/catalog.ts`
 
-- [ ] **Step 1: Substituir `listEstablishments`**
+- [x] **Step 1: Substituir `listEstablishments`**
 
 ```ts
 /**
@@ -438,7 +438,7 @@ export async function listEstablishments(
 }
 ```
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 
 ```bash
 git add packages/core/src/queries/catalog.ts
@@ -452,7 +452,7 @@ git commit -m "Paginate listEstablishments and add deterministic ordering"
 **Files:**
 - Modify: `packages/core/src/queries/catalog.ts`
 
-- [ ] **Step 1: Substituir `listEventsByEstablishment` e `listOwnedEvents`**
+- [x] **Step 1: Substituir `listEventsByEstablishment` e `listOwnedEvents`**
 
 ```ts
 /**
@@ -509,7 +509,7 @@ export async function listOwnedEvents(
 }
 ```
 
-- [ ] **Step 2: Substituir `listNotifications`**
+- [x] **Step 2: Substituir `listNotifications`**
 
 ```ts
 /**
@@ -547,7 +547,7 @@ export async function listNotifications(
 }
 ```
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add packages/core/src/queries/catalog.ts
@@ -563,7 +563,7 @@ A fachada precisa paginar o mock também, senão o app sem Supabase configurado 
 **Files:**
 - Modify: `packages/core/src/services/catalog.ts`
 
-- [ ] **Step 1: Adicionar imports**
+- [x] **Step 1: Adicionar imports**
 
 No topo, junto dos outros imports relativos:
 
@@ -576,7 +576,7 @@ import {
 } from '../utils/pagination';
 ```
 
-- [ ] **Step 2: Adicionar o helper de paginação do mock**
+- [x] **Step 2: Adicionar o helper de paginação do mock**
 
 Logo após a função `sortByStartsAtAsc`:
 
@@ -606,7 +606,7 @@ function paginateMock<T extends { id: string }>(
 }
 ```
 
-- [ ] **Step 3: Substituir as 5 fachadas**
+- [x] **Step 3: Substituir as 5 fachadas**
 
 ```ts
 export async function listEvents(
@@ -722,12 +722,12 @@ export async function listNotifications(
 }
 ```
 
-- [ ] **Step 4: Rodar typecheck do core**
+- [x] **Step 4: Rodar typecheck do core**
 
 Run: `pnpm --filter @agenda/core typecheck`
 Expected: sem erros no core. Os apps ainda vão quebrar — Tasks 11 e 12 cuidam disso.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add packages/core/src/services/catalog.ts
@@ -741,12 +741,12 @@ git commit -m "Paginate catalog service facade with mock slicing"
 **Files:**
 - Modify: `packages/core/src/services/catalog.test.ts`
 
-- [ ] **Step 1: Rodar a suíte para ver o que quebrou**
+- [x] **Step 1: Rodar a suíte para ver o que quebrou**
 
 Run: `pnpm --filter @agenda/core test -- catalog.test.ts`
 Expected: FAIL — os testes esperam array e agora recebem `{ items, nextCursor }`.
 
-- [ ] **Step 2: Ajustar os asserts existentes**
+- [x] **Step 2: Ajustar os asserts existentes**
 
 Em cada teste que chama uma das 5 funções paginadas, troque o acesso direto ao array por `.items`. O padrão:
 
@@ -762,7 +762,7 @@ expect(page.items).toHaveLength(Math.min(EVENTS.length, 20));
 
 Aplique em `listEvents`, `listEstablishments`, `listEventsByEstablishment` e `listNotifications`, **nos dois blocos** (mock e client fake). `isSortedAscByStartsAt(...)` passa a receber `page.items`.
 
-- [ ] **Step 3: Adicionar testes de paginação**
+- [x] **Step 3: Adicionar testes de paginação**
 
 Acrescente ao final do arquivo:
 
@@ -812,12 +812,12 @@ describe('paginacao por cursor', () => {
 });
 ```
 
-- [ ] **Step 4: Rodar os testes**
+- [x] **Step 4: Rodar os testes**
 
 Run: `pnpm --filter @agenda/core test -- catalog.test.ts`
 Expected: PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add packages/core/src/services/catalog.test.ts
@@ -833,7 +833,7 @@ git commit -m "Update catalog tests for paginated contract"
 - Modify: `packages/core/src/services/cachePolicy.ts`
 - Modify: `packages/core/src/hooks/queries.ts`
 
-- [ ] **Step 1: Adicionar a key `events.list`**
+- [x] **Step 1: Adicionar a key `events.list`**
 
 Em `packages/core/src/services/queryKeys.ts`, dentro do objeto `events`, logo após a linha do `root`:
 
@@ -843,7 +843,7 @@ Em `packages/core/src/services/queryKeys.ts`, dentro do objeto `events`, logo ap
     list: ['events', 'list'] as const,
 ```
 
-- [ ] **Step 2: Incrementar o CACHE_BUSTER**
+- [x] **Step 2: Incrementar o CACHE_BUSTER**
 
 Em `packages/core/src/services/cachePolicy.ts`, altere o valor e acrescente a linha final do docblock:
 
@@ -862,7 +862,7 @@ Em `packages/core/src/services/cachePolicy.ts`, altere o valor e acrescente a li
 export const CACHE_BUSTER = 'v3';
 ```
 
-- [ ] **Step 3: Migrar os hooks**
+- [x] **Step 3: Migrar os hooks**
 
 Em `packages/core/src/hooks/queries.ts`, troque a linha de import do TanStack:
 
@@ -916,12 +916,12 @@ export function useNotificationsQuery() {
 
 **Não crie um `useOwnedEventsQuery` aqui.** A agenda do dono já tem hook próprio em `apps/web-client/hooks/use-owned-events.ts`, que resolve o `establishmentId` a partir do vínculo do usuário. Um segundo hook no core ficaria sem consumidor — código órfão, exatamente o que a limpeza de knip existe para evitar. A Task 13 migra o hook do web-client.
 
-- [ ] **Step 4: Rodar typecheck e testes do core**
+- [x] **Step 4: Rodar typecheck e testes do core**
 
 Run: `pnpm --filter @agenda/core typecheck && pnpm --filter @agenda/core test`
 Expected: sem erros. Se `cachePolicy.test.ts` ou `queryKeys.test.ts` assertarem `'v2'`, atualize o assert para `'v3'` e rode de novo.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add packages/core/src/services/queryKeys.ts packages/core/src/services/cachePolicy.ts packages/core/src/hooks/queries.ts
@@ -937,7 +937,7 @@ git commit -m "Migrate catalog list hooks to useInfiniteQuery and bump cache bus
 - Test: `packages/core/src/hooks/useInfiniteScrollSentinel.test.ts`
 - Modify: `packages/core/src/index.ts`
 
-- [ ] **Step 1: Escrever o teste que falha**
+- [x] **Step 1: Escrever o teste que falha**
 
 O docblock `@jest-environment jsdom` é obrigatório: o `testEnvironment` global do core é `node`. O arquivo é `.ts` (não `.tsx`) porque o `testMatch` do core é `**/*.test.ts`. Padrão idêntico ao de `packages/core/src/hooks/useFeatureFlag.test.ts`.
 
@@ -1036,12 +1036,12 @@ describe('useInfiniteScrollSentinel', () => {
 });
 ```
 
-- [ ] **Step 2: Rodar o teste para ver falhar**
+- [x] **Step 2: Rodar o teste para ver falhar**
 
 Run: `pnpm --filter @agenda/core test -- useInfiniteScrollSentinel.test.ts`
 Expected: FAIL com "Cannot find module './useInfiniteScrollSentinel'"
 
-- [ ] **Step 3: Implementar o hook**
+- [x] **Step 3: Implementar o hook**
 
 Crie `packages/core/src/hooks/useInfiniteScrollSentinel.ts`:
 
@@ -1095,12 +1095,12 @@ export function useInfiniteScrollSentinel({
 }
 ```
 
-- [ ] **Step 4: Rodar o teste**
+- [x] **Step 4: Rodar o teste**
 
 Run: `pnpm --filter @agenda/core test -- useInfiniteScrollSentinel.test.ts`
 Expected: PASS — 5 testes.
 
-- [ ] **Step 5: Exportar no index**
+- [x] **Step 5: Exportar no index**
 
 Em `packages/core/src/index.ts`, no bloco de hooks, entre `export * from './hooks/useGuardedPress';` e `export * from './hooks/useNearbyEstablishments';`:
 
@@ -1108,7 +1108,7 @@ Em `packages/core/src/index.ts`, no bloco de hooks, entre `export * from './hook
 export * from './hooks/useInfiniteScrollSentinel';
 ```
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add packages/core/src/hooks/useInfiniteScrollSentinel.ts packages/core/src/hooks/useInfiniteScrollSentinel.test.ts packages/core/src/index.ts
@@ -1122,7 +1122,7 @@ git commit -m "Add IntersectionObserver sentinel hook for web infinite scroll"
 **Files:**
 - Create: `supabase/migrations/20260903120000_events_pagination_indexes.sql`
 
-- [ ] **Step 1: Criar a migração**
+- [x] **Step 1: Criar a migração**
 
 ```sql
 -- events.establishment_id e filtrado em toda listagem por bar
@@ -1146,7 +1146,7 @@ CREATE INDEX IF NOT EXISTS notifications_created_at_id_idx
   ON public.notifications (created_at DESC, id DESC);
 ```
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 
 ```bash
 git add supabase/migrations/20260903120000_events_pagination_indexes.sql
@@ -1163,7 +1163,7 @@ git commit -m "Add indexes supporting cursor pagination"
 - Modify: `apps/mobile/app/(tabs)/favorites.tsx`
 - Modify: `apps/mobile/app/(tabs)/_layout.tsx`
 
-- [ ] **Step 1: Adaptar a leitura de dados na home**
+- [x] **Step 1: Adaptar a leitura de dados na home**
 
 Em `apps/mobile/app/(tabs)/index.tsx`, adicione `flattenPages` ao import de `@agenda/core` e troque a leitura das queries. Onde hoje existem chamadas diretas aos hooks, passe a guardar a query inteira:
 
@@ -1176,7 +1176,7 @@ const establishments = flattenPages(establishmentsQuery.data);
 
 Todo lugar que antes lia `data` das listagens agora usa `events` / `establishments`. `applyEventFilters` e `applyEstablishmentFilters` continuam recebendo array plano, sem mudança de assinatura.
 
-- [ ] **Step 2: Ligar o infinite scroll nas duas FlashList**
+- [x] **Step 2: Ligar o infinite scroll nas duas FlashList**
 
 Substitua o bloco das listas (por volta da linha 283):
 
@@ -1216,7 +1216,7 @@ Substitua o bloco das listas (por volta da linha 283):
       )}
 ```
 
-- [ ] **Step 3: Adaptar notifications**
+- [x] **Step 3: Adaptar notifications**
 
 Em `apps/mobile/app/(tabs)/notifications.tsx`, aplique o mesmo padrão: guardar a query, achatar com `flattenPages`, e acrescentar à FlashList:
 
@@ -1229,7 +1229,7 @@ Em `apps/mobile/app/(tabs)/notifications.tsx`, aplique o mesmo padrão: guardar 
           }}
 ```
 
-- [ ] **Step 4: Adaptar favorites e o badge de contagem**
+- [x] **Step 4: Adaptar favorites e o badge de contagem**
 
 Em `apps/mobile/app/(tabs)/favorites.tsx`, apenas troque a leitura para `flattenPages(query.data)`. **Não** adicione `onEndReached` — favoritos é uma lista filtrada localmente, não uma listagem paginável.
 
@@ -1240,12 +1240,12 @@ const notificationsQuery = useNotificationsQuery();
 const unreadCount = flattenPages(notificationsQuery.data).filter((item) => !item.read).length;
 ```
 
-- [ ] **Step 5: Verificar typecheck e testes do mobile**
+- [x] **Step 5: Verificar typecheck e testes do mobile**
 
 Run: `pnpm --filter @agenda/mobile typecheck && pnpm --filter @agenda/mobile test`
 Expected: sem erros.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add apps/mobile/app
@@ -1268,7 +1268,7 @@ git commit -m "Wire infinite scroll into mobile FlashLists"
 - Modify: `apps/admin/app/(admin)/establishments/page.tsx`
 - Modify: `apps/admin/app/(admin)/notices/page.tsx`
 
-- [ ] **Step 1: Adaptar a leitura de dados em todos os consumidores**
+- [x] **Step 1: Adaptar a leitura de dados em todos os consumidores**
 
 Em cada arquivo, onde hoje há desestruturação direta do `data`, passe a guardar a query e achatar:
 
@@ -1281,7 +1281,7 @@ Importe `flattenPages` de `@agenda/core`. O mesmo para `useEstablishmentsQuery` 
 
 Em `map/page.tsx` e `establishment/[id]/page.tsx` **só** troque a leitura — essas telas usam os dados para marcadores e para o top-5 de próximos eventos, não são listagens roláveis. Não adicione sentinela nelas.
 
-- [ ] **Step 2: Adicionar a sentinela no feed do web**
+- [x] **Step 2: Adicionar a sentinela no feed do web**
 
 Em `apps/web/app/(app)/page.tsx`, após declarar `eventsQuery`:
 
@@ -1304,16 +1304,16 @@ E no JSX, imediatamente depois do `.map()` que renderiza os cards:
 
 Importe `useInfiniteScrollSentinel` de `@agenda/core`.
 
-- [ ] **Step 3: Adicionar a sentinela nas listagens longas do admin**
+- [x] **Step 3: Adicionar a sentinela nas listagens longas do admin**
 
 Aplique o mesmo padrão do Step 2 em `apps/admin/app/(admin)/events/page.tsx` e `apps/admin/app/(admin)/establishments/page.tsx`. As páginas de dashboard e `notices` do admin só consomem para resumo/contagem — nelas, apenas o Step 1.
 
-- [ ] **Step 4: Verificar typecheck e lint do monorepo**
+- [x] **Step 4: Verificar typecheck e lint do monorepo**
 
 Run: `pnpm typecheck && pnpm lint`
 Expected: sem erros em nenhum workspace.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add apps/web apps/admin
@@ -1332,7 +1332,7 @@ O `web-client` tem hooks próprios que chamam `listOwnedEvents` diretamente, for
 - Modify: `apps/web-client/app/(painel)/events/page.tsx`
 - Modify: `apps/web-client/app/(painel)/metrics/page.tsx`
 
-- [ ] **Step 1: Migrar `useOwnedEvents` para infinite query**
+- [x] **Step 1: Migrar `useOwnedEvents` para infinite query**
 
 Em `apps/web-client/hooks/use-owned-events.ts`, troque o import e a função. `useQuery` continua importado se outro hook do arquivo o usar — aqui só `useMutation` e `useQueryClient` seguem necessários:
 
@@ -1369,7 +1369,7 @@ export function useOwnedEvents() {
 
 As três funções abaixo no arquivo (`useInvalidateEvents`, `useDeleteOwnedEvent`, `useDeleteOwnedEventGroup`) **não mudam** — invalidar por `catalogKeys.events.root` continua alcançando a key paginada, porque o primeiro segmento continua sendo `'events'`.
 
-- [ ] **Step 2: Corrigir `useOwnedFavoritesCount`**
+- [x] **Step 2: Corrigir `useOwnedFavoritesCount`**
 
 Em `apps/web-client/hooks/use-owned-metrics.ts`, a função lê `data` como array. Adicione `flattenPages` ao import de `@agenda/core` e ajuste:
 
@@ -1382,7 +1382,7 @@ export function useOwnedFavoritesCount() {
 
 Atenção ao docblock de `metricsKeys.favoritesCount`: ele explica que os ids entram ordenados na key para não invalidar o cache à toa. Isso continua valendo e não muda — mas agora a lista de ids cresce conforme o dono rola a agenda, então a key muda a cada página carregada. Se isso se mostrar custoso na prática, a correção é buscar a contagem por período em vez de por lista de ids — fora do escopo desta task.
 
-- [ ] **Step 3: Adaptar a página de eventos**
+- [x] **Step 3: Adaptar a página de eventos**
 
 Em `apps/web-client/app/(painel)/events/page.tsx`, troque a desestruturação:
 
@@ -1409,7 +1409,7 @@ const sentinelRef = useInfiniteScrollSentinel({
 ) : null}
 ```
 
-- [ ] **Step 4: Adaptar a página de métricas**
+- [x] **Step 4: Adaptar a página de métricas**
 
 Em `apps/web-client/app/(painel)/metrics/page.tsx`, a linha 33 desestrutura `data` e `isPending`. Troque por:
 
@@ -1423,12 +1423,12 @@ Importe `flattenPages` de `@agenda/core`. **Não** adicione sentinela aqui — a
 
 Ressalva conhecida: as métricas passam a considerar apenas os eventos já carregados. Para a maioria dos bares (dezenas de eventos) isso é invisível, mas com uma agenda muito longa o número exibido pode ficar parcial até o dono rolar. A correção definitiva é agregar no banco por RPC em vez de contar no cliente — registre como débito se aparecer na revisão.
 
-- [ ] **Step 5: Verificar typecheck e lint**
+- [x] **Step 5: Verificar typecheck e lint**
 
 Run: `pnpm --filter @agenda/web-client typecheck && pnpm --filter @agenda/web-client lint`
 Expected: sem erros.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add apps/web-client
@@ -1447,12 +1447,12 @@ Todo commit que altera código exige CHANGELOG (AGENTS_RULES.md Seção 6). Esta
 - Create/Modify: `apps/admin/CHANGELOG-alfa-v<próxima>.md`
 - Create/Modify: `packages/core/CHANGELOG-alfa-v<próxima>.md`
 
-- [ ] **Step 1: Descobrir a versão de cada projeto**
+- [x] **Step 1: Descobrir a versão de cada projeto**
 
 Run: `node -e "['apps/mobile','apps/web','apps/admin','apps/web-client','packages/core'].forEach(p=>console.log(p, require('./'+p+'/package.json').version))"`
 Expected: imprime a versão atual de cada um. O CHANGELOG é sempre da versão **seguinte** (patch +1). Use os nomes de arquivo com esse valor.
 
-- [ ] **Step 2: Escrever os bullets (acrescentando, nunca sobrescrevendo)**
+- [x] **Step 2: Escrever os bullets (acrescentando, nunca sobrescrevendo)**
 
 Em `apps/web-client`:
 
@@ -1474,12 +1474,12 @@ Em `packages/core`:
 - Índices novos aceleram a busca de eventos por estabelecimento
 ```
 
-- [ ] **Step 3: Rodar a verificação completa**
+- [x] **Step 3: Rodar a verificação completa**
 
 Run: `pnpm typecheck && pnpm lint && pnpm test`
 Expected: os três passam. Relate o resultado real — se algo falhar, corrija antes de encerrar.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add apps/mobile/CHANGELOG-alfa-*.md apps/web/CHANGELOG-alfa-*.md apps/admin/CHANGELOG-alfa-*.md apps/web-client/CHANGELOG-alfa-*.md packages/core/CHANGELOG-alfa-*.md
