@@ -148,7 +148,7 @@ export function MusicianForm() {
     <form
       onSubmit={handleSubmit}
       noValidate
-      className="flex flex-col gap-4 rounded-2xl border border-border bg-card p-6"
+      className="flex flex-col gap-5 rounded-2xl border border-border bg-card p-6"
     >
       <Field id="musico-nome" label="Nome ou nome da banda" error={errors.name}>
         <TextInput

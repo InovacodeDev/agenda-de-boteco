@@ -120,7 +120,7 @@ function PasteUrl({ onAdd }: { onAdd: (url: string) => void }) {
       <button
         type="button"
         onClick={submit}
-        className="shrink-0 rounded-2xl bg-surface-elevated px-4 text-[13px] font-medium text-foreground hover:opacity-80"
+        className="flex h-12 shrink-0 items-center justify-center rounded-2xl bg-surface-elevated px-5 text-[14px] font-[family-name:var(--font-body)] font-medium text-foreground transition-opacity hover:opacity-80"
       >
         Adicionar
       </button>

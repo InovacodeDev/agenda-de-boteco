@@ -240,7 +240,7 @@ export default function EventosPage() {
         footer={
           <div className="flex flex-col gap-3">
             {submitError ? <p className="text-destructive text-[13px]">{submitError}</p> : null}
-            <div className="flex justify-end gap-2">
+            <div className="flex justify-end gap-3">
               <Button variant="ghost" onClick={() => setOpen(false)}>
                 Cancelar
               </Button>
