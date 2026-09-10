@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+@source '../../../packages/shared-ui';
 @import '@agenda/shared-ui/scrollbar.css';
 
 @theme {

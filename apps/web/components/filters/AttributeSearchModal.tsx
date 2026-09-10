@@ -76,7 +76,7 @@ export function AttributeSearchModal({
             placeholder="Digite o nome do diferencial"
             aria-label="Buscar diferencial"
             autoFocus
-            className="h-11 w-full rounded-2xl bg-surface-elevated px-4 text-[14px] font-[family-name:var(--font-body)] text-foreground placeholder:text-muted-foreground focus:outline-none"
+            className="h-12 w-full rounded-2xl bg-surface-elevated px-4 text-[14px] font-[family-name:var(--font-body)] text-foreground placeholder:text-muted-foreground focus:outline-none"
           />
         </div>
         <div className="flex-1 overflow-y-auto px-5 py-4 flex flex-col gap-2 scrollbar-thin">
