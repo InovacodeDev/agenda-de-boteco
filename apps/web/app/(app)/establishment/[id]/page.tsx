@@ -5,6 +5,7 @@ import {
   buildInstagramProfileUrl,
   buildWhatsAppUrl,
   FEATURES,
+  flattenPages,
   formatInstagramHandle,
   getAttributeMeta,
   indexById,
@@ -14,6 +15,7 @@ import {
   useEstablishmentQuery,
   useEventsByEstablishmentQuery,
   useFavoritesStore,
+  useGuardedClick,
   useMusicStylesQuery,
   useRecordView,
 } from '@agenda/core';
@@ -85,7 +87,8 @@ function EstablishmentDetailContent() {
   const establishmentQuery = useEstablishmentQuery(id);
   const establishment = establishmentQuery.data;
   // O service/core já ordena a agenda por starts_at asc.
-  const { data: agendaData } = useEventsByEstablishmentQuery(id);
+  const agendaQuery = useEventsByEstablishmentQuery(id);
+  const agendaData = flattenPages(agendaQuery.data);
   const { data: musicStyles } = useMusicStylesQuery();
   const stylesById = useMemo(() => indexById(musicStyles ?? []), [musicStyles]);
   useRecordView({ establishmentId: establishment?.id });
@@ -100,6 +103,11 @@ function EstablishmentDetailContent() {
   );
   const toggleEstablishment = useFavoritesStore((state) => state.toggleEstablishment);
   const requireAuth = useRequireAuth();
+  const guardedToggle = useGuardedClick(
+    establishment
+      ? () => requireAuth(() => toggleEstablishment(establishment.id))
+      : undefined,
+  );
 
   if (establishmentQuery.isLoading) {
     return (
@@ -145,7 +153,7 @@ function EstablishmentDetailContent() {
         <button
           type="button"
           aria-label={isFavorite ? 'Remover dos favoritos' : 'Favoritar estabelecimento'}
-          onClick={() => requireAuth(() => toggleEstablishment(establishment.id))}
+          onClick={() => guardedToggle?.()}
           className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-background/60 transition-opacity hover:opacity-80"
         >
           <HeartIcon

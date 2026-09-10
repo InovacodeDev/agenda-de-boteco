@@ -7,6 +7,7 @@ import {
   ESTABLISHMENT_SORT_LABELS,
   ESTABLISHMENT_SORT_OPTIONS,
   type EstablishmentSortBy,
+  flattenPages,
   hasActiveFilters,
   indexById,
   type LatLng,
@@ -16,6 +17,7 @@ import {
   useEstablishmentsQuery,
   useEventsQuery,
   useFiltersStore,
+  useInfiniteScrollSentinel,
   useMusicStylesQuery,
   useNearbyEstablishments,
 } from '@agenda/core';
@@ -56,9 +58,22 @@ export default function FeedPage() {
   const setQuery = useFiltersStore((state) => state.setQuery);
   const toggleStyle = useFiltersStore((state) => state.toggleStyle);
 
-  const { data: events } = useEventsQuery();
-  const { data: establishments } = useEstablishmentsQuery();
+  const eventsQuery = useEventsQuery();
+  const events = flattenPages(eventsQuery.data);
+  const establishmentsQuery = useEstablishmentsQuery();
+  const establishments = flattenPages(establishmentsQuery.data);
   const { data: musicStyles } = useMusicStylesQuery();
+
+  const eventsSentinelRef = useInfiniteScrollSentinel({
+    fetchNextPage: eventsQuery.fetchNextPage,
+    hasNextPage: eventsQuery.hasNextPage,
+    isFetchingNextPage: eventsQuery.isFetchingNextPage,
+  });
+  const establishmentsSentinelRef = useInfiniteScrollSentinel({
+    fetchNextPage: establishmentsQuery.fetchNextPage,
+    hasNextPage: establishmentsQuery.hasNextPage,
+    isFetchingNextPage: establishmentsQuery.isFetchingNextPage,
+  });
 
   const city = useActiveCity();
 
@@ -126,8 +141,7 @@ export default function FeedPage() {
     ],
   );
 
-  const isLoading =
-    events === undefined || establishments === undefined || musicStyles === undefined;
+  const isLoading = eventsQuery.isPending || establishmentsQuery.isPending || musicStyles === undefined;
 
   return (
     <section className="flex flex-col gap-4 pt-2">
@@ -173,19 +187,34 @@ export default function FeedPage() {
 
           {isLoading ? (
             <FeedLoading />
-          ) : filteredEvents.length === 0 ? (
-            <EmptyState message="Nenhum evento encontrado." />
           ) : (
             <div className="flex flex-col gap-4">
-              {filteredEvents.map((event) => (
-                <EventCard
-                  key={event.id}
-                  event={event}
-                  establishment={establishmentsById[event.establishment_id]}
-                  styles={musicStylesForEvent(event, stylesById)}
-                  userCoords={userCoords}
-                />
-              ))}
+              {filteredEvents.length === 0 ? (
+                <EmptyState message="Nenhum evento encontrado." />
+              ) : (
+                filteredEvents.map((event) => (
+                  <EventCard
+                    key={event.id}
+                    event={event}
+                    establishment={establishmentsById[event.establishment_id]}
+                    styles={musicStylesForEvent(event, stylesById)}
+                    userCoords={userCoords}
+                  />
+                ))
+              )}
+              {/*
+               * Sentinela sempre montada quando ha proxima pagina, mesmo com a
+               * lista filtrada vazia: o filtro por cidade e client-side sobre
+               * o catalogo global paginado — sem isso, um filtro que zera a
+               * lista visivel esconde a sentinela e trava fetchNextPage pra
+               * sempre, mesmo havendo paginas com resultado la na frente.
+               */}
+              {eventsQuery.hasNextPage ? (
+                <div ref={eventsSentinelRef} aria-hidden className="h-px" />
+              ) : null}
+              {eventsQuery.isFetchingNextPage ? (
+                <p className="text-muted-foreground py-4 text-center text-[13px]">Carregando mais…</p>
+              ) : null}
             </div>
           )}
         </>
@@ -201,13 +230,21 @@ export default function FeedPage() {
 
           {isLoading ? (
             <FeedLoading />
-          ) : cityEstablishments.length === 0 ? (
-            <EmptyState message="Nenhum bar encontrado." />
           ) : (
             <div className="flex flex-col gap-3">
-              {cityEstablishments.map((establishment) => (
-                <EstablishmentCard key={establishment.id} establishment={establishment} />
-              ))}
+              {cityEstablishments.length === 0 ? (
+                <EmptyState message="Nenhum bar encontrado." />
+              ) : (
+                cityEstablishments.map((establishment) => (
+                  <EstablishmentCard key={establishment.id} establishment={establishment} />
+                ))
+              )}
+              {establishmentsQuery.hasNextPage ? (
+                <div ref={establishmentsSentinelRef} aria-hidden className="h-px" />
+              ) : null}
+              {establishmentsQuery.isFetchingNextPage ? (
+                <p className="text-muted-foreground py-4 text-center text-[13px]">Carregando mais…</p>
+              ) : null}
             </div>
           )}
         </>

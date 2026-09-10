@@ -406,6 +406,8 @@ Para o usuário, o único texto permitido é o de `getFriendlyErrorMessage`, que
 
 > **⚠️ Dívida de segurança conhecida (não é do seu diff — só corrija se pedirem):** `packages/core/src/services/auth.ts` passa `args: { email }` em cinco pontos e, na linha 84, `args: { email, token }` em `verifyEmailOtp` — o `token` é o **código OTP**, uma credencial de uso único, e o e-mail é PII. Isso só é impresso fora de produção, mas é o padrão a **não** imitar. Ao criar service novo de auth, use `method` sem `args`, como já fazem `auth.updatePassword`, `auth.signOut` e `auth.getCurrentUser`.
 
+> **⚠️ Risco aceito de supply chain (não é do seu diff — só corrija se pedirem):** `image-size` (dependência transitiva do toolchain de build, referenciada só em `pnpm-lock.yaml` — não aparece em nenhum `package.json` direto) tem duas CVEs de DoS por loop infinito nos parsers de ICNS/JXL/HEIF, sem versão corrigida publicada até 2026-09-03. `pnpm.overrides` não resolve porque não há release-alvo para apontar. Ação: revisar a cada `pnpm audit` futuro se já existe fix upstream; não há mitigação de código possível hoje.
+
 **Testar log:** espionar `logErrorToTerminal` não intercepta a chamada interna do módulo. Espione `handleServiceError`.
 
 ### Catálogo de utilitários existentes — reutilize, não recrie
@@ -493,6 +495,7 @@ Para o usuário, o único texto permitido é o de `getFriendlyErrorMessage`, que
 - **Query key estável:** coordenada entra arredondada por `coarseLatLng`.
 - **React Compiler não está habilitado.** `useMemo`/`useCallback` seguem válidos com custo medido — não por reflexo.
 - **Escrita em lote:** N linhas = um `insert` com array (ver `saveRecurringOwnedEvents`: meia série gravada é pior que nenhuma). Isso também limita abuso — `MAX_RECURRENCE_COUNT` (52) é o teto que impede "toda semana, para sempre" gerar dezenas de milhares de linhas.
+- **Listagem nova nasce paginada** por cursor (`CatalogPage<T>`, `flattenPages`), com infinite scroll a 80% do conteúdo. É regra bloqueante — ver `AGENTS_RULES.md` Seção 3.
 
 ### Segurança defensiva
 
@@ -506,6 +509,7 @@ Para o usuário, o único texto permitido é o de `getFriendlyErrorMessage`, que
   - `.env`/`.env.local` reais: **leitura e escrita proibidas**.
 - **Segredos de build** (`GOOGLE_MAPS_API_KEY_IOS`, `GOOGLE_MAPS_API_KEY_ANDROID`) vivem no **EAS**, injetados em `apps/mobile/app.config.ts` — nunca no git.
 - **`supabase start` só sob pedido explícito.** Nunca teste credencial real contra endpoint remoto.
+- **Auditoria vence em 30 dias.** `AUDIT_LOG.md` e `.github/audit-log.json` registram a última; o workflow `audit-gate.yml` bloqueia merge quando o prazo passa. Escopo mínimo e procedimento em `AGENTS_RULES.md` Seção 9.
 
 ### Testes
 

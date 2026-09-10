@@ -32,6 +32,7 @@ jest.mock('../supabase/client', () => ({
 }));
 
 import {
+  getCatalogCounts,
   getEstablishment,
   getEvent,
   listCities,
@@ -58,18 +59,18 @@ describe('catalog service — fallback mock (client nulo)', () => {
 
   describe('listEvents', () => {
     it('retorna os 12 eventos do mock', async () => {
-      const events = await listEvents();
-      expect(events).toHaveLength(12);
+      const page = await listEvents();
+      expect(page.items).toHaveLength(Math.min(12, 20));
     });
 
     it('retorna ordenado por starts_at asc', async () => {
-      const events = await listEvents();
-      expect(isSortedAscByStartsAt(events)).toBe(true);
+      const page = await listEvents();
+      expect(isSortedAscByStartsAt(page.items)).toBe(true);
     });
 
     it('passa na validação Zod', async () => {
-      const events = await listEvents();
-      expect(() => z.array(eventSchema).parse(events)).not.toThrow();
+      const page = await listEvents();
+      expect(() => z.array(eventSchema).parse(page.items)).not.toThrow();
     });
   });
 
@@ -101,24 +102,26 @@ describe('catalog service — fallback mock (client nulo)', () => {
 
   describe('listEstablishments', () => {
     it('retorna os 8 estabelecimentos do mock sem filtro', async () => {
-      const establishments = await listEstablishments();
-      expect(establishments).toHaveLength(8);
+      const page = await listEstablishments();
+      expect(page.items).toHaveLength(Math.min(8, 20));
     });
 
     it("filtra por cityId: 'fln' retorna 4 estabelecimentos", async () => {
-      const establishments = await listEstablishments('fln');
-      expect(establishments).toHaveLength(4);
-      expect(establishments.every((item) => item.city_id === 'fln')).toBe(true);
+      const page = await listEstablishments('fln');
+      expect(page.items).toHaveLength(Math.min(4, 20));
+      expect(page.items.every((item) => item.city_id === 'fln')).toBe(true);
     });
 
     it('retorna lista vazia para cityId sem estabelecimentos', async () => {
-      await expect(listEstablishments('nao-existe')).resolves.toEqual([]);
+      const page = await listEstablishments('nao-existe');
+      expect(page.items).toEqual([]);
+      expect(page.nextCursor).toBeNull();
     });
 
     it('passa na validação Zod', async () => {
-      const establishments = await listEstablishments();
+      const page = await listEstablishments();
       expect(() =>
-        z.array(establishmentSchema).parse(establishments),
+        z.array(establishmentSchema).parse(page.items),
       ).not.toThrow();
     });
   });
@@ -154,13 +157,15 @@ describe('catalog service — fallback mock (client nulo)', () => {
 
   describe('listEventsByEstablishment', () => {
     it("retorna ev1 e ev11 para 'e1', ordenado por starts_at asc", async () => {
-      const events = await listEventsByEstablishment('e1');
-      expect(events.map((event) => event.id)).toEqual(['ev1', 'ev11']);
-      expect(isSortedAscByStartsAt(events)).toBe(true);
+      const page = await listEventsByEstablishment('e1');
+      expect(page.items.map((event) => event.id)).toEqual(['ev1', 'ev11']);
+      expect(isSortedAscByStartsAt(page.items)).toBe(true);
     });
 
     it('retorna lista vazia para estabelecimento inexistente', async () => {
-      await expect(listEventsByEstablishment('nao-existe')).resolves.toEqual([]);
+      const page = await listEventsByEstablishment('nao-existe');
+      expect(page.items).toEqual([]);
+      expect(page.nextCursor).toBeNull();
     });
   });
 
@@ -182,22 +187,20 @@ describe('catalog service — fallback mock (client nulo)', () => {
 
   describe('listNotifications', () => {
     it('retorna as 4 notificações do mock', async () => {
-      const notifications = await listNotifications();
-      expect(notifications).toHaveLength(4);
+      const page = await listNotifications();
+      expect(page.items).toHaveLength(Math.min(4, 20));
     });
 
     it('retorna ordenado por created_at desc', async () => {
-      const notifications = await listNotifications();
-      const timestamps = notifications.map((item) =>
-        Date.parse(item.created_at),
-      );
+      const page = await listNotifications();
+      const timestamps = page.items.map((item) => Date.parse(item.created_at));
       expect(timestamps).toEqual([...timestamps].sort((a, b) => b - a));
     });
 
     it('passa na validação Zod', async () => {
-      const notifications = await listNotifications();
+      const page = await listNotifications();
       expect(() =>
-        z.array(notificationSchema).parse(notifications),
+        z.array(notificationSchema).parse(page.items),
       ).not.toThrow();
     });
   });
@@ -212,6 +215,17 @@ describe('catalog service — fallback mock (client nulo)', () => {
     it('retorna [] para evento sem atrações', async () => {
       const result = await listEventAttractions('inexistente');
       expect(result).toEqual([]);
+    });
+  });
+
+  describe('getCatalogCounts', () => {
+    it('conta os arrays mock locais', async () => {
+      const counts = await getCatalogCounts();
+      expect(counts).toEqual({
+        establishments: ESTABLISHMENTS.length,
+        events: EVENTS.length,
+        notifications: NOTIFICATIONS.length,
+      });
     });
   });
 });
@@ -324,6 +338,7 @@ type FakeError = { message: string; details: string; hint: string; code: string 
  */
 function createQueryBuilder(rows: Row[], injectedError: FakeError | null = null) {
   let current = [...rows];
+  const orderClauses: { column: string; ascending: boolean }[] = [];
 
   const builder = {
     select() {
@@ -333,12 +348,71 @@ function createQueryBuilder(rows: Row[], injectedError: FakeError | null = null)
       current = current.filter((row) => row[column] === value);
       return builder;
     },
+    gt(column: string, value: unknown) {
+      current = current.filter((row) => String(row[column]) > String(value));
+      return builder;
+    },
+    lt(column: string, value: unknown) {
+      current = current.filter((row) => String(row[column]) < String(value));
+      return builder;
+    },
+    /**
+     * Suporte mínimo ao `.or()` do PostgREST no formato que a paginação por
+     * cursor usa: `col.gt."valor",and(col.eq."valor",id.gt."valor")`. Valores
+     * sempre citados (quoteCursorValue) — unquote reverte `\"`/`\\` antes de
+     * comparar. Só o suficiente para o teste — não é um parser geral de filtro.
+     */
+    or(expression: string) {
+      const pattern = new RegExp(
+        '^(\\w+)\\.(gt|lt)\\."((?:[^"\\\\]|\\\\.)*)",and\\(\\1\\.eq\\."((?:[^"\\\\]|\\\\.)*)",id\\.(?:gt|lt)\\."((?:[^"\\\\]|\\\\.)*)"\\)$',
+      );
+      const match = pattern.exec(expression);
+      if (!match) {
+        throw new Error(`fake builder: expressao .or() nao suportada: ${expression}`);
+      }
+      const unquote = (v: string) => v.replace(/\\(.)/g, '$1');
+      const [, column, operator, rawPrimary, rawTie, rawTieId] = match;
+      const primary = unquote(rawPrimary);
+      const tie = unquote(rawTie);
+      const tieId = unquote(rawTieId);
+      current = current.filter((row) => {
+        const value = String(row[column]);
+        const beyond = operator === 'gt' ? value > primary : value < primary;
+        if (beyond) return true;
+        const tieBreak = operator === 'gt' ? String(row.id) > tieId : String(row.id) < tieId;
+        return value === tie && tieBreak;
+      });
+      return builder;
+    },
+    limit(count: number) {
+      current = current.slice(0, count);
+      return builder;
+    },
+    /**
+     * PostgREST encadeia .order() em ordem de prioridade (primeira chamada é o
+     * critério primário, chamadas seguintes so desempatam). Por isso acumula
+     * as clausulas em vez de re-ordenar do zero a cada chamada — sobrescrever
+     * descartaria o criterio primario (ex.: starts_at) ao aplicar o de
+     * desempate (id).
+     */
     order(column: string, options?: { ascending?: boolean }) {
-      const ascending = options?.ascending ?? true;
+      orderClauses.push({ column, ascending: options?.ascending ?? true });
       current = [...current].sort((a, b) => {
-        const left = Date.parse(String(a[column]));
-        const right = Date.parse(String(b[column]));
-        return ascending ? left - right : right - left;
+        for (const clause of orderClauses) {
+          const rawLeft = a[clause.column];
+          const rawRight = b[clause.column];
+          const left = Date.parse(String(rawLeft));
+          const right = Date.parse(String(rawRight));
+          // Colunas nao-data (name, id) caem no comparador de string.
+          const cmp =
+            Number.isNaN(left) || Number.isNaN(right)
+              ? String(rawLeft).localeCompare(String(rawRight))
+              : left - right;
+          if (cmp !== 0) {
+            return clause.ascending ? cmp : -cmp;
+          }
+        }
+        return 0;
       });
       return builder;
     },
@@ -364,10 +438,30 @@ function createQueryBuilder(rows: Row[], injectedError: FakeError | null = null)
 }
 
 /**
- * Cria o client fake. `errorsByTable` injeta um erro do PostgREST na query da
- * tabela indicada; as demais tabelas seguem o caminho feliz.
+ * Fake mínimo de `.rpc(name).single()` para get_catalog_counts: resolve
+ * `{ data, error }` direto, sem builder encadeável — a query layer só chama
+ * `.single()` em cima do `.rpc()`.
  */
-function createFakeClient(errorsByTable: Record<string, FakeError> = {}) {
+function createRpcBuilder(row: Row, injectedError: FakeError | null = null) {
+  return {
+    async single() {
+      if (injectedError) {
+        return { data: null, error: injectedError };
+      }
+      return { data: row, error: null };
+    },
+  };
+}
+
+/**
+ * Cria o client fake. `errorsByTable` injeta um erro do PostgREST na query da
+ * tabela indicada; as demais tabelas seguem o caminho feliz. `rpcError`, se
+ * fornecido, é devolvido por qualquer chamada a `.rpc()`.
+ */
+function createFakeClient(
+  errorsByTable: Record<string, FakeError> = {},
+  rpcError: FakeError | null = null,
+) {
   return {
     from(table: string) {
       const rows = TABLE_ROWS[table];
@@ -375,6 +469,16 @@ function createFakeClient(errorsByTable: Record<string, FakeError> = {}) {
         throw new Error(`fake client: tabela desconhecida "${table}"`);
       }
       return createQueryBuilder(rows, errorsByTable[table] ?? null);
+    },
+    rpc(_name: string) {
+      return createRpcBuilder(
+        {
+          establishments_count: establishmentRows.length,
+          events_count: eventRows.length,
+          notifications_count: notificationRows.length,
+        },
+        rpcError,
+      );
     },
   };
 }
@@ -393,21 +497,21 @@ describe('catalog service — caminho Supabase (client fake)', () => {
 
   describe('listEvents', () => {
     it('retorna os 12 eventos', async () => {
-      const events = await listEvents();
-      expect(events).toHaveLength(12);
+      const page = await listEvents();
+      expect(page.items).toHaveLength(Math.min(12, 20));
     });
 
     it('retorna ordenado por starts_at asc', async () => {
-      const events = await listEvents();
-      expect(isSortedAscByStartsAt(events)).toBe(true);
+      const page = await listEvents();
+      expect(isSortedAscByStartsAt(page.items)).toBe(true);
     });
 
     it('valida com Zod mesmo com timestamps com offset', async () => {
-      const events = await listEvents();
-      expect(() => z.array(eventSchema).parse(events)).not.toThrow();
-      expect(events.every((event) => event.starts_at.endsWith('+00:00'))).toBe(
-        true,
-      );
+      const page = await listEvents();
+      expect(() => z.array(eventSchema).parse(page.items)).not.toThrow();
+      expect(
+        page.items.every((event) => event.starts_at.endsWith('+00:00')),
+      ).toBe(true);
     });
   });
 
@@ -427,23 +531,25 @@ describe('catalog service — caminho Supabase (client fake)', () => {
 
   describe('listEstablishments', () => {
     it('retorna os 8 estabelecimentos sem filtro', async () => {
-      const establishments = await listEstablishments();
-      expect(establishments).toHaveLength(8);
+      const page = await listEstablishments();
+      expect(page.items).toHaveLength(Math.min(8, 20));
     });
 
     it("filtra por cityId: 'fln' retorna 4 estabelecimentos", async () => {
-      const establishments = await listEstablishments('fln');
-      expect(establishments).toHaveLength(4);
-      expect(establishments.every((item) => item.city_id === 'fln')).toBe(true);
+      const page = await listEstablishments('fln');
+      expect(page.items).toHaveLength(Math.min(4, 20));
+      expect(page.items.every((item) => item.city_id === 'fln')).toBe(true);
     });
 
     it('retorna lista vazia para cityId sem estabelecimentos', async () => {
-      await expect(listEstablishments('nao-existe')).resolves.toEqual([]);
+      const page = await listEstablishments('nao-existe');
+      expect(page.items).toEqual([]);
+      expect(page.nextCursor).toBeNull();
     });
 
     it('mapeia null→undefined em instagram ausente', async () => {
-      const establishments = await listEstablishments();
-      const semInstagram = establishments.find((item) => item.id === 'e7');
+      const page = await listEstablishments();
+      const semInstagram = page.items.find((item) => item.id === 'e7');
       expect(semInstagram).toBeDefined();
       expect(semInstagram?.instagram).toBeUndefined();
       expect(semInstagram?.instagram).not.toBeNull();
@@ -463,9 +569,9 @@ describe('catalog service — caminho Supabase (client fake)', () => {
     });
 
     it('passa na validação Zod', async () => {
-      const establishments = await listEstablishments();
+      const page = await listEstablishments();
       expect(() =>
-        z.array(establishmentSchema).parse(establishments),
+        z.array(establishmentSchema).parse(page.items),
       ).not.toThrow();
     });
   });
@@ -485,18 +591,20 @@ describe('catalog service — caminho Supabase (client fake)', () => {
 
   describe('listEventsByEstablishment', () => {
     it("retorna ev1 e ev11 para 'e1', ordenado por starts_at asc", async () => {
-      const events = await listEventsByEstablishment('e1');
-      expect(events.map((event) => event.id)).toEqual(['ev1', 'ev11']);
-      expect(isSortedAscByStartsAt(events)).toBe(true);
+      const page = await listEventsByEstablishment('e1');
+      expect(page.items.map((event) => event.id)).toEqual(['ev1', 'ev11']);
+      expect(isSortedAscByStartsAt(page.items)).toBe(true);
     });
 
     it('retorna lista vazia para estabelecimento inexistente', async () => {
-      await expect(listEventsByEstablishment('nao-existe')).resolves.toEqual([]);
+      const page = await listEventsByEstablishment('nao-existe');
+      expect(page.items).toEqual([]);
+      expect(page.nextCursor).toBeNull();
     });
 
     it('mapeia null→undefined em campos opcionais do evento', async () => {
-      const events = await listEventsByEstablishment('e1');
-      const ev1 = events.find((event) => event.id === 'ev1');
+      const page = await listEventsByEstablishment('e1');
+      const ev1 = page.items.find((event) => event.id === 'ev1');
       expect(ev1).toBeDefined();
       expect(ev1?.promo).toBeUndefined();
       expect(ev1?.slug).toBeUndefined();
@@ -521,24 +629,22 @@ describe('catalog service — caminho Supabase (client fake)', () => {
 
   describe('listNotifications', () => {
     it('retorna as 4 notificações', async () => {
-      const notifications = await listNotifications();
-      expect(notifications).toHaveLength(4);
+      const page = await listNotifications();
+      expect(page.items).toHaveLength(Math.min(4, 20));
     });
 
     it('retorna ordenado por created_at desc', async () => {
-      const notifications = await listNotifications();
-      const timestamps = notifications.map((item) =>
-        Date.parse(item.created_at),
-      );
+      const page = await listNotifications();
+      const timestamps = page.items.map((item) => Date.parse(item.created_at));
       expect(timestamps).toEqual([...timestamps].sort((a, b) => b - a));
     });
 
     it('valida com Zod e mapeia null→undefined em event_id ausente', async () => {
-      const notifications = await listNotifications();
+      const page = await listNotifications();
       expect(() =>
-        z.array(notificationSchema).parse(notifications),
+        z.array(notificationSchema).parse(page.items),
       ).not.toThrow();
-      const n4 = notifications.find((item) => item.id === 'n4');
+      const n4 = page.items.find((item) => item.id === 'n4');
       expect(n4).toBeDefined();
       expect(n4?.event_id).toBeUndefined();
     });
@@ -554,6 +660,17 @@ describe('catalog service — caminho Supabase (client fake)', () => {
     it('retorna [] para evento sem atrações', async () => {
       const result = await listEventAttractions('inexistente');
       expect(result).toEqual([]);
+    });
+  });
+
+  describe('getCatalogCounts', () => {
+    it('chama get_catalog_counts e mapeia as 3 colunas', async () => {
+      const counts = await getCatalogCounts();
+      expect(counts).toEqual({
+        establishments: establishmentRows.length,
+        events: eventRows.length,
+        notifications: notificationRows.length,
+      });
     });
   });
 
@@ -585,5 +702,114 @@ describe('catalog service — caminho Supabase (client fake)', () => {
       );
       await expect(listEventAttractions('ev1')).rejects.toEqual(POSTGREST_ERROR);
     });
+
+    it('getCatalogCounts rejeita quando get_catalog_counts retorna error', async () => {
+      mockGetSupabase.mockReturnValue(createFakeClient({}, POSTGREST_ERROR));
+      await expect(getCatalogCounts()).rejects.toEqual(POSTGREST_ERROR);
+    });
+  });
+});
+
+describe('paginacao por cursor', () => {
+  beforeEach(() => {
+    mockGetSupabase.mockReturnValue(createFakeClient());
+  });
+
+  it('respeita o limite pedido na primeira pagina', async () => {
+    const page = await listEvents(null, 2);
+
+    expect(page.items).toHaveLength(2);
+  });
+
+  it('devolve nextCursor quando ainda ha itens', async () => {
+    const page = await listEvents(null, 2);
+
+    expect(page.nextCursor).not.toBeNull();
+  });
+
+  it('devolve nextCursor null quando a pagina nao enche', async () => {
+    const page = await listEvents(null, 999);
+
+    expect(page.nextCursor).toBeNull();
+  });
+
+  it('a segunda pagina nao repete itens da primeira', async () => {
+    const first = await listEvents(null, 2);
+    const second = await listEvents(first.nextCursor, 2);
+
+    const firstIds = first.items.map((item) => item.id);
+    const secondIds = second.items.map((item) => item.id);
+
+    expect(secondIds.some((id) => firstIds.includes(id))).toBe(false);
+  });
+
+  it('pagina o mock quando nao ha client configurado', async () => {
+    mockGetSupabase.mockReturnValue(null);
+
+    const first = await listEvents(null, 1);
+    const second = await listEvents(first.nextCursor, 1);
+
+    expect(first.items).toHaveLength(1);
+    expect(second.items[0]?.id).not.toBe(first.items[0]?.id);
+  });
+
+  it('listEstablishments pagina por cursor sem repetir itens', async () => {
+    const first = await listEstablishments(undefined, null, 3);
+    const second = await listEstablishments(undefined, first.nextCursor, 3);
+
+    expect(first.items).toHaveLength(3);
+    expect(first.nextCursor).not.toBeNull();
+
+    const firstIds = first.items.map((item) => item.id);
+    const secondIds = second.items.map((item) => item.id);
+    expect(secondIds.some((id) => firstIds.includes(id))).toBe(false);
+  });
+
+  it('listEstablishments rejeita quando a pagina paginada retorna error do Postgrest', async () => {
+    mockGetSupabase.mockReturnValue(
+      createFakeClient({ establishments: POSTGREST_ERROR }),
+    );
+    await expect(listEstablishments(undefined, null, 3)).rejects.toEqual(
+      POSTGREST_ERROR,
+    );
+  });
+
+  it('listEstablishments pagina ate o fim quando o nome do bar tem virgula/parenteses', async () => {
+    // Regressao: decodeCursor rejeitava virgula/parenteses no valor do cursor,
+    // fazendo a query layer tratar "Bar do Ze, Cia (Centro)" como cursor
+    // invalido — reiniciava a pagina 1 pra sempre em vez de avancar. Fix:
+    // quoteCursorValue cita o valor no .or() do PostgREST em vez de rejeitar.
+    const base = establishmentRows[0];
+    const commaRows: Row[] = [
+      { ...base, id: 'e-comma-1', name: 'Ana Bar' },
+      { ...base, id: 'e-comma-2', name: 'Bar do Ze, Cia (Centro)' },
+      { ...base, id: 'e-comma-3', name: 'Zeta Pub' },
+    ];
+    mockGetSupabase.mockReturnValue({
+      from(table: string) {
+        if (table !== 'establishments') {
+          throw new Error(`fake client: tabela desconhecida "${table}"`);
+        }
+        return createQueryBuilder(commaRows);
+      },
+    });
+
+    const first = await listEstablishments(undefined, null, 1);
+    expect(first.items.map((item) => item.id)).toEqual(['e-comma-1']);
+    expect(first.nextCursor).not.toBeNull();
+
+    const second = await listEstablishments(undefined, first.nextCursor, 1);
+    expect(second.items.map((item) => item.id)).toEqual(['e-comma-2']);
+    expect(second.nextCursor).not.toBeNull();
+
+    const third = await listEstablishments(undefined, second.nextCursor, 1);
+    expect(third.items.map((item) => item.id)).toEqual(['e-comma-3']);
+
+    // limit=1 e exatamente 1 item restante: a pagina vem cheia, entao
+    // nextCursor so vira null no round-trip seguinte (comportamento padrao de
+    // keyset pagination, nao um bug do teste).
+    const fourth = await listEstablishments(undefined, third.nextCursor, 1);
+    expect(fourth.items).toEqual([]);
+    expect(fourth.nextCursor).toBeNull();
   });
 });

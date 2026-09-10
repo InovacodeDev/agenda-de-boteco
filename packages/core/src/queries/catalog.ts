@@ -23,6 +23,13 @@ import {
   notificationWriteSchema,
 } from '../schemas/catalog';
 import type { Database, Json } from '../types';
+import {
+  type CatalogPage,
+  decodeCursor,
+  DEFAULT_PAGE_SIZE,
+  encodeCursor,
+  quoteCursorValue,
+} from '../utils/pagination';
 import { slugify } from '../utils/slug';
 
 type CityRow = Database['public']['Tables']['cities']['Row'];
@@ -167,21 +174,41 @@ function mapNotification(row: NotificationRow): AppNotification {
   });
 }
 
+/**
+ * Pagina de eventos ordenada por starts_at asc, com id como desempate para o
+ * cursor ser deterministico quando dois eventos comecam no mesmo horario.
+ *
+ * NAO adicione .eq('status','published') aqui: o filtro e da RLS (a policy
+ * select_events de 20260813120000 ja esconde rascunho de quem nao e dono nem
+ * admin). Filtrar de novo na query esconderia o rascunho do proprio dono no
+ * painel, que e justamente quem precisa ve-lo.
+ *
+ * Invariante: esta ordenacao (starts_at asc) deve casar com o fallback mock
+ * em packages/core/src/services/catalog.ts (sortByStartsAtAsc).
+ */
 export async function listEvents(
   client: SupabaseClient<Database>,
-): Promise<Event[]> {
-  // NÃO adicione .eq('status','published') aqui: o filtro é da RLS (a policy
-  // select_events de 20260813120000 já esconde rascunho de quem não é dono nem
-  // admin). Filtrar de novo na query esconderia o rascunho do próprio dono no
-  // painel, que é justamente quem precisa vê-lo.
-  //
-  // Invariante: esta ordenação (starts_at asc) deve casar com o fallback mock
-  // em apps/mobile/src/services/catalog.ts (sortByStartsAtAsc).
-  const { data, error } = await eventsFrom(client)
-    .select(EVENT_COLUMNS)
-    .order('starts_at', { ascending: true });
+  cursor: string | null = null,
+  limit: number = DEFAULT_PAGE_SIZE,
+): Promise<CatalogPage<Event>> {
+  const base = eventsFrom(client).select(EVENT_COLUMNS);
+  const decoded = decodeCursor(cursor);
+  const filtered = decoded
+    ? base.or(
+        `starts_at.gt.${quoteCursorValue(decoded.value)},and(starts_at.eq.${quoteCursorValue(decoded.value)},id.gt.${quoteCursorValue(decoded.id)})`,
+      )
+    : base;
+
+  const { data, error } = await filtered
+    .order('starts_at', { ascending: true })
+    .order('id', { ascending: true })
+    .limit(limit);
   if (error) throw error;
-  return ((data ?? []) as EventRow[]).map(mapEvent);
+  const items = ((data ?? []) as EventRow[]).map(mapEvent);
+  const last = items.at(-1);
+  const nextCursor =
+    items.length < limit || !last ? null : encodeCursor({ value: last.starts_at, id: last.id });
+  return { items, nextCursor };
 }
 
 export async function getEvent(
@@ -196,17 +223,36 @@ export async function getEvent(
   return data ? mapEvent(data as EventRow) : null;
 }
 
+/**
+ * Pagina de estabelecimentos ordenada por nome. A ordenacao e nova: antes a
+ * query nao tinha .order() e a ordem vinha indefinida do Postgres. Cursor
+ * exige ordem deterministica, e nome e a ordem que faz sentido para o usuario.
+ */
 export async function listEstablishments(
   client: SupabaseClient<Database>,
   cityId?: string,
-): Promise<Establishment[]> {
-  let query = client.from('establishments').select(ESTABLISHMENT_COLUMNS);
-  if (cityId) {
-    query = query.eq('city_id', cityId);
-  }
-  const { data, error } = await query;
+  cursor: string | null = null,
+  limit: number = DEFAULT_PAGE_SIZE,
+): Promise<CatalogPage<Establishment>> {
+  const decoded = decodeCursor(cursor);
+  const base = client.from('establishments').select(ESTABLISHMENT_COLUMNS);
+  const withCityFilter = cityId ? base.eq('city_id', cityId) : base;
+  const filtered = decoded
+    ? withCityFilter.or(
+        `name.gt.${quoteCursorValue(decoded.value)},and(name.eq.${quoteCursorValue(decoded.value)},id.gt.${quoteCursorValue(decoded.id)})`,
+      )
+    : withCityFilter;
+
+  const { data, error } = await filtered
+    .order('name', { ascending: true })
+    .order('id', { ascending: true })
+    .limit(limit);
   if (error) throw error;
-  return (data ?? []).map(mapEstablishment);
+  const items = (data ?? []).map(mapEstablishment);
+  const last = items.at(-1);
+  const nextCursor =
+    items.length < limit || !last ? null : encodeCursor({ value: last.name, id: last.id });
+  return { items, nextCursor };
 }
 
 export async function getEstablishment(
@@ -222,20 +268,42 @@ export async function getEstablishment(
   return data ? mapEstablishment(data) : null;
 }
 
+/**
+ * Eventos de um bar. `order` 'asc' e a agenda publica (proximos primeiro);
+ * 'desc' e o painel do dono (mais recentes primeiro). O cursor inverte a
+ * comparacao junto com a ordenacao.
+ *
+ * Invariante: a ordenacao default (starts_at asc) deve casar com o fallback
+ * mock em packages/core/src/services/catalog.ts (sortByStartsAtAsc).
+ */
 export async function listEventsByEstablishment(
   client: SupabaseClient<Database>,
   establishmentId: string,
   /** 'asc' (público, próximos primeiro) | 'desc' (painel do dono). */
   order: 'asc' | 'desc' = 'asc',
-): Promise<Event[]> {
-  // Invariante: a ordenação default (starts_at asc) deve casar com o fallback
-  // mock em apps/mobile/src/services/catalog.ts (sortByStartsAtAsc).
-  const { data, error } = await eventsFrom(client)
-    .select(EVENT_COLUMNS)
-    .eq('establishment_id', establishmentId)
-    .order('starts_at', { ascending: order === 'asc' });
+  cursor: string | null = null,
+  limit: number = DEFAULT_PAGE_SIZE,
+): Promise<CatalogPage<Event>> {
+  const ascending = order === 'asc';
+  const comparison = ascending ? 'gt' : 'lt';
+  const decoded = decodeCursor(cursor);
+  const base = eventsFrom(client).select(EVENT_COLUMNS).eq('establishment_id', establishmentId);
+  const filtered = decoded
+    ? base.or(
+        `starts_at.${comparison}.${quoteCursorValue(decoded.value)},and(starts_at.eq.${quoteCursorValue(decoded.value)},id.${comparison}.${quoteCursorValue(decoded.id)})`,
+      )
+    : base;
+
+  const { data, error } = await filtered
+    .order('starts_at', { ascending })
+    .order('id', { ascending })
+    .limit(limit);
   if (error) throw error;
-  return ((data ?? []) as EventRow[]).map(mapEvent);
+  const items = ((data ?? []) as EventRow[]).map(mapEvent);
+  const last = items.at(-1);
+  const nextCursor =
+    items.length < limit || !last ? null : encodeCursor({ value: last.starts_at, id: last.id });
+  return { items, nextCursor };
 }
 
 // Agenda do dono: mesma query da pública, só a ordem muda — daí o parâmetro em
@@ -244,8 +312,10 @@ export async function listEventsByEstablishment(
 export async function listOwnedEvents(
   client: SupabaseClient<Database>,
   establishmentId: string,
-): Promise<Event[]> {
-  return listEventsByEstablishment(client, establishmentId, 'desc');
+  cursor: string | null = null,
+  limit: number = DEFAULT_PAGE_SIZE,
+): Promise<CatalogPage<Event>> {
+  return listEventsByEstablishment(client, establishmentId, 'desc', cursor, limit);
 }
 
 export async function listEventAttractions(
@@ -286,17 +356,70 @@ export async function listCities(
   return (data ?? []).map(mapCity);
 }
 
+/**
+ * Avisos mais recentes primeiro. Cursor desce junto com a ordenacao.
+ *
+ * Invariante: esta ordenacao (created_at desc) deve casar com o fallback mock
+ * em packages/core/src/services/catalog.ts (mockListNotifications).
+ */
 export async function listNotifications(
   client: SupabaseClient<Database>,
-): Promise<AppNotification[]> {
-  // Invariante: esta ordenação (created_at desc) deve casar com o fallback mock
-  // em apps/mobile/src/services/catalog.ts (mockListNotifications).
-  const { data, error } = await client
-    .from('notifications')
-    .select(NOTIFICATION_COLUMNS)
-    .order('created_at', { ascending: false });
+  cursor: string | null = null,
+  limit: number = DEFAULT_PAGE_SIZE,
+): Promise<CatalogPage<AppNotification>> {
+  const decoded = decodeCursor(cursor);
+  const base = client.from('notifications').select(NOTIFICATION_COLUMNS);
+  const filtered = decoded
+    ? base.or(
+        `created_at.lt.${quoteCursorValue(decoded.value)},and(created_at.eq.${quoteCursorValue(decoded.value)},id.lt.${quoteCursorValue(decoded.id)})`,
+      )
+    : base;
+
+  const { data, error } = await filtered
+    .order('created_at', { ascending: false })
+    .order('id', { ascending: false })
+    .limit(limit);
   if (error) throw error;
-  return (data ?? []).map(mapNotification);
+  const items = (data ?? []).map(mapNotification);
+  const last = items.at(-1);
+  const nextCursor =
+    items.length < limit || !last ? null : encodeCursor({ value: last.created_at, id: last.id });
+  return { items, nextCursor };
+}
+
+export interface CatalogCounts {
+  establishments: number;
+  events: number;
+  notifications: number;
+}
+
+/**
+ * Totais do catálogo para o dashboard do admin — não confundir com paginação:
+ * é um agregado único, não uma CatalogPage. Delega para get_catalog_counts()
+ * (supabase/migrations/20260904130000_catalog_counts_rpc.sql), que roda como
+ * o usuário autenticado: a RLS de is_admin() já libera o admin a contar as 3
+ * tabelas inteiras, sem precisar de SECURITY DEFINER.
+ *
+ * (client as SupabaseClient) sem generic: a função é nova e ainda não está em
+ * database.types.ts (arquivo gerado), mesmo escape hatch de eventsFrom/etc. acima.
+ */
+export async function getCatalogCounts(
+  client: SupabaseClient<Database>,
+): Promise<CatalogCounts> {
+  const { data, error } = await (client as SupabaseClient)
+    .rpc('get_catalog_counts')
+    .single();
+  if (error) throw error;
+  const row = data as {
+    establishments_count: number;
+    events_count: number;
+    notifications_count: number;
+  };
+  return {
+    establishments: Number(row.establishments_count),
+    events: Number(row.events_count),
+    notifications: Number(row.notifications_count),
+  };
 }
 
 // --- Escrita (admin) -------------------------------------------------------

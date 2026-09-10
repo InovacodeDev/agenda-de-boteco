@@ -7,12 +7,14 @@ import {
   type EventStatus,
   type EventWriteInput,
   eventWriteSchema,
+  flattenPages,
   issuesToErrors,
   maskCurrencyBR,
   parseCurrencyBR,
   upsertEvent,
   useEstablishmentsQuery,
   useEventsQuery,
+  useInfiniteScrollSentinel,
   useMusicStylesQuery,
 } from '@agenda/core';
 import { Button, Field, PageHeader, Select, TextArea, TextInput } from '@agenda/shared-ui';
@@ -93,8 +95,15 @@ function toForm(e: Event): FormState {
 export default function EventosPage() {
   const qc = useQueryClient();
   const events = useEventsQuery();
+  const eventRows = flattenPages(events.data);
   const establishments = useEstablishmentsQuery();
+  const establishmentRows = flattenPages(establishments.data);
   const musicStyles = useMusicStylesQuery();
+  const sentinelRef = useInfiniteScrollSentinel({
+    fetchNextPage: events.fetchNextPage,
+    hasNextPage: events.hasNextPage,
+    isFetchingNextPage: events.isFetchingNextPage,
+  });
 
   const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -107,9 +116,9 @@ export default function EventosPage() {
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const estName = useMemo(() => {
-    const map = new Map((establishments.data ?? []).map((e) => [e.id, e.name]));
+    const map = new Map(establishmentRows.map((e) => [e.id, e.name]));
     return (id: string) => map.get(id) ?? id;
-  }, [establishments.data]);
+  }, [establishmentRows]);
 
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) =>
     setForm((f) => ({ ...f, [key]: value }));
@@ -207,15 +216,21 @@ export default function EventosPage() {
         <p className="text-muted-foreground text-[14px]">Carregando…</p>
       ) : events.error ? (
         <p className="text-destructive text-[14px]">Erro ao carregar eventos.</p>
-      ) : (events.data ?? []).length === 0 ? (
+      ) : eventRows.length === 0 ? (
         <p className="text-muted-foreground text-[14px]">Nenhum item ainda.</p>
       ) : (
-        <DataTable
-          columns={columns}
-          rows={events.data ?? []}
-          onEdit={openEdit}
-          onDelete={(r) => void handleDelete(r)}
-        />
+        <>
+          <DataTable
+            columns={columns}
+            rows={eventRows}
+            onEdit={openEdit}
+            onDelete={(r) => void handleDelete(r)}
+          />
+          <div ref={sentinelRef} aria-hidden className="h-px" />
+          {events.isFetchingNextPage ? (
+            <p className="text-muted-foreground py-4 text-center text-[13px]">Carregando mais…</p>
+          ) : null}
+        </>
       )}
 
       <Modal
@@ -249,7 +264,7 @@ export default function EventosPage() {
           <Field label="Estabelecimento" error={errors.establishment_id}>
             <Select value={form.establishment_id} onValueChange={(v) => set('establishment_id', v)}>
               <Select.Option value="">Selecione…</Select.Option>
-              {(establishments.data ?? []).map((e) => (
+              {establishmentRows.map((e) => (
                 <Select.Option key={e.id} value={e.id}>
                   {e.name}
                 </Select.Option>

@@ -1,0 +1,68 @@
+/**
+ * Contrato de paginacao por cursor do catalogo. O cursor e opaco para quem
+ * consome: a query layer sabe monta-lo e le-lo, a UI so o repassa. Cursor em
+ * vez de OFFSET porque OFFSET pula ou duplica linha quando ha insercao
+ * concorrente entre uma pagina e a seguinte.
+ */
+export interface CatalogPage<T> {
+  items: T[];
+  nextCursor: string | null;
+}
+
+/** Cursor composto: valor da coluna de ordenacao + id como desempate. */
+export interface CatalogCursor {
+  value: string;
+  id: string;
+}
+
+/** Tamanho de lote de todas as listagens paginadas. Nao e ajustavel pelo usuario. */
+export const DEFAULT_PAGE_SIZE = 20;
+
+const CURSOR_SEPARATOR = '|';
+
+export function encodeCursor(cursor: CatalogCursor): string {
+  return `${cursor.value}${CURSOR_SEPARATOR}${cursor.id}`;
+}
+
+/**
+ * lastIndexOf, nao indexOf: nome de estabelecimento pode conter o separador, e
+ * o id (ultimo campo) nunca contem.
+ */
+export function decodeCursor(cursor: string | null): CatalogCursor | null {
+  if (!cursor) {
+    return null;
+  }
+  const separatorIndex = cursor.lastIndexOf(CURSOR_SEPARATOR);
+  if (separatorIndex === -1) {
+    return null;
+  }
+  return {
+    value: cursor.slice(0, separatorIndex),
+    id: cursor.slice(separatorIndex + 1),
+  };
+}
+
+/**
+ * cursor e input externo (pageParam do useInfiniteQuery); value/id vao sem
+ * escaping para o .or() do PostgREST na query layer. Citar em vez de rejeitar
+ * caracteres perigosos (`,`/`(`/`)`): rejeitar faria decodeCursor devolver
+ * null para um cursor valido (ex. nome de bar com virgula), que a query layer
+ * trata como "sem cursor" — reiniciando a pagina 1 pra sempre, um loop
+ * infinito de paginacao em vez de uma falha visivel.
+ */
+export function quoteCursorValue(value: string): string {
+  return `"${value.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`;
+}
+
+/**
+ * Achata o `{ pages }` do useInfiniteQuery numa lista simples para a UI. Evita
+ * que cada tela repita o mesmo flatMap.
+ */
+export function flattenPages<T>(
+  data: { pages: CatalogPage<T>[]; pageParams: unknown[] } | undefined,
+): T[] {
+  if (!data) {
+    return [];
+  }
+  return data.pages.flatMap((page) => page.items);
+}

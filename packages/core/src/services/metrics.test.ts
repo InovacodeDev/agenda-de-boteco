@@ -1,4 +1,4 @@
-import { listOwnedFavoritesCount, listOwnedMetrics, recordMetricEvent } from './metrics';
+import { getOwnedFavoritesCountByEstablishment, listOwnedMetrics, recordMetricEvent } from './metrics';
 
 const mockGetSupabase = jest.fn();
 jest.mock('../supabase/client', () => ({
@@ -103,34 +103,34 @@ describe('listOwnedMetrics', () => {
   });
 });
 
-describe('listOwnedFavoritesCount', () => {
+describe('getOwnedFavoritesCountByEstablishment', () => {
   it('retorna {} sem client configurado', async () => {
     mockGetSupabase.mockReturnValue(null);
-    await expect(listOwnedFavoritesCount(['ev1', 'ev2'])).resolves.toEqual({});
+    await expect(getOwnedFavoritesCountByEstablishment('es1')).resolves.toEqual({});
   });
 
-  it('retorna {} sem eventIds', async () => {
-    mockGetSupabase.mockReturnValue({});
-    await expect(listOwnedFavoritesCount([])).resolves.toEqual({});
-  });
-
-  it('conta favoritos por event_id a partir de user_favorites', async () => {
+  it('chama get_owned_favorites_count e mapeia event_id -> contagem', async () => {
     const rows = [
-      { target_id: 'ev1' },
-      { target_id: 'ev1' },
-      { target_id: 'ev2' },
+      { event_id: 'ev1', favorites_count: 2 },
+      { event_id: 'ev2', favorites_count: 1 },
     ];
-    const inFn = jest.fn().mockResolvedValue({ data: rows, error: null });
-    const eq = jest.fn().mockReturnValue({ in: inFn });
-    const select = jest.fn().mockReturnValue({ eq });
-    const client = { from: jest.fn().mockReturnValue({ select }) };
+    const rpc = jest.fn().mockResolvedValue({ data: rows, error: null });
+    const client = { rpc };
     mockGetSupabase.mockReturnValue(client);
 
-    const result = await listOwnedFavoritesCount(['ev1', 'ev2']);
+    const result = await getOwnedFavoritesCountByEstablishment('es1');
 
-    expect(client.from).toHaveBeenCalledWith('user_favorites');
-    expect(eq).toHaveBeenCalledWith('target_type', 'event');
-    expect(inFn).toHaveBeenCalledWith('target_id', ['ev1', 'ev2']);
+    expect(rpc).toHaveBeenCalledWith('get_owned_favorites_count', {
+      p_establishment_id: 'es1',
+    });
     expect(result).toEqual({ ev1: 2, ev2: 1 });
+  });
+
+  it('propaga o erro 42501 quando a RPC rejeita por falta de posse', async () => {
+    const error = { message: 'Não autorizado', code: '42501', details: '', hint: '' };
+    const rpc = jest.fn().mockResolvedValue({ data: null, error });
+    mockGetSupabase.mockReturnValue({ rpc });
+
+    await expect(getOwnedFavoritesCountByEstablishment('es1')).rejects.toBe(error);
   });
 });

@@ -9,6 +9,9 @@ import type { MusicianLeadFilters, MusicianLeadSort } from './musician-leads';
 export const catalogKeys = {
   events: {
     root: ['events'] as const,
+    // Feed paginado. Primeiro segmento 'events' de proposito: a invalidacao
+    // por prefixo do realtime precisa alcancar esta key tambem.
+    list: ['events', 'list'] as const,
     detail: (id: string) => ['events', 'detail', id] as const,
     byEstablishment: (establishmentId: string) =>
       ['events', 'by-establishment', establishmentId] as const,
@@ -37,6 +40,10 @@ export const catalogKeys = {
   musicStyles: ['music-styles'] as const,
   cities: ['cities'] as const,
   notifications: ['notifications'] as const,
+  // Agregado do dashboard admin — não paginado, não casa com prefixo de
+  // invalidação das listas acima de propósito (evita refetch do count a cada
+  // insert/delete de item; o admin recarrega a página quando precisa do total).
+  counts: ['catalog', 'counts'] as const,
   musicianLeads: {
     root: ['musician-leads'] as const,
     list: (filters: MusicianLeadFilters, sort: MusicianLeadSort) =>

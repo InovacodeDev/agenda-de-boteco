@@ -92,30 +92,34 @@ export async function listOwnedMetrics(
   }));
 }
 
+const favoritesCountRowSchema = z.object({
+  event_id: z.string(),
+  favorites_count: z.union([z.string(), z.number()]),
+});
+
 /**
- * Contagem de favoritos por evento, lida direto de user_favorites — sem
- * duplicar escrita em establishment_metrics quando o usuário favorita (spec
- * "Favoritar como métrica"). [] de entrada evita `.in('target_id', [])`, que o
- * Postgrest trata como filtro vazio (retornaria tudo, não nada).
+ * Contagem de favoritos por evento, agregada no banco via RPC (não
+ * `.from('user_favorites')` direto): select_own_favorites restringe a tabela a
+ * `auth.uid() = user_id`, e o dono do bar não é quem favoritou — sem a RPC
+ * SECURITY DEFINER, a RLS devolveria sempre 0 linhas. Cobre TODOS os eventos do
+ * bar, não só os já carregados por useOwnedEvents (que pagina).
  */
-export async function listOwnedFavoritesCount(
-  eventIds: string[],
+export async function getOwnedFavoritesCountByEstablishment(
+  establishmentId: string,
 ): Promise<Record<string, number>> {
   const client = getConfiguredSupabase();
-  if (client === null || eventIds.length === 0) {
+  if (client === null) {
     return {};
   }
-  const { data, error } = await rawClient(client)
-    .from('user_favorites')
-    .select('target_id')
-    .eq('target_type', 'event')
-    .in('target_id', eventIds);
+  const { data, error } = await rawClient(client).rpc('get_owned_favorites_count', {
+    p_establishment_id: establishmentId,
+  });
   if (error) {
     throw error;
   }
-  const rows = z.array(z.object({ target_id: z.string() })).parse(data ?? []);
+  const rows = z.array(favoritesCountRowSchema).parse(data ?? []);
   return rows.reduce<Record<string, number>>((acc, row) => {
-    acc[row.target_id] = (acc[row.target_id] ?? 0) + 1;
+    acc[row.event_id] = Number(row.favorites_count);
     return acc;
   }, {});
 }

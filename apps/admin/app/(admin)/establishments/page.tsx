@@ -7,6 +7,7 @@ import {
   type EstablishmentAttribute,
   type EstablishmentWriteInput,
   establishmentWriteSchema,
+  flattenPages,
   issuesToErrors,
   maskPhoneBR,
   type MenuItem,
@@ -16,6 +17,7 @@ import {
   upsertEstablishment,
   useCitiesQuery,
   useEstablishmentsQuery,
+  useInfiniteScrollSentinel,
 } from '@agenda/core';
 import { Button, Field, PageHeader, Select, TextArea, TextInput } from '@agenda/shared-ui';
 import { useQueryClient } from '@tanstack/react-query';
@@ -107,7 +109,13 @@ function parseMenu(raw: string): MenuItem[] {
 export default function EstabelecimentosPage() {
   const qc = useQueryClient();
   const establishments = useEstablishmentsQuery();
+  const establishmentRows = flattenPages(establishments.data);
   const cities = useCitiesQuery();
+  const sentinelRef = useInfiniteScrollSentinel({
+    fetchNextPage: establishments.fetchNextPage,
+    hasNextPage: establishments.hasNextPage,
+    isFetchingNextPage: establishments.isFetchingNextPage,
+  });
 
   const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -213,15 +221,21 @@ export default function EstabelecimentosPage() {
         <p className="text-muted-foreground text-[14px]">Carregando…</p>
       ) : establishments.error ? (
         <p className="text-destructive text-[14px]">Erro ao carregar estabelecimentos.</p>
-      ) : (establishments.data ?? []).length === 0 ? (
+      ) : establishmentRows.length === 0 ? (
         <p className="text-muted-foreground text-[14px]">Nenhum item ainda.</p>
       ) : (
-        <DataTable
-          columns={columns}
-          rows={establishments.data ?? []}
-          onEdit={openEdit}
-          onDelete={(r) => void handleDelete(r)}
-        />
+        <>
+          <DataTable
+            columns={columns}
+            rows={establishmentRows}
+            onEdit={openEdit}
+            onDelete={(r) => void handleDelete(r)}
+          />
+          <div ref={sentinelRef} aria-hidden className="h-px" />
+          {establishments.isFetchingNextPage ? (
+            <p className="text-muted-foreground py-4 text-center text-[13px]">Carregando mais…</p>
+          ) : null}
+        </>
       )}
 
       <Modal

@@ -3,6 +3,8 @@ import type { NextConfig } from 'next';
 const config: NextConfig = {
   basePath: '/admin',
   transpilePackages: ['@agenda/core', '@agenda/shared-ui'],
+  // O repo já tem AGENTS.md/CLAUDE.md próprios na raiz — evita duplicata genérica.
+  agentRules: false,
   // Recomendação da doc do Phosphor: sem isto o Next transpila os 9k+ módulos
   // do pacote a cada build do dev server.
   experimental: {

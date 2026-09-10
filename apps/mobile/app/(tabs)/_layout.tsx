@@ -1,4 +1,5 @@
 import {
+  flattenPages,
   unreadNotificationCount,
   useNotificationsQuery,
   useNotificationsStore,
@@ -24,8 +25,9 @@ const tabBarWidthStyle =
 export default function TabsLayout() {
   const insets = useSafeAreaInsets();
   const readIds = useNotificationsStore((state) => state.readIds);
-  const { data: notifications } = useNotificationsQuery();
-  const unreadCount = unreadNotificationCount(readIds, notifications ?? []);
+  const notificationsQuery = useNotificationsQuery();
+  const notifications = flattenPages(notificationsQuery.data);
+  const unreadCount = unreadNotificationCount(readIds, notifications);
   return (
     <Tabs
       screenOptions={{

@@ -1,0 +1,6 @@
+{
+  "lastAuditDate": "2026-09-03",
+  "issue": 94,
+  "scope": ["performance", "dependencies", "lgpd", "rate-limiting"],
+  "maxAgeDays": 30
+}
