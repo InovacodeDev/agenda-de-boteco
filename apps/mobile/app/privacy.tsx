@@ -85,7 +85,7 @@ export default function PrivacyPolicyScreen() {
           <Paragraph>Coletamos apenas o necessário para o app funcionar:</Paragraph>
           <Bullet>
             <Text className="text-foreground">Localização precisa (GPS).</Text> Coletada somente
-            quando você toca para usar sua localização ou ativa o filtro "perto de mim", para mostrar
+            quando você toca para usar sua localização ou ativa o filtro “perto de mim”, para mostrar
             bares e eventos próximos. Você pode recusar — nesse caso usamos o centro da cidade que
             você escolheu. A localização não é armazenada nos nossos servidores e é arredondada antes
             de qualquer uso interno, nunca sendo usada para rastreamento ou publicidade.
