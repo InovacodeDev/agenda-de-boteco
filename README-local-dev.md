@@ -7,6 +7,16 @@ Por padrão, web, admin e mobile apontam para o Supabase local — nunca para pr
 - [Docker](https://docs.docker.com/get-docker/) rodando
 - [Supabase CLI](https://supabase.com/docs/guides/local-development/cli/getting-started) instalado (`brew install supabase/tap/supabase`)
 
+## Ativando os hooks de git
+
+O repositório versiona seus hooks em `.githooks/`, mas o git não os ativa sozinho ao clonar. Rode uma vez:
+
+```bash
+bash scripts/setup-hooks.bash
+```
+
+Isso configura `core.hooksPath` neste clone. O hook `pre-commit` garante que `AUDIT_LOG.md` e `.github/audit-log.json` nunca fiquem dessincronizados.
+
 ## Subindo o ambiente
 
 ```bash
