@@ -44,88 +44,88 @@ function Lead({ children }: { children: React.ReactNode }) {
 const FEATURES: readonly { icon: React.ReactNode; title: string; text: string }[] = [
   {
     icon: <CalendarIcon size={22} />,
-    title: 'A agenda da cidade em um lugar',
-    text: 'Shows, samba, sertanejo, roda de choro e transmissão de jogo. Tudo com data, horário, atração e couvert antes de você sair de casa.',
+    title: 'A programação de verdade',
+    text: 'Samba de raiz, pop rock, sertanejo ou roda de choro. Saiba quem vai tocar, que horas começa e o valor do couvert antes de pedir a corrida.',
   },
   {
     icon: <SlidersIcon size={22} />,
-    title: 'Filtros que respeitam seu gosto',
-    text: 'Combine estilo musical, cidade, distância e 36 diferenciais do bar — de pet friendly a opções veganas e telão para o jogo.',
+    title: 'Filtros do seu jeito',
+    text: 'Mesa na calçada? Aceita seu cachorro? Tem telão pro clássico ou opção vegana no cardápio? Marque o que você não abre mão e ache o lugar certo.',
   },
   {
     icon: <MapPinIcon size={22} />,
-    title: 'Perto de você, de verdade',
-    text: 'Ordenação por proximidade real com raio ajustável. O mapa mostra o que está a poucos metros de onde você já está.',
+    title: 'Pertinho de onde você tá',
+    text: 'Bateu vontade de esticar a conversa? Veja os botecos abertos a poucos minutos de caminhada de onde você está agora.',
   },
   {
     icon: <MusicIcon size={22} />,
-    title: 'Semáforo de agora',
-    text: 'Um selo colorido diz se o evento está acontecendo, começa em uma hora ou já acabou. Sem chegar e encontrar a porta fechada.',
+    title: 'Semáforo em tempo real',
+    text: 'Sinal verde pra quem tá no auge, amarelo pra quem tá aquecendo e vermelho pra quando o som já acabou. Sem dar de cara com a banda guardando os cabos.',
   },
   {
     icon: <HeartIcon size={22} />,
-    title: 'Favoritos que te acompanham',
-    text: 'Salve bares e eventos com um toque. Criando conta, sua lista segue você para qualquer aparelho.',
+    title: 'Seus botecos do coração',
+    text: 'Guarde aquele bar aconchegante ou o show do próximo sábado na sua lista. Criou sua conta, seus favoritos vão com você em qualquer aparelho.',
   },
   {
     icon: <BellIcon size={22} />,
-    title: 'Avisos do que te interessa',
-    text: 'Fique sabendo quando um evento novo aparece no seu estilo ou no seu bar favorito.',
+    title: 'Lembretes pra não esquecer',
+    text: 'Receba um toque quando aquele boteco que você adora lançar a programação da semana ou pintar um som no seu estilo.',
   },
 ];
 
-const OWNER_CTA_SOON = 'Em breve estará disponível para bares e estabelecimentos';
+const OWNER_CTA_SOON = 'Painel para bares quase pronto: avise a gente para participar do teste antecipado';
 
 const OWNER_BENEFITS: readonly string[] = [
-  'Publicar eventos com banner, atração, horário e couvert em minutos',
-  'Manter o perfil do bar atualizado: fotos, endereço, WhatsApp e Instagram',
-  'Marcar seus diferenciais e aparecer nos filtros de quem procura exatamente isso',
-  'Alcançar quem já está perto e decidindo onde passar a noite',
+  'Divulgue sua programação em dois minutos: foto, horário, couvert e atrações',
+  'Perfil completo com fotos da casa, cardápio, WhatsApp para reservas e localização',
+  'Destaque seus diferenciais: mesa na calçada, pet friendly, sinuca, telão ou opções veganas',
+  'Fale direto com clientes do seu bairro que já estão na rua procurando onde sentar',
 ];
 
 const FAQ: readonly { question: string; answer: React.ReactNode }[] = [
   {
     question: 'O app é gratuito?',
-    answer: 'É. Não cobramos nada, não vendemos bebidas e não exibimos anúncios.',
+    answer:
+      'Sim, 100% gratuito. Você não paga nada para usar, não tem propaganda pulando na tela e nem cobrança surpresa.',
   },
   {
     question: 'Preciso criar conta para usar?',
     answer:
-      'Não. Você navega pelo feed, filtra e abre eventos sem conta. Ela só serve para sincronizar seus favoritos entre aparelhos.',
+      'Não precisa de nada. Dá pra abrir, pesquisar a programação completa, usar os filtros e olhar o mapa livremente. A conta só serve se você quiser sincronizar seus bares favoritos entre o celular e o computador.',
   },
   {
     question: 'Minha cidade já está no app?',
     answer: (
       <>
-        Estamos expandindo a cobertura cidade por cidade. Se a sua ainda não aparece,{' '}
+        Estamos dando os primeiros passos por Florianópolis e região, afinando cada detalhe. Se você quer o Agenda de Boteco na sua cidade,{' '}
         <a
           href={`mailto:${CONTACT_EMAIL}?subject=Quero%20o%20Agenda%20de%20Boteco%20na%20minha%20cidade`}
           className="text-primary underline-offset-4 hover:underline"
         >
-          escreva para a gente
-        </a>{' '}
-        dizendo qual é.
+          manda uma mensagem pra gente
+        </a>
+        ! Queremos levar essa roda pra mais lugares.
       </>
     ),
   },
   {
     question: 'O app precisa da minha localização?',
     answer:
-      'Só quando você usa o filtro de proximidade. Recusar é uma opção válida — nesse caso usamos o centro da cidade escolhida.',
+      'Só se você quiser que a gente calcule os botecos mais pertinho de você naquele momento. Se preferir não liberar o GPS, tudo bem: basta escolher sua cidade na lista e navegar normalmente.',
   },
   {
     question: 'Sou dono de bar. Como divulgo meus eventos?',
     answer: (
       <>
-        O painel de estabelecimentos está a caminho: {OWNER_CTA_SOON.toLowerCase()}. Enquanto isso,
-        você pode{' '}
+        O painel para donos de bar e produtores de eventos está no forno! Se você quer colocar sua casa no mapa e receber clientes desde o primeiro dia,{' '}
         <a
           href={`mailto:${CONTACT_EMAIL}?subject=Quero%20saber%20do%20painel%20para%20bares`}
           className="text-primary underline-offset-4 hover:underline"
         >
-          deixar seu contato
+          deixe seu contato aqui
         </a>{' '}
-        para avisarmos na abertura.
+        que te avisamos assim que liberar.
       </>
     ),
   },
@@ -169,11 +169,11 @@ export default function LandingPage() {
           <div className="flex flex-col items-start gap-6">
             <span className="flex items-center gap-2 rounded-full border border-border bg-card/60 px-3 py-1.5 text-[12px] font-medium text-muted-foreground">
               <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-              Começando por Florianópolis e região
+              Começando pelas mesas de Florianópolis e região
             </span>
 
             <h1 className="font-heading text-[40px] font-bold leading-[1.05] text-foreground sm:text-[58px]">
-              O que rola hoje no{' '}
+              O que tá rolando hoje no{' '}
               <span className="bg-[linear-gradient(135deg,#1DD75E,#1AE6C3)] bg-clip-text text-transparent">
                 boteco
               </span>{' '}
@@ -181,22 +181,22 @@ export default function LandingPage() {
             </h1>
 
             <Lead>
-              Descubra shows, samba, sertanejo e transmissão de jogo nos bares da sua cidade. Filtre
-              por estilo musical, distância e o que importa para você — e veja num relance o que já
-              está acontecendo agora.
+              Chega de vasculhar stories no Instagram ou dar com a cara na porta. Encontre samba,
+              rock, sertanejo ou a transmissão do clássico a poucos passos de você — com horário,
+              couvert e clima da casa atualizados.
             </Lead>
 
             <DownloadButtons />
 
             <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-[13px] text-muted-foreground">
               <span className="flex items-center gap-1.5">
-                <CheckIcon size={14} className="text-primary" /> Grátis, sem anúncios
+                <CheckIcon size={14} className="text-primary" /> 100% grátis, sem anúncio chato
               </span>
               <span className="flex items-center gap-1.5">
-                <CheckIcon size={14} className="text-primary" /> Sem conta para começar
+                <CheckIcon size={14} className="text-primary" /> Nem precisa de cadastro pra olhar
               </span>
               <span className="flex items-center gap-1.5">
-                <CheckIcon size={14} className="text-primary" /> iOS, Android e web
+                <CheckIcon size={14} className="text-primary" /> No celular ou direto no navegador
               </span>
             </div>
           </div>
@@ -211,11 +211,11 @@ export default function LandingPage() {
       <section id="recursos" className="border-t border-border/60 bg-background/40">
         <div className="mx-auto w-full max-w-6xl px-6 py-20">
           <div className="flex flex-col gap-3">
-            <SectionLabel>Recursos</SectionLabel>
-            <SectionTitle>Feito para decidir a noite em trinta segundos</SectionTitle>
+            <SectionLabel>Pra acertar no rolê</SectionLabel>
+            <SectionTitle>Seu rolê decidido antes da primeira rodada</SectionTitle>
             <Lead>
-              Nada de vasculhar dez perfis no Instagram para descobrir quem toca hoje. O app junta a
-              programação dos bares e deixa você chegar no que interessa por atalhos.
+              Sabe aquele grupo do WhatsApp onde ninguém decide onde ir? O Agenda de Boteco junta o
+              som ao vivo, a cerveja gelada e os detalhes da casa pra você bater o martelo na hora.
             </Lead>
           </div>
 
@@ -242,8 +242,8 @@ export default function LandingPage() {
       <section className="border-t border-border/60">
         <div className="mx-auto w-full max-w-6xl px-6 py-20">
           <div className="flex flex-col gap-3">
-            <SectionLabel>Por dentro do app</SectionLabel>
-            <SectionTitle>Do filtro ao bar, sem rodeios</SectionTitle>
+            <SectionLabel>Na palma da mão</SectionLabel>
+            <SectionTitle>Direto ao ponto, como tem que ser</SectionTitle>
           </div>
 
           <div className="mt-12 grid gap-10 sm:grid-cols-2 lg:grid-cols-3">
@@ -251,11 +251,11 @@ export default function LandingPage() {
               <FiltersPreview />
               <div className="flex flex-col gap-1.5">
                 <h3 className="font-heading text-[17px] font-bold text-foreground">
-                  Filtre como você escolhe
+                  Filtre como você pensa
                 </h3>
                 <p className="text-[14px] leading-6 text-muted-foreground">
-                  Cidades, estilos, raio de distância e diferenciais do bar. Marque vários e veja o
-                  resultado somando na hora.
+                  Escolha o estilo musical, a distância e o que não pode faltar na mesa. Os
+                  resultados atualizam na hora, sem enrolação.
                 </p>
               </div>
             </div>
@@ -264,11 +264,11 @@ export default function LandingPage() {
               <MapPreview />
               <div className="flex flex-col gap-1.5">
                 <h3 className="font-heading text-[17px] font-bold text-foreground">
-                  Veja no mapa quem está perto
+                  Abra o mapa e ache a mesa
                 </h3>
                 <p className="text-[14px] leading-6 text-muted-foreground">
-                  Os bares aparecem na sua volta com distância, nota e se estão abertos neste
-                  momento.
+                  Descubra botecos escondidos no seu bairro com distância exata, avaliação de quem já
+                  foi e se a porta tá aberta agora.
                 </p>
               </div>
             </div>
@@ -277,11 +277,11 @@ export default function LandingPage() {
               <FeedPreview />
               <div className="flex flex-col gap-1.5">
                 <h3 className="font-heading text-[17px] font-bold text-foreground">
-                  Eventos e bares, lado a lado
+                  Escolha pelo som ou pela casa
                 </h3>
                 <p className="text-[14px] leading-6 text-muted-foreground">
-                  Troque entre a programação da noite e a lista de botecos sem perder os filtros que
-                  você já montou.
+                  Navegue entre a atração da noite ou pelo bar que você já confia, mantendo seus
+                  filtros intactos.
                 </p>
               </div>
             </div>
@@ -293,12 +293,12 @@ export default function LandingPage() {
       <section id="para-bares" className="border-t border-border/60 bg-background/40">
         <div className="mx-auto grid w-full max-w-6xl items-center gap-12 px-6 py-20 lg:grid-cols-2">
           <div className="flex flex-col items-start gap-5">
-            <SectionLabel>Para donos de bar</SectionLabel>
-            <SectionTitle>Sua programação na frente de quem vai sair hoje</SectionTitle>
+            <SectionLabel>Para quem faz a noite acontecer</SectionLabel>
+            <SectionTitle>Sua casa cheia de gente que procura exatamente o seu clima</SectionTitle>
             <Lead>
-              Em breve você vai cadastrar seu estabelecimento e publicar seus eventos no painel.
-              Quem está procurando samba no seu bairro, com mesa na calçada e aceitando cães,
-              encontra você — porque foi exatamente isso que essa pessoa filtrou.
+              Pare de brigar com o algoritmo das redes sociais. No Agenda de Boteco, quem procura um
+              pagode ao vivo, uma mesa ao ar livre ou chopp artesanal no seu bairro encontra seu bar
+              no momento exato em que decide onde passar a noite.
             </Lead>
 
             <ul className="flex flex-col gap-3">
@@ -388,8 +388,8 @@ export default function LandingPage() {
       <section className="border-t border-border/60">
         <div className="mx-auto w-full max-w-3xl px-6 py-20">
           <div className="flex flex-col gap-3">
-            <SectionLabel>Dúvidas</SectionLabel>
-            <SectionTitle>Perguntas frequentes</SectionTitle>
+            <SectionLabel>Sem letras miúdas</SectionLabel>
+            <SectionTitle>Tudo o que você precisa saber</SectionTitle>
           </div>
 
           <div className="mt-10 flex flex-col gap-3">
@@ -413,9 +413,9 @@ export default function LandingPage() {
           </div>
 
           <p className="mt-8 text-center text-[14px] text-muted-foreground">
-            Não achou o que procurava?{' '}
+            Tem outra dúvida, sugestão de boteco ou quer mandar um alô?{' '}
             <a href="/support" className="text-primary underline-offset-4 hover:underline">
-              Vá para o suporte
+              Fala com a gente no suporte
             </a>
             .
           </p>
@@ -425,9 +425,9 @@ export default function LandingPage() {
       {/* ---------------- CTA final ---------------- */}
       <section className="border-t border-border/60 bg-background/40">
         <div className="mx-auto flex w-full max-w-3xl flex-col items-center gap-6 px-6 py-20 text-center">
-          <SectionTitle>A noite começa aqui</SectionTitle>
+          <SectionTitle>Bora encontrar a mesa perfeita?</SectionTitle>
           <Lead>
-            Baixe o Agenda de Boteco e descubra o que está tocando agora nos bares perto de você.
+            Baixe o app ou abra direto no navegador. O chopp tá gelado e a música já vai começar.
           </Lead>
           <div className="flex flex-col items-center gap-4">
             <DownloadButtons />
@@ -435,7 +435,7 @@ export default function LandingPage() {
               href={`${WEB_BASE}/app`}
               className="text-[14px] font-semibold text-primary underline-offset-4 hover:underline"
             >
-              Ou use direto no navegador →
+              Prefere não baixar nada? Acessar direto pelo navegador →
             </a>
           </div>
         </div>
@@ -453,7 +453,7 @@ export default function LandingPage() {
               className="h-9 w-auto self-start"
             />
             <p className="max-w-55 text-[13px] leading-6 text-muted-foreground">
-              Os melhores eventos e bares da sua cidade, sempre à mão.
+              Música ao vivo, mesa na calçada e os melhores botecos da sua cidade, sem complicação.
             </p>
           </div>
 
