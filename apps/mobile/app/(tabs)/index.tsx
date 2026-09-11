@@ -37,7 +37,7 @@ import {
   type EstablishmentSortBy,
   hasActiveFilters,
 } from '@/utils/filters';
-import { type LatLng, resolveNearbyOrigin } from '@/utils/geo';
+import { isVirtualCityId, type LatLng, resolveNearbyOrigin } from '@/utils/geo';
 
 const ItemSeparator = () => <View className="h-4" />;
 
@@ -47,13 +47,18 @@ export default function FeedScreen() {
   const [barSort, setBarSort] = useState<EstablishmentSortBy>(DEFAULT_ESTABLISHMENT_SORT);
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
 
+  const city = useActiveCity();
   const filters = useFiltersStore((state) => state.filters);
   const setQuery = useFiltersStore((state) => state.setQuery);
   const toggleStyle = useFiltersStore((state) => state.toggleStyle);
 
+  const effectiveCityId =
+    filters.cityIds && filters.cityIds.length > 0
+      ? (filters.cityIds.length === 1 ? filters.cityIds[0] : undefined)
+      : (city && !isVirtualCityId(city.id) ? city.id : undefined);
 
   const eventsQuery = useEventsQuery();
-  const establishmentsQuery = useEstablishmentsQuery();
+  const establishmentsQuery = useEstablishmentsQuery(effectiveCityId);
   const events = flattenPages(eventsQuery.data);
   const establishments = flattenPages(establishmentsQuery.data);
   const { data: musicStyles } = useMusicStylesQuery();
@@ -107,8 +112,6 @@ export default function FeedScreen() {
 
   const establishmentsById = useMemo(() => indexById(establishments ?? []), [establishments]);
   const stylesById = useMemo(() => indexById(musicStyles ?? []), [musicStyles]);
-
-  const city = useActiveCity();
 
   // Proximidade server-side: quando nearMe está ativo, resolve a origem (GPS ou
   // centro da cidade) e busca os establishments dentro do raio via RPC PostGIS.

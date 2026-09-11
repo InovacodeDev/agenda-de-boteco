@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 export * from './catalog';
 export * from './musician-lead';
+export * from './ratings';
 
 export const barSchema = z.object({
   id: z.string().uuid(),

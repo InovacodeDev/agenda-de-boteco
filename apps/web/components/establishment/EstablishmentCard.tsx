@@ -8,9 +8,10 @@ import {
   useEstablishmentStatusLight,
 } from '@agenda/core';
 import Link from 'next/link';
+import { useState } from 'react';
 
 import { AttributeChips } from '@/components/ui/AttributeChips';
-import { InstagramIcon, StarIcon } from '@/components/ui/icons';
+import { InstagramIcon, StarIcon, StorefrontIcon } from '@/components/ui/icons';
 import { StatusLightBadge } from '@/components/ui/StatusLightBadge';
 
 export interface EstablishmentCardProps {
@@ -22,6 +23,7 @@ const MAX_CARD_ATTRIBUTES = 3;
 
 /** Card compacto de bar (aba Bares), espelha o mobile. */
 export function EstablishmentCard({ establishment }: EstablishmentCardProps) {
+  const [imageError, setImageError] = useState(false);
   const [ratingPart, countPart] = formatRating(
     establishment.rating_avg,
     establishment.rating_count,
@@ -37,11 +39,23 @@ export function EstablishmentCard({ establishment }: EstablishmentCardProps) {
     >
     <article className="flex gap-3 rounded-2xl bg-card p-3">
       {/* ponytail: <img> evita config de remotePatterns do next/image p/ logos externos */}
-      <img
-        src={establishment.logo_url}
-        alt={establishment.name}
-        className="h-20 w-20 shrink-0 rounded-xl object-cover"
-      />
+      {establishment.logo_url && !imageError ? (
+        <img
+          src={establishment.logo_url}
+          alt={establishment.name}
+          onError={() => setImageError(true)}
+          className="h-20 w-20 shrink-0 rounded-xl object-cover"
+        />
+      ) : (
+        <div
+          role="img"
+          aria-label={`Foto de ${establishment.name} indisponível`}
+          className="flex h-20 w-20 shrink-0 flex-col items-center justify-center gap-1 rounded-xl border border-border/40 bg-surface-elevated text-muted-foreground"
+        >
+          <StorefrontIcon size={24} className="text-muted-foreground/70" />
+          <span className="text-[10px] font-medium leading-none tracking-tight">Sem foto</span>
+        </div>
+      )}
       <div className="flex flex-1 flex-col justify-center gap-0.5">
         {/* Semáforo no topo: embaixo, junto dos chips, ele quebrava para uma
             segunda linha quando os diferenciais eram longos. */}
