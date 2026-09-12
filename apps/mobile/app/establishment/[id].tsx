@@ -5,6 +5,7 @@ import { useMemo, useState } from 'react';
 import { Linking, Modal, Share, StyleSheet } from 'react-native';
 
 import { AgendaItem } from '@/components/establishment/AgendaItem';
+import { EstablishmentRatingSection } from '@/components/establishment/EstablishmentRatingSection';
 import { MenuItemRow } from '@/components/establishment/MenuItemRow';
 import { UnderConstruction } from '@/components/feedback/UnderConstruction';
 import { Screen } from '@/components/layout/Screen';
@@ -151,13 +152,22 @@ function EstablishmentDetailContent() {
         }
       />
       <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }}>
-        <View className="h-65">
-          <Image
-            source={{ uri: establishment.cover_url }}
-            contentFit="cover"
-            style={StyleSheet.absoluteFill}
-            accessibilityLabel={establishment.name}
-          />
+        <View className="bg-surface-elevated h-65">
+          {establishment.cover_url ? (
+            <Image
+              source={{ uri: establishment.cover_url }}
+              contentFit="cover"
+              style={StyleSheet.absoluteFill}
+              accessibilityLabel={establishment.name}
+            />
+          ) : (
+            <View className="flex-1 items-center justify-center gap-2">
+              <Icon name="store" size={44} color={colors.mutedForeground} />
+              <Text className="font-body text-muted-foreground text-[12px] font-medium">
+                Sem foto de capa
+              </Text>
+            </View>
+          )}
           <LinearGradient
             {...gradientCardOverlay}
             style={[StyleSheet.absoluteFill, { top: '40%' }]}
@@ -166,12 +176,25 @@ function EstablishmentDetailContent() {
 
         <View className="gap-4 p-4">
           <View className="-mt-14 flex-row items-end gap-3">
-            <Image
-              source={{ uri: establishment.logo_url }}
-              contentFit="cover"
-              className="border-background h-16 w-16 rounded-2xl border-2"
-              accessibilityLabel={`Logo ${establishment.name}`}
-            />
+            {establishment.logo_url ? (
+              <Image
+                source={{ uri: establishment.logo_url }}
+                contentFit="cover"
+                className="border-background h-16 w-16 rounded-2xl border-2"
+                accessibilityLabel={`Logo ${establishment.name}`}
+              />
+            ) : (
+              <View
+                accessibilityRole="image"
+                accessibilityLabel="Sem foto"
+                className="border-background bg-surface-elevated h-16 w-16 items-center justify-center gap-0.5 rounded-2xl border-2"
+              >
+                <Icon name="store" size={22} color={colors.mutedForeground} />
+                <Text className="font-body text-muted-foreground text-[9px] font-medium leading-none">
+                  Sem foto
+                </Text>
+              </View>
+            )}
             <View className="flex-1 gap-0.5 pb-1">
               <Text className="font-body text-muted-foreground text-[12px]">
                 {establishment.ambiance} · {establishment.price_range}
@@ -323,12 +346,11 @@ function EstablishmentDetailContent() {
           ) : null}
 
           {activeTab === 3 ? (
-            <View className="bg-card items-center gap-2 rounded-2xl p-6">
-              <RatingStars avg={establishment.rating_avg} count={establishment.rating_count} />
-              <Text className="font-body text-muted-foreground text-center text-[13px]">
-                Avaliações de {establishment.rating_count} pessoas que já curtiram a noite por aqui.
-              </Text>
-            </View>
+            <EstablishmentRatingSection
+              establishmentId={establishment.id}
+              ratingAvg={establishment.rating_avg}
+              ratingCount={establishment.rating_count}
+            />
           ) : null}
         </View>
       </ScrollView>

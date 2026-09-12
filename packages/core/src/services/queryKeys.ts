@@ -49,4 +49,11 @@ export const catalogKeys = {
     list: (filters: MusicianLeadFilters, sort: MusicianLeadSort) =>
       ['musician-leads', 'list', filters, sort] as const,
   },
+  establishmentRatings: {
+    root: ['establishment-ratings'] as const,
+    user: (establishmentId: string) =>
+      ['establishment-ratings', 'user', establishmentId] as const,
+    byEstablishment: (establishmentId: string) =>
+      ['establishment-ratings', 'by-establishment', establishmentId] as const,
+  },
 } as const;

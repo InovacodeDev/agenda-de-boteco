@@ -105,6 +105,41 @@ export type Database = {
           },
         ]
       }
+      establishment_ratings: {
+        Row: {
+          created_at: string
+          establishment_id: string
+          id: string
+          rating: number
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          establishment_id: string
+          id?: string
+          rating: number
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          establishment_id?: string
+          id?: string
+          rating?: number
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "establishment_ratings_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       establishments: {
         Row: {
           address: string

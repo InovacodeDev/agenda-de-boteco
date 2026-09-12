@@ -10,6 +10,7 @@ import {
   flattenPages,
   hasActiveFilters,
   indexById,
+  isVirtualCityId,
   type LatLng,
   musicStylesForEvent,
   resolveNearbyOrigin,
@@ -54,13 +55,19 @@ export default function FeedPage() {
     return () => navigator.geolocation.clearWatch(watchId);
   }, []);
 
+  const city = useActiveCity();
   const filters = useFiltersStore((state) => state.filters);
   const setQuery = useFiltersStore((state) => state.setQuery);
   const toggleStyle = useFiltersStore((state) => state.toggleStyle);
 
+  const effectiveCityId =
+    filters.cityIds && filters.cityIds.length > 0
+      ? (filters.cityIds.length === 1 ? filters.cityIds[0] : undefined)
+      : (city && !isVirtualCityId(city.id) ? city.id : undefined);
+
   const eventsQuery = useEventsQuery();
   const events = flattenPages(eventsQuery.data);
-  const establishmentsQuery = useEstablishmentsQuery();
+  const establishmentsQuery = useEstablishmentsQuery(effectiveCityId);
   const establishments = flattenPages(establishmentsQuery.data);
   const { data: musicStyles } = useMusicStylesQuery();
 
@@ -74,8 +81,6 @@ export default function FeedPage() {
     hasNextPage: establishmentsQuery.hasNextPage,
     isFetchingNextPage: establishmentsQuery.isFetchingNextPage,
   });
-
-  const city = useActiveCity();
 
   // "agora" estável por render (o feed web não precisa do tick de minuto do mobile).
   const now = useMemo(() => new Date(), []);

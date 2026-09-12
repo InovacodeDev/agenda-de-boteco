@@ -37,6 +37,7 @@ export * from './utils/status-light';
 export * from './hooks/queries';
 export * from './hooks/useActiveCity';
 export * from './hooks/useConnectivity';
+export * from './hooks/useEstablishmentRating';
 export * from './hooks/useFeatureFlag';
 export * from './hooks/useGuardedClick';
 export * from './hooks/useGuardedPress';
@@ -71,6 +72,7 @@ export {
 } from './services/catalog';
 export * from './services/connectivity';
 export * from './services/establishment-owner';
+export * from './services/establishment-ratings';
 export * from './services/favorites';
 export * from './services/metrics';
 export * from './services/moderation';
