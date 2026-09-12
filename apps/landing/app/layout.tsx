@@ -6,8 +6,8 @@ import type { Metadata } from 'next';
 import { Providers } from './providers';
 
 const DESCRIPTION =
-  'Descubra shows, samba, sertanejo e transmissão de jogo nos bares da sua cidade. ' +
-  'Filtre por estilo musical, distância e diferenciais do bar. Grátis, sem anúncios.';
+  'O que tá rolando nos botecos perto de você: shows, samba, roda de choro e transmissão de jogo. ' +
+  'Horários, couvert e filtros de verdade — 100% grátis e sem anúncios.';
 
 // Base absoluta das imagens de OG/Twitter. NEXT_PUBLIC_SITE_URL manda quando
 // houver domínio próprio; na Vercel, VERCEL_URL já resolve por deploy. Sem
