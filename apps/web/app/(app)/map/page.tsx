@@ -2,6 +2,7 @@
 
 import {
   FEATURES,
+  flattenPages,
   type LatLng,
   resolveMapOrigin,
   trackEvent,
@@ -26,7 +27,8 @@ const FALLBACK_CENTER: [number, number] = [-27.5954, -48.548];
 function MapContent() {
   const city = useActiveCity();
   const [userCoords, setUserCoords] = useState<LatLng | null>(null);
-  const { data: establishments } = useEstablishmentsQuery(city?.id);
+  const establishmentsQuery = useEstablishmentsQuery(city?.id);
+  const establishments = flattenPages(establishmentsQuery.data);
 
   useEffect(() => {
     if (!navigator.geolocation) return;

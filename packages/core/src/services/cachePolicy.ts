@@ -9,8 +9,9 @@ import { type Query } from '@tanstack/react-query';
  * Campo novo em `establishmentSchema`/`eventSchema` conta como mudança de shape:
  * a rehidratação NÃO passa pelo Zod, então o `.default([])` não preenche o campo
  * ausente e o cache antigo chega à UI incompleto. v1 -> v2: `attributes`.
+ * v2 -> v3: listagens viraram infinite query ({ pages, pageParams }).
  */
-export const CACHE_BUSTER = 'v2';
+export const CACHE_BUSTER = 'v3';
 
 /**
  * Allowlist do catálogo: apenas o PRIMEIRO segmento da queryKey é considerado.

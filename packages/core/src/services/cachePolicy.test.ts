@@ -115,6 +115,6 @@ describe('CACHE_BUSTER', () => {
         'whatsapp',
       ].sort(),
     );
-    expect(CACHE_BUSTER).toBe('v2');
+    expect(CACHE_BUSTER).toBe('v3');
   });
 });

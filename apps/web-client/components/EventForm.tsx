@@ -305,7 +305,7 @@ export function EventForm({ event }: { event?: Event }) {
           <Field label="Estilo musical">
             <Select
               value={draft.musicStyleId}
-              className="pr-3"
+              className="px-3"
               onValueChange={(v) => set('musicStyleId', v)}
             >
               <Select.Option value={NO_STYLE}>Selecione</Select.Option>

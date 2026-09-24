@@ -24,6 +24,7 @@ export * from './utils/images';
 export * from './utils/links';
 export * from './utils/masks';
 export * from './utils/moderation';
+export * from './utils/pagination';
 export * from './utils/platform';
 export * from './utils/pressGuard';
 export * from './utils/responsiveType';
@@ -36,10 +37,14 @@ export * from './utils/status-light';
 export * from './hooks/queries';
 export * from './hooks/useActiveCity';
 export * from './hooks/useConnectivity';
+export * from './hooks/useEstablishmentRating';
 export * from './hooks/useFeatureFlag';
+export * from './hooks/useGuardedClick';
 export * from './hooks/useGuardedPress';
+export * from './hooks/useInfiniteScrollSentinel';
 export * from './hooks/useNearbyEstablishments';
 export * from './hooks/useRecordView';
+export * from './hooks/useResendCooldown';
 export * from './hooks/useStatusLight';
 export * from './lib/queryClient';
 export * from './lib/queryPersister';
@@ -50,6 +55,7 @@ export {
   deleteEstablishment,
   deleteEvent,
   deleteNotification,
+  getCatalogCounts,
   getEstablishment,
   getEvent,
   listCities,
@@ -66,6 +72,7 @@ export {
 } from './services/catalog';
 export * from './services/connectivity';
 export * from './services/establishment-owner';
+export * from './services/establishment-ratings';
 export * from './services/favorites';
 export * from './services/metrics';
 export * from './services/moderation';

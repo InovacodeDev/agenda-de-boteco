@@ -6,7 +6,7 @@ import {
   deleteOwnedEventGroup,
   listOwnedEvents,
 } from '@agenda/core';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { useOwnedEstablishmentId } from './use-owned-establishment';
 
@@ -20,9 +20,11 @@ import { useOwnedEstablishmentId } from './use-owned-establishment';
 export function useOwnedEvents() {
   const { data: establishmentId } = useOwnedEstablishmentId();
 
-  return useQuery({
+  return useInfiniteQuery({
     queryKey: catalogKeys.events.owned(establishmentId ?? ''),
-    queryFn: () => listOwnedEvents(establishmentId ?? ''),
+    queryFn: ({ pageParam }) => listOwnedEvents(establishmentId ?? '', pageParam),
+    initialPageParam: null as string | null,
+    getNextPageParam: (lastPage) => lastPage.nextCursor,
     enabled: Boolean(establishmentId),
   });
 }

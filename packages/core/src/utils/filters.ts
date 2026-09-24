@@ -385,8 +385,10 @@ export function applyEstablishmentFilters(
     if (params.minRating && establishment.rating_avg < params.minRating) return false;
 
     // Sem origin não há como medir raio — o controle de distância vira no-op,
-    // igual ao `nearMe` do feed de eventos sem localização.
-    if (params.origin && params.maxDistanceKm !== undefined) {
+    // igual ao `nearMe` do feed de eventos sem localização. Estabelecimentos
+    // sem coordenadas reais (0, 0) não são descartados pelo filtro de raio.
+    const isUngeocoded = establishment.lat === 0 && establishment.lng === 0;
+    if (!isUngeocoded && params.origin && params.maxDistanceKm !== undefined) {
       const distanceKm = haversineDistanceKm(params.origin, {
         lat: establishment.lat,
         lng: establishment.lng,
@@ -437,6 +439,13 @@ export function sortEstablishmentsByDistance(
 ): Establishment[] {
   if (!origin) return [...establishments];
   return [...establishments].sort((a, b) => {
+    const isUngeocodedA = a.lat === 0 && a.lng === 0;
+    const isUngeocodedB = b.lat === 0 && b.lng === 0;
+    if (isUngeocodedA && isUngeocodedB) {
+      return a.name.localeCompare(b.name, 'pt-BR');
+    }
+    if (isUngeocodedA) return 1;
+    if (isUngeocodedB) return -1;
     const da = haversineDistanceKm(origin, { lat: a.lat, lng: a.lng });
     const db = haversineDistanceKm(origin, { lat: b.lat, lng: b.lng });
     return da !== db ? da - db : a.name.localeCompare(b.name, 'pt-BR');

@@ -14,11 +14,11 @@ import { ScrollView, Text, View } from '@/tw';
  *
  * O conteúdo deve permanecer consistente com o Data Safety (Google) e o App
  * Privacy (Apple): localização precisa para funcionalidade, e-mail/nome via login,
- * favoritos/preferências, processadores Supabase e Google Maps. Atualize os três
- * juntos sempre que a coleta mudar.
+ * favoritos/preferências, dados de uso via PostHog, processadores Supabase,
+ * Google Maps e PostHog. Atualize os três juntos sempre que a coleta mudar.
  */
 
-const LAST_UPDATED = '16 de junho de 2026';
+const LAST_UPDATED = '3 de setembro de 2026';
 const CONTACT_EMAIL = 'contato@inovacode.dev';
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
@@ -87,8 +87,8 @@ export default function PrivacyPolicyScreen() {
             <Text className="text-foreground">Localização precisa (GPS).</Text> Coletada somente
             quando você toca para usar sua localização ou ativa o filtro “perto de mim”, para mostrar
             bares e eventos próximos. Você pode recusar — nesse caso usamos o centro da cidade que
-            você escolheu. A localização não é armazenada nem usada para rastreamento ou
-            publicidade.
+            você escolheu. A localização não é armazenada nos nossos servidores e é arredondada antes
+            de qualquer uso interno, nunca sendo usada para rastreamento ou publicidade.
           </Bullet>
           <Bullet>
             <Text className="text-foreground">E-mail e nome.</Text> Coletados apenas se você criar
@@ -100,10 +100,15 @@ export default function PrivacyPolicyScreen() {
             estabelecimentos que você favorita, a cidade selecionada e seus filtros de busca. Ficam
             no seu dispositivo e, se você estiver logado, também na sua conta para sincronização.
           </Bullet>
+          <Bullet>
+            <Text className="text-foreground">Dados de uso do app.</Text> Quais telas são abertas e
+            quais ações são realizadas, associados a um identificador aleatório da sua conta — nunca
+            ao seu e-mail, telefone ou documento. Servem para entender o que funciona e o que
+            precisa melhorar. Detalhes no item 4.
+          </Bullet>
           <Paragraph>
             Não coletamos telefone, foto, dados financeiros, dados de saúde, identificadores de
-            publicidade, dados de uso para analytics nem qualquer informação para rastrear você em
-            outros apps ou sites.
+            publicidade nem qualquer informação para rastrear você em outros apps ou sites.
           </Paragraph>
         </Section>
 
@@ -131,6 +136,11 @@ export default function PrivacyPolicyScreen() {
           <Bullet>
             <Text className="text-foreground">Google e Apple (login social)</Text> — apenas se você
             escolher entrar com essas contas, para autenticar você.
+          </Bullet>
+          <Bullet>
+            <Text className="text-foreground">PostHog</Text> — recebe os dados de uso descritos no
+            item 2, identificados apenas por um código aleatório. Nunca enviamos e-mail, telefone,
+            documento ou sua localização exata para esse serviço.
           </Bullet>
           <Paragraph>
             Não vendemos seus dados pessoais e não os compartilhamos para fins de marketing.

@@ -12,9 +12,12 @@ import {
   signOut,
   updatePassword,
   useAuthStore,
+  useGuardedClick,
+  useResendCooldown,
   verifyEmailOtp,
 } from '@agenda/core';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
@@ -67,6 +70,8 @@ export default function LoginPage() {
   /** Ligado enquanto o cadastro conclui, para o efeito de sessão não interferir. */
   const [claiming, setClaiming] = useState(false);
   const [notice, setNotice] = useState<Notice | null>(null);
+
+  const resend = useResendCooldown();
 
   const unavailable = status === 'unavailable';
 
@@ -145,6 +150,7 @@ export default function LoginPage() {
     try {
       await signInWithEmailOtp(email.trim());
       setSignUpStep('code');
+      resend.start();
       setNotice({
         tone: 'success',
         message: `Enviamos um código para ${email.trim()}. Ele confirma que o e-mail é seu.`,
@@ -202,6 +208,9 @@ export default function LoginPage() {
       message: 'Enviamos um link de recuperação para o seu e-mail.',
     });
   };
+
+  const guardedSubmit = useGuardedClick(handleSubmit);
+  const guardedReset = useGuardedClick(handleReset);
 
   return (
     <main className="flex min-h-dvh flex-col items-center justify-center bg-[image:var(--gradient-night)] px-6 py-12">
@@ -290,7 +299,7 @@ export default function LoginPage() {
             className="mt-5 flex flex-col"
             onSubmit={(event) => {
               event.preventDefault();
-              handleSubmit();
+              guardedSubmit?.();
             }}
           >
             <label htmlFor="email" className={LABEL_CLASS}>
@@ -339,7 +348,7 @@ export default function LoginPage() {
                     <button
                       type="button"
                       disabled={busy}
-                      onClick={handleReset}
+                      onClick={guardedReset}
                       className="text-[13px] font-medium text-primary underline-offset-2 hover:underline"
                     >
                       Esqueci minha senha
@@ -373,18 +382,35 @@ export default function LoginPage() {
             </button>
 
             {tab === 'signUp' && signUpStep === 'code' ? (
-              <button
-                type="button"
-                disabled={busy}
-                onClick={() => {
-                  setSignUpStep('email');
-                  setCode('');
-                  setNotice(null);
-                }}
-                className="mt-3 text-[13px] font-medium text-muted-foreground underline-offset-2 hover:underline"
-              >
-                Usar outro e-mail
-              </button>
+              <>
+                <button
+                  type="button"
+                  disabled={busy || !resend.isReady}
+                  onClick={() => void handleSignUpStart()}
+                  className="mt-3 text-[13px] font-medium text-muted-foreground underline-offset-2 hover:underline disabled:opacity-50"
+                >
+                  {resend.isReady ? 'Reenviar código' : `Reenviar em ${resend.remainingSeconds}s`}
+                </button>
+                {resend.hasReachedHourlyLimit ? (
+                  <p className="mt-2 text-[12px] text-muted-foreground">
+                    Você já solicitou 2 códigos nesta hora. Aguarde antes de tentar novamente para
+                    não ser bloqueado temporariamente.
+                  </p>
+                ) : null}
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={() => {
+                    setSignUpStep('email');
+                    setCode('');
+                    setNotice(null);
+                    resend.reset();
+                  }}
+                  className="mt-3 text-[13px] font-medium text-muted-foreground underline-offset-2 hover:underline"
+                >
+                  Usar outro e-mail
+                </button>
+              </>
             ) : null}
           </form>
 
@@ -397,7 +423,7 @@ export default function LoginPage() {
           <button
             type="button"
             disabled={busy || unavailable}
-            onClick={() => {
+            onClick={useGuardedClick(() => {
               // Pela aba "Criar conta", o Google também é cadastro. O OAuth
               // recarrega a página, então a intenção vai para sessionStorage —
               // é o único caminho em que ela não cabe no state em memória.
@@ -405,13 +431,20 @@ export default function LoginPage() {
                 window.sessionStorage.setItem(OAUTH_SIGNUP_KEY, '1');
               }
               void run(() => signInWithOAuth('google'));
-            }}
+            })}
             className="flex h-12 w-full items-center justify-center gap-2.5 rounded-xl border border-border bg-surface text-[14px] font-medium text-foreground transition-colors hover:bg-surface-elevated disabled:opacity-50"
           >
             <GoogleIcon className="h-[18px] w-[18px]" />
             Google
           </button>
         </div>
+
+        <Link
+          href="/privacy"
+          className="mt-4 text-center text-[12px] text-muted-foreground underline-offset-2 hover:underline"
+        >
+          Política de Privacidade
+        </Link>
       </div>
     </main>
   );

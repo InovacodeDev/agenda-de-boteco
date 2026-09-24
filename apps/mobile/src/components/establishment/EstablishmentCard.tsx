@@ -36,13 +36,26 @@ export const EstablishmentCard = memo(function EstablishmentCard({
       onPress={() => router.push(`/establishment/${establishment.id}`)}
       className="bg-card flex-row gap-3 rounded-2xl p-3 active:opacity-90"
     >
-      <Image
-        source={{ uri: establishment.logo_url }}
-        recyclingKey={establishment.id}
-        contentFit="cover"
-        className="h-20 w-20 rounded-xl"
-        accessibilityLabel={establishment.name}
-      />
+      {establishment.logo_url ? (
+        <Image
+          source={{ uri: establishment.logo_url }}
+          recyclingKey={establishment.id}
+          contentFit="cover"
+          className="h-20 w-20 rounded-xl"
+          accessibilityLabel={establishment.name}
+        />
+      ) : (
+        <View
+          accessibilityRole="image"
+          accessibilityLabel={`Foto de ${establishment.name} indisponível`}
+          className="bg-surface-elevated h-20 w-20 shrink-0 items-center justify-center gap-1 rounded-xl border border-border/40"
+        >
+          <Icon name="store" size={24} color={colors.mutedForeground} />
+          <Text className="font-body text-muted-foreground text-[10px] font-medium leading-none">
+            Sem foto
+          </Text>
+        </View>
+      )}
       <View className="flex-1 justify-center gap-0.5">
         {/* Semáforo no topo: embaixo, junto dos chips, ele quebrava para uma
             segunda linha quando os diferenciais eram longos. */}

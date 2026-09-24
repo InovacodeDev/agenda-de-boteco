@@ -14,6 +14,7 @@ import {
   trackEvent,
   useEventStatusLight,
   useFavoritesStore,
+  useGuardedClick,
 } from '@agenda/core';
 import Link from 'next/link';
 import { useMemo } from 'react';
@@ -68,6 +69,12 @@ export function EventCard({
   const requireAuth = useRequireAuth();
   const isFavorite = useFavoritesStore((state) => state.eventIds.includes(event.id));
   const toggleEvent = useFavoritesStore((state) => state.toggleEvent);
+  const guardedToggle = useGuardedClick(() =>
+    requireAuth(() => {
+      toggleEvent(event.id);
+      trackEvent('favorite_toggled', { isFavorite: !isFavorite });
+    }),
+  );
 
   const badge = event.courtesy ? 'Cortesia' : event.promo ? 'Promoção' : null;
   const price = formatPrice(event.cover_charge);
@@ -119,10 +126,7 @@ export function EventCard({
               onClick={(clickEvent) => {
                 clickEvent.preventDefault();
                 clickEvent.stopPropagation();
-                requireAuth(() => {
-                  toggleEvent(event.id);
-                  trackEvent('favorite_toggled', { isFavorite: !isFavorite });
-                });
+                guardedToggle?.();
               }}
               className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-background/40 transition-opacity hover:opacity-80"
             >

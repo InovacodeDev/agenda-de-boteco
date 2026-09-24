@@ -9,6 +9,8 @@ import {
   signInWithEmailOtp,
   signInWithOAuth,
   useAuthStore,
+  useGuardedClick,
+  useResendCooldown,
   verifyEmailOtp,
 } from '@agenda/core';
 import Image from 'next/image';
@@ -46,6 +48,8 @@ export default function LoginPage() {
   const [busy, setBusy] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  const resend = useResendCooldown();
+
   const unavailable = status === 'unavailable';
 
   useEffect(() => {
@@ -82,12 +86,16 @@ export default function LoginPage() {
     try {
       await signInWithEmailOtp(email.trim());
       setEmailStep('sent');
+      resend.start();
     } catch (error: unknown) {
       setErrorMessage(getFriendlyErrorMessage(error));
     } finally {
       setBusy(false);
     }
   };
+
+  const guardedProvider = useGuardedClick(handleProvider);
+  const guardedEmail = useGuardedClick(handleEmail);
 
   const handleVerifyOtp = async () => {
     if (otpToken.trim().length !== 6) return;
@@ -101,6 +109,8 @@ export default function LoginPage() {
       setBusy(false);
     }
   };
+
+  const guardedVerifyOtp = useGuardedClick(handleVerifyOtp);
 
   return (
     <main className="flex min-h-dvh flex-col justify-end bg-[linear-gradient(160deg,#1A122B,#0F0F0F)] p-6">
@@ -137,7 +147,7 @@ export default function LoginPage() {
           <button
             type="button"
             disabled={unavailable || busy || emailStep !== 'hidden'}
-            onClick={() => handleProvider('google')}
+            onClick={() => guardedProvider?.('google')}
             className={`${BTN_BASE} bg-foreground text-background`}
           >
             <GoogleIcon size={18} />
@@ -150,7 +160,7 @@ export default function LoginPage() {
             <button
               type="button"
               disabled={unavailable || busy || emailStep !== 'hidden'}
-              onClick={() => handleProvider('apple')}
+              onClick={() => guardedProvider?.('apple')}
               className={`${BTN_BASE} border-border text-foreground border bg-transparent`}
             >
               <AppleIcon size={16} />
@@ -173,7 +183,7 @@ export default function LoginPage() {
               <button
                 type="button"
                 disabled={unavailable || busy || !email.trim()}
-                onClick={handleEmail}
+                onClick={guardedEmail}
                 className={`${BTN_BASE} bg-accent text-accent-foreground`}
               >
                 <EnvelopeIcon size={16} />
@@ -197,7 +207,7 @@ export default function LoginPage() {
               <button
                 type="button"
                 disabled={unavailable || busy || otpToken.trim().length !== 6}
-                onClick={handleVerifyOtp}
+                onClick={guardedVerifyOtp}
                 className={`${BTN_BASE} bg-accent text-accent-foreground`}
               >
                 <EnvelopeIcon size={16} />
@@ -205,10 +215,25 @@ export default function LoginPage() {
               </button>
               <button
                 type="button"
+                disabled={busy || !resend.isReady}
+                onClick={guardedEmail}
+                className={`${BTN_BASE} border-border text-foreground border bg-transparent`}
+              >
+                {resend.isReady ? 'Reenviar código' : `Reenviar em ${resend.remainingSeconds}s`}
+              </button>
+              {resend.hasReachedHourlyLimit ? (
+                <p className="text-muted-foreground text-center text-[12px]">
+                  Você já solicitou 2 códigos nesta hora. Aguarde antes de tentar novamente para
+                  não ser bloqueado temporariamente.
+                </p>
+              ) : null}
+              <button
+                type="button"
                 disabled={busy}
                 onClick={() => {
                   setEmailStep('editing');
                   setOtpToken('');
+                  resend.reset();
                 }}
                 className={`${BTN_BASE} border-border bg-background text-foreground border`}
               >
@@ -219,7 +244,7 @@ export default function LoginPage() {
             <button
               type="button"
               disabled={unavailable || busy}
-              onClick={handleEmail}
+              onClick={guardedEmail}
               className={`${BTN_BASE} border-border text-foreground border bg-transparent`}
             >
               <EnvelopeIcon size={16} />

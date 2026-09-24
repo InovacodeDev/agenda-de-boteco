@@ -55,7 +55,7 @@ export function TimePicker({
     >
       <Popover.Trigger
         aria-label={ariaLabel}
-        className={`${SELECT_CLASS} flex items-center justify-between ${className} pr-3`}
+        className={`${SELECT_CLASS} flex items-center justify-between ${className} px-3`}
       >
         <span className={value ? '' : 'text-muted-foreground'}>{value || placeholder}</span>
         <ClockIcon size={16} weight="bold" className="text-muted-foreground" />

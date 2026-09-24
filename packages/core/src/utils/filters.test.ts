@@ -646,6 +646,45 @@ describe('applyEstablishmentFilters + filtros próprios do bar', () => {
     }
   });
 
+  it('não descarta estabelecimentos com lat=0 e lng=0 pelo raio de distância', () => {
+    const origin = { lat: FLN[0].lat, lng: FLN[0].lng };
+    const ungeocoded: Establishment = {
+      ...FLN[0],
+      id: 'bar-novo-sem-coords',
+      name: 'Bar Novo Sem Coordenadas',
+      lat: 0,
+      lng: 0,
+    };
+    const result = applyEstablishmentFilters([ungeocoded, ...FLN], {
+      cityId: 'fln',
+      origin,
+      maxDistanceKm: 1,
+    });
+    expect(result.map((e) => e.id)).toContain('bar-novo-sem-coords');
+  });
+
+  it('ordena estabelecimentos sem coordenadas após os geocodificados na busca por distância', () => {
+    const origin = { lat: FLN[0].lat, lng: FLN[0].lng };
+    const ungeocodedA: Establishment = {
+      ...FLN[0],
+      id: 'bar-z',
+      name: 'Zeta Bar Sem Coords',
+      lat: 0,
+      lng: 0,
+    };
+    const ungeocodedB: Establishment = {
+      ...FLN[0],
+      id: 'bar-a',
+      name: 'Alfa Bar Sem Coords',
+      lat: 0,
+      lng: 0,
+    };
+    const result = sortEstablishmentsByDistance([ungeocodedA, FLN[0], ungeocodedB], origin);
+    expect(result[0].id).toBe(FLN[0].id);
+    expect(result[1].id).toBe('bar-a');
+    expect(result[2].id).toBe('bar-z');
+  });
+
   it('maxDistanceKm sem origin é no-op', () => {
     const result = applyEstablishmentFilters(FLN, { cityId: 'fln', maxDistanceKm: 0.001 });
     expect(result).toHaveLength(FLN.length);

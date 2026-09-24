@@ -1,17 +1,22 @@
 /**
  * Hooks finos de leitura sobre o service @/services/catalog. Cada hook envolve
- * uma das 8 funções públicas do service com sua query key da factory. Sem lógica
+ * uma das funções públicas do service com sua query key da factory. Sem lógica
  * própria além de wiring key + queryFn (+ enabled em queries dependentes de id).
+ * As listagens paginadas usam useInfiniteQuery: pageParam é o cursor opaco de
+ * CatalogPage, e getNextPageParam lê nextCursor direto (null encerra a lista).
+ * useCatalogCountsQuery é a exceção: agregado único, useQuery normal.
  */
-import { useQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 
 import * as catalog from '../services/catalog';
 import { catalogKeys } from '../services/queryKeys';
 
 export function useEventsQuery() {
-  return useQuery({
-    queryKey: catalogKeys.events.root,
-    queryFn: () => catalog.listEvents(),
+  return useInfiniteQuery({
+    queryKey: catalogKeys.events.list,
+    queryFn: ({ pageParam }) => catalog.listEvents(pageParam),
+    initialPageParam: null as string | null,
+    getNextPageParam: (lastPage) => lastPage.nextCursor,
   });
 }
 
@@ -24,9 +29,11 @@ export function useEventQuery(id: string) {
 }
 
 export function useEstablishmentsQuery(cityId?: string) {
-  return useQuery({
+  return useInfiniteQuery({
     queryKey: catalogKeys.establishments.list(cityId),
-    queryFn: () => catalog.listEstablishments(cityId),
+    queryFn: ({ pageParam }) => catalog.listEstablishments(cityId, pageParam),
+    initialPageParam: null as string | null,
+    getNextPageParam: (lastPage) => lastPage.nextCursor,
   });
 }
 
@@ -39,9 +46,11 @@ export function useEstablishmentQuery(id: string) {
 }
 
 export function useEventsByEstablishmentQuery(establishmentId: string) {
-  return useQuery({
+  return useInfiniteQuery({
     queryKey: catalogKeys.events.byEstablishment(establishmentId),
-    queryFn: () => catalog.listEventsByEstablishment(establishmentId),
+    queryFn: ({ pageParam }) => catalog.listEventsByEstablishment(establishmentId, pageParam),
+    initialPageParam: null as string | null,
+    getNextPageParam: (lastPage) => lastPage.nextCursor,
     enabled: !!establishmentId,
   });
 }
@@ -61,9 +70,11 @@ export function useCitiesQuery() {
 }
 
 export function useNotificationsQuery() {
-  return useQuery({
+  return useInfiniteQuery({
     queryKey: catalogKeys.notifications,
-    queryFn: () => catalog.listNotifications(),
+    queryFn: ({ pageParam }) => catalog.listNotifications(pageParam),
+    initialPageParam: null as string | null,
+    getNextPageParam: (lastPage) => lastPage.nextCursor,
   });
 }
 
@@ -72,5 +83,13 @@ export function useEventAttractionsQuery(eventId: string) {
     queryKey: catalogKeys.events.attractions(eventId),
     queryFn: () => catalog.listEventAttractions(eventId),
     enabled: !!eventId,
+  });
+}
+
+/** Totais do catálogo (dashboard admin) — agregado único, não paginado. */
+export function useCatalogCountsQuery() {
+  return useQuery({
+    queryKey: catalogKeys.counts,
+    queryFn: () => catalog.getCatalogCounts(),
   });
 }

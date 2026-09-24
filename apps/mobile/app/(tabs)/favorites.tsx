@@ -1,3 +1,4 @@
+import { flattenPages } from '@agenda/core';
 import { FlashList } from '@shopify/flash-list';
 import { useRouter } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
@@ -30,8 +31,10 @@ export default function FavoritesScreen() {
   const eventIds = useFavoritesStore((state) => state.eventIds);
   const establishmentIds = useFavoritesStore((state) => state.establishmentIds);
 
-  const { data: events } = useEventsQuery();
-  const { data: establishments } = useEstablishmentsQuery();
+  const eventsQuery = useEventsQuery();
+  const establishmentsQuery = useEstablishmentsQuery();
+  const events = flattenPages(eventsQuery.data);
+  const establishments = flattenPages(establishmentsQuery.data);
   const { data: musicStyles } = useMusicStylesQuery();
 
   const establishmentsById = useMemo(

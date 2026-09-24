@@ -1,6 +1,6 @@
 {
   "name": "@agenda/web-artists",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "private": true,
   "type": "module",
   "scripts": {
@@ -13,7 +13,7 @@
   "dependencies": {
     "@agenda/core": "workspace:*",
     "@agenda/shared-ui": "workspace:*",
-    "next": "^15.1.0",
+    "next": "^16.3.4",
     "posthog-js": "^1",
     "react": "19.2.3",
     "react-dom": "19.2.3",

@@ -1,3 +1,4 @@
+import { flattenPages } from '@agenda/core';
 import { FlashList } from '@shopify/flash-list';
 import * as Location from 'expo-location';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -36,7 +37,7 @@ import {
   type EstablishmentSortBy,
   hasActiveFilters,
 } from '@/utils/filters';
-import { type LatLng, resolveNearbyOrigin } from '@/utils/geo';
+import { isVirtualCityId, type LatLng, resolveNearbyOrigin } from '@/utils/geo';
 
 const ItemSeparator = () => <View className="h-4" />;
 
@@ -46,13 +47,20 @@ export default function FeedScreen() {
   const [barSort, setBarSort] = useState<EstablishmentSortBy>(DEFAULT_ESTABLISHMENT_SORT);
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
 
+  const city = useActiveCity();
   const filters = useFiltersStore((state) => state.filters);
   const setQuery = useFiltersStore((state) => state.setQuery);
   const toggleStyle = useFiltersStore((state) => state.toggleStyle);
 
+  const effectiveCityId =
+    filters.cityIds && filters.cityIds.length > 0
+      ? (filters.cityIds.length === 1 ? filters.cityIds[0] : undefined)
+      : (city && !isVirtualCityId(city.id) ? city.id : undefined);
 
-  const { data: events } = useEventsQuery();
-  const { data: establishments } = useEstablishmentsQuery();
+  const eventsQuery = useEventsQuery();
+  const establishmentsQuery = useEstablishmentsQuery(effectiveCityId);
+  const events = flattenPages(eventsQuery.data);
+  const establishments = flattenPages(establishmentsQuery.data);
   const { data: musicStyles } = useMusicStylesQuery();
 
   // "agora" estável por render da lista, atualizado a cada minuto
@@ -104,8 +112,6 @@ export default function FeedScreen() {
 
   const establishmentsById = useMemo(() => indexById(establishments ?? []), [establishments]);
   const stylesById = useMemo(() => indexById(musicStyles ?? []), [musicStyles]);
-
-  const city = useActiveCity();
 
   // Proximidade server-side: quando nearMe está ativo, resolve a origem (GPS ou
   // centro da cidade) e busca os establishments dentro do raio via RPC PostGIS.
@@ -184,6 +190,46 @@ export default function FeedScreen() {
       now,
     ],
   );
+
+  /**
+   * Filtro por cidade/atributo e client-side sobre o catalogo global
+   * paginado — uma FlashList com 0 itens renderizados nao tem conteudo para
+   * rolar, entao onEndReached nunca dispara. Sem isso, um filtro que zera a
+   * lista visivel trava fetchNextPage pra sempre mesmo havendo paginas com
+   * resultado la na frente.
+   */
+  const {
+    fetchNextPage: fetchNextEvents,
+    hasNextPage: hasNextEvents,
+    isFetchingNextPage: isFetchingNextEvents,
+  } = eventsQuery;
+  useEffect(() => {
+    if (activeTab === 0 && filteredEvents.length === 0 && hasNextEvents && !isFetchingNextEvents) {
+      void fetchNextEvents();
+    }
+  }, [activeTab, filteredEvents.length, fetchNextEvents, hasNextEvents, isFetchingNextEvents]);
+
+  const {
+    fetchNextPage: fetchNextEstablishments,
+    hasNextPage: hasNextEstablishments,
+    isFetchingNextPage: isFetchingNextEstablishments,
+  } = establishmentsQuery;
+  useEffect(() => {
+    if (
+      activeTab === 1 &&
+      cityEstablishments.length === 0 &&
+      hasNextEstablishments &&
+      !isFetchingNextEstablishments
+    ) {
+      void fetchNextEstablishments();
+    }
+  }, [
+    activeTab,
+    cityEstablishments.length,
+    fetchNextEstablishments,
+    hasNextEstablishments,
+    isFetchingNextEstablishments,
+  ]);
 
   // Estável enquanto os índices não mudam: junto com EventCard memoizado e os
   // caches de lookup, evita re-render dos cards visíveis a cada tecla da busca.
@@ -288,6 +334,12 @@ export default function FeedScreen() {
           ItemSeparatorComponent={ItemSeparator}
           ListHeaderComponent={eventsListHeader}
           renderItem={renderEvent}
+          onEndReachedThreshold={0.2}
+          onEndReached={() => {
+            if (eventsQuery.hasNextPage && !eventsQuery.isFetchingNextPage) {
+              void eventsQuery.fetchNextPage();
+            }
+          }}
         />
       ) : (
         <FlashList
@@ -298,6 +350,12 @@ export default function FeedScreen() {
           ItemSeparatorComponent={() => <View className="h-3" />}
           ListHeaderComponent={barsListHeader}
           renderItem={({ item }) => <EstablishmentCard establishment={item} />}
+          onEndReachedThreshold={0.2}
+          onEndReached={() => {
+            if (establishmentsQuery.hasNextPage && !establishmentsQuery.isFetchingNextPage) {
+              void establishmentsQuery.fetchNextPage();
+            }
+          }}
         />
       )}
       <FiltersSheet

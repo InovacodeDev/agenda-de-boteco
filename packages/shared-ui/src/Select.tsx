@@ -22,7 +22,7 @@ function SelectOption({ value, children, className = '' }: SelectOptionProps) {
   return (
     <RadixSelect.Item
       value={value === '' ? EMPTY_VALUE : value}
-      className={`relative flex h-10 cursor-pointer select-none items-center rounded-lg pl-4 pr-9 text-[14px] text-foreground outline-none data-[highlighted]:bg-surface-elevated data-[highlighted]:outline-none ${className}`}
+      className={`text-foreground data-[highlighted]:bg-surface-elevated relative flex h-10 cursor-pointer items-center rounded-lg pr-9 pl-4 text-[14px] outline-none select-none data-[highlighted]:outline-none ${className}`}
     >
       <RadixSelect.ItemText>{children}</RadixSelect.ItemText>
       <RadixSelect.ItemIndicator className="absolute right-3 inline-flex items-center">
@@ -59,7 +59,7 @@ export function Select({
       >
         <RadixSelect.Trigger
           id={id}
-          className={`${SELECT_CLASS} data-[placeholder]:text-muted-foreground flex items-center justify-between ${className}`}
+          className={`${SELECT_CLASS} data-[placeholder]:text-muted-foreground flex items-center justify-between px-3 ${className}`}
         >
           <RadixSelect.Value placeholder={placeholder} />
           <RadixSelect.Icon className="text-muted-foreground">
@@ -70,7 +70,7 @@ export function Select({
           <RadixSelect.Content
             position="popper"
             sideOffset={4}
-            className="z-50 max-h-[--radix-select-content-available-height] w-[--radix-select-trigger-width] overflow-hidden rounded-2xl border border-border bg-card p-1 shadow-lg"
+            className="border-border bg-card z-50 max-h-[--radix-select-content-available-height] w-[--radix-select-trigger-width] overflow-hidden rounded-2xl border p-1 shadow-lg"
           >
             <RadixSelect.Viewport className="p-1">{children}</RadixSelect.Viewport>
           </RadixSelect.Content>

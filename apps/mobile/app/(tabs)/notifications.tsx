@@ -1,3 +1,4 @@
+import { flattenPages } from '@agenda/core';
 import { FlashList } from '@shopify/flash-list';
 
 import { UnderConstruction } from '@/components/feedback/UnderConstruction';
@@ -18,7 +19,8 @@ function NotificationsContent() {
   const readIds = useNotificationsStore((state) => state.readIds);
   const markRead = useNotificationsStore((state) => state.markRead);
 
-  const { data: notifications } = useNotificationsQuery();
+  const notificationsQuery = useNotificationsQuery();
+  const notifications = flattenPages(notificationsQuery.data);
 
   const renderNotification = ({ item }: { item: AppNotification }) => (
     <NotificationCard
@@ -31,13 +33,19 @@ function NotificationsContent() {
   return (
     <Screen header={<ScreenHeader title="Avisos" showLogo />}>
       <FlashList
-        data={notifications ?? []}
+        data={notifications}
         keyExtractor={(notification) => notification.id}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ padding: 16 }}
         ItemSeparatorComponent={ItemSeparator}
         renderItem={renderNotification}
         extraData={readIds}
+        onEndReachedThreshold={0.2}
+        onEndReached={() => {
+          if (notificationsQuery.hasNextPage && !notificationsQuery.isFetchingNextPage) {
+            void notificationsQuery.fetchNextPage();
+          }
+        }}
       />
     </Screen>
   );

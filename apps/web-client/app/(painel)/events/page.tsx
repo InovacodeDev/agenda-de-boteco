@@ -1,6 +1,11 @@
 'use client';
 
-import { type Event, getFriendlyErrorMessage } from '@agenda/core';
+import {
+  type Event,
+  flattenPages,
+  getFriendlyErrorMessage,
+  useInfiniteScrollSentinel,
+} from '@agenda/core';
 import { CalendarBlankIcon, PlusIcon } from '@phosphor-icons/react';
 import Link from 'next/link';
 import { useState } from 'react';
@@ -17,7 +22,14 @@ const NEW_EVENT_BUTTON =
   'bg-primary text-primary-foreground shadow-neon inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-medium transition-opacity hover:opacity-90';
 
 export default function EventosPage() {
-  const { data: events, isPending } = useOwnedEvents();
+  const eventsQuery = useOwnedEvents();
+  const events = flattenPages(eventsQuery.data);
+  const isPending = eventsQuery.isPending;
+  const sentinelRef = useInfiniteScrollSentinel({
+    fetchNextPage: eventsQuery.fetchNextPage,
+    hasNextPage: eventsQuery.hasNextPage,
+    isFetchingNextPage: eventsQuery.isFetchingNextPage,
+  });
   const deleteEvent = useDeleteOwnedEvent();
   const deleteGroup = useDeleteOwnedEventGroup();
   // Evento aguardando confirmação de exclusão. Só a série abre diálogo próprio;
@@ -71,12 +83,18 @@ export default function EventosPage() {
 
       {isPending ? (
         <p className="text-muted-foreground text-sm">Carregando…</p>
-      ) : events && events.length > 0 ? (
-        <section className="grid gap-4 lg:grid-cols-2">
-          {events.map((event) => (
-            <EventCard key={event.id} event={event} onDelete={() => handleDelete(event)} />
-          ))}
-        </section>
+      ) : events.length > 0 ? (
+        <>
+          <section className="grid gap-4 lg:grid-cols-2">
+            {events.map((event) => (
+              <EventCard key={event.id} event={event} onDelete={() => handleDelete(event)} />
+            ))}
+          </section>
+          <div ref={sentinelRef} aria-hidden className="h-px" />
+          {eventsQuery.isFetchingNextPage ? (
+            <p className="text-muted-foreground py-4 text-center text-[13px]">Carregando mais…</p>
+          ) : null}
+        </>
       ) : (
         <EmptyState
           icon={<CalendarBlankIcon size={32} weight="regular" aria-hidden />}

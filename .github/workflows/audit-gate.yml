@@ -1,0 +1,59 @@
+name: Audit Gate
+
+# A auditoria de seguranca/performance/supply-chain/LGPD vence em 30 dias.
+# Passado o prazo, nenhum merge entra nos canais ate que uma nova seja feita e
+# registrada em AUDIT_LOG.md + .github/audit-log.json.
+on:
+  pull_request:
+    branches: [ alfa, beta, release ]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: audit-gate-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Audit freshness
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Require a recent audit
+        run: |
+          set -euo pipefail
+
+          json_file=".github/audit-log.json"
+          md_file="AUDIT_LOG.md"
+
+          if [ ! -f "$json_file" ] || [ ! -f "$md_file" ]; then
+            echo "::error::Arquivos de auditoria ausentes ($md_file / $json_file)."
+            exit 1
+          fi
+
+          last_date=$(node -e "process.stdout.write(require('./$json_file').lastAuditDate)")
+          max_age=$(node -e "process.stdout.write(String(require('./$json_file').maxAgeDays ?? 30))")
+
+          # A data do markdown e a fonte que humanos leem; divergencia entre as
+          # duas significa que uma delas nao foi revisada. O hook pre-commit ja
+          # barra isso localmente, mas commits podem chegar sem o hook ativo.
+          md_date=$(grep -oE '^\| [0-9]{4}-[0-9]{2}-[0-9]{2}' "$md_file" | head -1 | tr -d '| ')
+          if [ "$md_date" != "$last_date" ]; then
+            echo "::error::Data divergente: $md_file diz $md_date e $json_file diz $last_date."
+            exit 1
+          fi
+
+          last_epoch=$(date -u -d "$last_date" +%s)
+          now_epoch=$(date -u +%s)
+          age_days=$(( (now_epoch - last_epoch) / 86400 ))
+
+          if [ "$age_days" -gt "$max_age" ]; then
+            echo "::error::Ultima auditoria foi ha $age_days dias (limite: $max_age). Rode uma nova auditoria e atualize $md_file e $json_file antes de mergear."
+            exit 1
+          fi
+
+          echo "Auditoria de $last_date tem $age_days dias — dentro do limite de $max_age."

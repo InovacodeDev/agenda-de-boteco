@@ -5,6 +5,7 @@ import {
   buildInstagramProfileUrl,
   buildWhatsAppUrl,
   FEATURES,
+  flattenPages,
   formatInstagramHandle,
   getAttributeMeta,
   indexById,
@@ -14,6 +15,7 @@ import {
   useEstablishmentQuery,
   useEventsByEstablishmentQuery,
   useFavoritesStore,
+  useGuardedClick,
   useMusicStylesQuery,
   useRecordView,
 } from '@agenda/core';
@@ -22,6 +24,7 @@ import { useMemo, useState } from 'react';
 
 import { EstablishmentDetailAgendaItem } from '@/components/establishment/EstablishmentDetailAgendaItem';
 import { EstablishmentDetailMenuItem } from '@/components/establishment/EstablishmentDetailMenuItem';
+import { EstablishmentRatingSection } from '@/components/establishment/EstablishmentRatingSection';
 import { UnderConstruction } from '@/components/feedback/UnderConstruction';
 import {
   ArrowLeftIcon,
@@ -31,6 +34,7 @@ import {
   InstagramIcon,
   MapPinIcon,
   StarIcon,
+  StorefrontIcon,
 } from '@/components/ui/icons';
 import { SegmentedTabs } from '@/components/ui/SegmentedTabs';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
@@ -85,7 +89,8 @@ function EstablishmentDetailContent() {
   const establishmentQuery = useEstablishmentQuery(id);
   const establishment = establishmentQuery.data;
   // O service/core já ordena a agenda por starts_at asc.
-  const { data: agendaData } = useEventsByEstablishmentQuery(id);
+  const agendaQuery = useEventsByEstablishmentQuery(id);
+  const agendaData = flattenPages(agendaQuery.data);
   const { data: musicStyles } = useMusicStylesQuery();
   const stylesById = useMemo(() => indexById(musicStyles ?? []), [musicStyles]);
   useRecordView({ establishmentId: establishment?.id });
@@ -100,6 +105,11 @@ function EstablishmentDetailContent() {
   );
   const toggleEstablishment = useFavoritesStore((state) => state.toggleEstablishment);
   const requireAuth = useRequireAuth();
+  const guardedToggle = useGuardedClick(
+    establishment
+      ? () => requireAuth(() => toggleEstablishment(establishment.id))
+      : undefined,
+  );
 
   if (establishmentQuery.isLoading) {
     return (
@@ -126,13 +136,20 @@ function EstablishmentDetailContent() {
 
   return (
     <section className="flex flex-col">
-      <div className="relative -mx-4 h-65 sm:mx-0 sm:overflow-hidden sm:rounded-2xl">
+      <div className="relative -mx-4 h-65 bg-surface-elevated sm:mx-0 sm:overflow-hidden sm:rounded-2xl">
         {/* ponytail: <img> evita config de remotePatterns do next/image p/ covers externos */}
-        <img
-          src={establishment.cover_url}
-          alt={establishment.name}
-          className="h-full w-full object-cover"
-        />
+        {establishment.cover_url ? (
+          <img
+            src={establishment.cover_url}
+            alt={establishment.name}
+            className="h-full w-full object-cover"
+          />
+        ) : (
+          <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-gradient-to-b from-card to-background text-muted-foreground">
+            <StorefrontIcon size={44} className="text-muted-foreground/40" />
+            <span className="text-[12px] font-medium text-muted-foreground/60">Sem foto de capa</span>
+          </div>
+        )}
         <div className="absolute inset-x-0 bottom-0 h-3/5 bg-gradient-to-b from-transparent to-black/85" />
         <button
           type="button"
@@ -145,7 +162,7 @@ function EstablishmentDetailContent() {
         <button
           type="button"
           aria-label={isFavorite ? 'Remover dos favoritos' : 'Favoritar estabelecimento'}
-          onClick={() => requireAuth(() => toggleEstablishment(establishment.id))}
+          onClick={() => guardedToggle?.()}
           className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-background/60 transition-opacity hover:opacity-80"
         >
           <HeartIcon
@@ -159,11 +176,22 @@ function EstablishmentDetailContent() {
       <div className="flex flex-col gap-4 pt-4">
         {/* z-10: a logo sobe sobre a capa, que vem antes no fluxo e a cobriria. */}
         <div className="relative z-10 -mt-14 flex items-end gap-3">
-          <img
-            src={establishment.logo_url}
-            alt={`Logo ${establishment.name}`}
-            className="h-16 w-16 shrink-0 rounded-2xl border-2 border-background object-cover"
-          />
+          {establishment.logo_url ? (
+            <img
+              src={establishment.logo_url}
+              alt={`Logo ${establishment.name}`}
+              className="h-16 w-16 shrink-0 rounded-2xl border-2 border-background object-cover"
+            />
+          ) : (
+            <div
+              role="img"
+              aria-label="Sem foto"
+              className="flex h-16 w-16 shrink-0 flex-col items-center justify-center gap-0.5 rounded-2xl border-2 border-background bg-surface-elevated text-muted-foreground"
+            >
+              <StorefrontIcon size={22} className="text-muted-foreground/70" />
+              <span className="text-[9px] font-medium leading-none">Sem foto</span>
+            </div>
+          )}
           <div className="flex flex-col gap-0.5 pb-1">
             <p className="text-[12px] font-[family-name:var(--font-body)] text-muted-foreground">
               {establishment.ambiance} · {establishment.price_range}
@@ -315,12 +343,11 @@ function EstablishmentDetailContent() {
         ) : null}
 
         {activeTab === 3 ? (
-          <div className="flex flex-col items-center gap-2 rounded-2xl bg-card p-6">
-            <RatingStars avg={establishment.rating_avg} count={establishment.rating_count} />
-            <p className="text-center text-[13px] font-[family-name:var(--font-body)] text-muted-foreground">
-              Avaliações de {establishment.rating_count} pessoas que já curtiram a noite por aqui.
-            </p>
-          </div>
+          <EstablishmentRatingSection
+            establishmentId={establishment.id}
+            ratingAvg={establishment.rating_avg}
+            ratingCount={establishment.rating_count}
+          />
         ) : null}
 
         <div className="flex flex-wrap gap-3 pb-4">

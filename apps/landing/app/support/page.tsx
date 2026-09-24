@@ -7,7 +7,8 @@ const WEB_BASE = process.env.NEXT_PUBLIC_WEB_URL ?? '';
 
 export const metadata: Metadata = {
   title: 'Suporte',
-  description: 'Ajuda, contato e respostas para as dúvidas mais comuns do Agenda de Boteco.',
+  description:
+    'Ajuda, contato e tira-dúvidas: a gente tá aqui pra te ouvir e resolver qualquer questão no Agenda de Boteco.',
 };
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
@@ -58,57 +59,63 @@ export default function SupportPage() {
           Suporte
         </h1>
         <p className="mb-6 text-[13px] font-[family-name:var(--font-body)] text-muted-foreground">
-          Agenda de Boteco · Ajuda e contato
+          Como podemos te ajudar hoje?
         </p>
 
         <Section title="Fale com a gente">
           <Paragraph>
-            Dúvidas, problemas no app, sugestões ou pedidos de correção de informações de um bar ou
-            evento: escreva para{' '}
+            Tem alguma dúvida, encontrou algum bug no app, quer sugerir um boteco ou pedir a
+            correção de horários e eventos? Escreva para{' '}
             <a
               href={`mailto:${CONTACT_EMAIL}`}
               className="text-primary underline-offset-4 hover:underline"
             >
               {CONTACT_EMAIL}
             </a>
-            . Respondemos em até 3 dias úteis.
+            . A gente lê todas as mensagens e responde rapidinho, em até 3 dias úteis.
           </Paragraph>
           <Paragraph>
-            Para agilizar, conte qual aparelho você usa (iPhone ou Android), a versão do app e o que
-            aconteceu.
+            Se puder, nos conte qual aparelho você usa (iPhone ou Android) e o que aconteceu — isso
+            ajuda a gente a resolver na hora!
           </Paragraph>
         </Section>
 
         <Section title="Perguntas frequentes">
           <Bullet>
-            <span className="text-foreground">O app é gratuito?</span> Sim. Não vendemos bebidas,
-            não cobramos nada e não exibimos anúncios.
+            <span className="text-foreground">O app é gratuito?</span> Sim, 100% gratuito. Você não
+            paga nada pra usar, não tem anúncio pulando na tela e não cobramos mensalidade.
           </Bullet>
           <Bullet>
-            <span className="text-foreground">Preciso criar conta?</span> Não. A conta serve para
-            sincronizar seus favoritos entre dispositivos.
+            <span className="text-foreground">Preciso criar conta?</span> Não precisa. Você navega
+            pela programação, usa filtros e explora o mapa livremente. A conta só serve se você
+            quiser sincronizar seus botecos favoritos entre aparelhos.
           </Bullet>
           <Bullet>
-            <span className="text-foreground">Não aparecem bares na minha cidade.</span> Ainda
-            estamos expandindo a cobertura. Nos escreva dizendo qual cidade você quer ver no app.
+            <span className="text-foreground">Não aparecem bares na minha cidade.</span> Estamos
+            começando por Florianópolis e região e crescendo aos poucos. Mande um e-mail pra gente
+            dizendo qual cidade você quer ver por aqui!
           </Bullet>
           <Bullet>
-            <span className="text-foreground">A informação de um bar ou evento está errada.</span>{' '}
-            Mande o nome do local e o que está incorreto que corrigimos.
+            <span className="text-foreground">A informação de um bar ou evento está desatualizada?</span>{' '}
+            Mande o nome do local e o que mudou que a gente atualiza rapidinho para manter a agenda
+            tinindo.
           </Bullet>
           <Bullet>
-            <span className="text-foreground">Sou dono de um bar e quero divulgar meus eventos.</span>{' '}
-            Entre em contato pelo e-mail acima para liberarmos seu acesso ao painel.
+            <span className="text-foreground">Sou dono de bar e quero divulgar meus eventos.</span>{' '}
+            O painel de estabelecimentos está no forno! Escreva para o e-mail acima que garantimos
+            seu acesso antecipado.
           </Bullet>
           <Bullet>
-            <span className="text-foreground">O app pede minha localização?</span> Só quando você
-            usa o filtro de proximidade. Recusar é possível — usamos o centro da cidade escolhida.
+            <span className="text-foreground">O app pede minha localização?</span> Só se você quiser
+            que o app calcule os botecos mais perto de onde você tá agora. Se preferir não liberar o
+            GPS, sem problemas: basta escolher a cidade na lista e navegar normalmente.
           </Bullet>
         </Section>
 
-        <Section title="Conta e dados">
+        <Section title="Conta e privacidade">
           <Paragraph>
-            Você pode excluir sua conta e os dados associados a qualquer momento pela página de{' '}
+            Sua privacidade é levada a sério. Você pode excluir sua conta e os dados associados a
+            qualquer momento pela página de{' '}
             <a
               href={`${WEB_BASE}/app/excluir-conta`}
               className="text-primary underline-offset-4 hover:underline"

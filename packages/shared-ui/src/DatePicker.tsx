@@ -83,7 +83,7 @@ export function DatePicker({
     <Popover.Root open={open} onOpenChange={setOpen}>
       <Popover.Trigger
         aria-label={ariaLabel}
-        className={`${SELECT_CLASS} flex items-center justify-between ${className} pr-3`}
+        className={`${SELECT_CLASS} flex items-center justify-between ${className} px-3`}
       >
         <span className={selected ? '' : 'text-muted-foreground'}>
           {selected ? DATE_FORMAT.format(selected) : placeholder}

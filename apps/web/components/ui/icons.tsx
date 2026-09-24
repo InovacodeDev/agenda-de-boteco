@@ -36,7 +36,7 @@ import {
   SparkleIcon,
   SpeakerHighIcon,
   StarIcon as PhStarIcon,
-  StorefrontIcon,
+  StorefrontIcon as PhStorefrontIcon,
   TelevisionIcon,
   TicketIcon as PhTicketIcon,
   TreeIcon,
@@ -96,9 +96,18 @@ export function ArrowLeftIcon({ size = 16, className }: IconProps) {
   return <PhArrowLeftIcon size={size} className={className} />;
 }
 
-/** Estrela de avaliação: sempre preenchida (indicador, não estado alternável). */
-export function StarIcon({ size = 16, className }: IconProps) {
-  return <PhStarIcon size={size} className={className} weight="fill" />;
+export function StarIcon({
+  filled = true,
+  size = 16,
+  className,
+}: IconProps & { filled?: boolean }) {
+  return (
+    <PhStarIcon
+      size={size}
+      className={className}
+      weight={filled ? 'fill' : 'regular'}
+    />
+  );
 }
 
 export function SparklesIcon({ size = 16, className }: IconProps) {
@@ -117,6 +126,10 @@ export function InstagramIcon({ size = 16, className }: IconProps) {
   return <PhInstagramLogoIcon size={size} className={className} />;
 }
 
+export function StorefrontIcon({ size = 16, className }: IconProps) {
+  return <PhStorefrontIcon size={size} className={className} />;
+}
+
 /**
  * Ícones dos atributos de estabelecimento, indexados pelo campo `icon` de
  * ESTABLISHMENT_ATTRIBUTES (@agenda/core). Mesmas chaves do iconMap do mobile.
@@ -128,7 +141,7 @@ export const ATTRIBUTE_ICONS: Record<string, PhosphorIcon> = {
   'beer': BeerSteinIcon,
   'cheering': MegaphoneIcon,
   'cocktail': MartiniIcon,
-  'counter': StorefrontIcon,
+  'counter': PhStorefrontIcon,
   'date': WineIcon,
   'deals': CheersIcon,
   'dj': DiscIcon,

@@ -280,6 +280,7 @@ O `services/catalog.ts` é uma **fachada** com fallback para mock (`packages/cor
 - **Bundle:** `optimizePackageImports: ['@phosphor-icons/react']` obrigatório nos apps Next que usam Phosphor (`apps/web`, `apps/admin`) — sem isso o dev server transpila 9k+ módulos. Ícones sempre atrás da fachada (`apps/mobile/src/components/ui/iconMap.ts`, `apps/web/components/ui/icons.tsx`), nunca import direto espalhado.
 - **Code splitting:** `next/dynamic` com `ssr: false` para o que não sobrevive a SSR (padrão do Leaflet em `apps/web/app/(app)/mapa/page.tsx`).
 - **SEO:** ver Seção 0.7. Validar JSON-LD no Rich Results Test antes de considerar a tarefa concluída; `sitemap.ts` deriva dos slugs reais do banco.
+- **Paginação obrigatória:** listagem nova que possa crescer sem teto nasce paginada por cursor (`CatalogPage<T>` / `flattenPages` de `@agenda/core`), com infinite scroll disparando a 80% do conteúdo (`onEndReachedThreshold={0.2}` no `FlashList`; `useInfiniteScrollSentinel` na web). Trazer o conjunto inteiro numa query só é aceitável em catálogo pequeno e limitado por natureza (estilos musicais, cidades) — e isso deve estar dito no docblock da função.
 
 ---
 
@@ -569,6 +570,23 @@ Qualquer item violado **bloqueia** merge/commit até correção.
 + - Busca de cidades no filtro volta a funcionar no Android e no iOS
 ```
 
+### 18. ❌ Auditoria vencida ou arquivos de auditoria dessincronizados
+
+**Regra:** `AUDIT_LOG.md` e `.github/audit-log.json` carregam a mesma data e mudam no mesmo commit. Auditoria com mais de 30 dias bloqueia merge em `alfa`/`beta`/`release` até que uma nova seja registrada (Seção 9).
+**Prompt de correção:** "Sincronize a data nos dois arquivos de auditoria, ou conduza uma nova auditoria cobrindo o escopo mínimo da Seção 9 e registre-a em ambos no mesmo commit."
+
+```diff
+  {
+-   "lastAuditDate": "2026-07-01",
++   "lastAuditDate": "2026-09-03",
+    "issue": 94
+  }
+
+  | Data | Issue | Escopo |
+  | --- | --- | --- |
++ | 2026-09-03 | #94 | Performance, dependências, LGPD, rate limiting |
+```
+
 ---
 
 ## 6. 📝 CHANGELOG Obrigatório em Cada Commit
@@ -583,6 +601,8 @@ Qualquer item violado **bloqueia** merge/commit até correção.
 | `apps/web/` | `apps/web/CHANGELOG-<branch>-v<próxima-versão>.md` |
 | `apps/admin/` | `apps/admin/CHANGELOG-<branch>-v<próxima-versão>.md` |
 | `apps/landing/` | `apps/landing/CHANGELOG-<branch>-v<próxima-versão>.md` |
+| `apps/web-client/` | `apps/web-client/CHANGELOG-<branch>-v<próxima-versão>.md` |
+| `apps/web-artists/` | `apps/web-artists/CHANGELOG-<branch>-v<próxima-versão>.md` |
 | `packages/core/` | `packages/core/CHANGELOG-<branch>-v<próxima-versão>.md` |
 
 Commit que toca mais de um projeto atualiza o CHANGELOG de **cada** um, na perspectiva daquele projeto.
@@ -592,11 +612,13 @@ Commit que toca mais de um projeto atualiza o CHANGELOG de **cada** um, na persp
 Sempre a versão **imediatamente posterior** à do `package.json`, incrementando o **patch** (salvo instrução explícita para minor/major). Versões atuais:
 
 ```txt
-apps/mobile   0.1.3  → CHANGELOG-alfa-v0.1.4.md
-apps/web      0.0.2  → CHANGELOG-alfa-v0.0.3.md
-apps/admin    1.0.1  → CHANGELOG-alfa-v1.0.2.md
-apps/landing  0.0.3  → CHANGELOG-alfa-v0.0.4.md
-packages/core 1.0.0  → CHANGELOG-alfa-v1.0.1.md
+apps/mobile       0.2.1  → CHANGELOG-alfa-v0.2.2.md
+apps/web          0.0.5  → CHANGELOG-alfa-v0.0.6.md
+apps/admin        1.0.3  → CHANGELOG-alfa-v1.0.4.md
+apps/landing      0.0.4  → CHANGELOG-alfa-v0.0.5.md
+apps/web-client   0.0.3  → CHANGELOG-alfa-v0.0.4.md
+apps/web-artists  0.0.3  → CHANGELOG-alfa-v0.0.4.md
+packages/core     1.0.1  → CHANGELOG-alfa-v1.0.2.md
 ```
 
 **Durante os commits, não bumpar o `package.json`** — o CHANGELOG antecipa a versão; o bump acontece uma vez, ao abrir o PR (Seção 7).
@@ -647,3 +669,51 @@ Registrados aqui para que reviews não os confundam com regressão — e para qu
 | Sem rota de exportação de dados (LGPD art. 18) | fluxo de conta | 5 — ao ampliar coleta de dado pessoal |
 | Sem APM (Sentry/OTel) e sem E2E/Codecov | monorepo | requer autorização de dependência (15) |
 | `apps/web-client/` untracked com build residual | `apps/web-client/` | limpeza, não bloqueia |
+
+---
+
+## 9. 🗓️ Auditoria Periódica Obrigatória
+
+Auditoria de segurança, performance, supply chain e LGPD **vence em 30 dias**.
+Passado o prazo, merge em `alfa`, `beta` e `release` fica bloqueado até que uma
+nova seja concluída e registrada.
+
+### Os dois arquivos de registro
+
+| Arquivo | Público | Conteúdo |
+| --- | --- | --- |
+| `AUDIT_LOG.md` (raiz) | humano | tabela com data ISO, issue e escopo |
+| `.github/audit-log.json` | máquina | `lastAuditDate`, `issue`, `scope`, `maxAgeDays` |
+
+Os dois carregam a mesma data e **são alterados sempre no mesmo commit**. O hook
+`.githooks/pre-commit` recusa o commit quando um é alterado sem o outro, ou
+quando as datas divergem. Ative os hooks uma vez após clonar:
+
+```bash
+bash scripts/setup-hooks.bash
+```
+
+### O gate de CI
+
+`.github/workflows/audit-gate.yml` roda em **todo** PR para `alfa`, `beta` e
+`release` — sem filtro por tipo de arquivo alterado — e falha quando:
+
+- os arquivos de auditoria estão ausentes;
+- as datas dos dois divergem (rede de segurança para commits feitos sem o hook ativo);
+- `hoje − lastAuditDate` passa de `maxAgeDays` (30).
+
+O bloqueio efetivo de merge depende de o check estar marcado como obrigatório
+nas configurações de branch protection do repositório — isso é configuração do
+GitHub, não versionada aqui.
+
+### Escopo mínimo de uma auditoria
+
+Uma auditoria só pode ser registrada como concluída se cobriu, no mínimo:
+
+1. `pnpm audit` com o resultado registrado (contagem por severidade, antes/depois).
+2. Busca por consulta ao banco dentro de laço (N+1) nas camadas de service e query.
+3. Conferência de que toda listagem nova está paginada.
+4. Mapa de dados pessoais: todo campo de PII coletado tem finalidade declarada na
+   política de privacidade do app correspondente, e tem consumidor real no código.
+5. Confirmação de que os limites de `[auth.rate_limit]` em `supabase/config.toml`
+   continuam coerentes com os cooldowns de UI.

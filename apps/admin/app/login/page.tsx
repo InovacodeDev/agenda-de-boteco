@@ -5,6 +5,8 @@ import {
   identifyAnalyticsUser,
   signInWithEmailOtp,
   useAuthStore,
+  useGuardedClick,
+  useResendCooldown,
   verifyEmailOtp,
 } from '@agenda/core';
 import {
@@ -37,6 +39,8 @@ export default function LoginPage() {
   const [busy, setBusy] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  const resend = useResendCooldown();
+
   const unavailable = status === 'unavailable';
 
   useEffect(() => {
@@ -53,12 +57,15 @@ export default function LoginPage() {
     try {
       await signInWithEmailOtp(email.trim());
       setStep('sent');
+      resend.start();
     } catch (error: unknown) {
       setErrorMessage(getFriendlyErrorMessage(error));
     } finally {
       setBusy(false);
     }
   };
+
+  const guardedSendCode = useGuardedClick(handleSendCode);
 
   const handleVerify = async () => {
     if (otpToken.trim().length !== 6) return;
@@ -72,6 +79,8 @@ export default function LoginPage() {
       setBusy(false);
     }
   };
+
+  const guardedVerify = useGuardedClick(handleVerify);
 
   return (
     <main className="flex min-h-dvh items-center justify-center bg-surface p-6">
@@ -111,7 +120,7 @@ export default function LoginPage() {
             <button
               type="button"
               disabled={unavailable || busy || !email.trim()}
-              onClick={handleSendCode}
+              onClick={guardedSendCode}
               className={BTN_PRIMARY}
             >
               {busy ? 'Enviando…' : 'Enviar código de acesso'}
@@ -134,17 +143,32 @@ export default function LoginPage() {
             <button
               type="button"
               disabled={unavailable || busy || otpToken.trim().length !== 6}
-              onClick={handleVerify}
+              onClick={guardedVerify}
               className={BTN_PRIMARY}
             >
               {busy ? 'Verificando…' : 'Entrar'}
             </button>
             <button
               type="button"
+              disabled={busy || !resend.isReady}
+              onClick={guardedSendCode}
+              className={BTN_GHOST}
+            >
+              {resend.isReady ? 'Reenviar código' : `Reenviar em ${resend.remainingSeconds}s`}
+            </button>
+            {resend.hasReachedHourlyLimit ? (
+              <p className="text-[12px] text-muted-foreground">
+                Você já solicitou 2 códigos nesta hora. Aguarde antes de tentar novamente para não
+                ser bloqueado temporariamente.
+              </p>
+            ) : null}
+            <button
+              type="button"
               disabled={busy}
               onClick={() => {
                 setStep('editing');
                 setOtpToken('');
+                resend.reset();
               }}
               className={BTN_GHOST}
             >

@@ -2,7 +2,9 @@
 
 import {
   FEATURES,
+  flattenPages,
   isNotificationUnread,
+  useInfiniteScrollSentinel,
   useNotificationsQuery,
   useNotificationsStore,
 } from '@agenda/core';
@@ -34,8 +36,13 @@ function NotificationsContent() {
   const markRead = useNotificationsStore((state) => state.markRead);
   const markAllRead = useNotificationsStore((state) => state.markAllRead);
 
-  const { data: notifications } = useNotificationsQuery();
-  const list = notifications ?? [];
+  const notificationsQuery = useNotificationsQuery();
+  const list = flattenPages(notificationsQuery.data);
+  const sentinelRef = useInfiniteScrollSentinel({
+    fetchNextPage: notificationsQuery.fetchNextPage,
+    hasNextPage: notificationsQuery.hasNextPage,
+    isFetchingNextPage: notificationsQuery.isFetchingNextPage,
+  });
 
   const isUnread = (n: { id: string; read: boolean }) => isNotificationUnread(readIds, n);
   const hasUnread = list.some(isUnread);
@@ -81,6 +88,10 @@ function NotificationsContent() {
               onPress={markRead}
             />
           ))}
+          <div ref={sentinelRef} aria-hidden className="h-px" />
+          {notificationsQuery.isFetchingNextPage ? (
+            <p className="text-muted-foreground py-4 text-center text-[13px]">Carregando mais…</p>
+          ) : null}
         </div>
       )}
     </section>
