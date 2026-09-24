@@ -1,23 +1,13 @@
 'use client';
 
-import { useFeatureFlag } from '@agenda/core';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { AccountSection } from '@/components/settings/AccountSection';
 import { DangerZoneSection } from '@/components/settings/DangerZoneSection';
 import { NotificationsSection } from '@/components/settings/NotificationsSection';
 
 export default function SettingsPage() {
-  const router = useRouter();
-  const enabled = useFeatureFlag('panel-settings');
   const [globalNotice, setGlobalNotice] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!enabled) router.replace('/');
-  }, [enabled, router]);
-
-  if (!enabled) return null;
 
   const showNotice = (message: string) => {
     setGlobalNotice(message);
