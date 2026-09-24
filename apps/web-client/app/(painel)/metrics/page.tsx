@@ -1,11 +1,10 @@
 'use client';
 
 import type { Event } from '@agenda/core';
-import { flattenPages, useFeatureFlag } from '@agenda/core';
+import { flattenPages } from '@agenda/core';
 import { Select } from '@agenda/shared-ui';
 import { EyeIcon, HeartIcon, MapPinIcon } from '@phosphor-icons/react';
-import { useRouter } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { EventMetricsDrawer } from '@/components/EventMetricsDrawer';
 import { EventMetricsRow } from '@/components/EventMetricsRow';
@@ -20,15 +19,8 @@ const PERIOD_OPTIONS = [
 ];
 
 export default function MetricasPage() {
-  const router = useRouter();
-  const enabled = useFeatureFlag('panel-metrics');
   const [sinceDays, setSinceDays] = useState('30');
   const [activeEvent, setActiveEvent] = useState<Event | null>(null);
-
-  // Feature ainda não liberada: acesso direto por URL volta ao dashboard.
-  useEffect(() => {
-    if (!enabled) router.replace('/');
-  }, [enabled, router]);
 
   const eventsQuery = useOwnedEvents();
   const events = flattenPages(eventsQuery.data);
@@ -64,8 +56,6 @@ export default function MetricasPage() {
   const activeSummary = activeEvent
     ? (byEvent.find((summary) => summary.eventId === activeEvent.id) ?? null)
     : null;
-
-  if (!enabled) return null;
 
   return (
     <div className="mx-auto flex w-full max-w-300 flex-col gap-6">

@@ -1,6 +1,5 @@
 'use client';
 
-import { useFeatureFlag } from '@agenda/core';
 import {
   CalendarBlankIcon,
   ChartBarIcon,
@@ -19,27 +18,18 @@ import { usePathname } from 'next/navigation';
 import logo from '@/public/logo.png';
 
 // Ordem confirmada na spec (seção 10).
-const NAV: { href: string; label: string; icon: Icon; flag?: string }[] = [
+const NAV: { href: string; label: string; icon: Icon }[] = [
   { href: '/', label: 'Dashboard', icon: SquaresFourIcon },
   { href: '/events', label: 'Eventos', icon: CalendarBlankIcon },
   { href: '/artists', label: 'Artistas', icon: MicrophoneStageIcon },
   { href: '/profile', label: 'Perfil', icon: StorefrontIcon },
-  { href: '/metrics', label: 'Métricas', icon: ChartBarIcon, flag: 'panel-metrics' },
-  { href: '/reviews', label: 'Avaliações', icon: StarIcon, flag: 'panel-reviews' },
-  { href: '/settings', label: 'Configurações', icon: GearIcon, flag: 'panel-settings' },
+  { href: '/metrics', label: 'Métricas', icon: ChartBarIcon },
+  { href: '/reviews', label: 'Avaliações', icon: StarIcon },
+  { href: '/settings', label: 'Configurações', icon: GearIcon },
 ];
 
 export function Sidebar() {
   const pathname = usePathname();
-  const metricsEnabled = useFeatureFlag('panel-metrics');
-  const reviewsEnabled = useFeatureFlag('panel-reviews');
-  const settingsEnabled = useFeatureFlag('panel-settings');
-  const flags: Record<string, boolean> = {
-    'panel-metrics': metricsEnabled,
-    'panel-reviews': reviewsEnabled,
-    'panel-settings': settingsEnabled,
-  };
-  const nav = NAV.filter((item) => !item.flag || flags[item.flag]);
 
   return (
     /* h-full + overflow-hidden: a sidebar ocupa a altura da tela e não acompanha
@@ -60,7 +50,7 @@ export function Sidebar() {
       </div>
 
       <nav className="flex flex-1 flex-col gap-1">
-        {nav.map((item) => {
+        {NAV.map((item) => {
           const active = item.href === '/' ? pathname === '/' : pathname.startsWith(item.href);
           const ItemIcon = item.icon;
           return (

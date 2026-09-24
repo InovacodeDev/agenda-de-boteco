@@ -3,12 +3,10 @@
 import {
   calculateRatingsSummary,
   formatEventDate,
-  useFeatureFlag,
   useOwnerEstablishmentRatings,
 } from '@agenda/core';
 import { StarIcon } from '@phosphor-icons/react';
-import { useRouter } from 'next/navigation';
-import { useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 
 import { EmptyState } from '@/components/ui/EmptyState';
 import { useOwnedEstablishmentId } from '@/hooks/use-owned-establishment';
@@ -16,13 +14,6 @@ import { useOwnedEstablishmentId } from '@/hooks/use-owned-establishment';
 const STAR_LEVELS = [5, 4, 3, 2, 1] as const;
 
 export default function AvaliacoesPage() {
-  const router = useRouter();
-  const enabled = useFeatureFlag('panel-reviews');
-
-  useEffect(() => {
-    if (!enabled) router.replace('/');
-  }, [enabled, router]);
-
   const { data: establishmentId, isPending: isEstIdPending } =
     useOwnedEstablishmentId();
   const { data: ratings, isPending: isRatingsPending } =
@@ -34,8 +25,6 @@ export default function AvaliacoesPage() {
     () => calculateRatingsSummary(ratings ?? []),
     [ratings],
   );
-
-  if (!enabled) return null;
 
   return (
     <div className="mx-auto flex w-full max-w-300 flex-col gap-6">
