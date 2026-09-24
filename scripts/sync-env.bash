@@ -42,4 +42,7 @@ upsert_var "$ROOT/apps/admin/.env" NEXT_PUBLIC_SUPABASE_ANON_KEY "$anon_key"
 upsert_var "$ROOT/apps/mobile/.env" EXPO_PUBLIC_SUPABASE_URL "$api_url"
 upsert_var "$ROOT/apps/mobile/.env" EXPO_PUBLIC_SUPABASE_ANON_KEY "$anon_key"
 
-echo "Supabase local ativo em $api_url — .env sincronizados (web, web-client, admin, mobile)."
+upsert_var "$ROOT/apps/mobile-client/.env" EXPO_PUBLIC_SUPABASE_URL "$api_url"
+upsert_var "$ROOT/apps/mobile-client/.env" EXPO_PUBLIC_SUPABASE_ANON_KEY "$anon_key"
+
+echo "Supabase local ativo em $api_url — .env sincronizados (web, web-client, admin, mobile, mobile-client)."

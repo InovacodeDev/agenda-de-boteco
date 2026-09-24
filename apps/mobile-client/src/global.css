@@ -1,0 +1,88 @@
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/preflight.css' layer(base);
+@import 'tailwindcss/utilities.css';
+
+@media android {
+  :root {
+    --font-mono: monospace;
+    --font-rounded: normal;
+    --font-serif: serif;
+    --font-sans: normal;
+  }
+}
+
+@media ios {
+  :root {
+    --font-mono: ui-monospace;
+    --font-serif: ui-serif;
+    --font-sans: system-ui;
+    --font-rounded: ui-rounded;
+  }
+}
+
+@layer theme {
+  @theme {
+    --color-background: #0f0f0f;
+    --color-foreground: #fafafa;
+    --color-card: #171717;
+    --color-card-foreground: #fafafa;
+    --color-popover: #141414;
+    --color-popover-foreground: #fafafa;
+    --color-surface: #1c1c1c;
+    --color-surface-elevated: #242424;
+    --color-muted: #242424;
+    --color-muted-foreground: #a6a6a6;
+    --color-input: #242424;
+    --color-secondary: #242424;
+    --color-secondary-foreground: #fafafa;
+    --color-border: #292929;
+    --color-primary: #1dd75e;
+    --color-primary-foreground: #0f0f0f;
+    --color-primary-glow: #3df57d;
+    --color-accent: #f9a91f;
+    --color-accent-foreground: #0f0f0f;
+    --color-destructive: #f53d7a;
+    --color-destructive-foreground: #fafafa;
+    --color-ring: #1dd75e;
+
+    --font-heading: 'SpaceGrotesk_700Bold';
+    --font-heading-medium: 'SpaceGrotesk_500Medium';
+    --font-body: 'Inter_400Regular';
+    --font-body-medium: 'Inter_500Medium';
+    --font-body-semibold: 'Inter_600SemiBold';
+    --font-body-bold: 'Inter_700Bold';
+  }
+}
+
+@layer utilities {
+  .bg-primary {
+    background-color: var(--color-primary);
+  }
+  .bg-accent {
+    background-color: var(--color-accent);
+  }
+  .bg-destructive {
+    background-color: var(--color-destructive);
+  }
+  .bg-foreground {
+    background-color: var(--color-foreground);
+  }
+  .text-primary {
+    color: var(--color-primary);
+  }
+  .text-primary-foreground {
+    color: var(--color-primary-foreground);
+  }
+  .text-accent {
+    color: var(--color-accent);
+  }
+  .text-accent-foreground {
+    color: var(--color-accent-foreground);
+  }
+  .text-destructive {
+    color: var(--color-destructive);
+  }
+  .text-destructive-foreground {
+    color: var(--color-destructive-foreground);
+  }
+}

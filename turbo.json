@@ -20,6 +20,9 @@
     "@agenda/shared-ui#build": {
       "outputs": []
     },
+    "@agenda/shared-ui-mobile#build": {
+      "outputs": []
+    },
     "dev": {
       "cache": false,
       "persistent": true
