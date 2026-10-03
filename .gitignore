@@ -169,3 +169,6 @@ Desktop.ini
 # -----------------------------------------------------------------------------
 apps/mobile/ios/
 apps/mobile/android/
+
+# graft's local graph cache — regenerable, not committed (run `graft build`).
+/graft/
