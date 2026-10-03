@@ -11,18 +11,43 @@ import {
 } from 'react-native';
 import { useCssElement } from 'react-native-css';
 
-const useStyledElement = useCssElement as unknown as (
+const useCssElementLoose = useCssElement as unknown as (
   component: unknown,
   props: object,
   mapping: Record<string, 'style' | 'contentContainerStyle'>,
 ) => React.ReactElement;
+
+/**
+ * NOTE: react-native-css descarta os estilos da className quando a prop de
+ * destino chega como chave presente com valor `undefined` (ex.: `style={style}`
+ * repassado por Button/Screen) — a tela inteira fica sem cor nem layout.
+ * Removemos essas chaves antes de delegar.
+ */
+function withoutUndefinedTargets(props: object): object {
+  const record = props as Record<string, unknown>;
+  if (record.style !== undefined && record.contentContainerStyle !== undefined) {
+    return props;
+  }
+  const { style, contentContainerStyle, ...rest } = record;
+  return {
+    ...rest,
+    ...(style === undefined ? {} : { style }),
+    ...(contentContainerStyle === undefined ? {} : { contentContainerStyle }),
+  };
+}
+
+const useStyledElement = (
+  component: unknown,
+  props: object,
+  mapping: Record<string, 'style' | 'contentContainerStyle'>,
+): React.ReactElement => useCssElementLoose(component, withoutUndefinedTargets(props), mapping);
 
 export type ViewProps = React.ComponentProps<typeof RNView> & {
   className?: string;
 };
 
 export const View = (props: ViewProps): React.ReactElement => {
-  return useCssElement(RNView, props, { className: 'style' });
+  return useStyledElement(RNView, props, { className: 'style' });
 };
 View.displayName = 'CSS(View)';
 
@@ -31,7 +56,7 @@ export type TextProps = React.ComponentProps<typeof RNText> & {
 };
 
 export const Text = (props: TextProps): React.ReactElement => {
-  return useCssElement(RNText, props, { className: 'style' });
+  return useStyledElement(RNText, props, { className: 'style' });
 };
 Text.displayName = 'CSS(Text)';
 
@@ -63,7 +88,7 @@ export type TextInputProps = React.ComponentProps<typeof RNTextInput> & {
 };
 
 export const TextInput = (props: TextInputProps): React.ReactElement => {
-  return useCssElement(RNTextInput, props, { className: 'style' });
+  return useStyledElement(RNTextInput, props, { className: 'style' });
 };
 TextInput.displayName = 'CSS(TextInput)';
 
@@ -72,7 +97,7 @@ export type KeyboardAvoidingViewProps = React.ComponentProps<typeof RNKeyboardAv
 };
 
 export const KeyboardAvoidingView = (props: KeyboardAvoidingViewProps): React.ReactElement => {
-  return useCssElement(RNKeyboardAvoidingView, props, { className: 'style' });
+  return useStyledElement(RNKeyboardAvoidingView, props, { className: 'style' });
 };
 KeyboardAvoidingView.displayName = 'CSS(KeyboardAvoidingView)';
 
@@ -81,7 +106,7 @@ export type ImageProps = React.ComponentProps<typeof ExpoImage> & {
 };
 
 export const Image = (props: ImageProps): React.ReactElement => {
-  return useCssElement(ExpoImage, props, { className: 'style' });
+  return useStyledElement(ExpoImage, props, { className: 'style' });
 };
 Image.displayName = 'CSS(Image)';
 
