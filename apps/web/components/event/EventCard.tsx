@@ -96,7 +96,7 @@ export function EventCard({
   const instagramUrl = buildInstagramProfileUrl(establishment.instagram);
 
   return (
-    <Link href={`/event/${event.id}`} className="block transition-opacity hover:opacity-90">
+    <Link href={`/event/${event.external_id}`} className="block transition-opacity hover:opacity-90">
     <article className="overflow-hidden rounded-2xl bg-card">
       <div className="relative h-[340px]">
         {/* ponytail: <img> evita config de remotePatterns do next/image p/ banners externos */}

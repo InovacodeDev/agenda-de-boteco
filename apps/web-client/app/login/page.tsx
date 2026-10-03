@@ -2,6 +2,7 @@
 
 import {
   claimEstablishmentOwner,
+  getCurrentUserExternalId,
   getFriendlyErrorMessage,
   identifyAnalyticsUser,
   isCurrentUserEstablishmentOwner,
@@ -59,7 +60,6 @@ const LABEL_CLASS = 'text-[13px] font-semibold text-foreground';
 export default function LoginPage() {
   const router = useRouter();
   const status = useAuthStore((state) => state.status);
-  const user = useAuthStore((state) => state.user);
 
   const [tab, setTab] = useState<Tab>('signIn');
   const [signUpStep, setSignUpStep] = useState<SignUpStep>('email');
@@ -99,7 +99,8 @@ export default function LoginPage() {
           window.sessionStorage.removeItem(OAUTH_SIGNUP_KEY);
           await claimEstablishmentOwner();
           if (active) {
-            if (user) identifyAnalyticsUser(user.id);
+            const externalId = await getCurrentUserExternalId();
+            if (externalId) identifyAnalyticsUser(externalId);
             router.replace('/');
           }
           return;
@@ -107,7 +108,8 @@ export default function LoginPage() {
         const isOwner = await isCurrentUserEstablishmentOwner();
         if (!active) return;
         if (isOwner) {
-          if (user) identifyAnalyticsUser(user.id);
+          const externalId = await getCurrentUserExternalId();
+          if (externalId) identifyAnalyticsUser(externalId);
           router.replace('/');
           return;
         }
@@ -121,7 +123,7 @@ export default function LoginPage() {
     return () => {
       active = false;
     };
-  }, [status, claiming, router, user]);
+  }, [status, claiming, router]);
 
   /** Envolve a ação: limpa aviso, trava o botão e traduz o erro do Supabase. */
   const run = async (action: () => Promise<void>, onDone?: Notice) => {

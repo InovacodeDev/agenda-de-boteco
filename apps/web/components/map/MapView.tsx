@@ -58,7 +58,7 @@ export default function MapView({ establishments, center }: MapViewProps) {
         >
           <Popup>
             <Link
-              href={`/establishment/${establishment.id}`}
+              href={`/establishment/${establishment.external_id}`}
               className="font-semibold text-primary"
             >
               {establishment.name}

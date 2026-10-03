@@ -111,7 +111,10 @@ export default function EventDetailScreen() {
       : null;
 
   const share = () => {
-    const url = buildEventShareUrl({ slugOrId: event.id }, process.env.EXPO_PUBLIC_SHARE_BASE_URL);
+    const url = buildEventShareUrl(
+      { slugOrId: event.external_id },
+      process.env.EXPO_PUBLIC_SHARE_BASE_URL,
+    );
     const text = `${event.name} — ${event.attraction} no ${establishment.name}. Bora?`;
     // No Android o campo `url` é ignorado, por isso a URL vai também no message.
     Share.share({ message: `${text}\n${url}`, url });
@@ -289,7 +292,7 @@ export default function EventDetailScreen() {
           className="flex-1"
           icon={<Icon name="store" color={colors.primaryForeground} size={16} />}
           style={{ backgroundColor: colors.primary }}
-          onPress={() => router.push(`/establishment/${establishment.id}`)}
+          onPress={() => router.push(`/establishment/${establishment.external_id}`)}
         />
       </View>
     </Screen>

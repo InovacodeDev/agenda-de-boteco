@@ -66,7 +66,7 @@ export function EventCard({ event, onDelete }: { event: Event; onDelete: () => v
 
         <div className="mt-auto flex items-center gap-2 pt-2">
           <Link
-            href={`/events/${event.id}`}
+            href={`/events/${event.external_id}`}
             className="bg-surface-elevated text-foreground flex h-10 flex-1 items-center justify-center gap-2 rounded-xl text-sm font-medium transition-opacity hover:opacity-80"
           >
             <PencilSimpleIcon size={16} weight="regular" aria-hidden />
@@ -87,7 +87,7 @@ export function EventCard({ event, onDelete }: { event: Event; onDelete: () => v
             </span>
           ) : (
             <a
-              href={`/app/event/${event.id}`}
+              href={`/app/event/${event.external_id}`}
               target="_blank"
               rel="noopener noreferrer"
               title="Ver página pública"

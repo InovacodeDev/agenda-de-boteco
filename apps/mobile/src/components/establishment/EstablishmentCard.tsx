@@ -33,7 +33,7 @@ export const EstablishmentCard = memo(function EstablishmentCard({
     <GuardedPressable
       accessibilityRole="button"
       accessibilityLabel={`Estabelecimento ${establishment.name}`}
-      onPress={() => router.push(`/establishment/${establishment.id}`)}
+      onPress={() => router.push(`/establishment/${establishment.external_id}`)}
       className="bg-card flex-row gap-3 rounded-2xl p-3 active:opacity-90"
     >
       {establishment.logo_url ? (

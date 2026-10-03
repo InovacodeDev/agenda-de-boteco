@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  getCurrentUserExternalId,
   getFriendlyErrorMessage,
   identifyAnalyticsUser,
   signInWithEmailOtp,
@@ -31,7 +32,6 @@ const BTN_GHOST = `${BTN_GHOST_BASE} w-full`;
 export default function LoginPage() {
   const router = useRouter();
   const status = useAuthStore((state) => state.status);
-  const userId = useAuthStore((state) => state.user?.id);
 
   const [step, setStep] = useState<EmailStep>('editing');
   const [email, setEmail] = useState('');
@@ -45,10 +45,16 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (status === 'signedIn') {
-      if (userId) identifyAnalyticsUser(userId);
+      // identify nunca bloqueia o redirect: falha de leitura do profile não
+      // pode travar o login, só o analytics fica sem distinct_id nesta sessão.
+      void getCurrentUserExternalId()
+        .then((externalId) => {
+          if (externalId) identifyAnalyticsUser(externalId);
+        })
+        .catch(() => {});
       router.replace('/');
     }
-  }, [status, userId, router]);
+  }, [status, router]);
 
   const handleSendCode = async () => {
     if (!email.trim()) return;

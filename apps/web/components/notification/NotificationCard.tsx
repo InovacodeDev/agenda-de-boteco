@@ -76,10 +76,10 @@ export const NotificationCard = memo(function NotificationCard({
 
   const open = () => {
     onPress(notification.id);
-    if (notification.event_id) {
-      router.push(`/event/${notification.event_id}`);
-    } else if (notification.establishment_id) {
-      router.push(`/establishment/${notification.establishment_id}`);
+    if (notification.event_external_id) {
+      router.push(`/event/${notification.event_external_id}`);
+    } else if (notification.establishment_external_id) {
+      router.push(`/establishment/${notification.establishment_external_id}`);
     }
   };
 
