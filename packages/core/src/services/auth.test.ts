@@ -3,6 +3,7 @@ import {
   AuthUnavailableError,
   configureAuthRedirect,
   getCurrentUser,
+  getUserAuthProvider,
   isAuthAvailable,
   onAuthUserChange,
   requestAccountDeletion,
@@ -11,6 +12,7 @@ import {
   signInWithOAuth,
   signInWithPassword,
   signOut,
+  signOutOtherSessions,
   signUpWithPassword,
   updatePassword,
   verifyEmailOtp,
@@ -26,6 +28,7 @@ interface MockAuth {
   signInWithOtp: jest.Mock;
   signOut: jest.Mock;
   getSession: jest.Mock;
+  getUser: jest.Mock;
   onAuthStateChange: jest.Mock;
   signInWithOAuth: jest.Mock;
   setSession: jest.Mock;
@@ -41,6 +44,7 @@ function makeClient(overrides: Partial<MockAuth> = {}, rpc?: jest.Mock) {
     signInWithOtp: jest.fn().mockResolvedValue({ error: null }),
     signOut: jest.fn().mockResolvedValue({ error: null }),
     getSession: jest.fn().mockResolvedValue({ data: { session: null } }),
+    getUser: jest.fn().mockResolvedValue({ data: { user: null }, error: null }),
     onAuthStateChange: jest.fn().mockReturnValue({
       data: { subscription: { unsubscribe: jest.fn() } },
     }),
@@ -446,3 +450,82 @@ describe('requestAccountDeletion', () => {
     expect(client.auth.signOut).not.toHaveBeenCalled();
   });
 });
+
+describe('signOutOtherSessions', () => {
+  it('é no-op sem Supabase configurado', async () => {
+    mockGetSupabase.mockReturnValue(null);
+    await expect(signOutOtherSessions()).resolves.toBeUndefined();
+  });
+
+  it('chama signOut com scope others', async () => {
+    const client = makeClient();
+    mockGetSupabase.mockReturnValue(client);
+    await signOutOtherSessions();
+    expect(client.auth.signOut).toHaveBeenCalledWith({ scope: 'others' });
+  });
+
+  it('propaga erro quando falha', async () => {
+    const client = makeClient({
+      signOut: jest.fn().mockResolvedValue({ error: new Error('session error') }),
+    });
+    mockGetSupabase.mockReturnValue(client);
+    await expect(signOutOtherSessions()).rejects.toThrow('session error');
+  });
+});
+
+describe('getUserAuthProvider', () => {
+  it('retorna null sem Supabase configurado', async () => {
+    mockGetSupabase.mockReturnValue(null);
+    await expect(getUserAuthProvider()).resolves.toBeNull();
+  });
+
+  it('detecta provedor google', async () => {
+    const client = makeClient({
+      getUser: jest.fn().mockResolvedValue({
+        data: { user: { app_metadata: { provider: 'google' } } },
+        error: null,
+      }),
+    });
+    mockGetSupabase.mockReturnValue(client);
+    await expect(getUserAuthProvider()).resolves.toBe('google');
+  });
+
+  it('detecta provedor apple', async () => {
+    const client = makeClient({
+      getUser: jest.fn().mockResolvedValue({
+        data: { user: { app_metadata: { provider: 'apple' } } },
+        error: null,
+      }),
+    });
+    mockGetSupabase.mockReturnValue(client);
+    await expect(getUserAuthProvider()).resolves.toBe('apple');
+  });
+
+  it('detecta email quando não há provider oauth', async () => {
+    const client = makeClient({
+      getUser: jest.fn().mockResolvedValue({
+        data: { user: { email: 'user@boteco.com' } },
+        error: null,
+      }),
+    });
+    mockGetSupabase.mockReturnValue(client);
+    await expect(getUserAuthProvider()).resolves.toBe('email');
+  });
+
+  it('retorna null se user for nulo', async () => {
+    const client = makeClient({
+      getUser: jest.fn().mockResolvedValue({ data: { user: null }, error: null }),
+    });
+    mockGetSupabase.mockReturnValue(client);
+    await expect(getUserAuthProvider()).resolves.toBeNull();
+  });
+
+  it('propaga erro quando getUser falha', async () => {
+    const client = makeClient({
+      getUser: jest.fn().mockRejectedValue(new Error('network down')),
+    });
+    mockGetSupabase.mockReturnValue(client);
+    await expect(getUserAuthProvider()).rejects.toThrow('network down');
+  });
+});
+

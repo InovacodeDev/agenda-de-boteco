@@ -49,10 +49,7 @@ function AppSyncBridge() {
   }, [initialize]);
 
   useEffect(() => {
-    const client = getSupabase();
-    if (!client) return;
-    // Mudanças no catálogo (inclusive as feitas aqui no admin) invalidam o cache.
-    return subscribeToCatalogChanges(client, (keys) => {
+    return subscribeToCatalogChanges((keys) => {
       for (const queryKey of keys) {
         void queryClient.invalidateQueries({ queryKey });
       }

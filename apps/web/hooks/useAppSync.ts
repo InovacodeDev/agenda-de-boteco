@@ -10,8 +10,6 @@ import {
 import { onlineManager } from '@tanstack/react-query';
 import { useEffect } from 'react';
 
-import { getSupabase } from '@/lib/supabase';
-
 /**
  * Liga, no web, o mesmo wiring que o mobile faz no RootLayout:
  * - inicializa a sessão e passa a observar mudanças de auth;
@@ -56,21 +54,16 @@ export function useAppSync(): void {
 
   // Realtime: assina o catálogo; ao reentrar na aba, reinscreve e revalida.
   useEffect(() => {
-    const client = getSupabase();
-    if (!client) {
-      return;
-    }
-
     const invalidate = (keys: ReadonlyArray<readonly unknown[]>): void => {
       keys.forEach((queryKey) => queryClient.invalidateQueries({ queryKey }));
     };
 
-    let unsubscribe = subscribeToCatalogChanges(client, invalidate);
+    let unsubscribe = subscribeToCatalogChanges(invalidate);
 
     const handleVisibility = (): void => {
       if (document.visibilityState === 'visible') {
         unsubscribe();
-        unsubscribe = subscribeToCatalogChanges(client, invalidate);
+        unsubscribe = subscribeToCatalogChanges(invalidate);
         void queryClient.invalidateQueries();
       }
     };

@@ -4,6 +4,7 @@ import type {
 } from '@supabase/supabase-js';
 import type { QueryKey } from '@tanstack/react-query';
 
+import { getConfiguredSupabase } from '../supabase/client';
 import type { Database } from '../types';
 import { isProduction } from '../utils/env';
 import { catalogKeys } from './queryKeys';
@@ -65,9 +66,31 @@ export function invalidationKeysForChange(table: string): QueryKey[] {
  * remove o canal — chame-o ao desmontar ou ao ir para background.
  */
 export function subscribeToCatalogChanges(
+  onInvalidate: (keys: QueryKey[]) => void,
+): () => void;
+export function subscribeToCatalogChanges(
   client: SupabaseClient<Database>,
   onInvalidate: (keys: QueryKey[]) => void,
+): () => void;
+export function subscribeToCatalogChanges(
+  clientOrOnInvalidate: SupabaseClient<Database> | ((keys: QueryKey[]) => void),
+  onInvalidateOrClient?: ((keys: QueryKey[]) => void) | SupabaseClient<Database> | null,
 ): () => void {
+  let client: SupabaseClient<Database> | null;
+  let onInvalidate: (keys: QueryKey[]) => void;
+
+  if (typeof clientOrOnInvalidate === 'function') {
+    onInvalidate = clientOrOnInvalidate;
+    client = (onInvalidateOrClient as SupabaseClient<Database> | null) ?? getConfiguredSupabase();
+  } else {
+    client = clientOrOnInvalidate;
+    onInvalidate = onInvalidateOrClient as (keys: QueryKey[]) => void;
+  }
+
+  if (!client) {
+    return () => {};
+  }
+
   const channel = client.channel('catalog-changes');
 
   for (const table of CATALOG_TABLES) {
@@ -97,3 +120,4 @@ export function subscribeToCatalogChanges(
     client.removeChannel(channel);
   };
 }
+
