@@ -10,8 +10,10 @@ import { type Query } from '@tanstack/react-query';
  * a rehidratação NÃO passa pelo Zod, então o `.default([])` não preenche o campo
  * ausente e o cache antigo chega à UI incompleto. v1 -> v2: `attributes`.
  * v2 -> v3: listagens viraram infinite query ({ pages, pageParams }).
+ * v3 -> v4: `external_id` em establishments/events (sem default local no app;
+ * cache antigo sem o campo quebraria a navegação por link/analytics).
  */
-export const CACHE_BUSTER = 'v3';
+export const CACHE_BUSTER = 'v4';
 
 /**
  * Allowlist do catálogo: apenas o PRIMEIRO segmento da queryKey é considerado.

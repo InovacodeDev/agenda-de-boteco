@@ -83,6 +83,12 @@ describe('catalog service — fallback mock (client nulo)', () => {
       expect(() => eventSchema.parse(event)).not.toThrow();
     });
 
+    it('retorna o evento pelo external_id quando o id recebido é UUID', async () => {
+      const legacy = await getEvent('ev1');
+      const byExternalId = await getEvent(legacy!.external_id);
+      expect(byExternalId?.id).toBe('ev1');
+    });
+
     it('retorna null para id inexistente', async () => {
       await expect(getEvent('nao-existe')).resolves.toBeNull();
     });
@@ -256,6 +262,7 @@ const cityRows: Row[] = CITIES.map((city) => ({
 
 const establishmentRows: Row[] = ESTABLISHMENTS.map((establishment) => ({
   id: establishment.id,
+  external_id: establishment.external_id,
   name: establishment.name,
   description: establishment.description,
   logo_url: establishment.logo_url,
@@ -279,6 +286,7 @@ const establishmentRows: Row[] = ESTABLISHMENTS.map((establishment) => ({
 
 const eventRows: Row[] = EVENTS.map((event) => ({
   id: event.id,
+  external_id: event.external_id,
   name: event.name,
   attraction: event.attraction,
   description: event.description,
@@ -308,6 +316,14 @@ const notificationRows: Row[] = NOTIFICATIONS.map((notification) => ({
   read: notification.read,
   event_id: optionalToNull(notification.event_id),
   establishment_id: optionalToNull(notification.establishment_id),
+  // Espelha o embed event:events(external_id)/establishment:establishments(external_id)
+  // — PostgREST devolve embed de FK-to-one como array de 0 ou 1 item.
+  event: notification.event_external_id
+    ? [{ external_id: notification.event_external_id }]
+    : [],
+  establishment: notification.establishment_external_id
+    ? [{ external_id: notification.establishment_external_id }]
+    : [],
 }));
 
 const attractionRows: Row[] = EVENT_ATTRACTIONS.map((attraction) => ({
@@ -516,12 +532,21 @@ describe('catalog service — caminho Supabase (client fake)', () => {
   });
 
   describe('getEvent', () => {
-    it('retorna o evento pelo id via maybeSingle', async () => {
+    it('retorna o evento pelo id legado via maybeSingle', async () => {
       const event = await getEvent('ev1');
       expect(event).not.toBeNull();
       expect(event?.id).toBe('ev1');
       expect(event?.name).toBe('Samba na Varanda');
       expect(() => eventSchema.parse(event)).not.toThrow();
+    });
+
+    // Rota/deep link atual passa o external_id (UUID); getEvent decide a
+    // coluna pelo formato do id recebido — ambos resolvem a mesma linha.
+    it('retorna o evento pelo external_id quando o id recebido é UUID', async () => {
+      const legacy = await getEvent('ev1');
+      const byExternalId = await getEvent(legacy!.external_id);
+      expect(byExternalId).not.toBeNull();
+      expect(byExternalId?.id).toBe('ev1');
     });
 
     it('retorna null para id inexistente via maybeSingle', async () => {
@@ -577,11 +602,18 @@ describe('catalog service — caminho Supabase (client fake)', () => {
   });
 
   describe('getEstablishment', () => {
-    it('retorna o estabelecimento pelo id', async () => {
+    it('retorna o estabelecimento pelo id legado', async () => {
       const establishment = await getEstablishment('e1');
       expect(establishment).not.toBeNull();
       expect(establishment?.name).toBe('Boteco do Zé');
       expect(() => establishmentSchema.parse(establishment)).not.toThrow();
+    });
+
+    it('retorna o estabelecimento pelo external_id quando o id recebido é UUID', async () => {
+      const legacy = await getEstablishment('e1');
+      const byExternalId = await getEstablishment(legacy!.external_id);
+      expect(byExternalId).not.toBeNull();
+      expect(byExternalId?.id).toBe('e1');
     });
 
     it('retorna null para id inexistente', async () => {
@@ -647,6 +679,20 @@ describe('catalog service — caminho Supabase (client fake)', () => {
       const n4 = page.items.find((item) => item.id === 'n4');
       expect(n4).toBeDefined();
       expect(n4?.event_id).toBeUndefined();
+    });
+
+    // NotificationCard navega pelo external_id do embed (event:events/establishment:establishments),
+    // nunca pelo id interno — confere que o mapper extrai os dois do embed.
+    it('mapeia event_external_id/establishment_external_id do embed', async () => {
+      const page = await listNotifications();
+      const n1 = page.items.find((item) => item.id === 'n1');
+      const n4 = page.items.find((item) => item.id === 'n4');
+      expect(n1?.event_external_id).toBe(
+        EVENTS.find((event) => event.id === 'ev1')?.external_id,
+      );
+      expect(n4?.establishment_external_id).toBe(
+        ESTABLISHMENTS.find((establishment) => establishment.id === 'e5')?.external_id,
+      );
     });
   });
 

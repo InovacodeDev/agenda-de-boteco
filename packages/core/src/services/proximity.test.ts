@@ -92,6 +92,7 @@ function makeRpcRow(
   const base = ESTABLISHMENTS[0];
   return {
     id: base.id,
+    external_id: base.external_id,
     name: base.name,
     description: base.description,
     logo_url: base.logo_url,

@@ -23,6 +23,7 @@ import {
   notificationWriteSchema,
 } from '../schemas/catalog';
 import type { Database, Json } from '../types';
+import { isUuid } from '../utils/ids';
 import {
   type CatalogPage,
   decodeCursor,
@@ -33,27 +34,41 @@ import {
 import { slugify } from '../utils/slug';
 
 type CityRow = Database['public']['Tables']['cities']['Row'];
-/** `location` (geography/unknown) nunca é selecionado — fica fora do mapper. */
+/**
+ * `location` (geography/unknown) nunca é selecionado — fica fora do mapper.
+ * `external_id` é acrescentado via intersection: a migração que o criou
+ * (20260928120000) ainda não rodou `gen:types`, mesmo caso de photo_urls/status
+ * em EVENT_COLUMNS acima.
+ */
 type EstablishmentRow = Omit<
   Database['public']['Tables']['establishments']['Row'],
   'location'
->;
-type EventRow = Database['public']['Tables']['events']['Row'];
+> & { external_id: string };
+type EventRow = Database['public']['Tables']['events']['Row'] & { external_id: string };
 type MusicStyleRow = Database['public']['Tables']['music_styles']['Row'];
-type NotificationRow = Database['public']['Tables']['notifications']['Row'];
+/**
+ * event/establishment são o embed do external_id (ver NOTIFICATION_COLUMNS).
+ * PostgREST devolve embed de FK-to-one como array de 0 ou 1 item.
+ */
+type NotificationRow = Database['public']['Tables']['notifications']['Row'] & {
+  event: { external_id: string }[] | null;
+  establishment: { external_id: string }[] | null;
+};
 
 const CITY_COLUMNS = 'id,name,uf,lat,lng,slug';
 const ESTABLISHMENT_COLUMNS =
-  'id,name,description,logo_url,cover_url,address,neighborhood,city_id,lat,lng,whatsapp,instagram,opening_hours,menu_items,price_range,ambiance,rating_avg,rating_count,attributes,slug,menu_pdf_url,menu_photo_urls';
+  'id,external_id,name,description,logo_url,cover_url,address,neighborhood,city_id,lat,lng,whatsapp,instagram,opening_hours,menu_items,price_range,ambiance,rating_avg,rating_count,attributes,slug,menu_pdf_url,menu_photo_urls';
 // photo_urls, instagram_post_url, status, capacity e recurrence_group_id incluídos;
 // database.types.ts ainda não tem as colunas — selects de events usam
 // (client as SupabaseClient) sem generic para contornar a validação estática do
 // supabase-js.
 const EVENT_COLUMNS =
-  'id,name,attraction,description,banner_url,photo_urls,music_style_ids,establishment_id,starts_at,ends_at,cover_charge,courtesy,promo,slug,instagram_post_url,status,capacity,recurrence_group_id';
+  'id,external_id,name,attraction,description,banner_url,photo_urls,music_style_ids,establishment_id,starts_at,ends_at,cover_charge,courtesy,promo,slug,instagram_post_url,status,capacity,recurrence_group_id';
 const MUSIC_STYLE_COLUMNS = 'id,name,emoji';
+// event/establishment embutidos só para expor o external_id de cada um — é o
+// que NotificationCard usa para montar a rota (nunca o id interno).
 const NOTIFICATION_COLUMNS =
-  'id,title,body,type,created_at,read,event_id,establishment_id';
+  'id,title,body,type,created_at,read,event_id,establishment_id,event:events(external_id),establishment:establishments(external_id)';
 const EVENT_ATTRACTION_COLUMNS = 'id,event_id,name,position';
 
 // Helper: acessa a tabela 'events' sem validação de colunas pelo supabase-js, necessário
@@ -101,6 +116,7 @@ function mapCity(row: CityRow): City {
 function mapEstablishment(row: EstablishmentRow): Establishment {
   return establishmentSchema.parse({
     id: row.id,
+    external_id: row.external_id,
     name: row.name,
     description: row.description,
     logo_url: row.logo_url ?? '',
@@ -128,6 +144,7 @@ function mapEstablishment(row: EstablishmentRow): Establishment {
 function mapEvent(row: EventRow): Event {
   return eventSchema.parse({
     id: row.id,
+    external_id: row.external_id,
     name: row.name,
     attraction: row.attraction,
     description: row.description,
@@ -171,6 +188,8 @@ function mapNotification(row: NotificationRow): AppNotification {
     read: row.read,
     event_id: nullToUndefined(row.event_id),
     establishment_id: nullToUndefined(row.establishment_id),
+    event_external_id: row.event?.[0]?.external_id,
+    establishment_external_id: row.establishment?.[0]?.external_id,
   });
 }
 
@@ -211,13 +230,19 @@ export async function listEvents(
   return { items, nextCursor };
 }
 
+/**
+ * Aceita tanto o `external_id` opaco (rota/deep link atual) quanto o `id`
+ * interno legado (link antigo já compartilhado) — isUuid decide qual coluna
+ * filtrar. Único ponto de resolução: todo caller passa por aqui.
+ */
 export async function getEvent(
   client: SupabaseClient<Database>,
   id: string,
 ): Promise<Event | null> {
+  const column = isUuid(id) ? 'external_id' : 'id';
   const { data, error } = await eventsFrom(client)
     .select(EVENT_COLUMNS)
-    .eq('id', id)
+    .eq(column, id)
     .maybeSingle();
   if (error) throw error;
   return data ? mapEvent(data as EventRow) : null;
@@ -235,7 +260,7 @@ export async function listEstablishments(
   limit: number = DEFAULT_PAGE_SIZE,
 ): Promise<CatalogPage<Establishment>> {
   const decoded = decodeCursor(cursor);
-  const base = client.from('establishments').select(ESTABLISHMENT_COLUMNS);
+  const base = establishmentsFrom(client).select(ESTABLISHMENT_COLUMNS);
   const withCityFilter = cityId ? base.eq('city_id', cityId) : base;
   const filtered = decoded
     ? withCityFilter.or(
@@ -248,24 +273,25 @@ export async function listEstablishments(
     .order('id', { ascending: true })
     .limit(limit);
   if (error) throw error;
-  const items = (data ?? []).map(mapEstablishment);
+  const items = ((data ?? []) as EstablishmentRow[]).map(mapEstablishment);
   const last = items.at(-1);
   const nextCursor =
     items.length < limit || !last ? null : encodeCursor({ value: last.name, id: last.id });
   return { items, nextCursor };
 }
 
+/** Mesma resolução de getEvent: external_id (atual) ou id interno (legado). */
 export async function getEstablishment(
   client: SupabaseClient<Database>,
   id: string,
 ): Promise<Establishment | null> {
-  const { data, error } = await client
-    .from('establishments')
+  const column = isUuid(id) ? 'external_id' : 'id';
+  const { data, error } = await establishmentsFrom(client)
     .select(ESTABLISHMENT_COLUMNS)
-    .eq('id', id)
+    .eq(column, id)
     .maybeSingle();
   if (error) throw error;
-  return data ? mapEstablishment(data) : null;
+  return data ? mapEstablishment(data as EstablishmentRow) : null;
 }
 
 /**
@@ -368,7 +394,7 @@ export async function listNotifications(
   limit: number = DEFAULT_PAGE_SIZE,
 ): Promise<CatalogPage<AppNotification>> {
   const decoded = decodeCursor(cursor);
-  const base = client.from('notifications').select(NOTIFICATION_COLUMNS);
+  const base = notificationsFrom(client).select(NOTIFICATION_COLUMNS);
   const filtered = decoded
     ? base.or(
         `created_at.lt.${quoteCursorValue(decoded.value)},and(created_at.eq.${quoteCursorValue(decoded.value)},id.lt.${quoteCursorValue(decoded.id)})`,
@@ -380,7 +406,7 @@ export async function listNotifications(
     .order('id', { ascending: false })
     .limit(limit);
   if (error) throw error;
-  const items = (data ?? []).map(mapNotification);
+  const items = ((data ?? []) as NotificationRow[]).map(mapNotification);
   const last = items.at(-1);
   const nextCursor =
     items.length < limit || !last ? null : encodeCursor({ value: last.created_at, id: last.id });

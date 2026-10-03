@@ -68,6 +68,8 @@ export const establishmentAttributeSchema = z.enum([
 
 export const establishmentSchema = z.object({
   id: z.string(),
+  /** Identificador opaco exposto em URL/analytics — nunca o `id` interno. */
+  external_id: z.string().uuid(),
   name: z.string(),
   description: z.string(),
   // Aceitam string vazia: no onboarding do painel logo e capa são opcionais, e
@@ -100,6 +102,8 @@ export const eventStatusSchema = z.enum(['draft', 'published']);
 
 export const eventSchema = z.object({
   id: z.string(),
+  /** Identificador opaco exposto em URL/analytics — nunca o `id` interno. */
+  external_id: z.string().uuid(),
   name: z.string(),
   attraction: z.string(),
   description: z.string(),
@@ -160,6 +164,9 @@ export const notificationSchema = z.object({
   read: z.boolean(),
   event_id: z.string().optional(),
   establishment_id: z.string().optional(),
+  /** external_id do evento/estabelecimento referenciado — é o que a UI usa para navegar. */
+  event_external_id: z.string().uuid().optional(),
+  establishment_external_id: z.string().uuid().optional(),
 });
 
 /**
@@ -169,13 +176,15 @@ export const notificationSchema = z.object({
  * banco) ficam de fora; o id é opcional (gerado no cliente quando ausente).
  */
 export const establishmentWriteSchema = establishmentSchema
-  .omit({ rating_avg: true, rating_count: true })
+  .omit({ rating_avg: true, rating_count: true, external_id: true })
   .partial({ id: true });
 
-export const eventWriteSchema = eventSchema.partial({ id: true });
+export const eventWriteSchema = eventSchema
+  .omit({ external_id: true })
+  .partial({ id: true });
 
 export const notificationWriteSchema = notificationSchema
-  .omit({ created_at: true, read: true })
+  .omit({ created_at: true, read: true, event_external_id: true, establishment_external_id: true })
   .partial({ id: true });
 
 export type MusicStyle = z.infer<typeof musicStyleSchema>;

@@ -35,6 +35,39 @@ export async function isCurrentUserEstablishmentOwner(): Promise<boolean> {
 }
 
 /**
+ * external_id de profiles do usuário logado — é o que identifyAnalyticsUser
+ * envia ao PostHog em vez do auth.uid() puro (evita vazar o id interno da
+ * conta para analytics). RLS deixa cada um ler só o próprio perfil; sem
+ * client/sessão ou sem linha em profiles retorna null (identify vira no-op).
+ */
+export async function getCurrentUserExternalId(): Promise<string | null> {
+  const client = getConfiguredSupabase();
+  if (!client) {
+    return null;
+  }
+  try {
+    const { data: sessionData } = await client.auth.getSession();
+    const userId = sessionData.session?.user?.id;
+    if (!userId) {
+      return null;
+    }
+    const { data, error } = await client
+      .from('profiles')
+      .select('external_id')
+      .eq('id', userId)
+      .maybeSingle();
+    if (error) {
+      throw error;
+    }
+    return (data as { external_id?: string } | null)?.external_id ?? null;
+  } catch (error) {
+    return handleServiceError(error, {
+      method: 'establishmentOwner.getCurrentUserExternalId',
+    });
+  }
+}
+
+/**
  * Marca a conta autenticada como dona de estabelecimento, liberando o painel.
  * Age sempre sobre auth.uid() — a sessão é a prova de posse do e-mail, já que o
  * Supabase só a emite após confirmação. É o passo que promove uma conta que já

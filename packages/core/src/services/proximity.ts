@@ -9,6 +9,7 @@
  * fallback usa Haversine esférico; por isso são intercambiáveis, mas nunca
  * coexistem em produção.
  */
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { z } from 'zod';
 
 import { ESTABLISHMENTS } from '../data';
@@ -61,6 +62,7 @@ function nullToUndefined<T>(value: T | null): T | undefined {
  */
 interface NearbyRow {
   id: string;
+  external_id: string;
   name: string;
   description: string;
   logo_url: string;
@@ -86,6 +88,7 @@ interface NearbyRow {
 function mapRow(row: NearbyRow): unknown {
   return {
     id: row.id,
+    external_id: row.external_id,
     name: row.name,
     description: row.description,
     logo_url: row.logo_url ?? '',
@@ -139,7 +142,10 @@ export async function listNearbyEstablishments(
   }
 
   try {
-    const { data, error } = await client.rpc('nearby_establishments', {
+    // (client as SupabaseClient) sem generic: a RPC passou a retornar
+    // external_id (20260928120000) e database.types.ts (arquivo gerado) ainda
+    // não foi regenerado — mesmo escape hatch de queries/catalog.ts.
+    const { data, error } = await (client as SupabaseClient).rpc('nearby_establishments', {
       origin_lat: params.lat,
       origin_lng: params.lng,
       radius_km: params.radiusKm ?? DEFAULT_RADIUS_KM,

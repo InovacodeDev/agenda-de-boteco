@@ -7,3 +7,4 @@
 - Listagens do catálogo passam a carregar por páginas, permitindo rolagem contínua sem travar com muitos itens
 - Índices novos no banco aceleram a busca de eventos por estabelecimento
 - Corrige carregamento de mais itens ao rolar listas com filtro ativo e nomes de bar com pontuação
+- Eventos e estabelecimentos passam a ter um identificador opaco para uso em links e analytics, sem expor o id interno

@@ -34,6 +34,7 @@ import {
 } from '../schemas';
 import { getConfiguredSupabase } from '../supabase/client';
 import { handleServiceError } from '../utils/errors';
+import { isUuid } from '../utils/ids';
 import {
   type CatalogPage,
   decodeCursor,
@@ -85,7 +86,9 @@ function mockListEvents(): Event[] {
 }
 
 function mockGetEvent(id: string): Event | null {
-  const event = EVENTS.find((item) => item.id === id);
+  const event = EVENTS.find((item) =>
+    isUuid(id) ? item.external_id === id : item.id === id,
+  );
   return event ? eventSchema.parse(event) : null;
 }
 
@@ -99,7 +102,9 @@ function mockListEstablishments(cityId?: string): Establishment[] {
 }
 
 function mockGetEstablishment(id: string): Establishment | null {
-  const establishment = ESTABLISHMENTS.find((item) => item.id === id);
+  const establishment = ESTABLISHMENTS.find((item) =>
+    isUuid(id) ? item.external_id === id : item.id === id,
+  );
   return establishment ? establishmentSchema.parse(establishment) : null;
 }
 

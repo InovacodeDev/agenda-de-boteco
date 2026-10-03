@@ -6,6 +6,7 @@ const NOW = new Date(2026, 5, 11, 20, 0, 0, 0);
 function ev(id: string, establishmentId: string, startsAt: Date): Event {
   return {
     id,
+    external_id: `ext-${id}`,
     name: id,
     attraction: 'x',
     description: '',

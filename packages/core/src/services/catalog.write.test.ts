@@ -109,7 +109,11 @@ const ESTABLISHMENT_INPUT = {
   menu_photo_urls: [],
 };
 
-const ESTABLISHMENT_DERIVED = { rating_avg: 0, rating_count: 0 };
+const ESTABLISHMENT_DERIVED = {
+  rating_avg: 0,
+  rating_count: 0,
+  external_id: '00000000-0000-4000-8000-000000000001',
+};
 
 const EVENT_INPUT = {
   name: 'Samba na Varanda',
@@ -135,6 +139,8 @@ const NOTIFICATION_DERIVED = {
   created_at: '2026-06-29T12:00:00-03:00',
   read: false,
 };
+
+const EVENT_DERIVED = { external_id: '00000000-0000-4000-8000-000000000002' };
 
 describe('catalog write — sem Supabase configurado', () => {
   beforeEach(() => {
@@ -192,7 +198,7 @@ describe('catalog write — caminho Supabase (client fake)', () => {
   });
 
   it('upsertEvent retorna objeto validado e gera id/slug do name', async () => {
-    const { client, captured } = createWriteClient();
+    const { client, captured } = createWriteClient(EVENT_DERIVED);
     mockGetSupabase.mockReturnValue(client);
 
     const result = await upsertEvent(EVENT_INPUT);
