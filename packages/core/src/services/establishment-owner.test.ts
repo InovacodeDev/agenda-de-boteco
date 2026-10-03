@@ -2,6 +2,7 @@ import type { EstablishmentAttribute } from '../schemas/catalog';
 import {
   claimEstablishmentOwner,
   createOwnedEstablishment,
+  getCurrentUserExternalId,
   getOwnedEstablishmentId,
   isCurrentUserEstablishmentOwner,
   updateOwnedEstablishment,
@@ -140,6 +141,47 @@ describe('isCurrentUserEstablishmentOwner', () => {
       }),
     );
     await expect(isCurrentUserEstablishmentOwner()).rejects.toThrow('rls denied');
+  });
+});
+
+describe('getCurrentUserExternalId', () => {
+  it('retorna null sem Supabase configurado', async () => {
+    mockGetSupabase.mockReturnValue(null);
+    await expect(getCurrentUserExternalId()).resolves.toBeNull();
+  });
+
+  it('retorna null sem sessão ativa', async () => {
+    mockGetSupabase.mockReturnValue(makeClient({ session: { data: { session: null } } }));
+    await expect(getCurrentUserExternalId()).resolves.toBeNull();
+  });
+
+  it('retorna o external_id do profile do usuário logado', async () => {
+    const client = makeClient({
+      maybeSingle: jest
+        .fn()
+        .mockResolvedValue({ data: { external_id: 'ext-u1' }, error: null }),
+    });
+    mockGetSupabase.mockReturnValue(client);
+
+    await expect(getCurrentUserExternalId()).resolves.toBe('ext-u1');
+    expect(client.from).toHaveBeenCalledWith('profiles');
+    expect(client.eq).toHaveBeenCalledWith('id', 'u1');
+  });
+
+  it('retorna null quando o profile não existe', async () => {
+    mockGetSupabase.mockReturnValue(makeClient());
+    await expect(getCurrentUserExternalId()).resolves.toBeNull();
+  });
+
+  it('propaga erro do Supabase', async () => {
+    mockGetSupabase.mockReturnValue(
+      makeClient({
+        maybeSingle: jest
+          .fn()
+          .mockResolvedValue({ data: null, error: new Error('rls denied') }),
+      }),
+    );
+    await expect(getCurrentUserExternalId()).rejects.toThrow('rls denied');
   });
 });
 

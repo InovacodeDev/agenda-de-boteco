@@ -20,6 +20,7 @@ export * from './utils/filters';
 export * from './utils/format';
 export * from './utils/formErrors';
 export * from './utils/geo';
+export * from './utils/ids';
 export * from './utils/images';
 export * from './utils/links';
 export * from './utils/masks';

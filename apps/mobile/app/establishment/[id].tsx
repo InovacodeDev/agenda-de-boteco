@@ -111,7 +111,7 @@ function EstablishmentDetailContent() {
 
   const share = () => {
     const url = buildEstablishmentShareUrl(
-      { slugOrId: establishment.id },
+      { slugOrId: establishment.external_id },
       process.env.EXPO_PUBLIC_SHARE_BASE_URL,
     );
     const text = `${establishment.name} no Agenda de Boteco`;

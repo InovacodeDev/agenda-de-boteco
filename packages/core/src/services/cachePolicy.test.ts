@@ -97,6 +97,7 @@ describe('CACHE_BUSTER', () => {
         'city_id',
         'cover_url',
         'description',
+        'external_id',
         'id',
         'instagram',
         'lat',
@@ -115,6 +116,6 @@ describe('CACHE_BUSTER', () => {
         'whatsapp',
       ].sort(),
     );
-    expect(CACHE_BUSTER).toBe('v3');
+    expect(CACHE_BUSTER).toBe('v4');
   });
 });

@@ -15,6 +15,11 @@ import type { Database } from '../types';
 import { catalogKeys } from './queryKeys';
 import { invalidationKeysForChange, subscribeToCatalogChanges } from './realtime';
 
+const mockGetSupabase = jest.fn();
+jest.mock('../supabase/client', () => ({
+  getConfiguredSupabase: () => mockGetSupabase(),
+}));
+
 type PostgresChangesHandler = (
   payload: RealtimePostgresChangesPayload<Record<string, unknown>>,
 ) => void;
@@ -235,4 +240,21 @@ describe('subscribeToCatalogChanges', () => {
 
     warnSpy.mockRestore();
   });
+
+  it('funciona passando apenas onInvalidate quando getConfiguredSupabase retorna client', () => {
+    const { client, getChannel } = makeFakeClient();
+    mockGetSupabase.mockReturnValue(client);
+
+    const cleanup = subscribeToCatalogChanges(() => undefined);
+    expect(getChannel().onCalls.length).toBeGreaterThan(0);
+    cleanup();
+  });
+
+  it('retorna no-op quando getConfiguredSupabase é nulo e nenhum client foi passado', () => {
+    mockGetSupabase.mockReturnValue(null);
+    const cleanup = subscribeToCatalogChanges(() => undefined);
+    expect(typeof cleanup).toBe('function');
+    expect(() => cleanup()).not.toThrow();
+  });
 });
+

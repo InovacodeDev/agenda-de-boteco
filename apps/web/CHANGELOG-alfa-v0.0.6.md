@@ -4,3 +4,5 @@
 - Bares passam a aparecer em ordem alfabética
 - Corrige feed que podia parar de carregar mais itens quando um filtro deixava a lista vazia
 - Política de Privacidade atualizada: agora explica quais dados de uso são coletados e para quê
+- Links de eventos e bares passam a usar um novo identificador; links antigos continuam funcionando
+- Atualização automática do catálogo quando bares e eventos mudam fica mais estável

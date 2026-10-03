@@ -34,7 +34,7 @@ export function EstablishmentCard({ establishment }: EstablishmentCardProps) {
 
   return (
     <Link
-      href={`/establishment/${establishment.id}`}
+      href={`/establishment/${establishment.external_id}`}
       className="block transition-opacity hover:opacity-90"
     >
     <article className="flex gap-3 rounded-2xl bg-card p-3">
