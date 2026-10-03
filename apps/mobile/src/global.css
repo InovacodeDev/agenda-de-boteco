@@ -63,6 +63,21 @@
     --font-body-medium: 'Inter_500Medium';
     --font-body-semibold: 'Inter_600SemiBold';
     --font-body-bold: 'Inter_700Bold';
+
+    /*
+     * Line-height unitário do Tailwind v4 (calc(1.25 / 0.875)) vira lineHeight
+     * absoluto de ~1.4px no RN e esconde o texto inteiro. Valores em px.
+     */
+    --text-xs--line-height: 16px;
+    --text-sm--line-height: 20px;
+    --text-base--line-height: 24px;
+    --text-lg--line-height: 28px;
+    --text-xl--line-height: 28px;
+    --text-2xl--line-height: 32px;
+    --text-3xl--line-height: 36px;
+    --text-4xl--line-height: 40px;
+    --text-5xl--line-height: 52px;
+    --text-6xl--line-height: 64px;
   }
 }
 

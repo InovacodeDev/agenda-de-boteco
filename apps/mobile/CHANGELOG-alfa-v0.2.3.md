@@ -6,3 +6,4 @@
 - Melhorias internas de conexão no ambiente de desenvolvimento
 - Links de eventos e bares compartilhados passam a usar um novo identificador; links antigos continuam funcionando
 - Atualização automática do feed quando bares e eventos mudam fica mais estável
+- Corrige textos e elementos que podiam ficar invisíveis em algumas telas
