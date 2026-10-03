@@ -2,6 +2,7 @@
 
 import {
   catalogKeys,
+  currencyToMask,
   type Event,
   type EventStatus,
   formatEventDate,
@@ -9,6 +10,7 @@ import {
   MAX_RECURRENCE_COUNT,
   type OwnedEventInput,
   type OwnedEventRecurrence,
+  parseCurrencyBR,
   saveOwnedEvent,
   saveRecurringOwnedEvents,
   shiftDate,
@@ -120,8 +122,7 @@ function toInput(draft: EventDraft, status: EventStatus): OwnedEventInput {
     musicStyleIds: draft.musicStyleId === NO_STYLE ? [] : [draft.musicStyleId],
     startsAt,
     endsAt: toEndIso(startsAt),
-    // Vírgula aceita: o placeholder é "0,00" e o teclado do dono é pt-BR.
-    coverCharge: Number(draft.coverCharge.replace(',', '.')) || 0,
+    coverCharge: parseCurrencyBR(draft.coverCharge),
     capacity: Number(draft.capacity) || null,
     courtesy: draft.courtesy.trim(),
     promo: draft.promo.trim(),
@@ -160,7 +161,7 @@ export function EventForm({ event }: { event?: Event }) {
         description: event.description,
         attraction: event.attraction,
         musicStyleId: event.music_style_ids[0] ?? NO_STYLE,
-        coverCharge: event.cover_charge > 0 ? String(event.cover_charge) : '',
+        coverCharge: event.cover_charge > 0 ? currencyToMask(event.cover_charge) : '',
         capacity: event.capacity ? String(event.capacity) : '',
         courtesy: event.courtesy ?? '',
         promo: event.promo ?? '',
@@ -321,7 +322,7 @@ export function EventForm({ event }: { event?: Event }) {
         <div className="grid grid-cols-2 gap-6">
           <Field label="Entrada (R$)">
             <TextInput
-              inputMode="decimal"
+              type="currency"
               value={draft.coverCharge}
               onChange={(e) => set('coverCharge', e.target.value)}
               placeholder="0,00"

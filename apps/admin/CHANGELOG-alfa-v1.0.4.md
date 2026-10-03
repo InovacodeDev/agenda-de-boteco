@@ -4,5 +4,6 @@
 - Bares passam a aparecer em ordem alfabética
 - Contadores do dashboard voltam a mostrar o total real de estabelecimentos, eventos e avisos
 - Política de Privacidade atualizada: agora declara os dados de uso coletados e inclui seção específica para o público administrativo
+- Campo de couvert passa a formatar o valor em reais automaticamente enquanto você digita
 - Identificação de uso interno passa a usar um identificador que não expõe o id da conta
 - Atualização automática das listas quando bares e eventos mudam fica mais estável

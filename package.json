@@ -12,7 +12,8 @@
     "dev:web": "pnpm --filter @agenda/web dev",
     "dev:admin": "pnpm --filter @agenda/admin dev",
     "dev:landing": "pnpm --filter @agenda/landing dev",
-    "dev:mobile": "pnpm --filter @agenda/mobile dev",
+    "dev:mobile": "pnpm --filter @agenda/mobile start",
+    "dev:mobile-client": "pnpm --filter @agenda/mobile-client start",
     "cleanup": "bash scripts/cleanup.bash",
     "build:mobile": "bash scripts/build-mobile.bash",
     "prepare": "husky"

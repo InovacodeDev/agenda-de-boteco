@@ -9,7 +9,6 @@ import {
   eventWriteSchema,
   flattenPages,
   issuesToErrors,
-  maskCurrencyBR,
   parseCurrencyBR,
   upsertEvent,
   useEstablishmentsQuery,
@@ -273,10 +272,10 @@ export default function EventosPage() {
           </Field>
           <Field label="Couvert (R$)" error={errors.cover_charge}>
             <TextInput
-              inputMode="numeric"
-              placeholder="R$ 0,00"
+              type="currency"
+              placeholder="0,00"
               value={form.cover_charge}
-              onChange={(e) => set('cover_charge', maskCurrencyBR(e.target.value))}
+              onChange={(e) => set('cover_charge', e.target.value)}
             />
           </Field>
           <Field label="Início" error={errors.starts_at}>

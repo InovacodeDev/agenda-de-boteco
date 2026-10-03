@@ -56,4 +56,13 @@ export const catalogKeys = {
     byEstablishment: (establishmentId: string) =>
       ['establishment-ratings', 'by-establishment', establishmentId] as const,
   },
+  panel: {
+    ownedEstablishmentId: ['panel', 'owned-establishment-id'] as const,
+    metrics: (establishmentId: string, sinceDays: number) =>
+      ['panel', 'metrics', 'owned', establishmentId, sinceDays] as const,
+    favoritesCount: (establishmentId: string) =>
+      ['panel', 'metrics', 'favorites-count', establishmentId] as const,
+  },
 } as const;
+
+export const panelKeys = catalogKeys.panel;
