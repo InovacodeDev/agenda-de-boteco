@@ -17,6 +17,7 @@ import {
   useResendCooldown,
   verifyEmailOtp,
 } from '@agenda/core';
+import { type ToastInput, useToast } from '@agenda/shared-ui';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -26,7 +27,6 @@ import { GoogleIcon } from '@/components/GoogleIcon';
 import logo from '@/public/logo.png';
 
 type Tab = 'signIn' | 'signUp';
-type Notice = { tone: 'error' | 'success' | 'denied'; message: string };
 
 /**
  * O cadastro é em duas etapas: pedimos o código por e-mail ('email') e depois
@@ -69,7 +69,7 @@ export default function LoginPage() {
   const [busy, setBusy] = useState(false);
   /** Ligado enquanto o cadastro conclui, para o efeito de sessão não interferir. */
   const [claiming, setClaiming] = useState(false);
-  const [notice, setNotice] = useState<Notice | null>(null);
+  const toast = useToast();
 
   const resend = useResendCooldown();
 
@@ -114,26 +114,38 @@ export default function LoginPage() {
           return;
         }
         await signOut();
-        if (active) setNotice({ tone: 'denied', message: DENIED_MESSAGE });
+        if (active) {
+          toast.show({
+            tone: 'error',
+            message: DENIED_MESSAGE,
+            action: {
+              label: 'Criar meu acesso',
+              onPress: () => {
+                setTab('signUp');
+                setPassword('');
+              },
+            },
+          });
+        }
       } catch (error: unknown) {
-        if (active) setNotice({ tone: 'error', message: getFriendlyErrorMessage(error) });
+        if (active) toast.show({ tone: 'error', message: getFriendlyErrorMessage(error) });
       }
     })();
 
     return () => {
       active = false;
     };
-  }, [status, claiming, router]);
+  }, [status, claiming, router, toast]);
 
-  /** Envolve a ação: limpa aviso, trava o botão e traduz o erro do Supabase. */
-  const run = async (action: () => Promise<void>, onDone?: Notice) => {
-    setNotice(null);
+  /** Envolve a ação: limpa avisos, trava o botão e traduz o erro do Supabase. */
+  const run = async (action: () => Promise<void>, onDone?: ToastInput) => {
+    toast.dismissAll();
     setBusy(true);
     try {
       await action();
-      if (onDone) setNotice(onDone);
+      if (onDone) toast.show(onDone);
     } catch (error: unknown) {
-      setNotice({ tone: 'error', message: getFriendlyErrorMessage(error) });
+      toast.show({ tone: 'error', message: getFriendlyErrorMessage(error) });
     } finally {
       setBusy(false);
     }
@@ -147,18 +159,18 @@ export default function LoginPage() {
    */
   const handleSignUpStart = async () => {
     if (!canSubmit) return;
-    setNotice(null);
+    toast.dismissAll();
     setBusy(true);
     try {
       await signInWithEmailOtp(email.trim());
       setSignUpStep('code');
       resend.start();
-      setNotice({
+      toast.show({
         tone: 'success',
         message: `Enviamos um código para ${email.trim()}. Ele confirma que o e-mail é seu.`,
       });
     } catch (error: unknown) {
-      setNotice({ tone: 'error', message: getFriendlyErrorMessage(error) });
+      toast.show({ tone: 'error', message: getFriendlyErrorMessage(error) });
     } finally {
       setBusy(false);
     }
@@ -171,7 +183,7 @@ export default function LoginPage() {
    */
   const handleSignUpVerify = async () => {
     if (!canSubmit) return;
-    setNotice(null);
+    toast.dismissAll();
     setBusy(true);
     setClaiming(true);
     try {
@@ -180,7 +192,7 @@ export default function LoginPage() {
       await claimEstablishmentOwner();
       router.replace('/');
     } catch (error: unknown) {
-      setNotice({ tone: 'error', message: getFriendlyErrorMessage(error) });
+      toast.show({ tone: 'error', message: getFriendlyErrorMessage(error) });
       setClaiming(false);
     } finally {
       setBusy(false);
@@ -202,7 +214,7 @@ export default function LoginPage() {
 
   const handleReset = () => {
     if (!email.trim()) {
-      setNotice({ tone: 'error', message: 'Informe seu e-mail para recuperar a senha.' });
+      toast.show({ tone: 'error', message: 'Informe seu e-mail para recuperar a senha.' });
       return;
     }
     void run(() => sendPasswordReset(email.trim()), {
@@ -245,7 +257,7 @@ export default function LoginPage() {
                 aria-selected={tab === item.id}
                 onClick={() => {
                   setTab(item.id);
-                  setNotice(null);
+                  toast.dismissAll();
                   setSignUpStep('email');
                   setCode('');
                 }}
@@ -263,37 +275,6 @@ export default function LoginPage() {
           {unavailable ? (
             <p className="mt-4 rounded-xl bg-surface px-3.5 py-2.5 text-[12px] text-muted-foreground">
               Login indisponível: configuração do Supabase ausente.
-            </p>
-          ) : null}
-
-          {notice?.tone === 'denied' ? (
-            <div
-              role="status"
-              className="mt-4 flex flex-col items-start gap-2 rounded-xl border border-border bg-surface px-3.5 py-3"
-            >
-              <p className="text-[12px] leading-relaxed text-muted-foreground">
-                {notice.message}
-              </p>
-              <button
-                type="button"
-                onClick={() => {
-                  setTab('signUp');
-                  setNotice(null);
-                  setPassword('');
-                }}
-                className="text-[12px] font-semibold text-primary underline-offset-2 hover:underline"
-              >
-                Criar meu acesso
-              </button>
-            </div>
-          ) : notice ? (
-            <p
-              role="status"
-              className={`mt-4 text-[12px] ${
-                notice.tone === 'error' ? 'text-destructive' : 'text-primary'
-              }`}
-            >
-              {notice.message}
             </p>
           ) : null}
 
@@ -405,7 +386,7 @@ export default function LoginPage() {
                   onClick={() => {
                     setSignUpStep('email');
                     setCode('');
-                    setNotice(null);
+                    toast.dismissAll();
                     resend.reset();
                   }}
                   className="mt-3 text-[13px] font-medium text-muted-foreground underline-offset-2 hover:underline"

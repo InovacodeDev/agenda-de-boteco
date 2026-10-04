@@ -10,4 +10,6 @@
 - Configurações alinhadas ao site, incluindo aviso para quem entra com Google
 - Receba notificações push no celular, configuráveis em Configurações
 - Corrige erro ao abrir o app em ambientes sem suporte a push
+- Tela de login com o mesmo visual do painel web: logo, textos e botão do Google
+- Avisos de erro e de sucesso no login aparecem como notificações flutuantes no topo da tela
 - Política de privacidade completa e acessível a partir do login

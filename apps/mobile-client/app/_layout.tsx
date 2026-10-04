@@ -10,6 +10,7 @@ import {
   shouldDehydrateQuery,
   useAuthStore,
 } from '@agenda/core';
+import { ToastProvider } from '@agenda/shared-ui-mobile';
 import {
   Inter_400Regular,
   Inter_500Medium,
@@ -92,21 +93,23 @@ export default function RootLayout() {
       }}
     >
       <SafeAreaProvider>
-        <StatusBar style="light" />
-        <Stack
-          screenOptions={{
-            headerShown: false,
-            contentStyle: { backgroundColor: '#0f0f0f' },
-          }}
-        >
-          <Stack.Screen name="index" />
-          <Stack.Screen name="(painel)" />
-          <Stack.Screen name="login" />
-          <Stack.Screen name="onboarding" />
-          <Stack.Screen name="privacy" />
-          <Stack.Screen name="delete-account" />
-          <Stack.Screen name="new-password" />
-        </Stack>
+        <ToastProvider>
+          <StatusBar style="light" />
+          <Stack
+            screenOptions={{
+              headerShown: false,
+              contentStyle: { backgroundColor: '#0f0f0f' },
+            }}
+          >
+            <Stack.Screen name="index" />
+            <Stack.Screen name="(painel)" />
+            <Stack.Screen name="login" />
+            <Stack.Screen name="onboarding" />
+            <Stack.Screen name="privacy" />
+            <Stack.Screen name="delete-account" />
+            <Stack.Screen name="new-password" />
+          </Stack>
+        </ToastProvider>
       </SafeAreaProvider>
     </PersistQueryClientProvider>
   );

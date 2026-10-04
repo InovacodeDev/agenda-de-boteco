@@ -14,23 +14,33 @@ import {
 } from '@agenda/core';
 import {
   Button,
-  Field,
-  Icon,
-  Screen,
+  Image,
+  KeyboardAvoidingView,
+  Pressable,
   ScrollView,
-  SegmentedTabs,
   Text,
   TextInput,
+  type ToastInput,
+  useToast,
   View,
 } from '@agenda/shared-ui-mobile';
+import brandLogo from '@assets/logo.png';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
-import { Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import { type ReactNode, useEffect, useState } from 'react';
+import { Platform, StyleSheet } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { GoogleIcon } from '@/components/GoogleIcon';
 import { signOutAndUnregister } from '@/lib/push';
 
 type Tab = 'signIn' | 'signUp';
+
+/**
+ * O cadastro é em duas etapas, como no web-client: o código por e-mail prova a
+ * posse do endereço e só depois a senha é gravada e o acesso liberado.
+ */
 type SignUpStep = 'email' | 'code';
 
 const DENIED_MESSAGE =
@@ -43,8 +53,53 @@ const DENIED_MESSAGE =
  */
 const OAUTH_SIGNUP_KEY = 'mobile-client:oauth-signup';
 
+const TABS: { id: Tab; label: string }[] = [
+  { id: 'signIn', label: 'Entrar' },
+  { id: 'signUp', label: 'Criar conta' },
+];
+
+const PLACEHOLDER_COLOR = '#a6a6a6';
+
+/** Mesmo `--gradient-night` do web-client: 160deg, violeta profundo até o fundo em 60%. */
+const NIGHT_GRADIENT = ['#1b122b', '#0f0f0f'] as const;
+
+function FieldLabel({ children }: { children: ReactNode }) {
+  return <Text className="font-body-semibold text-foreground text-[13px]">{children}</Text>;
+}
+
+function TextLink({
+  label,
+  onPress,
+  disabled = false,
+  tone = 'primary',
+}: {
+  label: string;
+  onPress: () => void;
+  disabled?: boolean;
+  tone?: 'primary' | 'muted';
+}) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      disabled={disabled}
+      hitSlop={10}
+      onPress={onPress}
+      className={disabled ? 'opacity-50' : 'active:opacity-60'}
+    >
+      <Text
+        className={`font-body-medium text-[13px] ${
+          tone === 'primary' ? 'text-primary' : 'text-muted-foreground'
+        }`}
+      >
+        {label}
+      </Text>
+    </Pressable>
+  );
+}
+
 export default function LoginScreen() {
   const router = useRouter();
+  const toast = useToast();
   const status = useAuthStore((state) => state.status);
 
   const [tab, setTab] = useState<Tab>('signIn');
@@ -53,10 +108,20 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [code, setCode] = useState('');
   const [busy, setBusy] = useState(false);
+  /** Ligado enquanto o cadastro conclui, para o efeito de sessão não interferir. */
   const [claiming, setClaiming] = useState(false);
-  const [notice, setNotice] = useState<{ tone: 'error' | 'success' | 'denied'; message: string } | null>(null);
 
   const resend = useResendCooldown();
+
+  const unavailable = status === 'unavailable';
+  const isCodeStep = tab === 'signUp' && signUpStep === 'code';
+
+  const canSubmit = (() => {
+    if (busy || unavailable) return false;
+    if (tab === 'signIn') return email.trim().length > 0 && password.length >= 6;
+    if (signUpStep === 'email') return email.trim().length > 0;
+    return code.trim().length === 6 && password.length >= 6;
+  })();
 
   useEffect(() => {
     if (status !== 'signedIn' || claiming) return;
@@ -74,306 +139,333 @@ export default function LoginScreen() {
         if (!active) return;
         if (!isOwner) {
           await signOutAndUnregister();
-          queueMicrotask(() => {
-            setNotice({ tone: 'denied', message: DENIED_MESSAGE });
+          if (!active) return;
+          toast.show({
+            tone: 'error',
+            message: DENIED_MESSAGE,
+            action: {
+              label: 'Criar meu acesso',
+              onPress: () => {
+                setTab('signUp');
+                setPassword('');
+              },
+            },
           });
           return;
         }
         const establishmentId = await getOwnedEstablishmentId();
         if (!active) return;
-        if (establishmentId) {
-          router.replace('/(painel)');
-        } else {
-          router.replace('/onboarding');
-        }
-      } catch (err: unknown) {
-        if (!active) return;
-        queueMicrotask(() => {
-          setNotice({ tone: 'error', message: getFriendlyErrorMessage(err) });
-        });
+        router.replace(establishmentId ? '/(painel)' : '/onboarding');
+      } catch (error: unknown) {
+        if (active) toast.show({ tone: 'error', message: getFriendlyErrorMessage(error) });
       }
     })();
 
     return () => {
       active = false;
     };
-  }, [status, claiming, router]);
+  }, [status, claiming, router, toast]);
 
-  const handleSignIn = async () => {
-    setNotice(null);
+  const run = async (action: () => Promise<void>, onDone?: ToastInput) => {
+    toast.dismissAll();
     setBusy(true);
     try {
-      await signInWithPassword(email.trim(), password);
-    } catch (err: unknown) {
-      setNotice({ tone: 'error', message: getFriendlyErrorMessage(err) });
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const handleGoogleSignIn = async () => {
-    setNotice(null);
-    try {
-      if (tab === 'signUp') {
-        await AsyncStorage.setItem(OAUTH_SIGNUP_KEY, '1');
-      }
-      await signInWithOAuth('google');
-    } catch (err: unknown) {
-      setNotice({ tone: 'error', message: getFriendlyErrorMessage(err) });
-    }
-  };
-
-  const handleForgotPassword = async () => {
-    if (!email.trim()) {
-      setNotice({ tone: 'error', message: 'Digite seu e-mail para recuperar a senha.' });
-      return;
-    }
-    setNotice(null);
-    setBusy(true);
-    try {
-      await sendPasswordReset(email.trim());
-      Alert.alert('Recuperação de senha', 'Enviamos as instruções para o seu e-mail.');
-    } catch (err: unknown) {
-      setNotice({ tone: 'error', message: getFriendlyErrorMessage(err) });
+      await action();
+      if (onDone) toast.show(onDone);
+    } catch (error: unknown) {
+      toast.show({ tone: 'error', message: getFriendlyErrorMessage(error) });
     } finally {
       setBusy(false);
     }
   };
 
   const handleSignUpStart = async () => {
-    if (!email.trim()) {
-      setNotice({ tone: 'error', message: 'Informe um e-mail válido.' });
-      return;
-    }
-    setNotice(null);
+    if (!email.trim() || busy || unavailable) return;
+    toast.dismissAll();
     setBusy(true);
     try {
       await signInWithEmailOtp(email.trim());
-      resend.start();
       setSignUpStep('code');
-      setNotice({
+      resend.start();
+      toast.show({
         tone: 'success',
-        message: 'Código enviado! Verifique sua caixa de entrada.',
+        message: `Enviamos um código para ${email.trim()}. Ele confirma que o e-mail é seu.`,
       });
-    } catch (err: unknown) {
-      setNotice({ tone: 'error', message: getFriendlyErrorMessage(err) });
+    } catch (error: unknown) {
+      toast.show({ tone: 'error', message: getFriendlyErrorMessage(error) });
     } finally {
       setBusy(false);
     }
   };
 
   const handleSignUpVerify = async () => {
-    if (code.trim().length !== 6 || password.length < 6) {
-      setNotice({
-        tone: 'error',
-        message: 'O código deve ter 6 dígitos e a senha no mínimo 6 caracteres.',
-      });
-      return;
-    }
-    setNotice(null);
+    toast.dismissAll();
     setBusy(true);
     setClaiming(true);
     try {
       await verifyEmailOtp(email.trim(), code.trim());
       await updatePassword(password);
       await claimEstablishmentOwner();
-      setClaiming(false);
       router.replace('/onboarding');
-    } catch (err: unknown) {
+    } catch (error: unknown) {
+      toast.show({ tone: 'error', message: getFriendlyErrorMessage(error) });
       setClaiming(false);
-      setNotice({ tone: 'error', message: getFriendlyErrorMessage(err) });
     } finally {
       setBusy(false);
     }
   };
 
+  const handleSubmit = () => {
+    if (!canSubmit) return;
+    if (tab === 'signIn') {
+      void run(() => signInWithPassword(email.trim(), password));
+      return;
+    }
+    if (signUpStep === 'email') {
+      void handleSignUpStart();
+      return;
+    }
+    void handleSignUpVerify();
+  };
+
+  const handleReset = () => {
+    if (!email.trim()) {
+      toast.show({ tone: 'error', message: 'Informe seu e-mail para recuperar a senha.' });
+      return;
+    }
+    void run(() => sendPasswordReset(email.trim()), {
+      tone: 'success',
+      message: 'Enviamos um link de recuperação para o seu e-mail.',
+    });
+  };
+
+  const handleGoogle = () => {
+    void run(async () => {
+      if (tab === 'signUp') {
+        await AsyncStorage.setItem(OAUTH_SIGNUP_KEY, '1');
+      }
+      await signInWithOAuth('google');
+    });
+  };
+
+  const submitLabel =
+    tab === 'signIn' ? 'Entrar' : signUpStep === 'email' ? 'Enviar código' : 'Criar acesso';
+
   return (
-    <Screen className="bg-background">
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        className="flex-1"
-      >
-        <ScrollView
-          contentContainerClassName="flex-grow justify-center px-6 py-10"
-          keyboardShouldPersistTaps="handled"
+    <View className="bg-background flex-1">
+      <LinearGradient
+        colors={NIGHT_GRADIENT}
+        locations={[0, 0.6]}
+        start={{ x: 0.33, y: 0 }}
+        end={{ x: 0.67, y: 1 }}
+        style={StyleSheet.absoluteFill}
+      />
+      <SafeAreaView style={styles.fill}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          className="flex-1"
         >
-          <View className="mx-auto w-full max-w-md">
-            <View className="mb-8 items-center">
-              <View className="mb-3 h-14 w-14 items-center justify-center rounded-2xl bg-primary/20">
-                <Icon name="store" size={32} color="#1dd75e" />
-              </View>
-              <Text className="font-heading text-foreground text-2xl font-bold">
-                Agenda de Boteco
-              </Text>
-              <Text className="font-body text-muted-foreground mt-1 text-sm">
-                Painel Administrativo do Bar
-              </Text>
-            </View>
+          <ScrollView
+            contentContainerClassName="flex-grow items-center justify-center px-6 py-12"
+            keyboardShouldPersistTaps="handled"
+          >
+            <View className="w-full max-w-[440px] items-center">
+              <Image
+                source={brandLogo}
+                accessibilityLabel="Agenda de Boteco"
+                contentFit="contain"
+                className="h-20 w-20 rounded-[20px] bg-white p-2"
+              />
 
-            <SegmentedTabs<Tab>
-              options={[
-                { id: 'signIn', label: 'Entrar' },
-                { id: 'signUp', label: 'Criar conta' },
-              ]}
-              value={tab}
-              onChange={(newTab) => {
-                setTab(newTab);
-                setNotice(null);
-              }}
-              className="mb-6"
-            />
+              <Text className="font-heading text-foreground mt-5 text-center text-[30px] leading-9 tracking-tight">
+                Painel do Estabelecimento
+              </Text>
+              <Text className="font-body text-muted-foreground mt-1.5 text-center text-[15px] leading-[22px]">
+                Cadastre eventos e apareça no app dos amantes da noite
+              </Text>
 
-            {notice ? (
-              <View
-                className={`mb-6 rounded-xl border p-4 ${
-                  notice.tone === 'success'
-                    ? 'border-primary/40 bg-primary/10'
-                    : 'border-destructive/40 bg-destructive/10'
-                }`}
-              >
-                <Text
-                  className={`font-body text-xs leading-relaxed ${
-                    notice.tone === 'success' ? 'text-primary' : 'text-destructive'
-                  }`}
+              <View className="border-border bg-card mt-7 w-full rounded-2xl border p-5">
+                <View
+                  accessibilityRole="tablist"
+                  className="bg-surface flex-row rounded-xl p-1"
                 >
-                  {notice.message}
-                </Text>
-              </View>
-            ) : null}
+                  {TABS.map((item) => {
+                    const selected = tab === item.id;
+                    return (
+                      <Pressable
+                        key={item.id}
+                        accessibilityRole="tab"
+                        accessibilityState={{ selected }}
+                        onPress={() => {
+                          setTab(item.id);
+                          toast.dismissAll();
+                          setSignUpStep('email');
+                          setCode('');
+                        }}
+                        className={`h-10 flex-1 items-center justify-center rounded-lg ${
+                          selected ? 'bg-background' : ''
+                        }`}
+                      >
+                        <Text
+                          className={`font-body-medium text-[14px] ${
+                            selected ? 'text-foreground' : 'text-muted-foreground'
+                          }`}
+                        >
+                          {item.label}
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
+                </View>
 
-            {tab === 'signIn' ? (
-              <View className="flex-col gap-4">
-                <Field label="E-mail">
+                {unavailable ? (
+                  <View className="bg-surface mt-4 rounded-xl px-3.5 py-2.5">
+                    <Text className="font-body text-muted-foreground text-[12px]">
+                      Login indisponível: configuração do Supabase ausente.
+                    </Text>
+                  </View>
+                ) : null}
+
+                <View className="mt-5">
+                  <FieldLabel>E-mail</FieldLabel>
                   <TextInput
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                    keyboardType="email-address"
                     value={email}
                     onChangeText={setEmail}
-                    placeholder="seu@email.com"
+                    placeholder="seu@bar.com"
+                    placeholderTextColor={PLACEHOLDER_COLOR}
+                    keyboardType="email-address"
+                    autoComplete="email"
+                    textContentType="emailAddress"
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    editable={!isCodeStep}
+                    containerClassName="mt-1.5"
+                    className={isCodeStep ? 'text-muted-foreground' : undefined}
                   />
-                </Field>
 
-                <Field label="Senha">
-                  <TextInput
-                    secureTextEntry
-                    value={password}
-                    onChangeText={setPassword}
-                    placeholder="••••••••"
-                  />
-                </Field>
+                  {isCodeStep ? (
+                    <View className="mt-4">
+                      <FieldLabel>Código do e-mail</FieldLabel>
+                      <TextInput
+                        value={code}
+                        onChangeText={(value) => setCode(value.replace(/\D/g, ''))}
+                        placeholder="000000"
+                        placeholderTextColor={PLACEHOLDER_COLOR}
+                        keyboardType="number-pad"
+                        maxLength={6}
+                        autoComplete="one-time-code"
+                        textContentType="oneTimeCode"
+                        containerClassName="mt-1.5"
+                        className="text-center tracking-[6px]"
+                      />
+                    </View>
+                  ) : null}
 
-                <View className="items-end">
+                  {tab === 'signIn' || isCodeStep ? (
+                    <View className="mt-4">
+                      <View className="flex-row items-baseline justify-between gap-4">
+                        <FieldLabel>{tab === 'signIn' ? 'Senha' : 'Crie uma senha'}</FieldLabel>
+                        {tab === 'signIn' ? (
+                          <TextLink label="Esqueci minha senha" disabled={busy} onPress={handleReset} />
+                        ) : null}
+                      </View>
+                      <TextInput
+                        value={password}
+                        onChangeText={setPassword}
+                        placeholder="••••••"
+                        placeholderTextColor={PLACEHOLDER_COLOR}
+                        secureTextEntry
+                        autoComplete={tab === 'signIn' ? 'current-password' : 'new-password'}
+                        textContentType={tab === 'signIn' ? 'password' : 'newPassword'}
+                        returnKeyType="go"
+                        onSubmitEditing={handleSubmit}
+                        containerClassName="mt-1.5"
+                      />
+                    </View>
+                  ) : null}
+
                   <Button
-                    label="Esqueci minha senha"
-                    variant="ghost"
-                    onPress={handleForgotPassword}
-                    className="h-auto p-0"
+                    label={submitLabel}
+                    busy={busy}
+                    disabled={!canSubmit}
+                    onPress={handleSubmit}
+                    fullWidth
+                    className="mt-5"
+                    style={canSubmit ? styles.primaryGlow : undefined}
                   />
+
+                  {isCodeStep ? (
+                    <View className="mt-3 items-center gap-3">
+                      <TextLink
+                        tone="muted"
+                        label={
+                          resend.isReady
+                            ? 'Reenviar código'
+                            : `Reenviar em ${resend.remainingSeconds}s`
+                        }
+                        disabled={busy || !resend.isReady}
+                        onPress={() => void handleSignUpStart()}
+                      />
+                      {resend.hasReachedHourlyLimit ? (
+                        <Text className="font-body text-muted-foreground text-center text-[12px] leading-[18px]">
+                          Você já solicitou 2 códigos nesta hora. Aguarde antes de tentar novamente
+                          para não ser bloqueado temporariamente.
+                        </Text>
+                      ) : null}
+                      <TextLink
+                        tone="muted"
+                        label="Usar outro e-mail"
+                        disabled={busy}
+                        onPress={() => {
+                          setSignUpStep('email');
+                          setCode('');
+                          toast.dismissAll();
+                          resend.reset();
+                        }}
+                      />
+                    </View>
+                  ) : null}
+                </View>
+
+                <View className="my-5 flex-row items-center gap-3">
+                  <View className="bg-border h-px flex-1" />
+                  <Text className="font-body text-muted-foreground text-[12px]">ou continue com</Text>
+                  <View className="bg-border h-px flex-1" />
                 </View>
 
                 <Button
-                  label="Entrar no Painel"
-                  busy={busy}
-                  onPress={handleSignIn}
-                  variant="solid"
-                  fullWidth
-                  className="mt-2"
-                />
-
-                <View className="my-3 flex-row items-center gap-3">
-                  <View className="h-px flex-1 bg-border" />
-                  <Text className="font-body text-muted-foreground text-xs uppercase">ou</Text>
-                  <View className="h-px flex-1 bg-border" />
-                </View>
-
-                <Button
-                  label="Entrar com Google"
+                  label="Google"
                   variant="outline"
-                  onPress={handleGoogleSignIn}
-                  icon={<Icon name="google" size={18} color="#fafafa" />}
+                  disabled={busy || unavailable}
+                  onPress={handleGoogle}
+                  icon={<GoogleIcon size={18} />}
                   fullWidth
+                  className="bg-surface"
                 />
               </View>
-            ) : signUpStep === 'email' ? (
-              <View className="flex-col gap-4">
-                <Text className="font-body text-muted-foreground text-sm">
-                  Informe o e-mail do responsável pelo estabelecimento para receber o código de verificação.
-                </Text>
 
-                <Field label="E-mail profissional">
-                  <TextInput
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                    keyboardType="email-address"
-                    value={email}
-                    onChangeText={setEmail}
-                    placeholder="contato@seubar.com.br"
-                  />
-                </Field>
-
-                <Button
-                  label="Enviar código de verificação"
-                  busy={busy}
-                  onPress={handleSignUpStart}
-                  variant="solid"
-                  fullWidth
-                  className="mt-2"
+              <View className="mt-4">
+                <TextLink
+                  tone="muted"
+                  label="Política de Privacidade"
+                  onPress={() => router.push('/privacy')}
                 />
               </View>
-            ) : (
-              <View className="flex-col gap-4">
-                <Text className="font-body text-muted-foreground text-sm">
-                  Digite o código de 6 dígitos enviado para{' '}
-                  <Text className="font-body-semibold text-foreground">{email}</Text> e defina sua senha.
-                </Text>
-
-                <Field label="Código de 6 dígitos">
-                  <TextInput
-                    keyboardType="number-pad"
-                    maxLength={6}
-                    value={code}
-                    onChangeText={setCode}
-                    placeholder="123456"
-                  />
-                </Field>
-
-                <Field label="Nova Senha (mínimo 6 caracteres)">
-                  <TextInput
-                    secureTextEntry
-                    value={password}
-                    onChangeText={setPassword}
-                    placeholder="••••••••"
-                  />
-                </Field>
-
-                <Button
-                  label="Concluir cadastro de dono"
-                  busy={busy}
-                  onPress={handleSignUpVerify}
-                  variant="solid"
-                  fullWidth
-                  className="mt-2"
-                />
-
-                <Button
-                  label="Voltar para e-mail"
-                  variant="ghost"
-                  onPress={() => setSignUpStep('email')}
-                  fullWidth
-                />
-              </View>
-            )}
-
-            <Button
-              label="Política de Privacidade"
-              variant="ghost"
-              onPress={() => router.push('/privacy')}
-              className="mt-4 h-auto p-0"
-            />
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </Screen>
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  fill: { flex: 1 },
+  primaryGlow: {
+    shadowColor: '#1dd75e',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.35,
+    shadowRadius: 20,
+    elevation: 8,
+  },
+});

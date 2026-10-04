@@ -4,3 +4,4 @@
 - Reenvio de código por e-mail mostra contagem regressiva e avisa quando o limite de envios por hora foi atingido
 - Links de eventos passam a usar um novo identificador; links antigos continuam funcionando
 - Configurações da conta: desconectar outros dispositivos e detecção do método de login ficam mais estáveis
+- Avisos de erro e de sucesso no login aparecem como notificações flutuantes, que somem sozinhas e podem ser fechadas
