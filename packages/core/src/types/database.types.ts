@@ -332,6 +332,42 @@ export type Database = {
         }
         Relationships: []
       }
+      notification_preferences: {
+        Row: {
+          alert_empty_schedule: boolean
+          alert_event_status: boolean
+          alert_musicians: boolean
+          alert_reviews: boolean
+          alert_weekly_digest: boolean
+          channel_email: boolean
+          channel_push: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          alert_empty_schedule?: boolean
+          alert_event_status?: boolean
+          alert_musicians?: boolean
+          alert_reviews?: boolean
+          alert_weekly_digest?: boolean
+          channel_email?: boolean
+          channel_push?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          alert_empty_schedule?: boolean
+          alert_event_status?: boolean
+          alert_musicians?: boolean
+          alert_reviews?: boolean
+          alert_weekly_digest?: boolean
+          channel_email?: boolean
+          channel_push?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           body: string
@@ -401,6 +437,36 @@ export type Database = {
           id?: string
           is_admin?: boolean
           is_establishment_owner?: boolean
+        }
+        Relationships: []
+      }
+      push_tokens: {
+        Row: {
+          app: string
+          created_at: string
+          id: string
+          platform: string
+          token: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          app?: string
+          created_at?: string
+          id?: string
+          platform: string
+          token: string
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          app?: string
+          created_at?: string
+          id?: string
+          platform?: string
+          token?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -858,6 +924,10 @@ export type Database = {
       postgis_version: { Args: never; Returns: string }
       postgis_wagyu_version: { Args: never; Returns: string }
       process_account_deletion_queue: { Args: never; Returns: number }
+      register_push_token: {
+        Args: { p_platform: string; p_token: string }
+        Returns: undefined
+      }
       request_account_deletion: { Args: never; Returns: undefined }
       slugify: { Args: { input: string }; Returns: string }
       st_3dclosestpoint: {

@@ -11,3 +11,5 @@
 - Máscara de moeda aprimorada para campos de valor em reais
 - Eventos e estabelecimentos passam a ter um identificador opaco para uso em links e analytics, sem expor o id interno
 - Desconexão de outros dispositivos, detecção do método de login e atualização em tempo real do catálogo passam a ser centralizadas no núcleo compartilhado
+- Base para notificações push no painel do dono: registro do aparelho e preferências de notificação salvas na conta
+- Novo link de pré-visualização da página pública do evento a partir do painel

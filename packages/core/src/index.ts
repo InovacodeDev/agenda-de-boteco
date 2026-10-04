@@ -84,6 +84,7 @@ export * from './services/moderation';
 export * from './services/musician-leads';
 export * from './services/owned-events';
 export * from './services/proximity';
+export * from './services/push';
 export * from './services/queryKeys';
 export * from './services/realtime';
 export * from './services/storage';
