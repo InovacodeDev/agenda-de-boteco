@@ -15,11 +15,12 @@ import {
   ScreenHeader,
   ScrollView,
   Text,
+  useToast,
   View,
 } from '@agenda/shared-ui-mobile';
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import { ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native';
 
 import {
   EMPTY_DRAFT,
@@ -32,19 +33,17 @@ import { useResponsive } from '@/hooks/useResponsive';
 
 export default function ProfileScreen() {
   const queryClient = useQueryClient();
+  const toast = useToast();
   const { isTablet } = useResponsive();
   const { data: establishment, isPending } = useOwnedEstablishment();
 
   const [draft, setDraft] = useState<EstablishmentDraft>(EMPTY_DRAFT);
   const [busy, setBusy] = useState(false);
-  const [savedSuccess, setSavedSuccess] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const setField: <K extends keyof EstablishmentDraft>(
     key: K,
     value: EstablishmentDraft[K],
   ) => void = (key, value) => {
-    setSavedSuccess(false);
     setDraft((curr) => ({ ...curr, [key]: value }));
   };
 
@@ -79,8 +78,6 @@ export default function ProfileScreen() {
 
   const handleSubmit = async () => {
     if (!establishment || !canSave) return;
-    setErrorMessage(null);
-    setSavedSuccess(false);
     setBusy(true);
     try {
       await updateOwnedEstablishment(establishment.id, {
@@ -104,10 +101,9 @@ export default function ProfileScreen() {
         queryKey: catalogKeys.establishments.detail(establishment.id),
       });
 
-      setSavedSuccess(true);
-      Alert.alert('Sucesso', 'Informações do estabelecimento salvas.');
+      toast.show({ tone: 'success', message: 'Alterações salvas.' });
     } catch (err: unknown) {
-      setErrorMessage(getFriendlyErrorMessage(err));
+      toast.show({ tone: 'error', message: getFriendlyErrorMessage(err) });
     } finally {
       setBusy(false);
     }
@@ -116,7 +112,7 @@ export default function ProfileScreen() {
   if (isPending) {
     return (
       <Screen className="bg-background">
-        <ScreenHeader title="Perfil do Estabelecimento" />
+        <ScreenHeader title="Perfil do estabelecimento" />
         <View className="flex-1 items-center justify-center p-8">
           <ActivityIndicator size="large" color="#1dd75e" />
           <Text className="font-body text-muted-foreground mt-3 text-sm">
@@ -130,8 +126,8 @@ export default function ProfileScreen() {
   return (
     <Screen className="bg-background">
       <ScreenHeader
-        title="Perfil do Estabelecimento"
-        subtitle="Informações públicas visíveis no aplicativo"
+        title="Perfil do estabelecimento"
+        subtitle="Essas informações aparecem no app dos usuários."
       />
 
       <KeyboardAvoidingView
@@ -143,20 +139,12 @@ export default function ProfileScreen() {
           keyboardShouldPersistTaps="handled"
         >
           <View className="mx-auto w-full max-w-4xl">
-            {errorMessage ? (
-              <View className="mb-4 rounded-xl border border-destructive/40 bg-destructive/10 p-4">
-                <Text className="font-body text-destructive text-xs leading-relaxed">
-                  {errorMessage}
-                </Text>
-              </View>
-            ) : null}
-
             <View className={isTablet ? 'flex-row gap-6' : 'flex-col gap-6'}>
               {/* Coluna 1: Identidade e Mídia */}
               <View className={isTablet ? 'flex-1 flex-col gap-5' : 'flex-col gap-5'}>
                 <Card className="flex-col gap-4 p-5">
                   <Text className="font-heading text-foreground text-base font-bold">
-                    Identidade Visual
+                    Identidade
                   </Text>
 
                   <IdentityFields draft={draft} set={setField} onUpload={handleUpload} />
@@ -174,25 +162,19 @@ export default function ProfileScreen() {
                     draft={draft}
                     set={setField}
                     onUpload={handleUpload}
-                    onError={setErrorMessage}
+                    onError={(message) => toast.show({ tone: 'error', message })}
                   />
                 </Card>
 
                 <Card className="flex-col gap-4 p-5">
                   <Text className="font-heading text-foreground text-base font-bold">
-                    Operação e Diferenciais
+                    Operação
                   </Text>
 
                   <OperationFields draft={draft} set={setField} onUpload={handleUpload} />
                 </Card>
               </View>
             </View>
-
-            {savedSuccess ? (
-              <Text className="font-body text-primary mt-4 text-center text-xs">
-                Alterações salvas com sucesso!
-              </Text>
-            ) : null}
 
             <View className="mt-6 flex-row items-center justify-end gap-3 border-t border-border pt-5">
               <Button

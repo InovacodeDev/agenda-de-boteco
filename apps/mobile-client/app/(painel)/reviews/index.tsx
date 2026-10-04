@@ -36,7 +36,7 @@ export default function ReviewsScreen() {
     <Screen className="bg-background">
       <ScreenHeader
         title="Avaliações"
-        subtitle="Notas recebidas pelo seu estabelecimento"
+        subtitle="Acompanhe as notas recebidas pelo seu estabelecimento e o histórico de clientes."
       />
 
       <ScrollView contentContainerClassName="p-4 gap-5">
@@ -121,7 +121,7 @@ export default function ReviewsScreen() {
                           </View>
                         </View>
                         <Text className="font-body text-muted-foreground text-xs font-medium">
-                          {starCount} ({percentage}%)
+                          {starCount.toLocaleString('pt-BR')} ({percentage}%)
                         </Text>
                       </View>
                     );

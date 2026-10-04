@@ -18,18 +18,20 @@ import {
   Screen,
   ScreenHeader,
   Text,
+  useToast,
   View,
 } from '@agenda/shared-ui-mobile';
 import { FlashList } from '@shopify/flash-list';
 import { type Href, useRouter } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 import { useState } from 'react';
-import { ActivityIndicator, Alert, Modal, TouchableWithoutFeedback } from 'react-native';
+import { ActivityIndicator, Modal, TouchableWithoutFeedback } from 'react-native';
 
 import { useResponsive } from '@/hooks/useResponsive';
 
 export default function EventsListScreen() {
   const router = useRouter();
+  const toast = useToast();
   const { isTablet } = useResponsive();
   const [pendingSeries, setPendingSeries] = useState<Event | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -56,7 +58,7 @@ export default function EventsListScreen() {
       await deleteEvent.mutateAsync(deleteId);
       setDeleteId(null);
     } catch (err: unknown) {
-      Alert.alert('Erro ao excluir', getFriendlyErrorMessage(err));
+      toast.show({ tone: 'error', message: getFriendlyErrorMessage(err) });
     }
   };
 
@@ -66,7 +68,7 @@ export default function EventsListScreen() {
       await deleteEvent.mutateAsync(pendingSeries.id);
       setPendingSeries(null);
     } catch (err: unknown) {
-      Alert.alert('Erro ao excluir', getFriendlyErrorMessage(err));
+      toast.show({ tone: 'error', message: getFriendlyErrorMessage(err) });
     }
   };
 
@@ -76,7 +78,7 @@ export default function EventsListScreen() {
       await deleteGroup.mutateAsync(pendingSeries.recurrence_group_id);
       setPendingSeries(null);
     } catch (err: unknown) {
-      Alert.alert('Erro ao excluir', getFriendlyErrorMessage(err));
+      toast.show({ tone: 'error', message: getFriendlyErrorMessage(err) });
     }
   };
 

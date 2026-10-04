@@ -19,8 +19,8 @@ export default function EditEventScreen() {
   return (
     <Screen className="bg-background">
       <ScreenHeader
-        title="Editar Evento"
-        subtitle={event?.name ?? 'Carregando…'}
+        title="Editar evento"
+        subtitle="Rascunhos ficam só para você; eventos publicados aparecem no app dos usuários."
         onBack={() => router.back()}
       />
       {isPending ? (

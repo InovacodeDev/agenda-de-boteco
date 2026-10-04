@@ -3,13 +3,12 @@ import {
   Button,
   Icon,
   type IconName,
-  Pressable,
   Screen,
-  ScreenHeader,
   ScrollView,
   Text,
   View,
 } from '@agenda/shared-ui-mobile';
+import { LinearGradient } from 'expo-linear-gradient';
 import { type Href, useRouter } from 'expo-router';
 
 import { useResponsive } from '@/hooks/useResponsive';
@@ -18,6 +17,7 @@ interface ShortcutItem {
   href: Href;
   title: string;
   description: string;
+  cta: string;
   icon: IconName;
   disabled?: boolean;
 }
@@ -27,18 +27,21 @@ const SHORTCUTS: ShortcutItem[] = [
     href: '/(painel)/events',
     title: 'Eventos',
     description: 'Crie e gerencie suas agendas',
+    cta: 'Gerenciar eventos',
     icon: 'calendar-blank',
   },
   {
     href: '/(painel)/profile',
     title: 'Perfil do bar',
     description: 'Edite informações e mídia',
+    cta: 'Editar perfil',
     icon: 'store',
   },
   {
     href: '/(painel)/metrics',
     title: 'Métricas',
     description: 'Acompanhe visualizações e cliques',
+    cta: 'Em breve',
     icon: 'chart-bar',
     disabled: true,
   },
@@ -51,71 +54,58 @@ export default function DashboardScreen() {
 
   return (
     <Screen className="bg-background">
-      <ScreenHeader
-        title={establishment?.name ?? 'Painel do Bar'}
-        subtitle="Visão Geral do Estabelecimento"
-      />
-
       <ScrollView contentContainerClassName="p-5 gap-6">
-        <View className="overflow-hidden rounded-3xl border border-primary/30 bg-card p-6 shadow-xl">
-          <View className="mb-4 h-12 w-12 items-center justify-center rounded-2xl bg-primary/20">
-            <Icon name="wand-magic-sparkles" size={26} color="#1dd75e" />
-          </View>
+        <LinearGradient
+          colors={['#1dd75e', '#19e6c4']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={{ borderRadius: 16 }}
+          className="p-8"
+        >
+          <Icon name="wand-magic-sparkles" size={32} color="#0f0f0f" />
 
-          <Text className="font-heading text-foreground text-2xl font-bold">
+          <Text className="font-heading text-background mt-4 text-3xl font-bold">
             Bem-vindo{establishment?.name ? `, ${establishment.name}` : ''}!
           </Text>
 
-          <Text className="font-body text-muted-foreground mt-2 max-w-xl text-sm leading-relaxed">
-            Seu painel está pronto para operar. Cadastre seu próximo evento e apareça no feed de milhares de amantes da noite.
+          <Text className="font-body text-background mt-2 max-w-xl text-base leading-relaxed opacity-90">
+            Seu painel está pronto. Cadastre o primeiro evento e apareça no feed dos amantes da noite.
           </Text>
 
-          <View className="mt-5 flex-row items-center gap-3">
-            <Button
-              label="Cadastrar novo evento"
-              variant="solid"
-              icon={<Icon name="plus" size={16} color="#0f0f0f" weight="bold" />}
-              onPress={() => router.push('/(painel)/events/new')}
-            />
-          </View>
-        </View>
+          <Button
+            label="Cadastrar primeiro evento"
+            variant="ghost"
+            className="mt-5 self-start bg-background"
+            icon={<Icon name="plus" size={14} color="#fafafa" weight="bold" />}
+            onPress={() => router.push('/(painel)/events/new')}
+          />
+        </LinearGradient>
 
-        <View>
-          <Text className="font-heading text-foreground mb-4 text-lg font-bold">
-            Acesso Rápido
-          </Text>
-
-          <View
-            className={`gap-4 ${
-              isTablet ? 'flex-row flex-wrap' : 'flex-col'
-            }`}
-          >
-            {SHORTCUTS.map((item) => (
-              <Pressable
-                key={item.title}
+        <View
+          className={`gap-4 ${isTablet ? 'flex-row flex-wrap' : 'flex-col'}`}
+        >
+          {SHORTCUTS.map((item) => (
+            <View
+              key={item.title}
+              className={`flex-col rounded-lg border border-border bg-card p-5 ${
+                isTablet ? 'w-[31%] flex-grow' : 'w-full'
+              }`}
+            >
+              <Icon name={item.icon} size={24} color="#1dd75e" />
+              <Text className="font-heading text-foreground mb-1 mt-3 text-base font-semibold">
+                {item.title}
+              </Text>
+              <Text className="font-body text-muted-foreground mb-4 text-sm">
+                {item.description}
+              </Text>
+              <Button
+                label={item.cta}
+                variant="outline"
                 disabled={item.disabled}
                 onPress={() => router.push(item.href)}
-                className={`rounded-2xl border border-border bg-card p-5 active:border-primary/50 active:opacity-90 ${
-                  item.disabled ? 'opacity-50' : ''
-                } ${isTablet ? 'w-[48%] flex-grow' : 'w-full'}`}
-              >
-                <View className="mb-3 h-10 w-10 items-center justify-center rounded-xl bg-surface">
-                  <Icon name={item.icon} size={20} color="#1dd75e" />
-                </View>
-                <Text className="font-heading text-foreground text-base font-semibold">
-                  {item.title}
-                </Text>
-                <Text className="font-body text-muted-foreground mt-1 text-xs leading-relaxed">
-                  {item.description}
-                </Text>
-                {item.disabled ? (
-                  <Text className="font-body-medium text-muted-foreground mt-2 text-xs">
-                    Em breve
-                  </Text>
-                ) : null}
-              </Pressable>
-            ))}
-          </View>
+              />
+            </View>
+          ))}
         </View>
       </ScrollView>
     </Screen>

@@ -18,8 +18,9 @@ import {
 } from '@agenda/core';
 import {
   Button,
+  cn,
   DatePickerField,
-  Field,
+  type FieldProps,
   Icon,
   ImagePickerField,
   ScrollView,
@@ -29,6 +30,7 @@ import {
   TextArea,
   TextInput,
   TimePickerField,
+  useToast,
   View,
 } from '@agenda/shared-ui-mobile';
 import { useQueryClient } from '@tanstack/react-query';
@@ -37,6 +39,28 @@ import { useEffect, useState } from 'react';
 import { KeyboardAvoidingView, Platform } from 'react-native';
 
 import { useResponsive } from '../hooks/useResponsive';
+
+/** Label em caixa alta, espelhando o uppercase do Field web (packages/shared-ui) — só este form usa essa variação. */
+function Field({ label, required = false, helperText, error, children, className }: FieldProps) {
+  return (
+    <View className={cn('flex-col gap-1.5', className)}>
+      {!label ? null : (
+        <View className="flex-row items-center gap-1">
+          <Text className="font-body-medium text-muted-foreground text-xs uppercase tracking-wider">
+            {label}
+            {required ? <Text className="text-destructive font-body-bold"> *</Text> : null}
+          </Text>
+        </View>
+      )}
+      {children}
+      {error ? (
+        <Text className="font-body text-destructive text-xs">{error}</Text>
+      ) : helperText ? (
+        <Text className="font-body text-muted-foreground text-xs">{helperText}</Text>
+      ) : null}
+    </View>
+  );
+}
 
 const DEFAULT_DURATION_HOURS = 4;
 const NO_STYLE = '';
@@ -68,6 +92,7 @@ export interface EventFormProps {
 
 export function EventForm({ event }: EventFormProps) {
   const router = useRouter();
+  const toast = useToast();
   const queryClient = useQueryClient();
   const { isTablet } = useResponsive();
   const { data: establishmentId } = useOwnedEstablishmentId();
@@ -94,7 +119,6 @@ export function EventForm({ event }: EventFormProps) {
   });
 
   const [busy, setBusy] = useState<EventStatus | null>(null);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
     if (!event) return;
@@ -140,7 +164,6 @@ export function EventForm({ event }: EventFormProps) {
 
   const handleSave = async (status: EventStatus) => {
     if (!establishmentId || !canSave) return;
-    setErrorMessage(null);
     setBusy(status);
     try {
       const startsAt = toLocalIso(date, time);
@@ -170,7 +193,7 @@ export function EventForm({ event }: EventFormProps) {
       await queryClient.invalidateQueries({ queryKey: catalogKeys.events.root });
       router.replace('/(painel)/events');
     } catch (err: unknown) {
-      setErrorMessage(getFriendlyErrorMessage(err));
+      toast.show({ tone: 'error', message: getFriendlyErrorMessage(err) });
       setBusy(null);
     }
   };
@@ -188,15 +211,7 @@ export function EventForm({ event }: EventFormProps) {
           {event?.recurrence_group_id ? (
             <View className="mb-4 rounded-xl border border-border bg-surface-elevated p-4">
               <Text className="font-body text-muted-foreground text-xs leading-relaxed">
-                Este evento faz parte de uma repetição periódica. As alterações salvas valem exclusivamente para esta ocorrência.
-              </Text>
-            </View>
-          ) : null}
-
-          {errorMessage ? (
-            <View className="mb-4 rounded-xl border border-destructive/40 bg-destructive/10 p-4">
-              <Text className="font-body text-destructive text-xs leading-relaxed">
-                {errorMessage}
+                Este evento faz parte de uma repetição. As alterações valem só para esta ocorrência.
               </Text>
             </View>
           ) : null}
@@ -205,18 +220,18 @@ export function EventForm({ event }: EventFormProps) {
             {/* Coluna 1 / Principal */}
             <View className={isTablet ? 'flex-1 flex-col gap-5' : 'flex-col gap-5'}>
               <ImagePickerField
-                label="Banner do Evento"
+                label="Banner do evento"
                 value={bannerUrl}
                 onChange={setBannerUrl}
                 onUpload={handleUpload}
                 aspect={[16, 9]}
               />
 
-              <Field label="Nome do Evento" required>
+              <Field label="Nome do evento" required>
                 <TextInput
                   value={name}
                   onChangeText={setName}
-                  placeholder="Ex: Sexta do Samba & Chopp"
+                  placeholder="Ex: Sexta do Sertanejo"
                 />
               </Field>
 
@@ -237,7 +252,7 @@ export function EventForm({ event }: EventFormProps) {
                 <TextArea
                   value={description}
                   onChangeText={setDescription}
-                  placeholder="Conte os detalhes do evento, promoções e atrações…"
+                  placeholder="Conte o que vai rolar nesse evento..."
                   rows={4}
                 />
               </Field>
@@ -245,15 +260,15 @@ export function EventForm({ event }: EventFormProps) {
 
             {/* Coluna 2 / Detalhes e Recorrência */}
             <View className={isTablet ? 'flex-1 flex-col gap-5' : 'flex-col gap-5'}>
-              <Field label="Atração Principal">
+              <Field label="Atração principal">
                 <TextInput
                   value={attraction}
                   onChangeText={setAttraction}
-                  placeholder="Nome da banda, DJ ou artista"
+                  placeholder="Banda, DJ, artista..."
                 />
               </Field>
 
-              <Field label="Estilo Musical">
+              <Field label="Estilo musical">
                 <SelectField
                   value={musicStyleId}
                   onValueChange={setMusicStyleId}
@@ -280,7 +295,7 @@ export function EventForm({ event }: EventFormProps) {
                       keyboardType="number-pad"
                       value={capacity}
                       onChangeText={setCapacity}
-                      placeholder="Ex: 150"
+                      placeholder="Ex: 200"
                     />
                   </Field>
                 </View>
@@ -290,15 +305,15 @@ export function EventForm({ event }: EventFormProps) {
                 <TextInput
                   value={courtesy}
                   onChangeText={setCourtesy}
-                  placeholder="Ex: Mulheres free até 21h"
+                  placeholder="Ex: Mulheres free"
                 />
               </Field>
 
-              <Field label="Promoção Especial">
+              <Field label="Promoção">
                 <TextInput
                   value={promo}
                   onChangeText={setPromo}
-                  placeholder="Ex: Chopp duplo até 20h"
+                  placeholder="Ex: Chopp em dobro até 22h"
                 />
               </Field>
 
@@ -306,14 +321,14 @@ export function EventForm({ event }: EventFormProps) {
                 <View className="rounded-2xl border border-border bg-card p-4">
                   <SwitchRow
                     label="Repetir este evento"
-                    description="Para agendas fixas, como a noite de sertanejo de toda quinta."
+                    description="Para a programação fixa da casa, como o happy hour de toda sexta."
                     checked={repeat}
                     onCheckedChange={setRepeat}
                   />
 
                   {repeat ? (
                     <View className="mt-4 flex-col gap-4 border-t border-border/60 pt-4">
-                      <Field label="Frequência de Repetição">
+                      <Field label="Frequência">
                         <SelectField
                           value={recurrence.frequency}
                           onValueChange={(v) =>

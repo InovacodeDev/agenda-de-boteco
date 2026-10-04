@@ -12,4 +12,7 @@
 - Corrige erro ao abrir o app em ambientes sem suporte a push
 - Tela de login com o mesmo visual do painel web: logo, textos e botão do Google
 - Avisos de erro e de sucesso no login aparecem como notificações flutuantes no topo da tela
+- Nova navegação no celular: Início, Eventos, botão central para criar evento, Artistas e um menu "Mais" com Perfil, Métricas, Avaliações, Configurações e Sair
+- Dashboard, eventos, artistas, perfil, métricas e avaliações com os mesmos textos e organização do painel web
+- Avisos dessas telas também passam a aparecer como notificações flutuantes
 - Política de privacidade completa e acessível a partir do login

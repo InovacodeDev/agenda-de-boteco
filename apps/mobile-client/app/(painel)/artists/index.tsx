@@ -17,18 +17,20 @@ import {
   SelectField,
   Text,
   TextInput,
+  useToast,
   View,
 } from '@agenda/shared-ui-mobile';
 import { FlashList } from '@shopify/flash-list';
 import * as Linking from 'expo-linking';
 import { useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, Alert } from 'react-native';
+import { ActivityIndicator } from 'react-native';
 
 import { useResponsive } from '@/hooks/useResponsive';
 
 const DEBOUNCE_MS = 300;
 
 export default function ArtistsListScreen() {
+  const toast = useToast();
   const { isTablet } = useResponsive();
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -88,7 +90,7 @@ export default function ArtistsListScreen() {
     const cleanNumber = phone.replace(/\D/g, '');
     const url = buildWhatsAppUrl(`55${cleanNumber}`);
     Linking.openURL(url).catch(() => {
-      Alert.alert('Erro', 'Não foi possível abrir o WhatsApp.');
+      toast.show({ tone: 'error', message: 'Não foi possível abrir o WhatsApp.' });
     });
   };
 
@@ -96,7 +98,7 @@ export default function ArtistsListScreen() {
     const url = buildInstagramProfileUrl(handle);
     if (!url) return;
     Linking.openURL(url).catch(() => {
-      Alert.alert('Erro', 'Não foi possível abrir o Instagram.');
+      toast.show({ tone: 'error', message: 'Não foi possível abrir o Instagram.' });
     });
   };
 

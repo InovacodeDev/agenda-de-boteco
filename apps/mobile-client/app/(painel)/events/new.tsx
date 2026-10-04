@@ -9,8 +9,8 @@ export default function NewEventScreen() {
   return (
     <Screen className="bg-background">
       <ScreenHeader
-        title="Novo Evento"
-        subtitle="Cadastre um novo show ou atração"
+        title="Novo evento"
+        subtitle="Rascunhos ficam só para você; eventos publicados aparecem no app dos usuários."
         onBack={() => router.back()}
       />
       <EventForm />

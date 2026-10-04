@@ -59,14 +59,11 @@ export default function MetricsScreen() {
     <Screen className="bg-background">
       <ScreenHeader
         title="Métricas"
-        subtitle="Visualizações e cliques dos seus eventos, somando app e site"
+        subtitle="Visualizações e cliques dos seus eventos, somando app e site."
       />
 
       <ScrollView contentContainerClassName="p-4 gap-5">
-        <View className="flex-row items-center justify-between">
-          <Text className="font-heading text-foreground text-base font-semibold">
-            Período de Análise
-          </Text>
+        <View className="flex-row items-center justify-end">
           <View className="w-48">
             <SelectField value={sinceDays} onValueChange={setSinceDays} options={PERIOD_OPTIONS} />
           </View>
@@ -91,7 +88,7 @@ export default function MetricsScreen() {
 
               <View className={isTablet ? 'w-[48%] flex-grow' : 'w-full'}>
                 <StatCard
-                  title="Cliques em Ações"
+                  title="Cliques"
                   value={
                     totals.clicksByKind.click_map +
                     totals.clicksByKind.click_contact +
@@ -114,7 +111,7 @@ export default function MetricsScreen() {
               <View className={isTablet ? 'w-[48%] flex-grow' : 'w-full'}>
                 <Card className="flex-1 justify-between p-4">
                   <Text className="font-body-medium text-muted-foreground text-xs uppercase tracking-wider">
-                    Evolução Diária
+                    Evolução
                   </Text>
                   <View className="my-2 items-center">
                     <Sparkline data={byDay} width={isTablet ? 260 : 200} height={40} />
@@ -127,14 +124,10 @@ export default function MetricsScreen() {
             </View>
 
             <View className="mt-2">
-              <Text className="font-heading text-foreground mb-3 text-base font-bold">
-                Desempenho por Evento
-              </Text>
-
               {byEvent.length === 0 ? (
                 <Card className="items-center p-6 text-center">
                   <Text className="font-body text-muted-foreground text-sm">
-                    Nenhum registro de acesso registrado no período selecionado.
+                    Nenhum dado de métrica no período selecionado.
                   </Text>
                 </Card>
               ) : (
