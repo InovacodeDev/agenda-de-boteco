@@ -6,27 +6,51 @@ import {
   unregisterPushToken,
   useAuthStore,
 } from '@agenda/core';
+import { isRunningInExpoGo } from 'expo';
 import Constants from 'expo-constants';
 import * as Device from 'expo-device';
-import * as Notifications from 'expo-notifications';
+import type * as NotificationsApi from 'expo-notifications';
 import { type Href, useRouter } from 'expo-router';
 import { useEffect } from 'react';
 import { Platform } from 'react-native';
 
 export type PushEnableResult = 'registered' | 'denied' | 'unsupported';
 
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowBanner: true,
-    shouldShowList: true,
-    shouldPlaySound: true,
-    shouldSetBadge: false,
-  }),
-});
+type NotificationsModule = typeof NotificationsApi;
+
+let notificationsModule: Promise<NotificationsModule> | null = null;
+
+/**
+ * NOTE: desde o SDK 53 o Expo Go no Android não tem push remoto e o import
+ * estático de expo-notifications lança no carregamento do módulo, derrubando o
+ * root layout. Carrega sob demanda só onde há suporte (development build/loja).
+ * https://docs.expo.dev/versions/latest/sdk/notifications
+ */
+function loadNotifications(): Promise<NotificationsModule> | null {
+  const os = Platform.OS;
+  if (!Device.isDevice || (os !== 'ios' && os !== 'android')) {
+    return null;
+  }
+  if (os === 'android' && isRunningInExpoGo()) {
+    return null;
+  }
+  notificationsModule ??= import('expo-notifications').then((Notifications) => {
+    Notifications.setNotificationHandler({
+      handleNotification: async () => ({
+        shouldShowBanner: true,
+        shouldShowList: true,
+        shouldPlaySound: true,
+        shouldSetBadge: false,
+      }),
+    });
+    return Notifications;
+  });
+  return notificationsModule;
+}
 
 function nativePlatform(): 'ios' | 'android' | null {
   const os = Platform.OS;
-  return Device.isDevice && (os === 'ios' || os === 'android') ? os : null;
+  return os === 'ios' || os === 'android' ? os : null;
 }
 
 function easProjectId(): string | null {
@@ -35,7 +59,7 @@ function easProjectId(): string | null {
   return projectId ? projectId : null;
 }
 
-async function readDeviceToken(): Promise<string | null> {
+async function readDeviceToken(Notifications: NotificationsModule): Promise<string | null> {
   const projectId = easProjectId();
   if (!projectId) {
     return null;
@@ -47,9 +71,11 @@ async function readDeviceToken(): Promise<string | null> {
 /** Pede permissão (só se o sistema ainda deixa perguntar) e vincula o token do aparelho à conta. */
 export async function enablePush(): Promise<PushEnableResult> {
   const platform = nativePlatform();
-  if (!platform) {
+  const loading = loadNotifications();
+  if (!platform || !loading) {
     return 'unsupported';
   }
+  const Notifications = await loading;
   if (platform === 'android') {
     await Notifications.setNotificationChannelAsync('default', {
       name: 'Alertas do painel',
@@ -64,7 +90,7 @@ export async function enablePush(): Promise<PushEnableResult> {
   if (!granted) {
     return 'denied';
   }
-  const token = await readDeviceToken();
+  const token = await readDeviceToken(Notifications);
   if (!token) {
     return 'unsupported';
   }
@@ -74,14 +100,16 @@ export async function enablePush(): Promise<PushEnableResult> {
 
 /** Precisa rodar com a sessão ainda ativa: a RLS só deixa apagar o token da própria conta. */
 export async function disablePush(): Promise<void> {
-  if (!nativePlatform()) {
+  const loading = loadNotifications();
+  if (!loading) {
     return;
   }
+  const Notifications = await loading;
   const { granted } = await Notifications.getPermissionsAsync();
   if (!granted) {
     return;
   }
-  const token = await readDeviceToken();
+  const token = await readDeviceToken(Notifications);
   if (token) {
     await unregisterPushToken(token);
   }
@@ -116,8 +144,6 @@ export function internalPathFromData(data: unknown): string | null {
 export function usePushNotifications(ready: boolean) {
   const router = useRouter();
   const status = useAuthStore((state) => state.status);
-  const response = Notifications.useLastNotificationResponse();
-
   useEffect(() => {
     if (status !== 'signedIn') {
       return;
@@ -130,13 +156,38 @@ export function usePushNotifications(ready: boolean) {
   }, [status]);
 
   useEffect(() => {
-    if (!ready || !response) {
+    const loading = loadNotifications();
+    if (!ready || !loading) {
       return;
     }
-    const path = internalPathFromData(response.notification.request.content.data);
-    void Notifications.clearLastNotificationResponse();
-    if (path) {
-      router.push(path as Href);
-    }
-  }, [ready, response, router]);
+    let subscription: { remove: () => void } | null = null;
+    let cancelled = false;
+    const open = (data: unknown) => {
+      const path = internalPathFromData(data);
+      if (path) {
+        router.push(path as Href);
+      }
+    };
+    void loading
+      .then(async (Notifications) => {
+        if (cancelled) {
+          return;
+        }
+        subscription = Notifications.addNotificationResponseReceivedListener((response) => {
+          open(response.notification.request.content.data);
+        });
+        const last = await Notifications.getLastNotificationResponseAsync();
+        if (last && !cancelled) {
+          Notifications.clearLastNotificationResponse();
+          open(last.notification.request.content.data);
+        }
+      })
+      .catch((error: unknown) => {
+        logErrorToTerminal(error, { method: 'push.listenResponses' });
+      });
+    return () => {
+      cancelled = true;
+      subscription?.remove();
+    };
+  }, [ready, router]);
 }

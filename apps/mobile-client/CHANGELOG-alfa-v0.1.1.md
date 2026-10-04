@@ -9,4 +9,5 @@
 - Criar conta com Google já vincula você como dono do bar
 - Configurações alinhadas ao site, incluindo aviso para quem entra com Google
 - Receba notificações push no celular, configuráveis em Configurações
+- Corrige erro ao abrir o app em ambientes sem suporte a push
 - Política de privacidade completa e acessível a partir do login
