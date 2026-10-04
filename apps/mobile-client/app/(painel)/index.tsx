@@ -19,38 +19,28 @@ interface ShortcutItem {
   title: string;
   description: string;
   icon: IconName;
+  disabled?: boolean;
 }
 
 const SHORTCUTS: ShortcutItem[] = [
   {
     href: '/(painel)/events',
     title: 'Eventos',
-    description: 'Crie e gerencie sua programação musical e happy hours',
+    description: 'Crie e gerencie suas agendas',
     icon: 'calendar-blank',
   },
   {
-    href: '/(painel)/artists',
-    title: 'Artistas',
-    description: 'Músicos cadastrados interessados em tocar no seu bar',
-    icon: 'microphone',
-  },
-  {
     href: '/(painel)/profile',
-    title: 'Perfil do Bar',
-    description: 'Edite fotos, endereço, cardápio e horário de funcionamento',
+    title: 'Perfil do bar',
+    description: 'Edite informações e mídia',
     icon: 'store',
   },
   {
     href: '/(painel)/metrics',
-    title: 'Métricas & Avaliações',
-    description: 'Visualizações, cliques, favoritos e notas de clientes',
+    title: 'Métricas',
+    description: 'Acompanhe visualizações e cliques',
     icon: 'chart-bar',
-  },
-  {
-    href: '/(painel)/settings',
-    title: 'Configurações',
-    description: 'Segurança, senha, notificações e encerramento de conta',
-    icon: 'gear',
+    disabled: true,
   },
 ];
 
@@ -103,10 +93,11 @@ export default function DashboardScreen() {
             {SHORTCUTS.map((item) => (
               <Pressable
                 key={item.title}
+                disabled={item.disabled}
                 onPress={() => router.push(item.href)}
                 className={`rounded-2xl border border-border bg-card p-5 active:border-primary/50 active:opacity-90 ${
-                  isTablet ? 'w-[48%] flex-grow' : 'w-full'
-                }`}
+                  item.disabled ? 'opacity-50' : ''
+                } ${isTablet ? 'w-[48%] flex-grow' : 'w-full'}`}
               >
                 <View className="mb-3 h-10 w-10 items-center justify-center rounded-xl bg-surface">
                   <Icon name={item.icon} size={20} color="#1dd75e" />
@@ -117,6 +108,11 @@ export default function DashboardScreen() {
                 <Text className="font-body text-muted-foreground mt-1 text-xs leading-relaxed">
                   {item.description}
                 </Text>
+                {item.disabled ? (
+                  <Text className="font-body-medium text-muted-foreground mt-2 text-xs">
+                    Em breve
+                  </Text>
+                ) : null}
               </Pressable>
             ))}
           </View>

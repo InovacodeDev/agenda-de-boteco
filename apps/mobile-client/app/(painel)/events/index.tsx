@@ -1,4 +1,5 @@
 import {
+  buildPanelEventPreviewUrl,
   type Event,
   flattenPages,
   formatEventDate,
@@ -11,29 +12,25 @@ import {
   Badge,
   Button,
   Card,
-  ConfirmDialog,
   EmptyState,
   Icon,
   Image,
   Screen,
   ScreenHeader,
-  SegmentedTabs,
   Text,
   View,
 } from '@agenda/shared-ui-mobile';
 import { FlashList } from '@shopify/flash-list';
 import { type Href, useRouter } from 'expo-router';
-import { useMemo, useState } from 'react';
-import { ActivityIndicator, Alert } from 'react-native';
+import * as WebBrowser from 'expo-web-browser';
+import { useState } from 'react';
+import { ActivityIndicator, Alert, Modal, TouchableWithoutFeedback } from 'react-native';
 
 import { useResponsive } from '@/hooks/useResponsive';
-
-type FilterTab = 'all' | 'published' | 'draft';
 
 export default function EventsListScreen() {
   const router = useRouter();
   const { isTablet } = useResponsive();
-  const [filter, setFilter] = useState<FilterTab>('all');
   const [pendingSeries, setPendingSeries] = useState<Event | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
@@ -44,11 +41,6 @@ export default function EventsListScreen() {
   const deleteEvent = useDeleteOwnedEvent();
   const deleteGroup = useDeleteOwnedEventGroup();
   const isDeleting = deleteEvent.isPending || deleteGroup.isPending;
-
-  const filteredEvents = useMemo(() => {
-    if (filter === 'all') return allEvents;
-    return allEvents.filter((e) => e.status === filter);
-  }, [allEvents, filter]);
 
   const handleDeletePress = (event: Event) => {
     if (event.recurrence_group_id) {
@@ -88,11 +80,17 @@ export default function EventsListScreen() {
     }
   };
 
+  const handleOpenPublicPage = (event: Event) => {
+    const baseUrl = process.env.EXPO_PUBLIC_WEB_URL;
+    if (!baseUrl) return;
+    WebBrowser.openBrowserAsync(buildPanelEventPreviewUrl(event.external_id, baseUrl));
+  };
+
   return (
     <Screen className="bg-background">
       <ScreenHeader
-        title="Eventos da Casa"
-        subtitle={`${allEvents.length} cadastrados`}
+        title="Eventos"
+        subtitle="Gerencie a programação do seu bar."
         rightAction={
           <Button
             label="Novo evento"
@@ -104,53 +102,29 @@ export default function EventsListScreen() {
         }
       />
 
-      <View className="p-4 pb-2">
-        <SegmentedTabs<FilterTab>
-          options={[
-            { id: 'all', label: 'Todos', count: allEvents.length },
-            {
-              id: 'published',
-              label: 'Publicados',
-              count: allEvents.filter((e) => e.status === 'published').length,
-            },
-            {
-              id: 'draft',
-              label: 'Rascunhos',
-              count: allEvents.filter((e) => e.status === 'draft').length,
-            },
-          ]}
-          value={filter}
-          onChange={setFilter}
-        />
-      </View>
-
       {isPending ? (
         <View className="flex-1 items-center justify-center p-8">
           <ActivityIndicator size="large" color="#1dd75e" />
-          <Text className="font-body text-muted-foreground mt-3 text-sm">Carregando eventos…</Text>
+          <Text className="font-body text-muted-foreground mt-3 text-sm">Carregando…</Text>
         </View>
-      ) : filteredEvents.length === 0 ? (
+      ) : allEvents.length === 0 ? (
         <EmptyState
           icon={<Icon name="calendar-blank" size={40} color="#737373" />}
-          title="Nenhum evento encontrado"
-          message={
-            filter === 'all'
-              ? 'Você ainda não cadastrou nenhum evento para este estabelecimento.'
-              : `Nenhum evento com status "${filter === 'published' ? 'Publicado' : 'Rascunho'}".`
-          }
-          actionLabel="Cadastrar novo evento"
+          message="Nenhum evento por aqui ainda. Cadastre o primeiro e apareça no feed."
+          actionLabel="Criar primeiro evento"
           onAction={() => router.push('/(painel)/events/new')}
         />
       ) : (
         <View className="flex-1 px-4">
           <FlashList
-            data={filteredEvents}
+            data={allEvents}
             keyExtractor={(item) => item.id}
             numColumns={isTablet ? 2 : 1}
             renderItem={({ item }) => {
               const startsAtMidnight =
                 new Date(item.starts_at).getHours() === 0 &&
                 new Date(item.starts_at).getMinutes() === 0;
+              const isDraft = item.status === 'draft';
 
               return (
                 <View className={isTablet ? 'p-2' : 'pb-4'}>
@@ -192,15 +166,6 @@ export default function EventsListScreen() {
                         ) : null}
                       </View>
 
-                      {item.attraction ? (
-                        <Text
-                          numberOfLines={1}
-                          className="font-body text-foreground/80 mt-1 text-xs"
-                        >
-                          Atração: {item.attraction}
-                        </Text>
-                      ) : null}
-
                       <View className="mt-4 flex-row items-center gap-2 border-t border-border/60 pt-3">
                         <Button
                           label="Editar"
@@ -208,6 +173,19 @@ export default function EventsListScreen() {
                           icon={<Icon name="pencil" size={14} color="#0f0f0f" />}
                           onPress={() => router.push(`/(painel)/events/${item.id}` as Href)}
                           className="h-9 flex-1 px-3 text-xs"
+                        />
+                        <Button
+                          variant="ghost"
+                          disabled={isDraft}
+                          icon={
+                            <Icon
+                              name="eye"
+                              size={16}
+                              color={isDraft ? '#737373' : '#fafafa'}
+                            />
+                          }
+                          onPress={() => handleOpenPublicPage(item)}
+                          className="h-9 w-9 p-0"
                         />
                         <Button
                           variant="ghost"
@@ -239,30 +217,82 @@ export default function EventsListScreen() {
       )}
 
       {/* Confirmação de exclusão para evento único */}
-      <ConfirmDialog
-        visible={Boolean(deleteId)}
-        title="Excluir evento?"
-        message="Esta ação não poderá ser desfeita e o evento sairá da agenda."
-        confirmLabel="Sim, excluir"
-        cancelLabel="Cancelar"
-        destructive
-        busy={isDeleting}
-        onConfirm={handleConfirmSingleDelete}
-        onCancel={() => setDeleteId(null)}
-      />
+      <Modal visible={Boolean(deleteId)} transparent animationType="fade" onRequestClose={() => setDeleteId(null)}>
+        <TouchableWithoutFeedback onPress={() => setDeleteId(null)}>
+          <View className="flex-1 items-center justify-center bg-black/60 p-5">
+            <TouchableWithoutFeedback onPress={() => {}}>
+              <View className="w-full max-w-sm rounded-2xl border border-border bg-card p-6 shadow-xl">
+                <Text className="font-heading text-foreground mb-2 text-lg font-bold">
+                  Excluir evento?
+                </Text>
+                <Text className="font-body text-muted-foreground mb-6 text-sm leading-relaxed">
+                  Essa ação não pode ser desfeita.
+                </Text>
+                <View className="flex-row items-center justify-end gap-3">
+                  <Button
+                    label="Cancelar"
+                    variant="ghost"
+                    disabled={isDeleting}
+                    onPress={() => setDeleteId(null)}
+                    className="h-10 px-3"
+                  />
+                  <Button
+                    label="Excluir"
+                    variant="destructive"
+                    busy={isDeleting}
+                    onPress={handleConfirmSingleDelete}
+                    className="h-10 px-4"
+                  />
+                </View>
+              </View>
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
 
-      {/* Confirmação de exclusão para evento de série */}
-      <ConfirmDialog
+      {/* Exclusão de série: mesmas 3 opções empilhadas do web-client */}
+      <Modal
         visible={Boolean(pendingSeries)}
-        title="Excluir evento de repetição"
-        message={`"${pendingSeries?.name}" faz parte de uma série de eventos recorrentes. Como deseja proceder?`}
-        confirmLabel="Excluir série toda"
-        cancelLabel="Só esta ocorrência"
-        destructive
-        busy={isDeleting}
-        onConfirm={handleDeleteEntireSeries}
-        onCancel={handleDeleteOccurrence}
-      />
+        transparent
+        animationType="fade"
+        onRequestClose={() => setPendingSeries(null)}
+      >
+        <TouchableWithoutFeedback onPress={() => setPendingSeries(null)}>
+          <View className="flex-1 items-center justify-center bg-black/60 p-5">
+            <TouchableWithoutFeedback onPress={() => {}}>
+              <View className="w-full max-w-sm rounded-2xl border border-border bg-card p-6 shadow-xl">
+                <Text className="font-heading text-foreground mb-2 text-lg font-bold">
+                  Excluir evento da série
+                </Text>
+                <Text className="font-body text-muted-foreground mb-6 text-sm leading-relaxed">
+                  &quot;{pendingSeries?.name}&quot; se repete. Escolha o que apagar — a ação não
+                  pode ser desfeita.
+                </Text>
+                <View className="flex-col gap-2">
+                  <Button
+                    label="Apagar só esta ocorrência"
+                    variant="destructive"
+                    disabled={isDeleting}
+                    onPress={handleDeleteOccurrence}
+                  />
+                  <Button
+                    label="Apagar a série inteira a partir de hoje"
+                    variant="destructive"
+                    disabled={isDeleting}
+                    onPress={handleDeleteEntireSeries}
+                  />
+                  <Button
+                    label="Cancelar"
+                    variant="ghost"
+                    disabled={isDeleting}
+                    onPress={() => setPendingSeries(null)}
+                  />
+                </View>
+              </View>
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
     </Screen>
   );
 }

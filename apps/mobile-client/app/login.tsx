@@ -7,7 +7,6 @@ import {
   signInWithEmailOtp,
   signInWithOAuth,
   signInWithPassword,
-  signOut,
   updatePassword,
   useAuthStore,
   useResendCooldown,
@@ -24,15 +23,25 @@ import {
   TextInput,
   View,
 } from '@agenda/shared-ui-mobile';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Alert, KeyboardAvoidingView, Platform } from 'react-native';
+
+import { signOutAndUnregister } from '@/lib/push';
 
 type Tab = 'signIn' | 'signUp';
 type SignUpStep = 'email' | 'code';
 
 const DENIED_MESSAGE =
   'Esta conta não tem acesso ao painel do estabelecimento. Se você é dono de um bar, crie seu acesso na aba "Criar conta".';
+
+/**
+ * Marca que o Google foi acionado pela aba "Criar conta". O OAuth sai do app
+ * (browser externo) e a intenção não sobrevive em memória — equivalente ao
+ * OAUTH_SIGNUP_KEY em sessionStorage do web-client.
+ */
+const OAUTH_SIGNUP_KEY = 'mobile-client:oauth-signup';
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -55,10 +64,16 @@ export default function LoginScreen() {
 
     void (async () => {
       try {
+        const cameFromGoogleSignUp = await AsyncStorage.getItem(OAUTH_SIGNUP_KEY);
+        if (cameFromGoogleSignUp) {
+          await AsyncStorage.removeItem(OAUTH_SIGNUP_KEY);
+          await claimEstablishmentOwner();
+        }
+        if (!active) return;
         const isOwner = await isCurrentUserEstablishmentOwner();
         if (!active) return;
         if (!isOwner) {
-          await signOut();
+          await signOutAndUnregister();
           queueMicrotask(() => {
             setNotice({ tone: 'denied', message: DENIED_MESSAGE });
           });
@@ -99,6 +114,9 @@ export default function LoginScreen() {
   const handleGoogleSignIn = async () => {
     setNotice(null);
     try {
+      if (tab === 'signUp') {
+        await AsyncStorage.setItem(OAUTH_SIGNUP_KEY, '1');
+      }
       await signInWithOAuth('google');
     } catch (err: unknown) {
       setNotice({ tone: 'error', message: getFriendlyErrorMessage(err) });
@@ -346,6 +364,13 @@ export default function LoginScreen() {
                 />
               </View>
             )}
+
+            <Button
+              label="Política de Privacidade"
+              variant="ghost"
+              onPress={() => router.push('/privacy')}
+              className="mt-4 h-auto p-0"
+            />
           </View>
         </ScrollView>
       </KeyboardAvoidingView>

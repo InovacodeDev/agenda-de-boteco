@@ -74,8 +74,8 @@ export default function ArtistsListScreen() {
 
   const sortOptions = [
     { value: 'recent', label: 'Mais recentes' },
-    { value: 'name', label: 'Nome do artista' },
-    { value: 'region', label: 'Região / Bairro' },
+    { value: 'name', label: 'Nome' },
+    { value: 'region', label: 'Região' },
   ];
 
   const { data, isPending, fetchNextPage, hasNextPage, isFetchingNextPage } = useMusicianLeads(
@@ -102,10 +102,7 @@ export default function ArtistsListScreen() {
 
   return (
     <Screen className="bg-background">
-      <ScreenHeader
-        title="Banco de Artistas"
-        subtitle="Músicos interessados em tocar no seu bar"
-      />
+      <ScreenHeader title="Artistas" subtitle="Músicos que se cadastraram para tocar no seu bar." />
 
       <View className="p-4 pb-2 flex-col gap-3">
         <View className="flex-row gap-3">
@@ -156,8 +153,7 @@ export default function ArtistsListScreen() {
       ) : items.length === 0 ? (
         <EmptyState
           icon={<Icon name="microphone" size={40} color="#737373" />}
-          title="Nenhum músico encontrado"
-          message="Tente ajustar os filtros ou termos da busca para encontrar novos talentos."
+          message="Nenhum artista encontrado."
         />
       ) : (
         <View className="flex-1 px-4">

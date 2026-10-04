@@ -1,4 +1,4 @@
-import { getFriendlyErrorMessage, updatePassword } from '@agenda/core';
+import { getFriendlyErrorMessage, updatePassword, useAuthStore } from '@agenda/core';
 import { Button, Field, Screen, ScreenHeader, ScrollView, Text, TextInput, View } from '@agenda/shared-ui-mobile';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
@@ -6,12 +6,14 @@ import { Alert } from 'react-native';
 
 export default function NewPasswordScreen() {
   const router = useRouter();
+  const status = useAuthStore((state) => state.status);
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [busy, setBusy] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleSubmit = async () => {
+    if (status !== 'signedIn') return;
     if (password.length < 6) {
       setErrorMessage('A senha deve ter no mínimo 6 caracteres.');
       return;
@@ -43,6 +45,12 @@ export default function NewPasswordScreen() {
             Crie uma nova senha segura para o seu acesso administrativo.
           </Text>
 
+          {status !== 'signedIn' ? (
+            <Text className="font-body text-muted-foreground bg-surface-elevated rounded-2xl p-3 text-xs">
+              Link inválido ou expirado. Peça uma nova recuperação na tela de login.
+            </Text>
+          ) : null}
+
           <Field label="Nova Senha">
             <TextInput
               secureTextEntry
@@ -69,6 +77,7 @@ export default function NewPasswordScreen() {
             label="Atualizar Senha"
             variant="solid"
             busy={busy}
+            disabled={status !== 'signedIn'}
             onPress={handleSubmit}
             className="mt-2"
           />

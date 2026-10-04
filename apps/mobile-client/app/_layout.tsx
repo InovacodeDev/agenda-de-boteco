@@ -27,6 +27,7 @@ import { useEffect } from 'react';
 import { AppState } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { usePushNotifications } from '@/lib/push';
 import { persister } from '@/lib/queryPersister';
 
 SplashScreen.preventAutoHideAsync();
@@ -67,6 +68,8 @@ export default function RootLayout() {
     Inter_600SemiBold,
     Inter_700Bold,
   });
+
+  usePushNotifications(fontsLoaded);
 
   useEffect(() => {
     if (fontsLoaded) {

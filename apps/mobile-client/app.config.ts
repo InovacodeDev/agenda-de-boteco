@@ -39,7 +39,21 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     ],
     'expo-image',
     'expo-localization',
+    [
+      'expo-notifications',
+      {
+        icon: './assets/android-icon-monochrome.png',
+        color: '#0F0F0F',
+      },
+    ],
   ],
+  extra: {
+    ...config.extra,
+    eas: {
+      ...config.extra?.eas,
+      projectId: process.env.EAS_PROJECT_ID,
+    },
+  },
   experiments: {
     typedRoutes: true,
   },
