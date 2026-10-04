@@ -6,6 +6,7 @@ import {
 import { Text, View } from '@agenda/shared-ui-mobile';
 import { Slot, Tabs, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { PanelSidebar } from '@/components/PanelSidebar';
 import { PanelTabBar } from '@/components/PanelTabBar';
@@ -19,6 +20,7 @@ export default function PainelLayout() {
   const status = useAuthStore((state) => state.status);
   const [check, setCheck] = useState<OwnerCheck>('checking');
   const { isTablet } = useResponsive();
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     if (status === 'loading') return;
@@ -63,7 +65,10 @@ export default function PainelLayout() {
         <PanelSidebar />
         <View className="flex-1">
           <PanelTopbar />
-          <View className="flex-1">
+          <View
+            className="flex-1"
+            style={{ paddingBottom: insets.bottom, paddingRight: insets.right }}
+          >
             <Slot />
           </View>
         </View>
@@ -72,7 +77,10 @@ export default function PainelLayout() {
   }
 
   return (
-    <View className="flex-1 bg-background">
+    <View
+      className="flex-1 bg-background"
+      style={{ paddingLeft: insets.left, paddingRight: insets.right }}
+    >
       <PanelTopbar />
       <Tabs
         tabBar={() => <PanelTabBar />}

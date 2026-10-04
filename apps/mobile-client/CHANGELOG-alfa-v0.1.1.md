@@ -15,4 +15,6 @@
 - Nova navegação no celular: Início, Eventos, botão central para criar evento, Artistas e um menu "Mais" com Perfil, Métricas, Avaliações, Configurações e Sair
 - Dashboard, eventos, artistas, perfil, métricas e avaliações com os mesmos textos e organização do painel web
 - Avisos dessas telas também passam a aparecer como notificações flutuantes
+- Painel respeita o entalhe e as bordas da tela: topo, menu lateral e barra de abas não ficam mais sob o relógio ou a barra de gestos
+- Textos não aparecem mais cortados e toda tela rola até o fim, inclusive com o teclado aberto nos formulários
 - Política de privacidade completa e acessível a partir do login

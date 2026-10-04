@@ -1,11 +1,25 @@
 import { getFriendlyErrorMessage, updatePassword, useAuthStore } from '@agenda/core';
-import { Button, Field, Screen, ScreenHeader, ScrollView, Text, TextInput, View } from '@agenda/shared-ui-mobile';
+import {
+  Button,
+  Field,
+  Screen,
+  ScreenHeader,
+  ScrollView,
+  Text,
+  TextInput,
+  View,
+} from '@agenda/shared-ui-mobile';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Alert } from 'react-native';
 
+import { KeyboardAwareBody } from '@/components/KeyboardAwareBody';
+import { useResponsive } from '@/hooks/useResponsive';
+import { scrollContentClassName } from '@/lib/screenLayout';
+
 export default function NewPasswordScreen() {
   const router = useRouter();
+  const { isTablet } = useResponsive();
   const status = useAuthStore((state) => state.status);
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -37,52 +51,57 @@ export default function NewPasswordScreen() {
   };
 
   return (
-    <Screen className="bg-background">
+    <Screen>
       <ScreenHeader title="Redefinir Senha" onBack={() => router.back()} />
-      <ScrollView contentContainerClassName="p-6">
-        <View className="mx-auto w-full max-w-md flex-col gap-4">
-          <Text className="font-body text-muted-foreground text-sm">
-            Crie uma nova senha segura para o seu acesso administrativo.
-          </Text>
-
-          {status !== 'signedIn' ? (
-            <Text className="font-body text-muted-foreground bg-surface-elevated rounded-2xl p-3 text-xs">
-              Link inválido ou expirado. Peça uma nova recuperação na tela de login.
+      <KeyboardAwareBody>
+        <ScrollView
+          contentContainerClassName={scrollContentClassName(isTablet)}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View className="mx-auto w-full max-w-md flex-col gap-4">
+            <Text className="font-body text-muted-foreground text-sm">
+              Crie uma nova senha segura para o seu acesso administrativo.
             </Text>
-          ) : null}
 
-          <Field label="Nova Senha">
-            <TextInput
-              secureTextEntry
-              value={password}
-              onChangeText={setPassword}
-              placeholder="••••••••"
+            {status !== 'signedIn' ? (
+              <Text className="font-body text-muted-foreground bg-surface-elevated rounded-2xl p-3 text-xs leading-[18px]">
+                Link inválido ou expirado. Peça uma nova recuperação na tela de login.
+              </Text>
+            ) : null}
+
+            <Field label="Nova Senha">
+              <TextInput
+                secureTextEntry
+                value={password}
+                onChangeText={setPassword}
+                placeholder="••••••••"
+              />
+            </Field>
+
+            <Field label="Confirmar Nova Senha">
+              <TextInput
+                secureTextEntry
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+                placeholder="••••••••"
+              />
+            </Field>
+
+            {errorMessage ? (
+              <Text className="font-body text-destructive text-xs">{errorMessage}</Text>
+            ) : null}
+
+            <Button
+              label="Atualizar Senha"
+              variant="solid"
+              busy={busy}
+              disabled={status !== 'signedIn'}
+              onPress={handleSubmit}
+              className="mt-2"
             />
-          </Field>
-
-          <Field label="Confirmar Nova Senha">
-            <TextInput
-              secureTextEntry
-              value={confirmPassword}
-              onChangeText={setConfirmPassword}
-              placeholder="••••••••"
-            />
-          </Field>
-
-          {errorMessage ? (
-            <Text className="font-body text-destructive text-xs">{errorMessage}</Text>
-          ) : null}
-
-          <Button
-            label="Atualizar Senha"
-            variant="solid"
-            busy={busy}
-            disabled={status !== 'signedIn'}
-            onPress={handleSubmit}
-            className="mt-2"
-          />
-        </View>
-      </ScrollView>
+          </View>
+        </ScrollView>
+      </KeyboardAwareBody>
     </Screen>
   );
 }

@@ -3,9 +3,22 @@ import {
   type EstablishmentAttribute,
   getAttributeMeta,
 } from '@agenda/core';
-import { cn, Icon, Modal, Pressable, Text, TextInput, View } from '@agenda/shared-ui-mobile';
+import {
+  cn,
+  Icon,
+  KeyboardAvoidingView,
+  Modal,
+  Pressable,
+  Text,
+  TextInput,
+  View,
+} from '@agenda/shared-ui-mobile';
 import { FlashList } from '@shopify/flash-list';
 import { useMemo, useState } from 'react';
+import { Platform } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+const SHEET_PADDING = 20;
 
 function normalize(value: string): string {
   return value
@@ -24,6 +37,7 @@ export interface AttributeAutocompleteProps {
 export function AttributeAutocomplete({ value, onChange, className }: AttributeAutocompleteProps) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
+  const insets = useSafeAreaInsets();
 
   const available = useMemo(() => {
     const q = normalize(query);
@@ -58,13 +72,16 @@ export function AttributeAutocomplete({ value, onChange, className }: AttributeA
             return (
               <View
                 key={id}
-                className="flex-row items-center gap-1.5 rounded-full bg-primary py-1 pl-2.5 pr-1.5"
+                className="max-w-full flex-row items-center gap-1.5 rounded-full bg-primary py-1 pl-2.5 pr-1.5"
               >
                 <Icon name={meta.icon} size={14} color="#0f0f0f" />
-                <Text className="font-body-medium text-primary-foreground text-xs">
+                <Text className="font-body-medium text-primary-foreground shrink text-xs">
                   {meta.label}
                 </Text>
                 <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={`Remover ${meta.label}`}
+                  hitSlop={10}
                   onPress={(event) => {
                     event.stopPropagation();
                     remove(id);
@@ -80,19 +97,29 @@ export function AttributeAutocomplete({ value, onChange, className }: AttributeA
       </Pressable>
 
       <Modal visible={open} transparent animationType="slide" onRequestClose={() => setOpen(false)}>
-        <View className="flex-1 justify-end bg-black/60">
-          <View className="max-h-[80%] rounded-t-3xl border-t border-border bg-card p-5">
-            <View className="mb-4 flex-row items-center justify-between">
-              <Text className="font-heading text-foreground text-lg font-bold">Diferenciais</Text>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          className="flex-1 justify-end bg-black/60"
+        >
+          <View
+            className="max-h-[80%] rounded-t-3xl border-t border-border bg-card px-5 pt-5"
+            style={{ paddingBottom: insets.bottom + SHEET_PADDING }}
+          >
+            <View className="mb-4 flex-row items-center justify-between gap-3">
+              <Text className="font-heading text-foreground min-w-0 flex-1 text-lg font-bold">
+                Diferenciais
+              </Text>
               <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Fechar"
                 onPress={() => setOpen(false)}
-                className="h-8 w-8 items-center justify-center rounded-full bg-surface"
+                className="h-11 w-11 items-center justify-center rounded-full bg-surface"
               >
                 <Icon name="xmark" size={16} color="#a6a6a6" />
               </Pressable>
             </View>
 
-            <View className="mb-3 h-10 flex-row items-center rounded-xl border border-border bg-surface px-3">
+            <View className="mb-3 h-11 flex-row items-center rounded-xl border border-border bg-surface px-3">
               <Icon name="magnifying-glass" size={16} color="#737373" />
               <TextInput
                 value={query}
@@ -113,7 +140,9 @@ export function AttributeAutocomplete({ value, onChange, className }: AttributeA
                     className="flex-row items-center gap-2 rounded-lg px-3.5 py-3 active:bg-surface"
                   >
                     <Icon name={item.icon} size={18} color="#a6a6a6" />
-                    <Text className="font-body text-foreground text-[15px]">{item.label}</Text>
+                    <Text className="font-body text-foreground min-w-0 flex-1 text-[15px]">
+                      {item.label}
+                    </Text>
                   </Pressable>
                 )}
                 ListEmptyComponent={
@@ -126,7 +155,7 @@ export function AttributeAutocomplete({ value, onChange, className }: AttributeA
               />
             </View>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
     </>
   );

@@ -18,7 +18,6 @@ import {
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { KeyboardAvoidingView, Platform } from 'react-native';
 
 import {
   EMPTY_DRAFT,
@@ -27,7 +26,10 @@ import {
   LocationFields,
   OperationFields,
 } from '@/components/EstablishmentFields';
+import { KeyboardAwareBody } from '@/components/KeyboardAwareBody';
+import { useResponsive } from '@/hooks/useResponsive';
 import { signOutAndUnregister } from '@/lib/push';
+import { scrollContentClassName } from '@/lib/screenLayout';
 
 const STEPS = ['Identidade', 'Localização & Contato', 'Operação'] as const;
 
@@ -35,6 +37,7 @@ export default function OnboardingScreen() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const status = useAuthStore((state) => state.status);
+  const { isTablet } = useResponsive();
 
   const [step, setStep] = useState(0);
   const [busy, setBusy] = useState(false);
@@ -127,17 +130,14 @@ export default function OnboardingScreen() {
             label="Sair"
             variant="ghost"
             onPress={() => setConfirmSignOut(true)}
-            className="h-9 px-2 text-xs"
+            className="px-3"
           />
         }
       />
 
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        className="flex-1"
-      >
+      <KeyboardAwareBody>
         <ScrollView
-          contentContainerClassName="px-5 py-6"
+          contentContainerClassName={scrollContentClassName(isTablet)}
           keyboardShouldPersistTaps="handled"
         >
           <View className="mx-auto w-full max-w-xl">
@@ -154,7 +154,7 @@ export default function OnboardingScreen() {
 
             {errorMessage ? (
               <View className="mb-6 rounded-xl border border-destructive/40 bg-destructive/10 p-4">
-                <Text className="font-body text-destructive text-xs leading-relaxed">
+                <Text className="font-body text-destructive text-xs leading-[18px]">
                   {errorMessage}
                 </Text>
               </View>
@@ -179,7 +179,7 @@ export default function OnboardingScreen() {
                   label="Voltar"
                   variant="outline"
                   onPress={handleBack}
-                  className="flex-1"
+                  className="px-5"
                 />
               ) : null}
               <Button
@@ -193,7 +193,7 @@ export default function OnboardingScreen() {
             </View>
           </View>
         </ScrollView>
-      </KeyboardAvoidingView>
+      </KeyboardAwareBody>
 
       <ConfirmDialog
         visible={confirmSignOut}

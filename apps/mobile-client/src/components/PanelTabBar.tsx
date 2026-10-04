@@ -41,7 +41,10 @@ function TabSlot({ item, active, onPress }: { item: TabItem; active: boolean; on
       className="flex-1 items-center justify-center gap-1"
     >
       <Icon name={item.icon} size={22} color={active ? '#1dd75e' : '#a6a6a6'} />
-      <Text className={`font-body-medium text-[11px] ${active ? 'text-primary' : 'text-muted-foreground'}`}>
+      <Text
+        numberOfLines={1}
+        className={`font-body-medium text-[11px] leading-[14px] ${active ? 'text-primary' : 'text-muted-foreground'}`}
+      >
         {item.label}
       </Text>
     </Pressable>
@@ -108,7 +111,8 @@ export function PanelTabBar() {
       >
         <Icon name="ellipsis" size={22} color={moreActive ? '#1dd75e' : '#a6a6a6'} />
         <Text
-          className={`font-body-medium text-[11px] ${moreActive ? 'text-primary' : 'text-muted-foreground'}`}
+          numberOfLines={1}
+          className={`font-body-medium text-[11px] leading-[14px] ${moreActive ? 'text-primary' : 'text-muted-foreground'}`}
         >
           Mais
         </Text>

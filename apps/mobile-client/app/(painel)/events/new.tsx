@@ -7,7 +7,7 @@ export default function NewEventScreen() {
   const router = useRouter();
 
   return (
-    <Screen className="bg-background">
+    <Screen noTopInset noBottomInset>
       <ScreenHeader
         title="Novo evento"
         subtitle="Rascunhos ficam só para você; eventos publicados aparecem no app dos usuários."

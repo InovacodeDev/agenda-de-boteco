@@ -18,15 +18,17 @@ export function DangerZoneSection() {
 
       <View className="flex-col gap-6">
         <View className="flex-col gap-2">
-          <Text className="font-body text-muted-foreground text-xs leading-relaxed">
+          <Text className="font-body text-muted-foreground text-xs leading-[18px]">
             Seus dados são tratados em conformidade com a Lei Geral de Proteção de Dados (LGPD).
             Consulte nossos termos legais a qualquer momento:
           </Text>
-          <View className="flex-row pt-1">
-            <Pressable accessibilityRole="link" onPress={() => router.push('/privacy')}>
-              <Text className="font-body-medium text-primary text-xs">Política de Privacidade</Text>
-            </Pressable>
-          </View>
+          <Pressable
+            accessibilityRole="link"
+            onPress={() => router.push('/privacy')}
+            className="min-h-11 justify-center self-start"
+          >
+            <Text className="font-body-medium text-primary text-xs">Política de Privacidade</Text>
+          </Pressable>
         </View>
 
         <View className="border-t border-destructive/20 pt-5">
@@ -38,15 +40,13 @@ export function DangerZoneSection() {
               </Text>
             </View>
 
-            <View className="flex-row">
-              <Button
-                label="Excluir conta"
-                variant="destructive"
-                icon={<Icon name="trash-can" size={16} color={FOREGROUND} weight="bold" />}
-                onPress={() => router.push('/delete-account')}
-                className="h-10 px-4"
-              />
-            </View>
+            <Button
+              label="Excluir conta"
+              variant="destructive"
+              icon={<Icon name="trash-can" size={16} color={FOREGROUND} weight="bold" />}
+              onPress={() => router.push('/delete-account')}
+              className="max-w-full self-start px-4"
+            />
           </View>
         </View>
       </View>

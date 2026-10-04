@@ -17,7 +17,7 @@ export default function EditEventScreen() {
   });
 
   return (
-    <Screen className="bg-background">
+    <Screen noTopInset noBottomInset>
       <ScreenHeader
         title="Editar evento"
         subtitle="Rascunhos ficam só para você; eventos publicados aparecem no app dos usuários."

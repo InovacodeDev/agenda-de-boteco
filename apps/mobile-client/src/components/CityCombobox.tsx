@@ -3,6 +3,7 @@ import {
   Button,
   cn,
   Icon,
+  KeyboardAvoidingView,
   Modal,
   Pressable,
   SelectField,
@@ -12,6 +13,10 @@ import {
 } from '@agenda/shared-ui-mobile';
 import { FlashList } from '@shopify/flash-list';
 import { useMemo, useState } from 'react';
+import { Platform } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+const SHEET_PADDING = 20;
 
 const UFS = [
   'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG',
@@ -50,6 +55,7 @@ export function CityCombobox({
   const [query, setQuery] = useState('');
   const [uf, setUf] = useState('');
   const [creating, setCreating] = useState(false);
+  const insets = useSafeAreaInsets();
 
   const matches = useMemo(() => {
     const q = normalize(query);
@@ -88,7 +94,10 @@ export function CityCombobox({
       >
         <Text
           numberOfLines={1}
-          className={cn('font-body text-[15px]', selected ? 'text-foreground' : 'text-muted-foreground')}
+          className={cn(
+            'font-body mr-2 flex-1 text-[15px]',
+            selected ? 'text-foreground' : 'text-muted-foreground',
+          )}
         >
           {selected ? `${selected.name} - ${selected.uf}` : placeholder}
         </Text>
@@ -96,19 +105,29 @@ export function CityCombobox({
       </Pressable>
 
       <Modal visible={open} transparent animationType="slide" onRequestClose={close}>
-        <View className="flex-1 justify-end bg-black/60">
-          <View className="max-h-[80%] rounded-t-3xl border-t border-border bg-card p-5">
-            <View className="mb-4 flex-row items-center justify-between">
-              <Text className="font-heading text-foreground text-lg font-bold">Cidade</Text>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          className="flex-1 justify-end bg-black/60"
+        >
+          <View
+            className="max-h-[80%] rounded-t-3xl border-t border-border bg-card px-5 pt-5"
+            style={{ paddingBottom: insets.bottom + SHEET_PADDING }}
+          >
+            <View className="mb-4 flex-row items-center justify-between gap-3">
+              <Text className="font-heading text-foreground min-w-0 flex-1 text-lg font-bold">
+                Cidade
+              </Text>
               <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Fechar"
                 onPress={close}
-                className="h-8 w-8 items-center justify-center rounded-full bg-surface"
+                className="h-11 w-11 items-center justify-center rounded-full bg-surface"
               >
                 <Icon name="xmark" size={16} color="#a6a6a6" />
               </Pressable>
             </View>
 
-            <View className="mb-3 h-10 flex-row items-center rounded-xl border border-border bg-surface px-3">
+            <View className="mb-3 h-11 flex-row items-center rounded-xl border border-border bg-surface px-3">
               <Icon name="magnifying-glass" size={16} color="#737373" />
               <TextInput
                 value={query}
@@ -131,8 +150,10 @@ export function CityCombobox({
                     }}
                     className="flex-row items-center justify-between rounded-lg px-3.5 py-3 active:bg-surface"
                   >
-                    <Text className="font-body text-foreground text-[15px]">{item.name}</Text>
-                    <Text className="font-body text-muted-foreground text-xs">{item.uf}</Text>
+                    <Text className="font-body text-foreground mr-3 min-w-0 flex-1 text-[15px]">
+                      {item.name}
+                    </Text>
+                    <Text className="font-body text-muted-foreground shrink-0 text-xs">{item.uf}</Text>
                   </Pressable>
                 )}
                 ListEmptyComponent={
@@ -171,7 +192,7 @@ export function CityCombobox({
               </View>
             ) : null}
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
     </>
   );

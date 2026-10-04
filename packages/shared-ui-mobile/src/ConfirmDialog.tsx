@@ -1,7 +1,10 @@
 import { Modal, TouchableWithoutFeedback } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Button } from './Button';
 import { Text, View } from './tw';
+
+const BACKDROP_PADDING = 20;
 
 export interface ConfirmDialogProps {
   visible: boolean;
@@ -26,6 +29,8 @@ export function ConfirmDialog({
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
+  const insets = useSafeAreaInsets();
+
   return (
     <Modal
       visible={visible}
@@ -34,29 +39,35 @@ export function ConfirmDialog({
       onRequestClose={onCancel}
     >
       <TouchableWithoutFeedback onPress={onCancel}>
-        <View className="flex-1 items-center justify-center bg-black/60 p-5">
+        <View
+          className="flex-1 items-center justify-center bg-black/60"
+          style={{
+            paddingTop: insets.top + BACKDROP_PADDING,
+            paddingBottom: insets.bottom + BACKDROP_PADDING,
+            paddingLeft: insets.left + BACKDROP_PADDING,
+            paddingRight: insets.right + BACKDROP_PADDING,
+          }}
+        >
           <TouchableWithoutFeedback onPress={() => {}}>
             <View className="w-full max-w-sm rounded-2xl border border-border bg-card p-6 shadow-xl">
               <Text className="font-heading text-foreground mb-2 text-lg font-bold">
                 {title}
               </Text>
-              <Text className="font-body text-muted-foreground mb-6 text-sm leading-relaxed">
+              <Text className="font-body text-muted-foreground mb-6 text-sm leading-[22px]">
                 {message}
               </Text>
-              <View className="flex-row items-center justify-end gap-3">
-                <Button
-                  label={cancelLabel}
-                  variant="ghost"
-                  disabled={busy}
-                  onPress={onCancel}
-                  className="h-10 px-3"
-                />
+              <View className="flex-col gap-2">
                 <Button
                   label={confirmLabel}
                   variant={destructive ? 'destructive' : 'solid'}
                   busy={busy}
                   onPress={onConfirm}
-                  className="h-10 px-4"
+                />
+                <Button
+                  label={cancelLabel}
+                  variant="ghost"
+                  disabled={busy}
+                  onPress={onCancel}
                 />
               </View>
             </View>

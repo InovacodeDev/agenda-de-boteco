@@ -2,7 +2,6 @@ import {
   Button,
   ConfirmDialog,
   Icon,
-  KeyboardAvoidingView,
   Screen,
   ScreenHeader,
   ScrollView,
@@ -11,13 +10,14 @@ import {
 } from '@agenda/shared-ui-mobile';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Platform } from 'react-native';
 
+import { KeyboardAwareBody } from '@/components/KeyboardAwareBody';
 import { AccountSection } from '@/components/settings/AccountSection';
 import { DangerZoneSection } from '@/components/settings/DangerZoneSection';
 import { NotificationsSection } from '@/components/settings/NotificationsSection';
 import { useResponsive } from '@/hooks/useResponsive';
 import { signOutAndUnregister } from '@/lib/push';
+import { scrollContentClassName } from '@/lib/screenLayout';
 
 export default function SettingsScreen() {
   const router = useRouter();
@@ -45,17 +45,17 @@ export default function SettingsScreen() {
   const dangerZone = <DangerZoneSection />;
 
   return (
-    <Screen className="bg-background">
+    <Screen noTopInset noBottomInset>
       <ScreenHeader
         title="Configurações"
         subtitle="Gerencie preferências de conta, notificações e privacidade."
       />
 
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        className="flex-1"
-      >
-        <ScrollView contentContainerClassName="p-5" keyboardShouldPersistTaps="handled">
+      <KeyboardAwareBody>
+        <ScrollView
+          contentContainerClassName={scrollContentClassName(isTablet)}
+          keyboardShouldPersistTaps="handled"
+        >
           <View className="mx-auto w-full max-w-5xl flex-col gap-6">
             {globalNotice ? (
               <View
@@ -91,7 +91,7 @@ export default function SettingsScreen() {
             />
           </View>
         </ScrollView>
-      </KeyboardAvoidingView>
+      </KeyboardAwareBody>
 
       <ConfirmDialog
         visible={confirmSignOut}

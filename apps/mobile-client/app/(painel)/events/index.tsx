@@ -12,6 +12,7 @@ import {
   Badge,
   Button,
   Card,
+  ConfirmDialog,
   EmptyState,
   Icon,
   Image,
@@ -26,13 +27,18 @@ import { type Href, useRouter } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 import { useState } from 'react';
 import { ActivityIndicator, Modal, TouchableWithoutFeedback } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useResponsive } from '@/hooks/useResponsive';
+import { listContentStyle } from '@/lib/screenLayout';
+
+const BACKDROP_PADDING = 20;
 
 export default function EventsListScreen() {
   const router = useRouter();
   const toast = useToast();
   const { isTablet } = useResponsive();
+  const insets = useSafeAreaInsets();
   const [pendingSeries, setPendingSeries] = useState<Event | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
@@ -89,7 +95,7 @@ export default function EventsListScreen() {
   };
 
   return (
-    <Screen className="bg-background">
+    <Screen noTopInset noBottomInset>
       <ScreenHeader
         title="Eventos"
         subtitle="Gerencie a programação do seu bar."
@@ -99,7 +105,7 @@ export default function EventsListScreen() {
             variant="solid"
             icon={<Icon name="plus" size={14} color="#0f0f0f" weight="bold" />}
             onPress={() => router.push('/(painel)/events/new')}
-            className="h-9 px-3"
+            className="px-3"
           />
         }
       />
@@ -117,11 +123,12 @@ export default function EventsListScreen() {
           onAction={() => router.push('/(painel)/events/new')}
         />
       ) : (
-        <View className="flex-1 px-4">
+        <View className="flex-1">
           <FlashList
             data={allEvents}
             keyExtractor={(item) => item.id}
             numColumns={isTablet ? 2 : 1}
+            contentContainerStyle={listContentStyle(isTablet)}
             renderItem={({ item }) => {
               const startsAtMidnight =
                 new Date(item.starts_at).getHours() === 0 &&
@@ -153,13 +160,13 @@ export default function EventsListScreen() {
 
                     <View className="p-4">
                       <Text
-                        numberOfLines={1}
+                        numberOfLines={2}
                         className="font-heading text-foreground text-base font-bold"
                       >
                         {item.name}
                       </Text>
 
-                      <View className="mt-1 flex-row items-center gap-2">
+                      <View className="mt-1 flex-row flex-wrap items-center gap-2">
                         <Text className="font-body text-muted-foreground text-xs">
                           {formatEventDate(item.starts_at, !startsAtMidnight)}
                         </Text>
@@ -174,7 +181,7 @@ export default function EventsListScreen() {
                           variant="solid"
                           icon={<Icon name="pencil" size={14} color="#0f0f0f" />}
                           onPress={() => router.push(`/(painel)/events/${item.id}` as Href)}
-                          className="h-9 flex-1 px-3 text-xs"
+                          className="flex-1 px-3"
                         />
                         <Button
                           variant="ghost"
@@ -187,13 +194,13 @@ export default function EventsListScreen() {
                             />
                           }
                           onPress={() => handleOpenPublicPage(item)}
-                          className="h-9 w-9 p-0"
+                          className="h-11 min-h-0 w-11 p-0"
                         />
                         <Button
                           variant="ghost"
                           icon={<Icon name="trash-can" size={16} color="#f53d7a" />}
                           onPress={() => handleDeletePress(item)}
-                          className="h-9 w-9 p-0"
+                          className="h-11 min-h-0 w-11 p-0"
                         />
                       </View>
                     </View>
@@ -218,41 +225,17 @@ export default function EventsListScreen() {
         </View>
       )}
 
-      {/* Confirmação de exclusão para evento único */}
-      <Modal visible={Boolean(deleteId)} transparent animationType="fade" onRequestClose={() => setDeleteId(null)}>
-        <TouchableWithoutFeedback onPress={() => setDeleteId(null)}>
-          <View className="flex-1 items-center justify-center bg-black/60 p-5">
-            <TouchableWithoutFeedback onPress={() => {}}>
-              <View className="w-full max-w-sm rounded-2xl border border-border bg-card p-6 shadow-xl">
-                <Text className="font-heading text-foreground mb-2 text-lg font-bold">
-                  Excluir evento?
-                </Text>
-                <Text className="font-body text-muted-foreground mb-6 text-sm leading-relaxed">
-                  Essa ação não pode ser desfeita.
-                </Text>
-                <View className="flex-row items-center justify-end gap-3">
-                  <Button
-                    label="Cancelar"
-                    variant="ghost"
-                    disabled={isDeleting}
-                    onPress={() => setDeleteId(null)}
-                    className="h-10 px-3"
-                  />
-                  <Button
-                    label="Excluir"
-                    variant="destructive"
-                    busy={isDeleting}
-                    onPress={handleConfirmSingleDelete}
-                    className="h-10 px-4"
-                  />
-                </View>
-              </View>
-            </TouchableWithoutFeedback>
-          </View>
-        </TouchableWithoutFeedback>
-      </Modal>
+      <ConfirmDialog
+        visible={Boolean(deleteId)}
+        title="Excluir evento?"
+        message="Essa ação não pode ser desfeita."
+        confirmLabel="Excluir"
+        destructive
+        busy={isDeleting}
+        onConfirm={() => void handleConfirmSingleDelete()}
+        onCancel={() => setDeleteId(null)}
+      />
 
-      {/* Exclusão de série: mesmas 3 opções empilhadas do web-client */}
       <Modal
         visible={Boolean(pendingSeries)}
         transparent
@@ -260,13 +243,21 @@ export default function EventsListScreen() {
         onRequestClose={() => setPendingSeries(null)}
       >
         <TouchableWithoutFeedback onPress={() => setPendingSeries(null)}>
-          <View className="flex-1 items-center justify-center bg-black/60 p-5">
+          <View
+            className="flex-1 items-center justify-center bg-black/60"
+            style={{
+              paddingTop: insets.top + BACKDROP_PADDING,
+              paddingBottom: insets.bottom + BACKDROP_PADDING,
+              paddingLeft: insets.left + BACKDROP_PADDING,
+              paddingRight: insets.right + BACKDROP_PADDING,
+            }}
+          >
             <TouchableWithoutFeedback onPress={() => {}}>
               <View className="w-full max-w-sm rounded-2xl border border-border bg-card p-6 shadow-xl">
                 <Text className="font-heading text-foreground mb-2 text-lg font-bold">
                   Excluir evento da série
                 </Text>
-                <Text className="font-body text-muted-foreground mb-6 text-sm leading-relaxed">
+                <Text className="font-body text-muted-foreground mb-6 text-sm leading-[22px]">
                   &quot;{pendingSeries?.name}&quot; se repete. Escolha o que apagar — a ação não
                   pode ser desfeita.
                 </Text>

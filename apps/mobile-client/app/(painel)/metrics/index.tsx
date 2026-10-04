@@ -21,8 +21,12 @@ import {
 } from '@agenda/shared-ui-mobile';
 import { useMemo, useState } from 'react';
 import { ActivityIndicator, TouchableWithoutFeedback } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useResponsive } from '@/hooks/useResponsive';
+import { scrollContentClassName } from '@/lib/screenLayout';
+
+const SHEET_PADDING = 24;
 
 const PERIOD_OPTIONS = [
   { value: '7', label: 'Últimos 7 dias' },
@@ -32,6 +36,7 @@ const PERIOD_OPTIONS = [
 
 export default function MetricsScreen() {
   const { isTablet } = useResponsive();
+  const insets = useSafeAreaInsets();
   const [sinceDays, setSinceDays] = useState('30');
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
 
@@ -56,13 +61,13 @@ export default function MetricsScreen() {
   const selectedEvent = selectedEventId ? eventsById.get(selectedEventId) : null;
 
   return (
-    <Screen className="bg-background">
+    <Screen noTopInset noBottomInset>
       <ScreenHeader
         title="Métricas"
         subtitle="Visualizações e cliques dos seus eventos, somando app e site."
       />
 
-      <ScrollView contentContainerClassName="p-4 gap-5">
+      <ScrollView contentContainerClassName={`${scrollContentClassName(isTablet)} gap-5`}>
         <View className="flex-row items-center justify-end">
           <View className="w-48">
             <SelectField value={sinceDays} onValueChange={setSinceDays} options={PERIOD_OPTIONS} />
@@ -77,7 +82,7 @@ export default function MetricsScreen() {
         ) : (
           <>
             <View className={`gap-3 ${isTablet ? 'flex-row flex-wrap' : 'flex-col'}`}>
-              <View className={isTablet ? 'w-[48%] flex-grow' : 'w-full'}>
+              <View className={isTablet ? 'w-[48%] grow' : 'w-full'}>
                 <StatCard
                   title="Visualizações"
                   value={totals.views}
@@ -86,7 +91,7 @@ export default function MetricsScreen() {
                 />
               </View>
 
-              <View className={isTablet ? 'w-[48%] flex-grow' : 'w-full'}>
+              <View className={isTablet ? 'w-[48%] grow' : 'w-full'}>
                 <StatCard
                   title="Cliques"
                   value={
@@ -99,7 +104,7 @@ export default function MetricsScreen() {
                 />
               </View>
 
-              <View className={isTablet ? 'w-[48%] flex-grow' : 'w-full'}>
+              <View className={isTablet ? 'w-[48%] grow' : 'w-full'}>
                 <StatCard
                   title="Favoritos"
                   value={totals.favorites}
@@ -108,7 +113,7 @@ export default function MetricsScreen() {
                 />
               </View>
 
-              <View className={isTablet ? 'w-[48%] flex-grow' : 'w-full'}>
+              <View className={isTablet ? 'w-[48%] grow' : 'w-full'}>
                 <Card className="flex-1 justify-between p-4">
                   <Text className="font-body-medium text-muted-foreground text-xs uppercase tracking-wider">
                     Evolução
@@ -142,10 +147,10 @@ export default function MetricsScreen() {
                         onPress={() => setSelectedEventId(summary.eventId)}
                       >
                         <Card className="active:border-primary/40 p-4">
-                          <View className="flex-row items-center justify-between">
+                          <View className="flex-row items-center justify-between gap-3">
                             <Text
-                              numberOfLines={1}
-                              className="font-heading text-foreground flex-1 text-sm font-bold"
+                              numberOfLines={2}
+                              className="font-heading text-foreground min-w-0 flex-1 text-sm font-bold"
                             >
                               {event.name}
                             </Text>
@@ -202,24 +207,29 @@ export default function MetricsScreen() {
         <TouchableWithoutFeedback onPress={() => setSelectedEventId(null)}>
           <View className="flex-1 justify-end bg-black/60">
             <TouchableWithoutFeedback onPress={() => {}}>
-              <View className="rounded-t-3xl border-t border-border bg-card p-6">
-                <View className="mb-4 flex-row items-center justify-between">
+              <View
+                className="max-h-[85%] rounded-t-3xl border-t border-border bg-card px-6 pt-6"
+                style={{ paddingBottom: insets.bottom + SHEET_PADDING }}
+              >
+                <View className="mb-4 flex-row items-center justify-between gap-3">
                   <Text
-                    numberOfLines={1}
-                    className="font-heading text-foreground flex-1 text-lg font-bold"
+                    numberOfLines={2}
+                    className="font-heading text-foreground min-w-0 flex-1 text-lg font-bold"
                   >
                     {selectedEvent?.name ?? 'Detalhes do Evento'}
                   </Text>
                   <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel="Fechar"
                     onPress={() => setSelectedEventId(null)}
-                    className="h-8 w-8 items-center justify-center rounded-full bg-surface"
+                    className="h-11 w-11 items-center justify-center rounded-full bg-surface"
                   >
                     <Icon name="xmark" size={16} color="#a6a6a6" />
                   </Pressable>
                 </View>
 
                 {selectedEventSummary ? (
-                  <View className="flex-col gap-4 py-2">
+                  <ScrollView contentContainerClassName="grow gap-4 py-2">
                     <View className="flex-row gap-3">
                       <StatCard
                         title="Views"
@@ -264,7 +274,7 @@ export default function MetricsScreen() {
                         </View>
                       </View>
                     </Card>
-                  </View>
+                  </ScrollView>
                 ) : null}
               </View>
             </TouchableWithoutFeedback>

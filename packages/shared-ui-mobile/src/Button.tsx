@@ -56,7 +56,7 @@ export function Button({
       onPress={onPress}
       style={style}
       className={cn(
-        'h-12 flex-row items-center justify-center gap-2 rounded-xl px-4 active:opacity-80',
+        'min-h-12 flex-row items-center justify-center gap-2 rounded-xl px-4 py-2 active:opacity-80',
         containerByVariant[variant],
         fullWidth && 'w-full',
         isInactive && 'opacity-50',
@@ -73,8 +73,10 @@ export function Button({
       )}
       {!label ? null : (
         <Text
-          numberOfLines={1}
-          className={cn('font-body-semibold shrink text-[15px]', labelByVariant[variant])}
+          className={cn(
+            'font-body-semibold shrink text-center text-[15px] leading-[20px]',
+            labelByVariant[variant],
+          )}
         >
           {busy ? 'Aguarde…' : label}
         </Text>

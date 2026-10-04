@@ -68,6 +68,17 @@
     --text-4xl--line-height: 40px;
     --text-5xl--line-height: 52px;
     --text-6xl--line-height: 64px;
+
+    /*
+     * Mesmo problema nas classes leading-*: o valor unitário (1.625) vira 1.6px
+     * de altura de linha e corta o texto. Px calibrado para corpo de 13–15px.
+     */
+    --leading-none: 16px;
+    --leading-tight: 18px;
+    --leading-snug: 20px;
+    --leading-normal: 21px;
+    --leading-relaxed: 22px;
+    --leading-loose: 26px;
   }
 }
 

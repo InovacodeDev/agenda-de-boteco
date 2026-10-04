@@ -36,9 +36,10 @@ import {
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { KeyboardAvoidingView, Platform } from 'react-native';
 
 import { useResponsive } from '../hooks/useResponsive';
+import { scrollContentClassName } from '../lib/screenLayout';
+import { KeyboardAwareBody } from './KeyboardAwareBody';
 
 /** Label em caixa alta, espelhando o uppercase do Field web (packages/shared-ui) — só este form usa essa variação. */
 function Field({ label, required = false, helperText, error, children, className }: FieldProps) {
@@ -199,25 +200,21 @@ export function EventForm({ event }: EventFormProps) {
   };
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      className="flex-1"
-    >
+    <KeyboardAwareBody>
       <ScrollView
-        contentContainerClassName="p-5 gap-6"
+        contentContainerClassName={scrollContentClassName(isTablet)}
         keyboardShouldPersistTaps="handled"
       >
         <View className="mx-auto w-full max-w-4xl">
           {event?.recurrence_group_id ? (
             <View className="mb-4 rounded-xl border border-border bg-surface-elevated p-4">
-              <Text className="font-body text-muted-foreground text-xs leading-relaxed">
+              <Text className="font-body text-muted-foreground text-xs leading-[18px]">
                 Este evento faz parte de uma repetição. As alterações valem só para esta ocorrência.
               </Text>
             </View>
           ) : null}
 
           <View className={isTablet ? 'flex-row gap-6' : 'flex-col gap-6'}>
-            {/* Coluna 1 / Principal */}
             <View className={isTablet ? 'flex-1 flex-col gap-5' : 'flex-col gap-5'}>
               <ImagePickerField
                 label="Banner do evento"
@@ -236,7 +233,7 @@ export function EventForm({ event }: EventFormProps) {
               </Field>
 
               <View className="flex-row gap-3">
-                <View className="flex-1">
+                <View className="min-w-0 flex-1">
                   <Field label="Data" required>
                     <DatePickerField value={date} onValueChange={setDate} />
                   </Field>
@@ -258,7 +255,6 @@ export function EventForm({ event }: EventFormProps) {
               </Field>
             </View>
 
-            {/* Coluna 2 / Detalhes e Recorrência */}
             <View className={isTablet ? 'flex-1 flex-col gap-5' : 'flex-col gap-5'}>
               <Field label="Atração principal">
                 <TextInput
@@ -279,7 +275,7 @@ export function EventForm({ event }: EventFormProps) {
               </Field>
 
               <View className="flex-row gap-3">
-                <View className="flex-1">
+                <View className="min-w-0 flex-1">
                   <Field label="Entrada (R$)">
                     <TextInput
                       type="currency"
@@ -289,7 +285,7 @@ export function EventForm({ event }: EventFormProps) {
                     />
                   </Field>
                 </View>
-                <View className="flex-1">
+                <View className="min-w-0 flex-1">
                   <Field label="Capacidade">
                     <TextInput
                       keyboardType="number-pad"
@@ -356,7 +352,7 @@ export function EventForm({ event }: EventFormProps) {
                       </Field>
 
                       <View className="rounded-xl bg-surface p-3">
-                        <Text className="font-body text-muted-foreground text-xs leading-relaxed">
+                        <Text className="font-body text-muted-foreground text-xs leading-[18px]">
                           Serão criados{' '}
                           <Text className="font-body-bold text-foreground">
                             {recurrence.count} eventos
@@ -371,8 +367,11 @@ export function EventForm({ event }: EventFormProps) {
             </View>
           </View>
 
-          {/* Botões de Ação */}
-          <View className="mt-8 flex-row items-center justify-end gap-3 border-t border-border pt-6">
+          <View
+            className={`mt-8 gap-3 border-t border-border pt-6 ${
+              isTablet ? 'flex-row items-center justify-end' : 'flex-col-reverse'
+            }`}
+          >
             <Button
               label="Salvar rascunho"
               variant="outline"
@@ -380,7 +379,8 @@ export function EventForm({ event }: EventFormProps) {
               busy={busy === 'draft'}
               icon={<Icon name="floppy" size={16} color="#fafafa" />}
               onPress={() => handleSave('draft')}
-              className="flex-1"
+              fullWidth={!isTablet}
+              className={isTablet ? 'flex-1' : undefined}
             />
             <Button
               label="Publicar evento"
@@ -389,11 +389,12 @@ export function EventForm({ event }: EventFormProps) {
               busy={busy === 'published'}
               icon={<Icon name="upload" size={16} color="#0f0f0f" weight="bold" />}
               onPress={() => handleSave('published')}
-              className="flex-1"
+              fullWidth={!isTablet}
+              className={isTablet ? 'flex-1' : undefined}
             />
           </View>
         </View>
       </ScrollView>
-    </KeyboardAvoidingView>
+    </KeyboardAwareBody>
   );
 }

@@ -1,6 +1,15 @@
-import { Icon, type IconName, Image, Pressable, Text, View } from '@agenda/shared-ui-mobile';
+import {
+  Icon,
+  type IconName,
+  Image,
+  Pressable,
+  ScrollView,
+  Text,
+  View,
+} from '@agenda/shared-ui-mobile';
 import brandLogo from '@assets/logo.png';
 import { type Href, usePathname, useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface NavItem {
   href: Href;
@@ -29,35 +38,51 @@ function isActive(pathname: string, item: NavItem): boolean {
 export function PanelSidebar() {
   const router = useRouter();
   const pathname = usePathname();
+  const insets = useSafeAreaInsets();
 
   return (
-    <View className="h-full w-64 shrink-0 border-r border-border bg-surface p-4">
+    <View
+      style={{
+        paddingTop: insets.top + 16,
+        paddingBottom: insets.bottom + 16,
+        paddingLeft: insets.left + 16,
+      }}
+      className="h-full w-64 shrink-0 border-r border-border bg-surface pr-4"
+    >
       <View className="mb-8 flex-row items-center gap-3">
         <Image
           source={brandLogo}
-          style={{ width: 44, height: 44, borderRadius: 12 }}
+          style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: '#ffffff' }}
           contentFit="contain"
         />
-        <View>
-          <Text className="font-heading text-foreground text-base font-bold">Agenda</Text>
-          <Text className="font-body text-muted-foreground text-xs">de Boteco</Text>
+        <View className="min-w-0 flex-1">
+          <Text numberOfLines={1} className="font-heading text-foreground text-base">
+            Agenda
+          </Text>
+          <Text numberOfLines={1} className="font-body text-muted-foreground text-xs">
+            de Boteco
+          </Text>
         </View>
       </View>
 
-      <View className="flex-1 gap-1">
+      <ScrollView className="flex-1" contentContainerClassName="gap-1 pb-4">
+
         {NAV.map((item) => {
           const active = isActive(pathname, item);
           return (
             <Pressable
               key={item.match}
               onPress={() => router.push(item.href)}
-              className={`flex-row items-center gap-3 rounded-xl px-3 py-2.5 ${
+              accessibilityRole="button"
+              accessibilityState={{ selected: active }}
+              className={`min-h-11 flex-row items-center gap-3 rounded-xl px-3 py-2.5 ${
                 active ? 'bg-primary' : 'active:bg-surface-elevated'
               }`}
             >
               <Icon name={item.icon} size={20} color={active ? '#0f0f0f' : '#a6a6a6'} />
               <Text
-                className={`font-body-medium text-sm ${
+                numberOfLines={1}
+                className={`font-body-medium min-w-0 flex-1 text-sm ${
                   active ? 'text-primary-foreground' : 'text-muted-foreground'
                 }`}
               >
@@ -66,11 +91,12 @@ export function PanelSidebar() {
             </Pressable>
           );
         })}
-      </View>
+      </ScrollView>
 
       <Pressable
+        accessibilityRole="button"
         onPress={() => router.push('/(painel)/events/new')}
-        className="mt-4 flex-row items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 active:opacity-90"
+        className="mt-4 min-h-11 flex-row items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 active:opacity-90"
       >
         <Icon name="plus" size={16} color="#0f0f0f" weight="bold" />
         <Text className="font-body-medium text-primary-foreground text-sm">Novo evento</Text>

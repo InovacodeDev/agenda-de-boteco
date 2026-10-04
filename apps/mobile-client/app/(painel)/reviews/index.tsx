@@ -18,6 +18,7 @@ import { useMemo } from 'react';
 import { ActivityIndicator } from 'react-native';
 
 import { useResponsive } from '@/hooks/useResponsive';
+import { scrollContentClassName } from '@/lib/screenLayout';
 
 const STAR_LEVELS = [5, 4, 3, 2, 1] as const;
 
@@ -33,13 +34,13 @@ export default function ReviewsScreen() {
   const summary = useMemo(() => calculateRatingsSummary(ratings ?? []), [ratings]);
 
   return (
-    <Screen className="bg-background">
+    <Screen noTopInset noBottomInset>
       <ScreenHeader
         title="Avaliações"
         subtitle="Acompanhe as notas recebidas pelo seu estabelecimento e o histórico de clientes."
       />
 
-      <ScrollView contentContainerClassName="p-4 gap-5">
+      <ScrollView contentContainerClassName={`${scrollContentClassName(isTablet)} gap-5`}>
         {isPending ? (
           <View className="items-center justify-center p-8">
             <ActivityIndicator size="large" color="#1dd75e" />
@@ -55,7 +56,7 @@ export default function ReviewsScreen() {
         ) : (
           <>
             <View className={`gap-4 ${isTablet ? 'flex-row flex-wrap' : 'flex-col'}`}>
-              <Card className={isTablet ? 'w-[31%] flex-grow justify-between p-6' : 'w-full justify-between p-6'}>
+              <Card className={isTablet ? 'w-[31%] grow justify-between p-6' : 'w-full justify-between p-6'}>
                 <Text className="font-body-medium text-muted-foreground text-xs uppercase tracking-wider">
                   Média Geral
                 </Text>
@@ -83,7 +84,7 @@ export default function ReviewsScreen() {
                 </Text>
               </Card>
 
-              <Card className={isTablet ? 'w-[31%] flex-grow justify-between p-6' : 'w-full justify-between p-6'}>
+              <Card className={isTablet ? 'w-[31%] grow justify-between p-6' : 'w-full justify-between p-6'}>
                 <Text className="font-body-medium text-muted-foreground text-xs uppercase tracking-wider">
                   Total de Avaliações
                 </Text>
@@ -97,7 +98,7 @@ export default function ReviewsScreen() {
                 </Text>
               </Card>
 
-              <Card className={isTablet ? 'w-[31%] flex-grow justify-between p-6' : 'w-full justify-between p-6'}>
+              <Card className={isTablet ? 'w-[31%] grow justify-between p-6' : 'w-full justify-between p-6'}>
                 <Text className="font-body-medium text-muted-foreground mb-2 text-xs uppercase tracking-wider">
                   Distribuição das Notas
                 </Text>
@@ -108,19 +109,19 @@ export default function ReviewsScreen() {
                       summary.count > 0 ? Math.round((starCount / summary.count) * 100) : 0;
                     return (
                       <View key={star} className="flex-row items-center justify-between gap-3">
-                        <View className="flex-row items-center gap-2">
+                        <View className="min-w-0 flex-1 flex-row items-center gap-2">
                           <Text className="font-body text-muted-foreground w-5 text-xs font-medium">
                             {star}
                           </Text>
                           <Icon name="star" size={12} color="#f9a91f" variant="solid" />
-                          <View className="h-2 w-20 overflow-hidden rounded-full bg-surface-elevated">
+                          <View className="h-2 min-w-0 flex-1 overflow-hidden rounded-full bg-surface-elevated">
                             <View
                               style={{ width: `${percentage}%` }}
                               className="h-full rounded-full bg-accent"
                             />
                           </View>
                         </View>
-                        <Text className="font-body text-muted-foreground text-xs font-medium">
+                        <Text className="font-body text-muted-foreground shrink-0 text-xs font-medium">
                           {starCount.toLocaleString('pt-BR')} ({percentage}%)
                         </Text>
                       </View>
@@ -143,8 +144,11 @@ export default function ReviewsScreen() {
               ) : (
                 <View className="gap-2.5">
                   {ratings.map((ratingItem) => (
-                    <Card key={ratingItem.id} className="flex-row items-center justify-between p-4">
-                      <Text className="font-body text-muted-foreground text-xs font-medium">
+                    <Card
+                      key={ratingItem.id}
+                      className="flex-row items-center justify-between gap-3 p-4"
+                    >
+                      <Text className="font-body text-muted-foreground min-w-0 flex-1 text-xs font-medium">
                         {formatEventDate(ratingItem.created_at, true)}
                       </Text>
                       <View className="flex-row items-center gap-2">

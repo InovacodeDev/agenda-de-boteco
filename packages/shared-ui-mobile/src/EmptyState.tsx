@@ -29,7 +29,7 @@ export function EmptyState({
           {title}
         </Text>
       ) : null}
-      <Text className="font-body text-muted-foreground text-center text-sm leading-relaxed">
+      <Text className="font-body text-muted-foreground text-center text-sm leading-[22px]">
         {message}
       </Text>
       {actionLabel && onAction ? (

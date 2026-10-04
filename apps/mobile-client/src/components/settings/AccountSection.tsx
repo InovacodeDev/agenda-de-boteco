@@ -123,7 +123,7 @@ export function AccountSection({ onSuccessNotice }: AccountSectionProps) {
         {provider === 'google' ? (
           <View className="flex-row items-start gap-3 rounded-xl border border-border/60 bg-surface/50 p-4">
             <Icon name="shield-check" size={20} color={PRIMARY} weight="bold" />
-            <Text className="font-body text-muted-foreground flex-1 text-xs leading-relaxed">
+            <Text className="font-body text-muted-foreground flex-1 text-xs leading-[18px]">
               Sua conta utiliza a autenticação do Google. A segurança e recuperação de senha são
               gerenciadas diretamente na sua conta Google.
             </Text>
@@ -182,7 +182,7 @@ export function AccountSection({ onSuccessNotice }: AccountSectionProps) {
                 variant="solid"
                 disabled={busyPassword || !newPassword || !confirmPassword}
                 onPress={() => void handlePasswordSubmit()}
-                className="h-10 px-4"
+                className="px-4"
               />
             </View>
           </View>
@@ -198,16 +198,14 @@ export function AccountSection({ onSuccessNotice }: AccountSectionProps) {
               </Text>
             </View>
 
-            <View className="flex-row">
-              <Button
-                label={busySignOutOthers ? 'Desconectando…' : 'Desconectar outros dispositivos'}
-                variant="outline"
-                disabled={busySignOutOthers}
-                icon={<Icon name="laptop" size={16} color={FOREGROUND} weight="bold" />}
-                onPress={() => void handleSignOutOthers()}
-                className="h-10 px-4"
-              />
-            </View>
+            <Button
+              label={busySignOutOthers ? 'Desconectando…' : 'Desconectar outros dispositivos'}
+              variant="outline"
+              disabled={busySignOutOthers}
+              icon={<Icon name="laptop" size={16} color={FOREGROUND} weight="bold" />}
+              onPress={() => void handleSignOutOthers()}
+              className="max-w-full self-start px-4"
+            />
           </View>
 
           {sessionsNotice ? (

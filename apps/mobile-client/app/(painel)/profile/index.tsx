@@ -20,7 +20,7 @@ import {
 } from '@agenda/shared-ui-mobile';
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native';
+import { ActivityIndicator } from 'react-native';
 
 import {
   EMPTY_DRAFT,
@@ -29,7 +29,9 @@ import {
   LocationFields,
   OperationFields,
 } from '@/components/EstablishmentFields';
+import { KeyboardAwareBody } from '@/components/KeyboardAwareBody';
 import { useResponsive } from '@/hooks/useResponsive';
+import { scrollContentClassName } from '@/lib/screenLayout';
 
 export default function ProfileScreen() {
   const queryClient = useQueryClient();
@@ -111,7 +113,7 @@ export default function ProfileScreen() {
 
   if (isPending) {
     return (
-      <Screen className="bg-background">
+      <Screen noTopInset noBottomInset>
         <ScreenHeader title="Perfil do estabelecimento" />
         <View className="flex-1 items-center justify-center p-8">
           <ActivityIndicator size="large" color="#1dd75e" />
@@ -124,23 +126,19 @@ export default function ProfileScreen() {
   }
 
   return (
-    <Screen className="bg-background">
+    <Screen noTopInset noBottomInset>
       <ScreenHeader
         title="Perfil do estabelecimento"
         subtitle="Essas informações aparecem no app dos usuários."
       />
 
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        className="flex-1"
-      >
+      <KeyboardAwareBody>
         <ScrollView
-          contentContainerClassName="p-5 gap-6"
+          contentContainerClassName={scrollContentClassName(isTablet)}
           keyboardShouldPersistTaps="handled"
         >
           <View className="mx-auto w-full max-w-4xl">
             <View className={isTablet ? 'flex-row gap-6' : 'flex-col gap-6'}>
-              {/* Coluna 1: Identidade e Mídia */}
               <View className={isTablet ? 'flex-1 flex-col gap-5' : 'flex-col gap-5'}>
                 <Card className="flex-col gap-4 p-5">
                   <Text className="font-heading text-foreground text-base font-bold">
@@ -151,7 +149,6 @@ export default function ProfileScreen() {
                 </Card>
               </View>
 
-              {/* Coluna 2: Localização e Operação */}
               <View className={isTablet ? 'flex-1 flex-col gap-5' : 'flex-col gap-5'}>
                 <Card className="flex-col gap-4 p-5">
                   <Text className="font-heading text-foreground text-base font-bold">
@@ -189,7 +186,7 @@ export default function ProfileScreen() {
             </View>
           </View>
         </ScrollView>
-      </KeyboardAvoidingView>
+      </KeyboardAwareBody>
     </Screen>
   );
 }

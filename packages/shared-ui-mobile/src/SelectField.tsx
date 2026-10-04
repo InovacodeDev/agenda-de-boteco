@@ -1,9 +1,12 @@
 import { useState } from 'react';
-import { FlatList, Modal, TouchableWithoutFeedback } from 'react-native';
+import { FlatList, Modal, Platform, TouchableWithoutFeedback } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { cn } from './cn';
 import { Icon } from './Icon';
-import { Pressable, Text, TextInput, View } from './tw';
+import { KeyboardAvoidingView, Pressable, Text, TextInput, View } from './tw';
+
+const SHEET_PADDING = 20;
 
 export interface SelectOption {
   value: string;
@@ -34,6 +37,7 @@ export function SelectField({
 }: SelectFieldProps) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
+  const insets = useSafeAreaInsets();
 
   const selected = options.find((opt) => opt.value === value);
 
@@ -55,7 +59,7 @@ export function SelectField({
         <Text
           numberOfLines={1}
           className={cn(
-            'font-body text-[15px]',
+            'font-body mr-2 flex-1 text-[15px]',
             selected ? 'text-foreground' : 'text-muted-foreground',
           )}
         >
@@ -71,23 +75,31 @@ export function SelectField({
         onRequestClose={() => setOpen(false)}
       >
         <TouchableWithoutFeedback onPress={() => setOpen(false)}>
-          <View className="flex-1 justify-end bg-black/60">
+          <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+            className="flex-1 justify-end bg-black/60"
+          >
             <TouchableWithoutFeedback onPress={() => {}}>
-              <View className="max-h-[75%] rounded-t-3xl border-t border-border bg-card p-5">
-                <View className="mb-4 flex-row items-center justify-between">
-                  <Text className="font-heading text-foreground text-lg font-bold">
+              <View
+                className="max-h-[75%] rounded-t-3xl border-t border-border bg-card px-5 pt-5"
+                style={{ paddingBottom: insets.bottom + SHEET_PADDING }}
+              >
+                <View className="mb-4 flex-row items-center justify-between gap-3">
+                  <Text className="font-heading text-foreground min-w-0 flex-1 text-lg font-bold">
                     {placeholder}
                   </Text>
                   <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel="Fechar"
                     onPress={() => setOpen(false)}
-                    className="h-8 w-8 items-center justify-center rounded-full bg-surface"
+                    className="h-11 w-11 items-center justify-center rounded-full bg-surface"
                   >
                     <Icon name="xmark" size={16} color="#a6a6a6" />
                   </Pressable>
                 </View>
 
                 {searchable ? (
-                  <View className="mb-3 h-10 flex-row items-center rounded-xl border border-border bg-surface px-3">
+                  <View className="mb-3 h-11 flex-row items-center rounded-xl border border-border bg-surface px-3">
                     <Icon name="magnifying-glass" size={16} color="#737373" />
                     <TextInput
                       value={search}
@@ -118,7 +130,7 @@ export function SelectField({
                       >
                         <Text
                           className={cn(
-                            'font-body text-[15px]',
+                            'font-body mr-2 flex-1 text-[15px]',
                             isSelected ? 'text-primary font-body-semibold' : 'text-foreground',
                           )}
                         >
@@ -135,7 +147,7 @@ export function SelectField({
                 />
               </View>
             </TouchableWithoutFeedback>
-          </View>
+          </KeyboardAvoidingView>
         </TouchableWithoutFeedback>
       </Modal>
     </>

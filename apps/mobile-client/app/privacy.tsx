@@ -1,6 +1,9 @@
 import { Screen, ScreenHeader, ScrollView, Text, View } from '@agenda/shared-ui-mobile';
 import { useRouter } from 'expo-router';
 
+import { useResponsive } from '@/hooks/useResponsive';
+import { scrollContentClassName } from '@/lib/screenLayout';
+
 const LAST_UPDATED = '3 de setembro de 2026';
 const CONTACT_EMAIL = 'contato@inovacode.dev';
 
@@ -12,15 +15,15 @@ function SectionTitle({ children }: { children: string }) {
 
 function Paragraph({ children }: { children: React.ReactNode }) {
   return (
-    <Text className="font-body text-muted-foreground text-sm leading-relaxed">{children}</Text>
+    <Text className="font-body text-muted-foreground text-sm leading-[22px]">{children}</Text>
   );
 }
 
 function Bullet({ children }: { children: React.ReactNode }) {
   return (
     <View className="flex-row gap-2 pl-1">
-      <Text className="font-body text-primary text-sm leading-relaxed">•</Text>
-      <Text className="font-body text-muted-foreground flex-1 text-sm leading-relaxed">
+      <Text className="font-body text-primary text-sm leading-[22px]">•</Text>
+      <Text className="font-body text-muted-foreground min-w-0 flex-1 text-sm leading-[22px]">
         {children}
       </Text>
     </View>
@@ -29,11 +32,12 @@ function Bullet({ children }: { children: React.ReactNode }) {
 
 export default function PrivacyScreen() {
   const router = useRouter();
+  const { isTablet } = useResponsive();
 
   return (
-    <Screen className="bg-background">
+    <Screen>
       <ScreenHeader title="Política de Privacidade" onBack={() => router.back()} />
-      <ScrollView contentContainerClassName="p-6">
+      <ScrollView contentContainerClassName={scrollContentClassName(isTablet)}>
         <View className="mx-auto w-full max-w-2xl flex-col gap-5">
           <View className="flex-col gap-1">
             <Text className="font-heading text-foreground text-xl font-bold">
