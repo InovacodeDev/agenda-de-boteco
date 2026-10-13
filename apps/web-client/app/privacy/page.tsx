@@ -92,14 +92,22 @@ export default function ClientPrivacyPolicyPage() {
 
       <Section title="3. Dados de artistas">
         <Paragraph>
-          Se você acessar a lista de artistas cadastrados, verá nome, contato e região informados
-          voluntariamente por eles para receberem propostas de show. Use essas informações apenas
+          Se você acessar a lista de artistas cadastrados, verá nome, telefone/WhatsApp, região, Instagram,
+          faixa de cachê e estilos musicais informados voluntariamente por eles para receberem propostas de show. Use essas informações apenas
           para contato profissional relacionado ao seu estabelecimento. Repassá-las a terceiros ou
           usá-las para outra finalidade é proibido.
         </Paragraph>
       </Section>
 
-      <Section title="4. Serviços que processam esses dados">
+      <Section title="4. Métricas do seu estabelecimento">
+        <Paragraph>
+          O painel mostra visualizações e cliques (mapa, contato e compartilhamento) na página do
+          seu bar. Essas contagens não identificam os usuários: não guardamos quem visualizou ou
+          clicou.
+        </Paragraph>
+      </Section>
+
+      <Section title="5. Serviços que processam esses dados">
         <Bullet>
           <span className="text-foreground">Supabase</span> — autenticação, banco de dados e
           armazenamento de imagens e cardápios.
@@ -114,14 +122,14 @@ export default function ClientPrivacyPolicyPage() {
         </Bullet>
       </Section>
 
-      <Section title="5. Seus direitos">
+      <Section title="6. Seus direitos">
         <Paragraph>
           Conforme a LGPD, você pode pedir acesso, correção ou exclusão dos dados da sua conta, além
           de informações sobre como são tratados. Escreva para {CONTACT_EMAIL}.
         </Paragraph>
       </Section>
 
-      <Section title="6. Contato">
+      <Section title="7. Contato">
         <Paragraph>
           Dúvidas sobre privacidade ou solicitações sobre seus dados: {CONTACT_EMAIL}.
         </Paragraph>

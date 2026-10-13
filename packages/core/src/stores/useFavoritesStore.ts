@@ -4,6 +4,7 @@ import { persist } from 'zustand/middleware';
 import { appJsonStorage, registerRehydrator } from '../platform/storage';
 import {
   addServerFavorite,
+  addServerFavorites,
   type FavoriteTarget,
   fetchServerFavorites,
   removeServerFavorite,
@@ -90,11 +91,10 @@ export const useFavoritesStore = create<FavoritesState>()(
           ...get().eventIds.map((id) => ({ type: 'event' as const, id })),
           ...get().establishmentIds.map((id) => ({ type: 'establishment' as const, id })),
         ];
-        for (const target of local) {
-          if (!onServer.has(`${target.type}:${target.id}`)) {
-            await addServerFavorite(userId, target);
-          }
-        }
+        await addServerFavorites(
+          userId,
+          local.filter((target) => !onServer.has(`${target.type}:${target.id}`)),
+        );
         set((state) => ({
           eventIds: mergeIds(
             state.eventIds,

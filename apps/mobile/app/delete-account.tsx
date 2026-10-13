@@ -1,3 +1,4 @@
+import { OTP_HOURLY_LIMIT_MESSAGE, useResendCooldown } from '@agenda/core';
 import { useState } from 'react';
 
 import { Screen } from '@/components/layout/Screen';
@@ -72,6 +73,8 @@ function DeletionForm() {
   const [busy, setBusy] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  const resend = useResendCooldown();
+
   const unavailable = !isAuthAvailable();
 
   const handleSendCode = async () => {
@@ -83,6 +86,7 @@ function DeletionForm() {
     try {
       await signInWithEmailOtp(email.trim());
       setStep('otp');
+      resend.start();
     } catch (error: unknown) {
       setErrorMessage(getFriendlyErrorMessage(error));
     } finally {
@@ -201,6 +205,21 @@ function DeletionForm() {
             icon={<Icon name="trash-can" variant="regular" color={colors.foreground} size={16} />}
           />
           <Button
+            label={
+              resend.isReady ? 'Reenviar código' : `Reenviar em ${resend.remainingSeconds}s`
+            }
+            variant="outline"
+            fullWidth
+            disabled={busy || !resend.isReady}
+            style={{ backgroundColor: colors.background }}
+            onPress={handleSendCode}
+          />
+          {resend.hasReachedHourlyLimit ? (
+            <Text className="font-body text-muted-foreground text-center text-[12px]">
+              {OTP_HOURLY_LIMIT_MESSAGE}
+            </Text>
+          ) : null}
+          <Button
             label="Usar outro e-mail"
             variant="outline"
             fullWidth
@@ -210,6 +229,7 @@ function DeletionForm() {
               setStep('email');
               setOtp('');
               setErrorMessage(null);
+              resend.reset();
             }}
           />
         </>

@@ -18,7 +18,7 @@ import { ScrollView, Text, View } from '@/tw';
  * Google Maps e PostHog. Atualize os três juntos sempre que a coleta mudar.
  */
 
-const LAST_UPDATED = '3 de setembro de 2026';
+const LAST_UPDATED = '13 de outubro de 2026';
 const CONTACT_EMAIL = 'contato@inovacode.dev';
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
@@ -92,8 +92,15 @@ export default function PrivacyPolicyScreen() {
           </Bullet>
           <Bullet>
             <Text className="text-foreground">E-mail e nome.</Text> Coletados apenas se você criar
-            uma conta ou fizer login (por e-mail, Google ou Apple), para identificar você e
-            sincronizar seus favoritos entre dispositivos.
+            uma conta ou fizer login (por e-mail, Google ou Apple). O e-mail identifica você,
+            sincroniza seus favoritos entre dispositivos e permite identificar sua conta em
+            atendimento e suporte. O nome, quando informado pelo Google ou pela Apple, é exibido no
+            seu perfil.
+          </Bullet>
+          <Bullet>
+            <Text className="text-foreground">Avaliações de estabelecimentos.</Text> Se você avaliar
+            um bar, guardamos a nota (de 1 a 5) ligada à sua conta, para que você possa revê-la e
+            alterá-la. O dono do bar vê a nota, nunca quem a deu.
           </Bullet>
           <Bullet>
             <Text className="text-foreground">Favoritos e preferências.</Text> Os eventos e
@@ -116,6 +123,7 @@ export default function PrivacyPolicyScreen() {
           <Bullet>Mostrar bares e eventos relevantes para a sua localização e cidade.</Bullet>
           <Bullet>Manter você conectado e sincronizar seus favoritos entre dispositivos.</Bullet>
           <Bullet>Lembrar suas preferências de busca.</Bullet>
+          <Bullet>Calcular e mostrar na página do bar a média das avaliações dos usuários.</Bullet>
           <Paragraph>
             Não usamos seus dados para publicidade, perfilamento ou venda a terceiros.
           </Paragraph>
@@ -127,7 +135,7 @@ export default function PrivacyPolicyScreen() {
           </Paragraph>
           <Bullet>
             <Text className="text-foreground">Supabase</Text> — armazena com segurança sua conta
-            (e-mail, nome) e seus favoritos/preferências quando você está logado.
+            (e-mail, nome), suas avaliações e seus favoritos/preferências quando você está logado.
           </Bullet>
           <Bullet>
             <Text className="text-foreground">Google Maps Platform</Text> — exibe mapas e calcula
@@ -152,15 +160,17 @@ export default function PrivacyPolicyScreen() {
             O acesso aos dados é protegido por regras de segurança no servidor (cada pessoa só
             acessa os próprios favoritos) e transmitido por conexões criptografadas (HTTPS).
             Mantemos os dados da sua conta enquanto ela existir. Ao excluir a conta, os dados
-            associados são removidos.
+            associados são removidos, exceto as notas de avaliação: elas permanecem sem vínculo
+            com você (anônimas) e continuam contando na média do bar.
           </Paragraph>
         </Section>
 
         <Section title="6. Seus direitos">
           <Paragraph>
             Você pode, a qualquer momento, acessar, corrigir ou excluir os dados da sua conta,
-            revogar a permissão de localização nas configurações do dispositivo e solicitar a
-            exclusão da sua conta entrando em contato pelo e-mail abaixo. Conforme a LGPD, você
+            revogar a permissão de localização nas configurações do dispositivo e excluir sua
+            conta pelo app (aba “Perfil”, “Excluir conta”) ou pela página de exclusão de conta, ou,
+            se preferir, pedir a exclusão pelo e-mail abaixo. Conforme a LGPD, você
             também pode pedir informações sobre o tratamento dos seus dados.
           </Paragraph>
         </Section>

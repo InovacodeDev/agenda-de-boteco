@@ -1,5 +1,6 @@
 import {
   addServerFavorite,
+  addServerFavorites,
   type FavoriteTarget,
   fetchServerFavorites,
   removeServerFavorite,
@@ -94,6 +95,50 @@ describe('addServerFavorite / removeServerFavorite', () => {
     mockGetSupabase.mockReturnValue(client);
     await expect(
       addServerFavorite('userX', { type: 'event', id: 'ev1' }),
+    ).rejects.toBe(error);
+  });
+});
+
+describe('addServerFavorites', () => {
+  it('lista vazia não chama o servidor', async () => {
+    const client = { from: jest.fn() };
+    mockGetSupabase.mockReturnValue(client);
+    await expect(addServerFavorites('userX', [])).resolves.toBeUndefined();
+    expect(client.from).not.toHaveBeenCalled();
+  });
+
+  it('é no-op sem client', async () => {
+    mockGetSupabase.mockReturnValue(null);
+    await expect(
+      addServerFavorites('userX', [{ type: 'event', id: 'ev1' }]),
+    ).resolves.toBeUndefined();
+  });
+
+  it('faz um único upsert com todas as linhas do usuário', async () => {
+    const upsert = jest.fn(() => Promise.resolve({ error: null }));
+    const client = { from: jest.fn(() => ({ upsert })) };
+    mockGetSupabase.mockReturnValue(client);
+
+    await addServerFavorites('userX', [
+      { type: 'event', id: 'ev1' },
+      { type: 'establishment', id: 'es1' },
+    ]);
+    expect(client.from).toHaveBeenCalledTimes(1);
+    expect(upsert).toHaveBeenCalledWith(
+      [
+        { user_id: 'userX', target_type: 'event', target_id: 'ev1' },
+        { user_id: 'userX', target_type: 'establishment', target_id: 'es1' },
+      ],
+      { onConflict: 'user_id,target_type,target_id', ignoreDuplicates: true },
+    );
+  });
+
+  it('propaga erro do upsert', async () => {
+    const error = new Error('upsert failed');
+    const client = { from: jest.fn(() => ({ upsert: jest.fn(() => Promise.resolve({ error })) })) };
+    mockGetSupabase.mockReturnValue(client);
+    await expect(
+      addServerFavorites('userX', [{ type: 'event', id: 'ev1' }]),
     ).rejects.toBe(error);
   });
 });

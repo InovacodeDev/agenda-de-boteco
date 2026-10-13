@@ -8,6 +8,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
  */
 export const OTP_ATTEMPTS_PER_HOUR = 2;
 
+export const OTP_HOURLY_LIMIT_MESSAGE = `Você já solicitou ${OTP_ATTEMPTS_PER_HOUR} códigos nesta hora. Aguarde antes de tentar novamente para não ser bloqueado temporariamente.`;
+
 /** Cooldown de UI entre reenvios. Impede rajada; não substitui o limite do servidor. */
 export const DEFAULT_RESEND_COOLDOWN_SECONDS = 60;
 

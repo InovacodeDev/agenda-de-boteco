@@ -67,6 +67,32 @@ describe('catalogKeys.establishments', () => {
       catalogKeys.establishments.detail('e1'),
     );
   });
+
+  it('search começa com root e distingue cidade e termo', () => {
+    const root = catalogKeys.establishments.root;
+    const key = catalogKeys.establishments.search('fln', 'zé');
+    expect(key).toEqual(['establishments', 'search', 'fln', 'zé']);
+    expect(key.slice(0, root.length)).toEqual(root);
+    expect(catalogKeys.establishments.search(undefined, 'zé')).not.toEqual(key);
+    expect(catalogKeys.establishments.search('fln', 'bar')).not.toEqual(key);
+  });
+
+  it('byIds começa com root e ignora ordem e repetição dos ids', () => {
+    const root = catalogKeys.establishments.root;
+    const key = catalogKeys.establishments.byIds(['b', 'a', 'b']);
+    expect(key).toEqual(['establishments', 'by-ids', ['a', 'b']]);
+    expect(key.slice(0, root.length)).toEqual(root);
+    expect(catalogKeys.establishments.byIds(['a', 'b'])).toEqual(key);
+  });
+});
+
+describe('catalogKeys.events.byIds', () => {
+  it('começa com root e ignora ordem e repetição dos ids', () => {
+    const root = catalogKeys.events.root;
+    const key = catalogKeys.events.byIds(['ev2', 'ev1', 'ev2']);
+    expect(key).toEqual(['events', 'by-ids', ['ev1', 'ev2']]);
+    expect(key.slice(0, root.length)).toEqual(root);
+  });
 });
 
 describe('catalogKeys keys simples', () => {

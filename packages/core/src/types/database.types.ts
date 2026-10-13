@@ -777,6 +777,22 @@ export type Database = {
         Returns: boolean
       }
       geomfromewkt: { Args: { "": string }; Returns: unknown }
+      get_owned_metrics_aggregate: {
+        Args: { p_establishment_id: string; p_since_days: number }
+        Returns: {
+          day: string
+          event_id: string | null
+          kind: string
+          total: number
+        }[]
+      }
+      get_owned_ratings_distribution: {
+        Args: { p_establishment_id: string }
+        Returns: {
+          rating: number
+          total: number
+        }[]
+      }
       gettransactionid: { Args: never; Returns: unknown }
       is_admin: { Args: never; Returns: boolean }
       is_establishment_owner: { Args: never; Returns: boolean }
