@@ -5,3 +5,4 @@
 - Busca de bares por nome consulta todo o catálogo, não só os bares já carregados
 - Reenvio de código no login e na exclusão de conta ganha contagem regressiva e aviso de limite por hora
 - Política de Privacidade explica as avaliações e a exclusão de conta pelo próprio app
+- Atualizações de segurança de bibliotecas usadas na compilação do app
