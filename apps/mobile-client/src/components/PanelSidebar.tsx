@@ -11,11 +11,14 @@ import brandLogo from '@assets/logo.png';
 import { type Href, usePathname, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { type PanelFlag, usePanelFlags } from '@/hooks/usePanelFlags';
+
 interface NavItem {
   href: Href;
   label: string;
   icon: IconName;
   match: string;
+  flag?: PanelFlag;
 }
 
 const NAV: NavItem[] = [
@@ -23,9 +26,27 @@ const NAV: NavItem[] = [
   { href: '/(painel)/events', label: 'Eventos', icon: 'calendar-blank', match: '/events' },
   { href: '/(painel)/artists', label: 'Artistas', icon: 'microphone', match: '/artists' },
   { href: '/(painel)/profile', label: 'Perfil', icon: 'store', match: '/profile' },
-  { href: '/(painel)/metrics', label: 'Métricas', icon: 'chart-bar', match: '/metrics' },
-  { href: '/(painel)/reviews', label: 'Avaliações', icon: 'star', match: '/reviews' },
-  { href: '/(painel)/settings', label: 'Configurações', icon: 'gear', match: '/settings' },
+  {
+    href: '/(painel)/metrics',
+    label: 'Métricas',
+    icon: 'chart-bar',
+    match: '/metrics',
+    flag: 'panel-metrics',
+  },
+  {
+    href: '/(painel)/reviews',
+    label: 'Avaliações',
+    icon: 'star',
+    match: '/reviews',
+    flag: 'panel-reviews',
+  },
+  {
+    href: '/(painel)/settings',
+    label: 'Configurações',
+    icon: 'gear',
+    match: '/settings',
+    flag: 'panel-settings',
+  },
 ];
 
 function isActive(pathname: string, item: NavItem): boolean {
@@ -39,6 +60,8 @@ export function PanelSidebar() {
   const router = useRouter();
   const pathname = usePathname();
   const insets = useSafeAreaInsets();
+  const flags = usePanelFlags();
+  const nav = NAV.filter((item) => !item.flag || flags[item.flag]);
 
   return (
     <View
@@ -67,7 +90,7 @@ export function PanelSidebar() {
 
       <ScrollView className="flex-1" contentContainerClassName="gap-1 pb-4">
 
-        {NAV.map((item) => {
+        {nav.map((item) => {
           const active = isActive(pathname, item);
           return (
             <Pressable

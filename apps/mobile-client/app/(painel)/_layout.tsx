@@ -4,23 +4,31 @@ import {
   useAuthStore,
 } from '@agenda/core';
 import { Text, View } from '@agenda/shared-ui-mobile';
-import { Slot, Tabs, useRouter } from 'expo-router';
+import { Slot, Tabs, usePathname, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { PanelSidebar } from '@/components/PanelSidebar';
 import { PanelTabBar } from '@/components/PanelTabBar';
 import { PanelTopbar } from '@/components/PanelTopbar';
+import { isBlockedPanelRoute, usePanelFlags } from '@/hooks/usePanelFlags';
 import { useResponsive } from '@/hooks/useResponsive';
 
 type OwnerCheck = 'checking' | 'linked' | 'unlinked';
 
 export default function PainelLayout() {
   const router = useRouter();
+  const pathname = usePathname();
   const status = useAuthStore((state) => state.status);
   const [check, setCheck] = useState<OwnerCheck>('checking');
   const { isTablet } = useResponsive();
   const insets = useSafeAreaInsets();
+  const blocked = isBlockedPanelRoute(pathname, usePanelFlags());
+
+  // Tela com flag desligada (deep link, push, rota restaurada): volta ao dashboard, como no web-client.
+  useEffect(() => {
+    if (blocked) router.replace('/(painel)');
+  }, [blocked, router]);
 
   useEffect(() => {
     if (status === 'loading') return;
@@ -51,7 +59,7 @@ export default function PainelLayout() {
     };
   }, [status, router]);
 
-  if (check !== 'linked') {
+  if (check !== 'linked' || blocked) {
     return (
       <View className="flex-1 items-center justify-center bg-background">
         <Text className="font-body text-muted-foreground text-sm">Carregando painel…</Text>

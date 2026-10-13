@@ -4,10 +4,15 @@ import '@/lib/bootstrap';
 
 import {
   CACHE_BUSTER,
+  getCurrentUserExternalId,
+  identifyAnalyticsUser,
+  onAuthUserChange,
   queryClient,
+  resetAnalytics,
   setupFocusManager,
   setupOnlineManager,
   shouldDehydrateQuery,
+  trackPageview,
   useAuthStore,
 } from '@agenda/core';
 import { ToastProvider } from '@agenda/shared-ui-mobile';
@@ -21,7 +26,7 @@ import { SpaceGrotesk_500Medium, SpaceGrotesk_700Bold } from '@expo-google-fonts
 import NetInfo from '@react-native-community/netinfo';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
+import { Stack, usePathname } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
@@ -33,12 +38,41 @@ import { persister } from '@/lib/queryPersister';
 
 SplashScreen.preventAutoHideAsync();
 
+function PostHogScreenTracker() {
+  const pathname = usePathname();
+
+  useEffect(() => {
+    trackPageview(pathname);
+  }, [pathname]);
+
+  return null;
+}
+
 export default function RootLayout() {
   const initializeAuth = useAuthStore((state) => state.initialize);
 
   useEffect(() => {
     initializeAuth();
   }, [initializeAuth]);
+
+  useEffect(() => {
+    let lastUserId: string | null = useAuthStore.getState().user?.id ?? null;
+    return onAuthUserChange((user) => {
+      const nextUserId = user?.id ?? null;
+      if (nextUserId !== null && nextUserId !== lastUserId) {
+        // Mesmo distinct_id do web-client (external_id, nunca auth.uid()): o
+        // dono vira uma só pessoa no PostHog e recebe as mesmas flags nos dois painéis.
+        void getCurrentUserExternalId()
+          .then((externalId) => {
+            if (externalId) identifyAnalyticsUser(externalId);
+          })
+          .catch(() => {});
+      } else if (nextUserId === null && lastUserId !== null) {
+        resetAnalytics();
+      }
+      lastUserId = nextUserId;
+    });
+  }, []);
 
   useEffect(() => {
     const teardownOnline = setupOnlineManager((listener) =>
@@ -95,6 +129,7 @@ export default function RootLayout() {
       <SafeAreaProvider>
         <ToastProvider>
           <StatusBar style="light" />
+          <PostHogScreenTracker />
           <Stack
             screenOptions={{
               headerShown: false,

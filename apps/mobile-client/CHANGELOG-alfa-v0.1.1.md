@@ -18,3 +18,5 @@
 - Painel respeita o entalhe e as bordas da tela: topo, menu lateral e barra de abas não ficam mais sob o relógio ou a barra de gestos
 - Textos não aparecem mais cortados e toda tela rola até o fim, inclusive com o teclado aberto nos formulários
 - Política de privacidade completa e acessível a partir do login
+- Métricas, Avaliações e Configurações são liberadas ao mesmo tempo no app e no painel web
+- Coleta de dados de uso do painel, como já descrito na política de privacidade

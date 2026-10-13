@@ -11,6 +11,7 @@ import { type Href, usePathname, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { type PanelFlag, usePanelFlags } from '@/hooks/usePanelFlags';
 import { signOutAndUnregister } from '@/lib/push';
 
 interface MoreSheetItem {
@@ -18,13 +19,32 @@ interface MoreSheetItem {
   label: string;
   icon: IconName;
   match: string;
+  flag?: PanelFlag;
 }
 
 const ITEMS: MoreSheetItem[] = [
   { href: '/(painel)/profile', label: 'Perfil do bar', icon: 'store', match: '/profile' },
-  { href: '/(painel)/metrics', label: 'Métricas', icon: 'chart-bar', match: '/metrics' },
-  { href: '/(painel)/reviews', label: 'Avaliações', icon: 'star', match: '/reviews' },
-  { href: '/(painel)/settings', label: 'Configurações', icon: 'gear', match: '/settings' },
+  {
+    href: '/(painel)/metrics',
+    label: 'Métricas',
+    icon: 'chart-bar',
+    match: '/metrics',
+    flag: 'panel-metrics',
+  },
+  {
+    href: '/(painel)/reviews',
+    label: 'Avaliações',
+    icon: 'star',
+    match: '/reviews',
+    flag: 'panel-reviews',
+  },
+  {
+    href: '/(painel)/settings',
+    label: 'Configurações',
+    icon: 'gear',
+    match: '/settings',
+    flag: 'panel-settings',
+  },
 ];
 
 export function isMoreRoute(pathname: string): boolean {
@@ -41,6 +61,8 @@ export function MoreSheet({ visible, onClose }: MoreSheetProps) {
   const pathname = usePathname();
   const insets = useSafeAreaInsets();
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const flags = usePanelFlags();
+  const items = ITEMS.filter((item) => !item.flag || flags[item.flag]);
 
   return (
     <>
@@ -55,7 +77,7 @@ export function MoreSheet({ visible, onClose }: MoreSheetProps) {
             <View className="rounded-t-2xl border border-border bg-card pt-3">
               <View className="mb-2 h-1 w-10 self-center rounded-full bg-surface-elevated" />
 
-              {ITEMS.map((item) => {
+              {items.map((item) => {
                 const active = pathname.includes(item.match);
                 return (
                   <Pressable
