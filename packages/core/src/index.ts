@@ -39,6 +39,7 @@ export * from './utils/status-light';
 export * from './hooks/queries';
 export * from './hooks/useActiveCity';
 export * from './hooks/useConnectivity';
+export * from './hooks/useDebouncedValue';
 export * from './hooks/useEstablishmentRating';
 export * from './hooks/useFeatureFlag';
 export * from './hooks/useGuardedClick';
@@ -62,9 +63,11 @@ export {
   getEvent,
   listCities,
   listEstablishments,
+  listEstablishmentsByIds,
   listEventAttractions,
   listEvents,
   listEventsByEstablishment,
+  listEventsByIds,
   listMusicStyles,
   listNotifications,
   listOwnedEvents,

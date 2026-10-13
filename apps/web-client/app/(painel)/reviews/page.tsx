@@ -1,14 +1,16 @@
 'use client';
 
 import {
-  calculateRatingsSummary,
+  flattenPages,
   formatEventDate,
   useFeatureFlag,
+  useInfiniteScrollSentinel,
   useOwnerEstablishmentRatings,
+  useOwnerRatingsSummary,
 } from '@agenda/core';
 import { StarIcon } from '@phosphor-icons/react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useMemo } from 'react';
+import { useEffect } from 'react';
 
 import { EmptyState } from '@/components/ui/EmptyState';
 import { useOwnedEstablishmentId } from '@/hooks/use-owned-establishment';
@@ -25,15 +27,18 @@ export default function AvaliacoesPage() {
 
   const { data: establishmentId, isPending: isEstIdPending } =
     useOwnedEstablishmentId();
-  const { data: ratings, isPending: isRatingsPending } =
-    useOwnerEstablishmentRatings(establishmentId ?? '');
+  const ratingsQuery = useOwnerEstablishmentRatings(establishmentId ?? '');
+  const summaryQuery = useOwnerRatingsSummary(establishmentId ?? '');
+  const ratings = flattenPages(ratingsQuery.data);
+  const sentinelRef = useInfiniteScrollSentinel({
+    fetchNextPage: ratingsQuery.fetchNextPage,
+    hasNextPage: ratingsQuery.hasNextPage,
+    isFetchingNextPage: ratingsQuery.isFetchingNextPage,
+  });
 
-  const isPending = isEstIdPending || isRatingsPending;
+  const isPending = isEstIdPending || ratingsQuery.isPending || summaryQuery.isPending;
 
-  const summary = useMemo(
-    () => calculateRatingsSummary(ratings ?? []),
-    [ratings],
-  );
+  const summary = summaryQuery.data ?? { avg: 0, count: 0, distribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 } };
 
   if (!enabled) return null;
 
@@ -152,7 +157,7 @@ export default function AvaliacoesPage() {
               Histórico de Avaliações
             </h2>
 
-            {!ratings || ratings.length === 0 ? (
+            {ratings.length === 0 ? (
               <EmptyState
                 icon={<StarIcon size={32} />}
                 message="Seu estabelecimento ainda não recebeu nenhuma avaliação de clientes."
@@ -191,6 +196,11 @@ export default function AvaliacoesPage() {
                 ))}
               </div>
             )}
+            {ratingsQuery.hasNextPage ? (
+              <div ref={sentinelRef} className="text-muted-foreground py-4 text-center text-xs">
+                {ratingsQuery.isFetchingNextPage ? 'Carregando mais avaliações…' : null}
+              </div>
+            ) : null}
           </div>
         </>
       )}

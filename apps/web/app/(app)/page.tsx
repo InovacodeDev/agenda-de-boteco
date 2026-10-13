@@ -7,6 +7,7 @@ import {
   ESTABLISHMENT_SORT_LABELS,
   ESTABLISHMENT_SORT_OPTIONS,
   type EstablishmentSortBy,
+  findMissingEstablishmentIds,
   flattenPages,
   hasActiveFilters,
   indexById,
@@ -15,6 +16,8 @@ import {
   musicStylesForEvent,
   resolveNearbyOrigin,
   useActiveCity,
+  useDebouncedValue,
+  useEstablishmentsByIds,
   useEstablishmentsQuery,
   useEventsQuery,
   useFiltersStore,
@@ -65,10 +68,14 @@ export default function FeedPage() {
       ? (filters.cityIds.length === 1 ? filters.cityIds[0] : undefined)
       : (city && !isVirtualCityId(city.id) ? city.id : undefined);
 
+  const debouncedBarQuery = useDebouncedValue(barQuery);
   const eventsQuery = useEventsQuery(filters.dateRange);
-  const events = flattenPages(eventsQuery.data);
-  const establishmentsQuery = useEstablishmentsQuery(effectiveCityId);
-  const establishments = flattenPages(establishmentsQuery.data);
+  const events = useMemo(() => flattenPages(eventsQuery.data), [eventsQuery.data]);
+  const establishmentsQuery = useEstablishmentsQuery(effectiveCityId, debouncedBarQuery);
+  const establishments = useMemo(
+    () => flattenPages(establishmentsQuery.data),
+    [establishmentsQuery.data],
+  );
   const { data: musicStyles } = useMusicStylesQuery();
 
   const eventsSentinelRef = useInfiniteScrollSentinel({
@@ -85,7 +92,19 @@ export default function FeedPage() {
   // "agora" estável por render (o feed web não precisa do tick de minuto do mobile).
   const now = useMemo(() => new Date(), []);
 
-  const establishmentsById = useMemo(() => indexById(establishments ?? []), [establishments]);
+  const loadedEstablishmentsById = useMemo(() => indexById(establishments), [establishments]);
+  // Eventos e bares paginam em listas separadas: o bar de um evento pode estar
+  // numa página de bares não carregada, e applyEventFilters descarta evento sem bar.
+  const missingEstablishmentIds = useMemo(
+    () => findMissingEstablishmentIds(events, loadedEstablishmentsById),
+    [events, loadedEstablishmentsById],
+  );
+  const { data: fetchedEstablishments, isLoading: isLoadingFetchedEstablishments } =
+    useEstablishmentsByIds(missingEstablishmentIds);
+  const establishmentsById = useMemo(
+    () => ({ ...indexById(fetchedEstablishments ?? []), ...loadedEstablishmentsById }),
+    [fetchedEstablishments, loadedEstablishmentsById],
+  );
   const stylesById = useMemo(() => indexById(musicStyles ?? []), [musicStyles]);
 
   // ponytail: geolocalização web fica para a tela de filtros/Fase 2 — sem GPS,
@@ -146,7 +165,11 @@ export default function FeedPage() {
     ],
   );
 
-  const isLoading = eventsQuery.isPending || establishmentsQuery.isPending || musicStyles === undefined;
+  const isLoading =
+    eventsQuery.isPending ||
+    establishmentsQuery.isPending ||
+    isLoadingFetchedEstablishments ||
+    musicStyles === undefined;
 
   return (
     <section className="flex flex-col gap-4 pt-2">

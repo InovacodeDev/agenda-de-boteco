@@ -1,3 +1,4 @@
+import { OTP_HOURLY_LIMIT_MESSAGE, useResendCooldown } from '@agenda/core';
 import brandLogo from '@assets/logo.png';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
@@ -32,6 +33,8 @@ export default function LoginScreen() {
   const [otpToken, setOtpToken] = useState('');
   const [busy, setBusy] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const resend = useResendCooldown();
 
   const handleVerifyOtp = async () => {
     if (!otpToken.trim() || otpToken.length !== 6) {
@@ -81,6 +84,7 @@ export default function LoginScreen() {
     try {
       await signInWithEmailOtp(email.trim());
       setEmailStep('sent');
+      resend.start();
     } catch (error: unknown) {
       setErrorMessage(getFriendlyErrorMessage(error));
     } finally {
@@ -222,6 +226,20 @@ export default function LoginScreen() {
                     }
                   />
                   <Button
+                    label={
+                      resend.isReady ? 'Reenviar código' : `Reenviar em ${resend.remainingSeconds}s`
+                    }
+                    variant="outline"
+                    fullWidth
+                    disabled={busy || !resend.isReady}
+                    onPress={handleEmail}
+                  />
+                  {resend.hasReachedHourlyLimit ? (
+                    <Text className="font-body text-muted-foreground text-center text-[12px]">
+                      {OTP_HOURLY_LIMIT_MESSAGE}
+                    </Text>
+                  ) : null}
+                  <Button
                     label="Alterar e-mail"
                     variant="outline"
                     fullWidth
@@ -230,6 +248,7 @@ export default function LoginScreen() {
                     onPress={() => {
                       setEmailStep('editing');
                       setOtpToken('');
+                      resend.reset();
                     }}
                   />
                 </View>

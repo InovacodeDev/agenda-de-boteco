@@ -2,11 +2,19 @@ import {
   type EstablishmentRating,
   establishmentRatingSchema,
   type EstablishmentRatingsSummary,
+  ratingValueSchema,
   type UpsertEstablishmentRatingInput,
   upsertEstablishmentRatingSchema,
 } from '../schemas/ratings';
 import { getConfiguredSupabase } from '../supabase/client';
 import { handleServiceError } from '../utils/errors';
+import {
+  type CatalogPage,
+  decodeCursor,
+  DEFAULT_PAGE_SIZE,
+  encodeCursor,
+  quoteCursorValue,
+} from '../utils/pagination';
 
 /**
  * Consulta a avaliação feita pelo usuário atualmente logado para o estabelecimento.
@@ -102,29 +110,83 @@ export async function upsertEstablishmentRating(
  */
 export async function listEstablishmentRatingsForOwner(
   establishmentId: string,
-): Promise<EstablishmentRating[]> {
+  cursor: string | null = null,
+  limit: number = DEFAULT_PAGE_SIZE,
+): Promise<CatalogPage<EstablishmentRating>> {
   const client = getConfiguredSupabase();
-  if (!client) return [];
+  if (!client) return { items: [], nextCursor: null };
 
   try {
-    const { data, error } = await client
+    const base = client
       .from('establishment_ratings')
       .select('id, establishment_id, rating, created_at, updated_at')
-      .eq('establishment_id', establishmentId)
-      .order('created_at', { ascending: false });
+      .eq('establishment_id', establishmentId);
+    const decoded = decodeCursor(cursor);
+    const filtered = decoded
+      ? base.or(
+          `created_at.lt.${quoteCursorValue(decoded.value)},and(created_at.eq.${quoteCursorValue(decoded.value)},id.lt.${quoteCursorValue(decoded.id)})`,
+        )
+      : base;
+
+    const { data, error } = await filtered
+      .order('created_at', { ascending: false })
+      .order('id', { ascending: false })
+      .limit(limit);
 
     if (error) throw error;
-    if (!data) return [];
 
-    return data.map((row) =>
+    const items = (data ?? []).map((row) =>
       establishmentRatingSchema.parse({
         ...row,
         user_id: null,
       }),
     );
+    const last = items.at(-1);
+    const nextCursor =
+      items.length < limit || !last
+        ? null
+        : encodeCursor({ value: last.created_at, id: last.id });
+    return { items, nextCursor };
   } catch (error) {
     return handleServiceError(error, {
       method: 'establishmentRatings.listEstablishmentRatingsForOwner',
+      args: { establishmentId },
+    });
+  }
+}
+
+/**
+ * Média, total e distribuição de TODAS as avaliações do bar, agregadas no banco
+ * (get_owned_ratings_distribution, SECURITY INVOKER sob a RLS select_owner_ratings).
+ * Separado da lista paginada: calcular só das páginas carregadas daria média errada.
+ */
+export async function getOwnerRatingsSummary(
+  establishmentId: string,
+): Promise<EstablishmentRatingsSummary> {
+  const client = getConfiguredSupabase();
+  if (!client) return calculateRatingsSummary([]);
+
+  try {
+    const { data, error } = await client.rpc('get_owned_ratings_distribution', {
+      p_establishment_id: establishmentId,
+    });
+    if (error) throw error;
+
+    const distribution = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+    let count = 0;
+    let sum = 0;
+    for (const row of data ?? []) {
+      const rating = ratingValueSchema.parse(row.rating);
+      const total = Number(row.total);
+      distribution[rating as 1 | 2 | 3 | 4 | 5] += total;
+      count += total;
+      sum += rating * total;
+    }
+    const avg = count === 0 ? 0 : Math.round((sum / count) * 10) / 10;
+    return { avg, count, distribution };
+  } catch (error) {
+    return handleServiceError(error, {
+      method: 'establishmentRatings.getOwnerRatingsSummary',
       args: { establishmentId },
     });
   }
