@@ -6,3 +6,5 @@
 - Política de Privacidade atualizada: agora explica quais dados de uso são coletados e para quê
 - Links de eventos e bares passam a usar um novo identificador; links antigos continuam funcionando
 - Atualização automática do catálogo quando bares e eventos mudam fica mais estável
+- Bares sem faixa de preço definida deixam de mostrar o separador sobrando no perfil
+- Indicador "aberto agora" passa a considerar bares que abrem em mais de um turno no dia

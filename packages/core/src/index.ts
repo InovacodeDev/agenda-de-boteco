@@ -25,6 +25,7 @@ export * from './utils/images';
 export * from './utils/links';
 export * from './utils/masks';
 export * from './utils/moderation';
+export * from './utils/opening-hours';
 export * from './utils/pagination';
 export * from './utils/platform';
 export * from './utils/pressGuard';
@@ -71,6 +72,7 @@ export {
   upsertEvent,
   upsertNotification,
 } from './services/catalog';
+export * from './services/cep';
 export * from './services/connectivity';
 export * from './services/establishment-owner';
 export * from './services/establishment-ratings';

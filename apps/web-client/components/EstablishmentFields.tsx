@@ -3,16 +3,27 @@
 import {
   catalogKeys,
   createCityFromPanel,
+  deleteImage,
   type EstablishmentAttribute,
   getFriendlyErrorMessage,
   listCities,
+  lookupCep,
+  maskCEP,
   maskPhoneBR,
+  MAX_IMAGE_BYTES,
+  normalizeText,
+  pathFromPublicUrl,
   PRICE_RANGE_LABELS,
+  type PriceRange,
+  priceRangeSchema,
+  uploadImage,
 } from '@agenda/core';
 import { Select } from '@agenda/shared-ui';
+import { FilePdfIcon, UploadSimpleIcon } from '@phosphor-icons/react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import type { ReactNode } from 'react';
+import { type ReactNode, useState } from 'react';
 
+import { OpeningHoursGrid } from '@/components/OpeningHoursGrid';
 import { AttributeAutocomplete } from '@/components/ui/AttributeAutocomplete';
 import { CityCombobox } from '@/components/ui/CityCombobox';
 import { ImageDrop } from '@/components/ui/ImageDrop';
@@ -33,7 +44,9 @@ export interface EstablishmentDraft {
   whatsapp: string;
   instagram: string;
   openingHours: string;
-  priceRange: string;
+  /** '' = "Não definido". */
+  priceRange: PriceRange | '';
+  /** Ambientes separados por ", " — cabe na coluna TEXT que os apps já exibem. */
   ambiance: string;
   menuUrl: string;
   attributes: EstablishmentAttribute[];
@@ -67,6 +80,13 @@ const AMBIANCES = [
   'Casa de shows',
   'Lounge',
 ] as const;
+
+const AMBIANCE_SEPARATOR = ', ';
+
+/** Radix Select não aceita item com valor vazio; mapeia para priceRange ''. */
+const NO_PRICE_RANGE = 'none';
+
+const MENU_PATH_PREFIX = 'establishments/menus';
 
 const LABEL_CLASS = 'text-sm font-medium text-foreground';
 
@@ -174,14 +194,70 @@ export function LocationFields({ draft, set, onError }: FieldGroupProps) {
     }
   };
 
+  /**
+   * CEP só sugere: preenche rua, bairro e cidade e deixa o cursor no endereço
+   * para o dono digitar o número. Não é gravado — a tabela não tem a coluna.
+   */
+  const [cep, setCep] = useState('');
+  const [cepNotice, setCepNotice] = useState<string | null>(null);
+
+  const handleCep = async (value: string) => {
+    const masked = maskCEP(value);
+    setCep(masked);
+    setCepNotice(null);
+    if (masked.replace(/\D/g, '').length !== 8) return;
+
+    setCepNotice('Buscando endereço…');
+    try {
+      const found = await lookupCep(masked);
+      if (!found) {
+        setCepNotice('CEP não encontrado. Preencha o endereço abaixo.');
+        return;
+      }
+      setCepNotice(null);
+      if (found.street) set('address', `${found.street}, `);
+      if (found.neighborhood) set('neighborhood', found.neighborhood);
+      const city = cities.find(
+        (item) =>
+          item.uf === found.uf && normalizeText(item.name) === normalizeText(found.city),
+      );
+      if (city) {
+        set('cityId', city.id);
+      } else {
+        await handleCreateCity(found.city, found.uf);
+      }
+      document.getElementById('address')?.focus();
+    } catch (error: unknown) {
+      setCepNotice(getFriendlyErrorMessage(error));
+    }
+  };
+
   return (
     <div className="flex flex-col gap-5">
+      <Labelled htmlFor="cep" label="CEP">
+        <input
+          id="cep"
+          value={cep}
+          onChange={(e) => void handleCep(e.target.value)}
+          placeholder="00000-000"
+          inputMode="numeric"
+          autoComplete="postal-code"
+          className={`${FIELD_CLASS} max-w-48`}
+        />
+        {cepNotice ? (
+          <p role="status" className="text-muted-foreground text-[13px]">
+            {cepNotice}
+          </p>
+        ) : null}
+      </Labelled>
+
       <Labelled htmlFor="address" label="Endereço completo">
         <input
           id="address"
           value={draft.address}
           onChange={(e) => set('address', e.target.value)}
           placeholder="Rua, número"
+          autoComplete="street-address"
           className={FIELD_CLASS}
         />
       </Labelled>
@@ -238,63 +314,72 @@ export function LocationFields({ draft, set, onError }: FieldGroupProps) {
 
 /** Horário, faixa de preço, ambiente, cardápio e diferenciais. */
 export function OperationFields({ draft, set }: FieldGroupProps) {
+  const selectedAmbiances = draft.ambiance.split(AMBIANCE_SEPARATOR).filter(Boolean);
+
+  const toggleAmbiance = (item: string) => {
+    const next = selectedAmbiances.includes(item)
+      ? selectedAmbiances.filter((value) => value !== item)
+      : [...selectedAmbiances, item];
+    set('ambiance', next.join(AMBIANCE_SEPARATOR));
+  };
+
   return (
     <div className="flex flex-col gap-5">
-      <Labelled htmlFor="openingHours" label="Horário de funcionamento">
-        <input
-          id="openingHours"
+      <div className="flex flex-col gap-1.5">
+        <span className={LABEL_CLASS}>Horário de funcionamento</span>
+        <OpeningHoursGrid
           value={draft.openingHours}
-          onChange={(e) => set('openingHours', e.target.value)}
-          placeholder="Seg a Sáb, 18h às 02h"
-          className={FIELD_CLASS}
+          onChange={(value) => set('openingHours', value)}
         />
-      </Labelled>
-
-      <div className="grid grid-cols-2 gap-6">
-        <Labelled htmlFor="priceRange" label="Faixa de preço">
-          <Select
-            id="priceRange"
-            value={draft.priceRange}
-            onValueChange={(v) => set('priceRange', v)}
-            placeholder="Selecione"
-          >
-            {Object.entries(PRICE_RANGE_LABELS).map(([value, label]) => (
-              <Select.Option key={value} value={value}>
-                {label}
-              </Select.Option>
-            ))}
-          </Select>
-        </Labelled>
-
-        <Labelled htmlFor="ambiance" label="Tipo de ambiente">
-          <Select
-            id="ambiance"
-            value={draft.ambiance}
-            onValueChange={(v) => set('ambiance', v)}
-            placeholder="Selecione"
-          >
-            {AMBIANCES.map((item) => (
-              <Select.Option key={item} value={item}>
-                {item}
-              </Select.Option>
-            ))}
-          </Select>
-        </Labelled>
       </div>
 
-      <Labelled htmlFor="menuUrl" label="Link do cardápio">
-        <input
-          id="menuUrl"
-          value={draft.menuUrl}
-          onChange={(e) => set('menuUrl', e.target.value)}
-          placeholder="https://..."
-          type="url"
-          inputMode="url"
-          autoCapitalize="none"
-          autoCorrect="off"
-          className={FIELD_CLASS}
-        />
+      <Labelled htmlFor="priceRange" label="Faixa de preço">
+        <Select
+          id="priceRange"
+          value={draft.priceRange || NO_PRICE_RANGE}
+          onValueChange={(v) => {
+            const parsed = priceRangeSchema.safeParse(v);
+            set('priceRange', parsed.success ? parsed.data : '');
+          }}
+          className="max-w-xs"
+        >
+          <Select.Option value={NO_PRICE_RANGE}>Não definido</Select.Option>
+          {Object.entries(PRICE_RANGE_LABELS).map(([value, label]) => (
+            <Select.Option key={value} value={value}>
+              {label}
+            </Select.Option>
+          ))}
+        </Select>
       </Labelled>
+
+      <fieldset className="flex flex-col gap-1.5">
+        <legend className={`${LABEL_CLASS} mb-1.5`}>
+          Tipo de ambiente{' '}
+          <span className="text-muted-foreground font-normal">(marque quantos quiser)</span>
+        </legend>
+        <div className="flex flex-wrap gap-2">
+          {AMBIANCES.map((item) => {
+            const selected = selectedAmbiances.includes(item);
+            return (
+              <button
+                key={item}
+                type="button"
+                aria-pressed={selected}
+                onClick={() => toggleAmbiance(item)}
+                className={`rounded-full border px-3.5 py-2 text-sm transition-colors ${
+                  selected
+                    ? 'border-primary bg-primary text-primary-foreground font-medium'
+                    : 'border-border bg-surface/40 text-foreground hover:border-primary/60'
+                }`}
+              >
+                {item}
+              </button>
+            );
+          })}
+        </div>
+      </fieldset>
+
+      <MenuField value={draft.menuUrl} onChange={(url) => set('menuUrl', url)} />
 
       <Labelled htmlFor="attributes" label="Diferenciais do local">
         {/* Lista oficial de 36 atributos do core, não os 12 do mockup:
@@ -305,6 +390,126 @@ export function OperationFields({ draft, set }: FieldGroupProps) {
           inputClassName={FIELD_CLASS}
         />
       </Labelled>
+    </div>
+  );
+}
+
+type MenuMode = 'link' | 'file';
+
+const MENU_MODES: { id: MenuMode; label: string }[] = [
+  { id: 'link', label: 'Colar link' },
+  { id: 'file', label: 'Enviar PDF ou foto' },
+];
+
+/**
+ * Cardápio por link externo ou por arquivo no bucket. Os dois caminhos gravam
+ * uma URL em `menu_pdf_url`, que os apps abrem como link — PDF ou imagem.
+ */
+function MenuField({ value, onChange }: { value: string; onChange: (url: string) => void }) {
+  const isUploaded = pathFromPublicUrl(value) !== null;
+  const [mode, setMode] = useState<MenuMode>(isUploaded ? 'file' : 'link');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleFile = async (file: File | undefined) => {
+    if (!file) return;
+    if (file.type !== 'application/pdf' && !file.type.startsWith('image/')) {
+      setError('Envie um PDF ou uma foto do cardápio.');
+      return;
+    }
+    if (file.size > MAX_IMAGE_BYTES) {
+      setError('Arquivo acima de 8MB.');
+      return;
+    }
+    setError(null);
+    setBusy(true);
+    try {
+      const url = await uploadImage(file, { pathPrefix: MENU_PATH_PREFIX });
+      if (isUploaded) {
+        void deleteImage(value).catch(() => {});
+      }
+      onChange(url);
+    } catch (e: unknown) {
+      setError(getFriendlyErrorMessage(e));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="flex flex-col gap-1.5">
+      <span className={LABEL_CLASS}>Cardápio</span>
+      <div role="tablist" aria-label="Como enviar o cardápio" className="flex gap-2">
+        {MENU_MODES.map((item) => (
+          <button
+            key={item.id}
+            type="button"
+            role="tab"
+            aria-selected={mode === item.id}
+            onClick={() => setMode(item.id)}
+            className={`rounded-full border px-3.5 py-2 text-sm transition-colors ${
+              mode === item.id
+                ? 'border-primary text-primary font-medium'
+                : 'border-border text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            {item.label}
+          </button>
+        ))}
+      </div>
+
+      {mode === 'link' ? (
+        <input
+          id="menuUrl"
+          aria-label="Link do cardápio"
+          value={isUploaded ? '' : value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder="https://..."
+          type="url"
+          inputMode="url"
+          autoCapitalize="none"
+          autoCorrect="off"
+          className={FIELD_CLASS}
+        />
+      ) : (
+        <label className="border-border bg-surface/40 hover:border-primary/60 flex cursor-pointer items-center gap-3 rounded-xl border border-dashed px-4 py-4 transition-colors">
+          <input
+            type="file"
+            accept="application/pdf,image/*"
+            className="sr-only"
+            disabled={busy}
+            onChange={(e) => {
+              void handleFile(e.target.files?.[0]);
+              e.target.value = '';
+            }}
+          />
+          {isUploaded ? (
+            <FilePdfIcon size={22} className="text-primary shrink-0" />
+          ) : (
+            <UploadSimpleIcon size={22} className="text-muted-foreground shrink-0" />
+          )}
+          <span className="text-foreground text-sm">
+            {busy
+              ? 'Enviando…'
+              : isUploaded
+                ? 'Cardápio enviado. Clique para trocar o arquivo.'
+                : 'Clique para escolher o PDF ou a foto do cardápio'}
+          </span>
+          {isUploaded && !busy ? (
+            <a
+              href={value}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="text-primary ml-auto text-[13px] font-medium hover:underline"
+            >
+              Ver
+            </a>
+          ) : null}
+        </label>
+      )}
+
+      {error ? <p className="text-destructive text-[13px]">{error}</p> : null}
     </div>
   );
 }

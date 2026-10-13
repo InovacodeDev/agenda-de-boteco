@@ -5,3 +5,5 @@
 - Imagem padrão "Sem foto" para estabelecimentos sem fotos cadastradas
 - Links de eventos e bares compartilhados passam a usar um novo identificador; links antigos continuam funcionando
 - Atualização automática do feed quando bares e eventos mudam fica mais estável
+- Bares sem faixa de preço definida deixam de mostrar o separador sobrando no perfil
+- Indicador "aberto agora" passa a considerar bares que abrem em mais de um turno no dia

@@ -158,7 +158,7 @@ export type Database = {
           name: string
           neighborhood: string
           opening_hours: string
-          price_range: Database["public"]["Enums"]["price_range_enum"]
+          price_range: Database["public"]["Enums"]["price_range_enum"] | null
           rating_avg: number
           rating_count: number
           slug: string | null
@@ -183,7 +183,7 @@ export type Database = {
           name: string
           neighborhood: string
           opening_hours: string
-          price_range: Database["public"]["Enums"]["price_range_enum"]
+          price_range?: Database["public"]["Enums"]["price_range_enum"] | null
           rating_avg?: number
           rating_count?: number
           slug?: string | null
@@ -208,7 +208,7 @@ export type Database = {
           name?: string
           neighborhood?: string
           opening_hours?: string
-          price_range?: Database["public"]["Enums"]["price_range_enum"]
+          price_range?: Database["public"]["Enums"]["price_range_enum"] | null
           rating_avg?: number
           rating_count?: number
           slug?: string | null
@@ -806,7 +806,7 @@ export type Database = {
           name: string
           neighborhood: string
           opening_hours: string
-          price_range: Database["public"]["Enums"]["price_range_enum"]
+          price_range: Database["public"]["Enums"]["price_range_enum"] | null
           rating_avg: number
           rating_count: number
           slug: string

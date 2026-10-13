@@ -87,7 +87,7 @@ export const establishmentSchema = z.object({
   instagram: z.string().optional(),
   opening_hours: z.string(),
   menu_items: z.array(menuItemSchema).default([]),
-  price_range: priceRangeSchema,
+  price_range: priceRangeSchema.nullable(),
   ambiance: z.string(),
   rating_avg: z.number().min(0).max(5),
   rating_count: z.number().int().nonnegative(),

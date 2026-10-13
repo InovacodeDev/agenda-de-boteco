@@ -1,4 +1,9 @@
-import { flattenPages, recordMetricEvent, useRecordView } from '@agenda/core';
+import {
+  flattenPages,
+  formatAmbianceAndPrice,
+  recordMetricEvent,
+  useRecordView,
+} from '@agenda/core';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams } from 'expo-router';
 import { useMemo, useState } from 'react';
@@ -197,7 +202,7 @@ function EstablishmentDetailContent() {
             )}
             <View className="flex-1 gap-0.5 pb-1">
               <Text className="font-body text-muted-foreground text-[12px]">
-                {establishment.ambiance} · {establishment.price_range}
+                {formatAmbianceAndPrice(establishment)}
               </Text>
               {instagramHandle && instagramUrl ? (
                 <GuardedPressable

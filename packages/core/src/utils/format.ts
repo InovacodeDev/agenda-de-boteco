@@ -8,6 +8,20 @@ export function formatPrice(value: number): string {
   return `R$ ${value.toFixed(2).replace('.', ',')}`;
 }
 
+/**
+ * Linha "ambiente · faixa" do perfil do bar. Os dois campos são opcionais para
+ * o dono (faixa "Não definido", ambiente vazio), então o separador só aparece
+ * entre valores presentes.
+ */
+export function formatAmbianceAndPrice(establishment: {
+  ambiance: string;
+  price_range: string | null;
+}): string {
+  return [establishment.ambiance.trim(), establishment.price_range ?? '']
+    .filter(Boolean)
+    .join(' · ');
+}
+
 /** Avaliação no formato '4.7 (312)' — média com 1 casa decimal. */
 export function formatRating(avg: number, count: number): string {
   return `${avg.toFixed(1)} (${count})`;

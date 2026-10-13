@@ -49,6 +49,32 @@ export default function DashboardPage() {
 
   return (
     <div className="mx-auto flex w-full max-w-300 flex-col gap-6">
+      {establishment?.cover_url ? (
+        <section className="border-border relative h-56 overflow-hidden rounded-2xl border">
+          <img
+            src={establishment.cover_url}
+            alt=""
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+          <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent" />
+          <div className="absolute inset-x-0 bottom-0 flex items-end gap-4 p-6">
+            {establishment.logo_url ? (
+              <img
+                src={establishment.logo_url}
+                alt=""
+                className="h-20 w-20 shrink-0 rounded-2xl border-2 border-white bg-white object-cover"
+              />
+            ) : null}
+            <div className="min-w-0">
+              <h2 className="font-heading truncate text-3xl font-bold text-white">
+                {establishment.name}
+              </h2>
+              <p className="text-sm text-white/80">É assim que seu bar aparece no app</p>
+            </div>
+          </div>
+        </section>
+      ) : null}
+
       <section className="text-primary-foreground shadow-neon rounded-2xl bg-(image:--gradient-primary) p-8">
         <SparkleIcon size={32} weight="regular" aria-hidden />
         <h2 className="font-heading mt-4 text-3xl leading-9 font-bold">
