@@ -14,3 +14,4 @@
 - Logo do bar aparece no topo de todas as telas e a capa aparece no início do painel
 - Grade de horário ganha chave liga/desliga por dia, horários alinhados em colunas e atalho para repetir o horário nos 7 dias
 - Campo de CEP orienta o preenchimento e avisa quando o endereço é encontrado
+- Corrige rolagem da página inteira no painel: só o conteúdo rola, e o menu lateral fica fixo

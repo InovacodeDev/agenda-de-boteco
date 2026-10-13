@@ -63,12 +63,17 @@ export default function PainelLayout({ children }: { children: React.ReactNode }
   return (
     /* h-dvh (e não min-h-dvh): o container precisa ter altura fixa para o scroll
        acontecer dentro do <main>, não na página. Com min-h a página inteira
-       rolava e levava a sidebar junto. */
+       rolava e levava a sidebar junto.
+       `relative` no <main>: inputs `sr-only` (position: absolute) sem ancestral
+       posicionado se ancoram na página e esticam o scroll do documento, mesmo
+       com overflow-hidden aqui em cima. */
     <div className="flex h-dvh overflow-hidden">
       <Sidebar />
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
         <Topbar />
-        <main className="bg-background flex-1 overflow-y-auto px-8 py-10">{children}</main>
+        <main className="bg-background relative flex-1 overflow-y-auto px-8 py-10">
+          {children}
+        </main>
       </div>
     </div>
   );
