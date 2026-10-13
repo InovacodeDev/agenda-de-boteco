@@ -6,6 +6,7 @@ import {
   getCurrentUserExternalId,
   getFriendlyErrorMessage,
   identifyAnalyticsUser,
+  OTP_HOURLY_LIMIT_MESSAGE,
   type Platform,
   signInWithEmailOtp,
   signInWithOAuth,
@@ -229,8 +230,7 @@ export default function LoginPage() {
               </button>
               {resend.hasReachedHourlyLimit ? (
                 <p className="text-muted-foreground text-center text-[12px]">
-                  Você já solicitou 2 códigos nesta hora. Aguarde antes de tentar novamente para
-                  não ser bloqueado temporariamente.
+                  {OTP_HOURLY_LIMIT_MESSAGE}
                 </p>
               ) : null}
               <button

@@ -1,5 +1,6 @@
 import {
   calculateRatingsSummary,
+  getOwnerRatingsSummary,
   getUserEstablishmentRating,
   listEstablishmentRatingsForOwner,
   upsertEstablishmentRating,
@@ -200,43 +201,117 @@ describe('upsertEstablishmentRating', () => {
   });
 });
 
+function ratingRow(id: string, createdAt: string, rating = 5) {
+  return {
+    id,
+    establishment_id: 'bar-1',
+    rating,
+    created_at: createdAt,
+    updated_at: createdAt,
+  };
+}
+
+const UUID_A = 'a1111111-1111-1111-1111-111111111111';
+const UUID_B = 'b2222222-2222-2222-2222-222222222222';
+
+function mockRatingsQuery(result: { data: unknown; error: unknown }) {
+  const limit = jest.fn().mockResolvedValue(result);
+  const orderId = jest.fn().mockReturnValue({ limit });
+  const orderCreated = jest.fn().mockReturnValue({ order: orderId });
+  const or = jest.fn().mockReturnValue({ order: orderCreated });
+  const eq = jest.fn().mockReturnValue({ or, order: orderCreated });
+  const select = jest.fn().mockReturnValue({ eq });
+  mockGetSupabase.mockReturnValue({ from: jest.fn().mockReturnValue({ select }) });
+  return { or, eq, orderCreated, orderId, limit };
+}
+
 describe('listEstablishmentRatingsForOwner', () => {
-  it('retorna lista vazia se Supabase não estiver configurado', async () => {
+  it('retorna página vazia se Supabase não estiver configurado', async () => {
     mockGetSupabase.mockReturnValue(null);
     const res = await listEstablishmentRatingsForOwner('bar-1');
-    expect(res).toEqual([]);
+    expect(res).toEqual({ items: [], nextCursor: null });
   });
 
-  it('retorna avaliações omitindo user_id para preservar anonimato', async () => {
-    const rows = [
-      {
-        id: 'a1111111-1111-1111-1111-111111111111',
-        establishment_id: 'bar-1',
-        rating: 5,
-        created_at: '2026-09-11T12:00:00Z',
-        updated_at: '2026-09-11T12:00:00Z',
-      },
-      {
-        id: 'b2222222-2222-2222-2222-222222222222',
-        establishment_id: 'bar-1',
-        rating: 4,
-        created_at: '2026-09-10T12:00:00Z',
-        updated_at: '2026-09-10T12:00:00Z',
-      },
-    ];
-    const order = jest.fn().mockResolvedValue({ data: rows, error: null });
-    const eq = jest.fn().mockReturnValue({ order });
-    const select = jest.fn().mockReturnValue({ eq });
-    const from = jest.fn().mockReturnValue({ select });
-    const client = { from };
-    mockGetSupabase.mockReturnValue(client);
+  it('omite user_id, ordena por created_at/id desc e limita ao tamanho da página', async () => {
+    const q = mockRatingsQuery({
+      data: [ratingRow(UUID_A, '2026-09-11T12:00:00Z', 5), ratingRow(UUID_B, '2026-09-10T12:00:00Z', 4)],
+      error: null,
+    });
 
-    const res = await listEstablishmentRatingsForOwner('bar-1');
-    expect(res).toHaveLength(2);
-    expect(res[0].user_id).toBeNull();
-    expect(res[1].user_id).toBeNull();
-    expect(res[0].rating).toBe(5);
-    expect(res[1].rating).toBe(4);
+    const res = await listEstablishmentRatingsForOwner('bar-1', null, 5);
+
+    expect(res.items).toHaveLength(2);
+    expect(res.items.every((item) => item.user_id === null)).toBe(true);
+    expect(res.nextCursor).toBeNull();
+    expect(q.eq).toHaveBeenCalledWith('establishment_id', 'bar-1');
+    expect(q.orderCreated).toHaveBeenCalledWith('created_at', { ascending: false });
+    expect(q.orderId).toHaveBeenCalledWith('id', { ascending: false });
+    expect(q.limit).toHaveBeenCalledWith(5);
+    expect(q.or).not.toHaveBeenCalled();
+  });
+
+  it('calcula nextCursor quando a página vem cheia', async () => {
+    mockRatingsQuery({
+      data: [ratingRow(UUID_A, '2026-09-11T12:00:00Z'), ratingRow(UUID_B, '2026-09-10T12:00:00Z')],
+      error: null,
+    });
+
+    const res = await listEstablishmentRatingsForOwner('bar-1', null, 2);
+
+    expect(res.nextCursor).toBe(`2026-09-10T12:00:00Z|${UUID_B}`);
+  });
+
+  it('repassa o cursor como filtro keyset (created_at, id) decrescente', async () => {
+    const q = mockRatingsQuery({ data: [], error: null });
+
+    await listEstablishmentRatingsForOwner('bar-1', `2026-09-10T12:00:00Z|${UUID_B}`);
+
+    expect(q.or).toHaveBeenCalledWith(
+      `created_at.lt."2026-09-10T12:00:00Z",and(created_at.eq."2026-09-10T12:00:00Z",id.lt."${UUID_B}")`,
+    );
+  });
+
+  it('relança erro do Postgrest', async () => {
+    const error = new Error('select failed');
+    mockRatingsQuery({ data: null, error });
+
+    await expect(listEstablishmentRatingsForOwner('bar-1')).rejects.toBeDefined();
+  });
+});
+
+describe('getOwnerRatingsSummary', () => {
+  it('retorna resumo zerado se Supabase não estiver configurado', async () => {
+    mockGetSupabase.mockReturnValue(null);
+    await expect(getOwnerRatingsSummary('bar-1')).resolves.toEqual({
+      avg: 0,
+      count: 0,
+      distribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
+    });
+  });
+
+  it('agrega a distribuição vinda da RPC (total bigint como string)', async () => {
+    const rpc = jest.fn().mockResolvedValue({
+      data: [
+        { rating: 5, total: '3' },
+        { rating: 2, total: 1 },
+      ],
+      error: null,
+    });
+    mockGetSupabase.mockReturnValue({ rpc });
+
+    const res = await getOwnerRatingsSummary('bar-1');
+
+    expect(rpc).toHaveBeenCalledWith('get_owned_ratings_distribution', {
+      p_establishment_id: 'bar-1',
+    });
+    expect(res).toEqual({ avg: 4.3, count: 4, distribution: { 1: 0, 2: 1, 3: 0, 4: 0, 5: 3 } });
+  });
+
+  it('relança erro da RPC', async () => {
+    const rpc = jest.fn().mockResolvedValue({ data: null, error: new Error('rpc failed') });
+    mockGetSupabase.mockReturnValue({ rpc });
+
+    await expect(getOwnerRatingsSummary('bar-1')).rejects.toBeDefined();
   });
 });
 

@@ -6,6 +6,25 @@ export function indexById<T extends { id: string }>(items: T[]): Record<string, 
 }
 
 /**
+ * Ids de bar referenciados pelos eventos que ainda não estão em `knownById`.
+ * O feed pagina eventos e bares em listas independentes: um evento cujo bar está
+ * numa página não carregada seria descartado por `applyEventFilters`; estes ids
+ * alimentam o lookup direto desses bares. Sem repetição, na ordem de aparição.
+ */
+export function findMissingEstablishmentIds(
+  events: readonly Pick<Event, 'establishment_id'>[],
+  knownById: Readonly<Record<string, unknown>>,
+): string[] {
+  const missing = new Set<string>();
+  for (const event of events) {
+    if (!Object.hasOwn(knownById, event.establishment_id)) {
+      missing.add(event.establishment_id);
+    }
+  }
+  return [...missing];
+}
+
+/**
  * Resolve a cidade ativa a partir do estado de preferências. Quando `cityId`
  * aponta para uma cidade do catálogo, retorna-a (ou a primeira como fallback).
  * Quando aponta para uma cidade virtual (`geo:`, fora do catálogo), retorna a

@@ -46,50 +46,54 @@ export async function recordMetricEvent(input: RecordMetricEventInput): Promise<
   }
 }
 
-const metricRowSchema = z.object({
-  establishment_id: z.string(),
+const metricAggregateRowSchema = z.object({
+  day: z.string(),
   event_id: z.string().nullable(),
   kind: metricKindSchema,
-  created_at: z.string(),
+  total: z.union([z.string(), z.number()]),
 });
 
-export interface MetricEvent {
-  establishmentId: string;
+export interface MetricAggregate {
+  day: string;
   eventId: string | null;
   kind: MetricKind;
-  createdAt: string;
+  total: number;
 }
 
+export const MAX_METRICS_SINCE_DAYS = 365;
+
 /**
- * Linhas cruas do período pedido, só do bar do dono (RLS owner_select_establishment_metrics).
- * Sem RPC de agregação: o volume por bar é pequeno o bastante (dezenas de
- * eventos, no máximo alguns milhares de linhas/mês) para agregar em memória no
- * hook consumidor, sem manter um GROUP BY em SQL.
+ * Contagens por (dia UTC, tipo, evento) agregadas no banco via
+ * get_owned_metrics_aggregate (SECURITY INVOKER, RLS owner_select_establishment_metrics).
+ * Select cru de linhas truncava os totais no teto de 1000 linhas do PostgREST.
  */
 export async function listOwnedMetrics(
   establishmentId: string,
   { sinceDays }: { sinceDays: number },
-): Promise<MetricEvent[]> {
+): Promise<MetricAggregate[]> {
   const client = getConfiguredSupabase();
   if (client === null) {
     return [];
   }
-  const since = new Date(Date.now() - sinceDays * 24 * 60 * 60 * 1000).toISOString();
-  const { data, error } = await rawClient(client)
-    .from('establishment_metrics')
-    .select('establishment_id, event_id, kind, created_at')
-    .eq('establishment_id', establishmentId)
-    .gte('created_at', since);
+  if (!Number.isInteger(sinceDays) || sinceDays < 1 || sinceDays > MAX_METRICS_SINCE_DAYS) {
+    throw new Error('Período de métricas inválido');
+  }
+  const { data, error } = await client.rpc('get_owned_metrics_aggregate', {
+    p_establishment_id: establishmentId,
+    p_since_days: sinceDays,
+  });
   if (error) {
     throw error;
   }
-  const rows = z.array(metricRowSchema).parse(data ?? []);
-  return rows.map((row) => ({
-    establishmentId: row.establishment_id,
-    eventId: row.event_id,
-    kind: row.kind,
-    createdAt: row.created_at,
-  }));
+  return z
+    .array(metricAggregateRowSchema)
+    .parse(data ?? [])
+    .map((row) => ({
+      day: row.day,
+      eventId: row.event_id,
+      kind: row.kind,
+      total: Number(row.total),
+    }));
 }
 
 const favoritesCountRowSchema = z.object({

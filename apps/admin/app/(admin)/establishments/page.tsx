@@ -30,6 +30,9 @@ import { PdfUpload } from '@/components/ui/PdfUpload';
 
 const PRICE_RANGES: PriceRange[] = ['$', '$$', '$$$', '$$$$'];
 
+/** Radix Select não aceita item com valor vazio; mapeia para price_range null. */
+const NO_PRICE_RANGE = 'none';
+
 type FormState = {
   name: string;
   description: string;
@@ -44,7 +47,7 @@ type FormState = {
   instagram: string;
   opening_hours: string;
   menu_items: string; // "Nome | 12.50" por linha
-  price_range: PriceRange;
+  price_range: PriceRange | null;
   ambiance: string;
   attributes: EstablishmentAttribute[];
   menu_pdf_url: string;
@@ -210,7 +213,11 @@ export default function EstabelecimentosPage() {
     { key: 'name', header: 'Nome', render: (r) => r.name },
     { key: 'neighborhood', header: 'Bairro', render: (r) => r.neighborhood },
     { key: 'city', header: 'Cidade', render: (r) => cityName(r.city_id) },
-    { key: 'price', header: 'Faixa', render: (r) => PRICE_RANGE_LABELS[r.price_range] },
+    {
+      key: 'price',
+      header: 'Faixa',
+      render: (r) => (r.price_range ? PRICE_RANGE_LABELS[r.price_range] : 'Não definido'),
+    },
   ];
 
   return (
@@ -318,9 +325,12 @@ export default function EstabelecimentosPage() {
           </Field>
           <Field label="Faixa de preço" error={errors.price_range}>
             <Select
-              value={form.price_range}
-              onValueChange={(v) => set('price_range', v as PriceRange)}
+              value={form.price_range ?? NO_PRICE_RANGE}
+              onValueChange={(v) =>
+                set('price_range', v === NO_PRICE_RANGE ? null : (v as PriceRange))
+              }
             >
+              <Select.Option value={NO_PRICE_RANGE}>Não definido</Select.Option>
               {PRICE_RANGES.map((p) => (
                 <Select.Option key={p} value={p}>
                   {PRICE_RANGE_LABELS[p]}

@@ -1,4 +1,4 @@
-import { flattenPages } from '@agenda/core';
+import { flattenPages, useDebouncedValue } from '@agenda/core';
 import { FlashList } from '@shopify/flash-list';
 import * as Location from 'expo-location';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -14,9 +14,10 @@ import { Screen } from '@/components/layout/Screen';
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import { SectionLabel } from '@/components/ui/SectionLabel';
 import { SegmentedTabs } from '@/components/ui/SegmentedTabs';
-import { indexById, musicStylesForEvent } from '@/data/lookup';
+import { findMissingEstablishmentIds, indexById, musicStylesForEvent } from '@/data/lookup';
 import type { Event } from '@/data/schemas';
 import {
+  useEstablishmentsByIds,
   useEstablishmentsQuery,
   useEventsQuery,
   useMusicStylesQuery,
@@ -57,10 +58,14 @@ export default function FeedScreen() {
       ? (filters.cityIds.length === 1 ? filters.cityIds[0] : undefined)
       : (city && !isVirtualCityId(city.id) ? city.id : undefined);
 
-  const eventsQuery = useEventsQuery();
-  const establishmentsQuery = useEstablishmentsQuery(effectiveCityId);
-  const events = flattenPages(eventsQuery.data);
-  const establishments = flattenPages(establishmentsQuery.data);
+  const debouncedBarQuery = useDebouncedValue(barQuery);
+  const eventsQuery = useEventsQuery(filters.dateRange);
+  const establishmentsQuery = useEstablishmentsQuery(effectiveCityId, debouncedBarQuery);
+  const events = useMemo(() => flattenPages(eventsQuery.data), [eventsQuery.data]);
+  const establishments = useMemo(
+    () => flattenPages(establishmentsQuery.data),
+    [establishmentsQuery.data],
+  );
   const { data: musicStyles } = useMusicStylesQuery();
 
   // "agora" estável por render da lista, atualizado a cada minuto
@@ -110,7 +115,19 @@ export default function FeedScreen() {
     };
   }, []);
 
-  const establishmentsById = useMemo(() => indexById(establishments ?? []), [establishments]);
+  const loadedEstablishmentsById = useMemo(() => indexById(establishments), [establishments]);
+  // Eventos e bares paginam em listas separadas: o bar de um evento pode estar
+  // numa página de bares não carregada, e applyEventFilters descarta evento sem bar.
+  const missingEstablishmentIds = useMemo(
+    () => findMissingEstablishmentIds(events, loadedEstablishmentsById),
+    [events, loadedEstablishmentsById],
+  );
+  const { data: fetchedEstablishments, isLoading: isLoadingFetchedEstablishments } =
+    useEstablishmentsByIds(missingEstablishmentIds);
+  const establishmentsById = useMemo(
+    () => ({ ...indexById(fetchedEstablishments ?? []), ...loadedEstablishmentsById }),
+    [fetchedEstablishments, loadedEstablishmentsById],
+  );
   const stylesById = useMemo(() => indexById(musicStyles ?? []), [musicStyles]);
 
   // Proximidade server-side: quando nearMe está ativo, resolve a origem (GPS ou
@@ -204,10 +221,23 @@ export default function FeedScreen() {
     isFetchingNextPage: isFetchingNextEvents,
   } = eventsQuery;
   useEffect(() => {
-    if (activeTab === 0 && filteredEvents.length === 0 && hasNextEvents && !isFetchingNextEvents) {
+    if (
+      activeTab === 0 &&
+      filteredEvents.length === 0 &&
+      hasNextEvents &&
+      !isFetchingNextEvents &&
+      !isLoadingFetchedEstablishments
+    ) {
       void fetchNextEvents();
     }
-  }, [activeTab, filteredEvents.length, fetchNextEvents, hasNextEvents, isFetchingNextEvents]);
+  }, [
+    activeTab,
+    filteredEvents.length,
+    fetchNextEvents,
+    hasNextEvents,
+    isFetchingNextEvents,
+    isLoadingFetchedEstablishments,
+  ]);
 
   const {
     fetchNextPage: fetchNextEstablishments,

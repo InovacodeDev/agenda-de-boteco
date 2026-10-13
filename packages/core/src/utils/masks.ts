@@ -22,7 +22,11 @@ export function maskPhoneBR(value: string): string {
   if (d.length <= 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`;
   return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
 }
-
+/** CEP: `00000-000`, formatado progressivamente (máx. 8 dígitos). */
+export function maskCEP(value: string): string {
+  const d = digits(value).slice(0, 8);
+  return d.length > 5 ? `${d.slice(0, 5)}-${d.slice(5)}` : d;
+}
 
 /**
  * Moeda BR com entrada da direita para a esquerda: o último dígito é o

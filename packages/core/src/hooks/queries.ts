@@ -6,15 +6,18 @@
  * CatalogPage, e getNextPageParam lê nextCursor direto (null encerra a lista).
  * useCatalogCountsQuery é a exceção: agregado único, useQuery normal.
  */
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useInfiniteQuery, useQuery } from '@tanstack/react-query';
 
 import * as catalog from '../services/catalog';
 import { catalogKeys } from '../services/queryKeys';
+import { uniqueSortedIds } from '../utils/ids';
 
-export function useEventsQuery() {
+export function useEventsQuery(dateRange: { start: string; end: string } | null = null) {
   return useInfiniteQuery({
-    queryKey: catalogKeys.events.list,
-    queryFn: ({ pageParam }) => catalog.listEvents(pageParam),
+    queryKey: dateRange
+      ? catalogKeys.events.listInRange(dateRange.start, dateRange.end)
+      : catalogKeys.events.list,
+    queryFn: ({ pageParam }) => catalog.listEvents(pageParam, undefined, dateRange),
     initialPageParam: null as string | null,
     getNextPageParam: (lastPage) => lastPage.nextCursor,
   });
@@ -28,12 +31,48 @@ export function useEventQuery(id: string) {
   });
 }
 
-export function useEstablishmentsQuery(cityId?: string) {
+/**
+ * `query` é a busca por nome feita no servidor: sem ela só as páginas já
+ * carregadas seriam pesquisadas. Quem chama deve debouncar o texto digitado.
+ * Durante a busca, o resultado anterior fica na tela até o novo chegar.
+ */
+export function useEstablishmentsQuery(cityId?: string, query?: string) {
+  const search = query?.trim() ?? '';
   return useInfiniteQuery({
-    queryKey: catalogKeys.establishments.list(cityId),
-    queryFn: ({ pageParam }) => catalog.listEstablishments(cityId, pageParam),
+    queryKey: search
+      ? catalogKeys.establishments.search(cityId, search)
+      : catalogKeys.establishments.list(cityId),
+    queryFn: ({ pageParam }) =>
+      catalog.listEstablishments(cityId, pageParam, undefined, search || undefined),
     initialPageParam: null as string | null,
     getNextPageParam: (lastPage) => lastPage.nextCursor,
+    placeholderData: search ? keepPreviousData : undefined,
+  });
+}
+
+/**
+ * Bares por id, fora da paginação do feed. Consumidores que exibem a lista
+ * devem filtrar pelos ids atuais: o placeholder mantém o resultado anterior
+ * (mesma lógica de keepPreviousData) enquanto a nova seleção carrega.
+ */
+export function useEstablishmentsByIds(ids: readonly string[]) {
+  const sortedIds = uniqueSortedIds(ids);
+  return useQuery({
+    queryKey: catalogKeys.establishments.byIds(sortedIds),
+    queryFn: () => catalog.listEstablishmentsByIds(sortedIds),
+    enabled: sortedIds.length > 0,
+    placeholderData: sortedIds.length > 0 ? keepPreviousData : undefined,
+  });
+}
+
+/** Eventos por id (favoritos), fora da paginação do feed. */
+export function useEventsByIds(ids: readonly string[]) {
+  const sortedIds = uniqueSortedIds(ids);
+  return useQuery({
+    queryKey: catalogKeys.events.byIds(sortedIds),
+    queryFn: () => catalog.listEventsByIds(sortedIds),
+    enabled: sortedIds.length > 0,
+    placeholderData: sortedIds.length > 0 ? keepPreviousData : undefined,
   });
 }
 

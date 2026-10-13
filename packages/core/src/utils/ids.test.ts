@@ -1,4 +1,20 @@
-import { isUuid } from './ids';
+import { isUuid, uniqueSortedIds } from './ids';
+
+describe('uniqueSortedIds', () => {
+  it('remove repetidos e ordena', () => {
+    expect(uniqueSortedIds(['b', 'a', 'b', 'c', 'a'])).toEqual(['a', 'b', 'c']);
+  });
+
+  it('não muta a entrada', () => {
+    const input = ['b', 'a'];
+    uniqueSortedIds(input);
+    expect(input).toEqual(['b', 'a']);
+  });
+
+  it('devolve lista vazia para entrada vazia', () => {
+    expect(uniqueSortedIds([])).toEqual([]);
+  });
+});
 
 describe('isUuid', () => {
   it('aceita UUID v4 minúsculo', () => {

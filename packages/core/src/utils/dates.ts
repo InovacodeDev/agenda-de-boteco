@@ -1,3 +1,5 @@
+import { parseOpeningSchedule } from './opening-hours';
+
 const WEEKDAYS_PT = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'] as const;
 const MONTHS_PT = [
   'Jan',
@@ -142,138 +144,81 @@ export function isWeekend(iso: string): boolean {
   return day === 0 || day === 6;
 }
 
-const DAY_TOKEN_TO_INDEX: Record<string, number> = {
-  dom: 0,
-  seg: 1,
-  ter: 2,
-  qua: 3,
-  qui: 4,
-  sex: 5,
-  sáb: 6,
-  sab: 6,
-};
+const HOURS_PER_WEEK = 168;
 
-function parseDays(daysPart: string): Set<number> {
-  const normalized = daysPart.trim().toLowerCase();
-  const all = new Set([0, 1, 2, 3, 4, 5, 6]);
-  if (normalized.includes('todos os dias')) return all;
-
-  const days = new Set<number>();
-  const rangeMatch = normalized.match(
-    /(dom|seg|ter|qua|qui|sex|sáb|sab)\s*-\s*(dom|seg|ter|qua|qui|sex|sáb|sab)/,
-  );
-  if (rangeMatch) {
-    const start = DAY_TOKEN_TO_INDEX[rangeMatch[1]];
-    const end = DAY_TOKEN_TO_INDEX[rangeMatch[2]];
-    let d = start;
-    // intervalo circular (ex: Sex-Dom)
-    for (let i = 0; i < 7; i++) {
-      days.add(d);
-      if (d === end) break;
-      d = (d + 1) % 7;
-    }
-    return days;
-  }
-
-  for (const token of normalized.matchAll(/dom|seg|ter|qua|qui|sex|sáb|sab/g)) {
-    days.add(DAY_TOKEN_TO_INDEX[token[0]]);
-  }
-  return days;
+interface WeekInterval {
+  start: number;
+  end: number;
 }
 
-interface OpeningWindow {
-  openDays: Set<number>;
-  openHour: number;
-  closeHour: number;
-  crossesMidnight: boolean;
+function timeToHours(time: string): number {
+  const [hours = '0', minutes = '0'] = time.split(':');
+  return Number(hours) + Number(minutes) / 60;
 }
 
 /**
- * Extrai dias e horas de uma string de horário do protótipo. Retorna null
- * quando o formato não é reconhecido — chamadores devem degradar sem quebrar.
+ * Cada turno vira um intervalo em horas da semana (Dom 00h = 0). Fechar em
+ * horário <= abertura significa virar o dia; `end` pode passar de 168 no
+ * sábado, e por isso o instante consultado é testado também com +168.
  */
-function parseOpeningWindow(openingHours: string): OpeningWindow | null {
-  const hoursMatch = openingHours.match(/(\d{1,2})h\s*às\s*(\d{1,2})h/i);
-  if (!hoursMatch) return null;
-  const openHour = Number(hoursMatch[1]);
-  const closeHour = Number(hoursMatch[2]);
+function weekIntervals(openingHours: string): WeekInterval[] | null {
+  const schedule = parseOpeningSchedule(openingHours);
+  if (!schedule) return null;
+  return schedule.flatMap((shifts, day) =>
+    shifts.map((shift) => {
+      const start = day * 24 + timeToHours(shift.open);
+      const close = day * 24 + timeToHours(shift.close);
+      return { start, end: close <= start ? close + 24 : close };
+    }),
+  );
+}
 
-  const daysPart = openingHours.slice(0, openingHours.search(/\d{1,2}h/));
-  const openDays = parseDays(daysPart);
-  if (openDays.size === 0) return null;
+function weekHour(now: Date): number {
+  return now.getDay() * 24 + now.getHours() + now.getMinutes() / 60;
+}
 
-  return { openDays, openHour, closeHour, crossesMidnight: closeHour <= openHour };
+function hoursUntilEndOfCurrentShift(intervals: WeekInterval[], now: Date): number | null {
+  const t = weekHour(now);
+  for (const { start, end } of intervals) {
+    for (const probe of [t, t + HOURS_PER_WEEK]) {
+      if (probe >= start && probe < end) return end - probe;
+    }
+  }
+  return null;
 }
 
 /**
- * Interpreta strings de horário do protótipo ("Ter-Dom 17h às 01h",
- * "Qua, Sex, Sáb 21h às 03h", "Todos os dias 16h às 02h") e diz se o
- * estabelecimento está aberto em `now`, tratando janelas que cruzam a
- * meia-noite. Retorna false para formatos não reconhecidos.
+ * Interpreta o horário semanal (formato de `formatOpeningSchedule` ou texto
+ * livre legado como "Ter-Dom 17h às 01h") com vários turnos por dia e turnos
+ * que cruzam a meia-noite. Retorna false para formatos não reconhecidos.
  */
 export function isOpenNow(openingHours: string, now: Date = new Date()): boolean {
-  const window = parseOpeningWindow(openingHours);
-  if (!window) return false;
-  const { openDays, openHour, closeHour, crossesMidnight } = window;
-
-  const day = now.getDay();
-  const hour = now.getHours() + now.getMinutes() / 60;
-
-  // aberto hoje a partir de openHour
-  if (openDays.has(day)) {
-    if (!crossesMidnight && hour >= openHour && hour < closeHour) return true;
-    if (crossesMidnight && hour >= openHour) return true;
-  }
-  // madrugada de uma janela iniciada ontem
-  if (crossesMidnight) {
-    const yesterday = (day + 6) % 7;
-    if (openDays.has(yesterday) && hour < closeHour) return true;
-  }
-  return false;
+  const intervals = weekIntervals(openingHours);
+  if (!intervals) return false;
+  return hoursUntilEndOfCurrentShift(intervals, now) !== null;
 }
 
 /**
- * Horas até o fechamento da janela corrente; null se estiver fechado ou se o
+ * Horas até o fechamento do turno corrente; null se estiver fechado ou se o
  * formato não for reconhecido.
  */
 export function hoursUntilNextClose(openingHours: string, now: Date = new Date()): number | null {
-  const window = parseOpeningWindow(openingHours);
-  if (!window) return null;
-  const { openDays, openHour, closeHour, crossesMidnight } = window;
-  const day = now.getDay();
-  const hour = now.getHours() + now.getMinutes() / 60;
-
-  if (openDays.has(day)) {
-    if (!crossesMidnight && hour >= openHour && hour < closeHour) return closeHour - hour;
-    // janela que vira o dia: fecha em closeHour de amanhã
-    if (crossesMidnight && hour >= openHour) return 24 - hour + closeHour;
-  }
-  if (crossesMidnight) {
-    const yesterday = (day + 6) % 7;
-    if (openDays.has(yesterday) && hour < closeHour) return closeHour - hour;
-  }
-  return null;
+  const intervals = weekIntervals(openingHours);
+  if (!intervals) return null;
+  return hoursUntilEndOfCurrentShift(intervals, now);
 }
 
 /**
- * Horas até a próxima abertura; null se nenhum dia abrir ou se o formato não
- * for reconhecido.
+ * Horas até a próxima abertura de turno (estritamente futura); null se nenhum
+ * dia abrir ou se o formato não for reconhecido.
  */
 export function hoursUntilNextOpen(openingHours: string, now: Date = new Date()): number | null {
-  const window = parseOpeningWindow(openingHours);
-  if (!window) return null;
-  const { openDays, openHour } = window;
-  const day = now.getDay();
-  const hour = now.getHours() + now.getMinutes() / 60;
-
-  // hoje ainda vai abrir?
-  if (openDays.has(day) && hour < openHour) return openHour - hour;
-
-  // procura o próximo dia de abertura dentro da semana
-  for (let offset = 1; offset <= 7; offset++) {
-    if (openDays.has((day + offset) % 7)) {
-      return offset * 24 - hour + openHour;
-    }
-  }
-  return null;
+  const intervals = weekIntervals(openingHours);
+  if (!intervals || intervals.length === 0) return null;
+  const t = weekHour(now);
+  const waits = intervals.flatMap(({ start }) =>
+    [start, start + HOURS_PER_WEEK].map((s) => s - t).filter((wait) => wait > 0),
+  );
+  return waits.length === 0 ? null : Math.min(...waits);
 }
+

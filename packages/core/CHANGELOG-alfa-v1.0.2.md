@@ -9,3 +9,8 @@
 - Corrige carregamento de mais itens ao rolar listas com filtro ativo e nomes de bar com pontuação
 - Eventos e estabelecimentos passam a ter um identificador opaco para uso em links e analytics, sem expor o id interno
 - Desconexão de outros dispositivos, detecção do método de login e atualização em tempo real do catálogo passam a ser centralizadas no núcleo compartilhado
+- Filtro de eventos por período passa a ser aplicado no servidor
+- Horário de funcionamento passa a aceitar vários turnos por dia e horários diferentes por dia
+- Busca de endereço por CEP e máscara de CEP
+- Faixa de preço do estabelecimento passa a ser opcional
+- Dono de bar passa a poder enviar logo, capa e cardápio (PDF ou imagem)

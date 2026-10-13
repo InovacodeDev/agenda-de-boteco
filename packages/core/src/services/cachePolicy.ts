@@ -30,16 +30,28 @@ const PERSIST_ALLOWLIST: readonly string[] = [
 ];
 
 /**
+ * Segundo segmento de keys que ficam fora do storage mesmo sob um primeiro
+ * segmento permitido: 'by-ids' carrega a lista de ids favoritados e cresce uma
+ * entrada por seleção; 'search' carrega o texto digitado pelo usuário.
+ */
+const NON_PERSISTED_SECOND_SEGMENTS: readonly string[] = ['by-ids', 'search'];
+
+/**
  * Decide se uma query entra no snapshot persistido. Persiste apenas queries
  * concluídas com sucesso cujo primeiro segmento da key esteja no allowlist do
- * catálogo. Rejeita status != 'success' e keys fora do catálogo.
+ * catálogo e cujo segundo não seja de lookup por ids/busca. Rejeita
+ * status != 'success' e keys fora do catálogo.
  */
 export function shouldDehydrateQuery(query: Query): boolean {
   if (query.state.status !== 'success') {
     return false;
   }
 
-  const firstSegment = query.queryKey[0];
+  const [firstSegment, secondSegment] = query.queryKey;
+
+  if (typeof secondSegment === 'string' && NON_PERSISTED_SECOND_SEGMENTS.includes(secondSegment)) {
+    return false;
+  }
 
   return typeof firstSegment === 'string' && PERSIST_ALLOWLIST.includes(firstSegment);
 }

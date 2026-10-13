@@ -1,4 +1,21 @@
-import { formatPrice, formatRating } from './format';
+import { formatAmbianceAndPrice, formatPrice, formatRating } from './format';
+
+describe('formatAmbianceAndPrice', () => {
+  it('junta ambiente e faixa com separador', () => {
+    expect(formatAmbianceAndPrice({ ambiance: 'Pub, Restaurante-bar', price_range: '$$' })).toBe(
+      'Pub, Restaurante-bar · $$',
+    );
+  });
+
+  it('omite a faixa não definida sem deixar separador sobrando', () => {
+    expect(formatAmbianceAndPrice({ ambiance: 'Pub', price_range: null })).toBe('Pub');
+  });
+
+  it('omite o ambiente vazio', () => {
+    expect(formatAmbianceAndPrice({ ambiance: ' ', price_range: '$' })).toBe('$');
+    expect(formatAmbianceAndPrice({ ambiance: '', price_range: null })).toBe('');
+  });
+});
 
 describe('formatPrice', () => {
   it('retorna Free para couvert zero', () => {

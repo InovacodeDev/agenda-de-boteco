@@ -1,7 +1,8 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import type { UpsertEstablishmentRatingInput } from '../schemas/ratings';
 import {
+  getOwnerRatingsSummary,
   getUserEstablishmentRating,
   listEstablishmentRatingsForOwner,
   upsertEstablishmentRating,
@@ -20,12 +21,23 @@ export function useUserEstablishmentRating(establishmentId: string) {
 }
 
 /**
- * Consulta todas as avaliações recebidas pelo bar para o painel do proprietário.
+ * Histórico paginado (cursor) das avaliações recebidas pelo bar, para o painel do proprietário.
  */
 export function useOwnerEstablishmentRatings(establishmentId: string) {
-  return useQuery({
+  return useInfiniteQuery({
     queryKey: catalogKeys.establishmentRatings.byEstablishment(establishmentId),
-    queryFn: () => listEstablishmentRatingsForOwner(establishmentId),
+    queryFn: ({ pageParam }) => listEstablishmentRatingsForOwner(establishmentId, pageParam),
+    initialPageParam: null as string | null,
+    getNextPageParam: (lastPage) => lastPage.nextCursor,
+    enabled: Boolean(establishmentId),
+  });
+}
+
+/** Média, total e distribuição de todas as avaliações, independente das páginas carregadas. */
+export function useOwnerRatingsSummary(establishmentId: string) {
+  return useQuery({
+    queryKey: catalogKeys.establishmentRatings.summary(establishmentId),
+    queryFn: () => getOwnerRatingsSummary(establishmentId),
     enabled: Boolean(establishmentId),
   });
 }
@@ -49,6 +61,9 @@ export function useUpsertEstablishmentRating() {
         queryKey: catalogKeys.establishmentRatings.byEstablishment(
           variables.establishmentId,
         ),
+      });
+      void queryClient.invalidateQueries({
+        queryKey: catalogKeys.establishmentRatings.summary(variables.establishmentId),
       });
       void queryClient.invalidateQueries({
         queryKey: catalogKeys.establishments.detail(variables.establishmentId),

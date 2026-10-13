@@ -63,6 +63,38 @@ export async function addServerFavorite(
   }
 }
 
+/**
+ * Adiciona vários favoritos em um único upsert (mesma conflict key de
+ * `addServerFavorite`). Escrita em lote: N idas ao servidor deixariam o merge
+ * pós-login pela metade se a rede caísse no meio. RLS de `user_favorites`
+ * continua exigindo `user_id = auth.uid()` em cada linha. No-op sem client ou lista vazia.
+ */
+export async function addServerFavorites(
+  userId: string,
+  targets: FavoriteTarget[],
+): Promise<void> {
+  if (targets.length === 0) {
+    return;
+  }
+  const client = getConfiguredSupabase();
+  if (client === null) {
+    return;
+  }
+  const { error } = await rawClient(client)
+    .from(TABLE)
+    .upsert(
+      targets.map((target) => ({
+        user_id: userId,
+        target_type: target.type,
+        target_id: target.id,
+      })),
+      { onConflict: 'user_id,target_type,target_id', ignoreDuplicates: true },
+    );
+  if (error) {
+    throw error;
+  }
+}
+
 /** Remove um favorito do servidor. No-op sem client. */
 export async function removeServerFavorite(
   userId: string,

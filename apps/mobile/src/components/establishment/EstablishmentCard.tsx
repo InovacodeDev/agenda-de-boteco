@@ -1,4 +1,4 @@
-import { useEstablishmentStatusLight } from '@agenda/core';
+import { formatAmbianceAndPrice, useEstablishmentStatusLight } from '@agenda/core';
 import { useRouter } from 'expo-router';
 import { memo } from 'react';
 import { Linking } from 'react-native';
@@ -61,7 +61,7 @@ export const EstablishmentCard = memo(function EstablishmentCard({
             segunda linha quando os diferenciais eram longos. */}
         <View className="flex-row items-center justify-between gap-2">
           <Text className="font-body text-muted-foreground flex-1 text-[11px]" numberOfLines={1}>
-            {establishment.ambiance} · {establishment.price_range}
+            {formatAmbianceAndPrice(establishment)}
           </Text>
           <StatusLightBadge light={statusLight} />
         </View>

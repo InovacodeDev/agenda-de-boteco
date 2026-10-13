@@ -50,6 +50,20 @@ describe('shouldDehydrateQuery', () => {
     ).toBe(true);
   });
 
+  it('rejeita lookup por ids e busca, que carregam favoritos e texto digitado', () => {
+    expect(
+      shouldDehydrateQuery(makeQuery(['establishments', 'by-ids', ['e1']], 'success')),
+    ).toBe(false);
+    expect(
+      shouldDehydrateQuery(makeQuery(['events', 'by-ids', ['ev1']], 'success')),
+    ).toBe(false);
+    expect(
+      shouldDehydrateQuery(
+        makeQuery(['establishments', 'search', 'fln', 'zé'], 'success'),
+      ),
+    ).toBe(false);
+  });
+
   it('rejeita status pending mesmo com key do catálogo', () => {
     expect(shouldDehydrateQuery(makeQuery(['events'], 'pending'))).toBe(false);
   });
