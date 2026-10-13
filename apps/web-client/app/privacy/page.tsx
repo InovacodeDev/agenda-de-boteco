@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 
-const LAST_UPDATED = '3 de setembro de 2026';
+const LAST_UPDATED = '13 de outubro de 2026';
 const CONTACT_EMAIL = 'contato@inovacode.dev';
 
 export const metadata: Metadata = {
@@ -77,7 +77,8 @@ export default function ClientPrivacyPolicyPage() {
           WhatsApp e Instagram — para o cliente entrar em contato e acompanhar o estabelecimento.
         </Bullet>
         <Bullet>
-          Logo, fotos e cardápio em PDF — exibidos na página do bar e nos cards do aplicativo.
+          Logo, fotos e cardápio (PDF ou foto) — exibidos na página do bar e nos cards do
+          aplicativo.
         </Bullet>
         <Bullet>
           Localização do estabelecimento — usada para mostrar o bar no mapa e ordenar resultados por
@@ -106,6 +107,10 @@ export default function ClientPrivacyPolicyPage() {
         <Bullet>
           <span className="text-foreground">PostHog</span> — recebe dados de uso do painel (quais
           telas foram abertas), identificados por um código aleatório, nunca pelo seu e-mail.
+        </Bullet>
+        <Bullet>
+          <span className="text-foreground">ViaCEP</span> — recebe o CEP que você digita no
+          cadastro do estabelecimento, para sugerir rua, bairro e cidade. Não guardamos o CEP.
         </Bullet>
       </Section>
 
