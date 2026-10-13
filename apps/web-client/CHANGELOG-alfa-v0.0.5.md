@@ -12,3 +12,5 @@
 - Cardápio pode ser enviado como PDF ou foto, além de link
 - Corrige envio de logo e capa pelo painel
 - Logo do bar aparece no topo de todas as telas e a capa aparece no início do painel
+- Grade de horário ganha chave liga/desliga por dia, horários alinhados em colunas e atalho para repetir o horário nos 7 dias
+- Campo de CEP orienta o preenchimento e avisa quando o endereço é encontrado

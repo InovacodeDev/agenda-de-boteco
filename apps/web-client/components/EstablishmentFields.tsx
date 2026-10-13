@@ -19,7 +19,7 @@ import {
   uploadImage,
 } from '@agenda/core';
 import { Select } from '@agenda/shared-ui';
-import { FilePdfIcon, UploadSimpleIcon } from '@phosphor-icons/react';
+import { FilePdfIcon, ImageIcon, UploadSimpleIcon } from '@phosphor-icons/react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { type ReactNode, useState } from 'react';
 
@@ -87,6 +87,23 @@ const AMBIANCE_SEPARATOR = ', ';
 const NO_PRICE_RANGE = 'none';
 
 const MENU_PATH_PREFIX = 'establishments/menus';
+
+type CepNotice = { tone: 'muted' | 'success' | 'error'; message: string };
+
+const CEP_HINT: CepNotice = {
+  tone: 'muted',
+  message: 'Digite o CEP e preenchemos rua, bairro e cidade para você.',
+};
+
+const CEP_TONE_CLASS: Record<CepNotice['tone'], string> = {
+  muted: 'text-muted-foreground',
+  success: 'text-primary',
+  error: 'text-destructive',
+};
+
+/** Chips e segmentos do formulário: alvo de toque generoso e foco visível no teclado. */
+const CHIP_CLASS =
+  'min-h-10 rounded-full border px-4 py-2 text-sm transition-colors outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-card';
 
 const LABEL_CLASS = 'text-sm font-medium text-foreground';
 
@@ -199,22 +216,28 @@ export function LocationFields({ draft, set, onError }: FieldGroupProps) {
    * para o dono digitar o número. Não é gravado — a tabela não tem a coluna.
    */
   const [cep, setCep] = useState('');
-  const [cepNotice, setCepNotice] = useState<string | null>(null);
+  const [cepNotice, setCepNotice] = useState<CepNotice>(CEP_HINT);
 
   const handleCep = async (value: string) => {
     const masked = maskCEP(value);
     setCep(masked);
-    setCepNotice(null);
+    setCepNotice(CEP_HINT);
     if (masked.replace(/\D/g, '').length !== 8) return;
 
-    setCepNotice('Buscando endereço…');
+    setCepNotice({ tone: 'muted', message: 'Buscando endereço…' });
     try {
       const found = await lookupCep(masked);
       if (!found) {
-        setCepNotice('CEP não encontrado. Preencha o endereço abaixo.');
+        setCepNotice({
+          tone: 'error',
+          message: 'CEP não encontrado. Confira os números ou preencha o endereço abaixo.',
+        });
         return;
       }
-      setCepNotice(null);
+      setCepNotice({
+        tone: 'success',
+        message: 'Endereço encontrado. Complete com o número do local.',
+      });
       if (found.street) set('address', `${found.street}, `);
       if (found.neighborhood) set('neighborhood', found.neighborhood);
       const city = cities.find(
@@ -228,7 +251,7 @@ export function LocationFields({ draft, set, onError }: FieldGroupProps) {
       }
       document.getElementById('address')?.focus();
     } catch (error: unknown) {
-      setCepNotice(getFriendlyErrorMessage(error));
+      setCepNotice({ tone: 'error', message: getFriendlyErrorMessage(error) });
     }
   };
 
@@ -242,13 +265,11 @@ export function LocationFields({ draft, set, onError }: FieldGroupProps) {
           placeholder="00000-000"
           inputMode="numeric"
           autoComplete="postal-code"
-          className={`${FIELD_CLASS} max-w-48`}
+          className={`${FIELD_CLASS} max-w-48 tabular-nums`}
         />
-        {cepNotice ? (
-          <p role="status" className="text-muted-foreground text-[13px]">
-            {cepNotice}
-          </p>
-        ) : null}
+        <p role="status" className={`text-[13px] ${CEP_TONE_CLASS[cepNotice.tone]}`}>
+          {cepNotice.message}
+        </p>
       </Labelled>
 
       <Labelled htmlFor="address" label="Endereço completo">
@@ -366,7 +387,7 @@ export function OperationFields({ draft, set }: FieldGroupProps) {
                 type="button"
                 aria-pressed={selected}
                 onClick={() => toggleAmbiance(item)}
-                className={`rounded-full border px-3.5 py-2 text-sm transition-colors ${
+                className={`${CHIP_CLASS} ${
                   selected
                     ? 'border-primary bg-primary text-primary-foreground font-medium'
                     : 'border-border bg-surface/40 text-foreground hover:border-primary/60'
@@ -439,15 +460,14 @@ function MenuField({ value, onChange }: { value: string; onChange: (url: string)
   return (
     <div className="flex flex-col gap-1.5">
       <span className={LABEL_CLASS}>Cardápio</span>
-      <div role="tablist" aria-label="Como enviar o cardápio" className="flex gap-2">
+      <div role="group" aria-label="Como enviar o cardápio" className="flex flex-wrap gap-2">
         {MENU_MODES.map((item) => (
           <button
             key={item.id}
             type="button"
-            role="tab"
-            aria-selected={mode === item.id}
+            aria-pressed={mode === item.id}
             onClick={() => setMode(item.id)}
-            className={`rounded-full border px-3.5 py-2 text-sm transition-colors ${
+            className={`${CHIP_CLASS} ${
               mode === item.id
                 ? 'border-primary text-primary font-medium'
                 : 'border-border text-muted-foreground hover:text-foreground'
@@ -472,7 +492,12 @@ function MenuField({ value, onChange }: { value: string; onChange: (url: string)
           className={FIELD_CLASS}
         />
       ) : (
-        <label className="border-border bg-surface/40 hover:border-primary/60 flex cursor-pointer items-center gap-3 rounded-xl border border-dashed px-4 py-4 transition-colors">
+        <label
+          aria-busy={busy}
+          className={`border-border bg-surface/40 hover:border-primary/60 focus-within:ring-primary flex items-center gap-3.5 rounded-xl border border-dashed px-4 py-4 transition-colors focus-within:ring-2 ${
+            busy ? 'cursor-wait opacity-70' : 'cursor-pointer'
+          }`}
+        >
           <input
             type="file"
             accept="application/pdf,image/*"
@@ -483,17 +508,31 @@ function MenuField({ value, onChange }: { value: string; onChange: (url: string)
               e.target.value = '';
             }}
           />
-          {isUploaded ? (
-            <FilePdfIcon size={22} className="text-primary shrink-0" />
-          ) : (
-            <UploadSimpleIcon size={22} className="text-muted-foreground shrink-0" />
-          )}
-          <span className="text-foreground text-sm">
-            {busy
-              ? 'Enviando…'
-              : isUploaded
-                ? 'Cardápio enviado. Clique para trocar o arquivo.'
-                : 'Clique para escolher o PDF ou a foto do cardápio'}
+          <span
+            aria-hidden
+            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${
+              isUploaded ? 'bg-primary/15 text-primary' : 'bg-surface-elevated text-muted-foreground'
+            }`}
+          >
+            {!isUploaded ? (
+              <UploadSimpleIcon size={20} />
+            ) : value.toLowerCase().endsWith('.pdf') ? (
+              <FilePdfIcon size={20} />
+            ) : (
+              <ImageIcon size={20} />
+            )}
+          </span>
+          <span className="flex min-w-0 flex-col gap-0.5">
+            <span className="text-foreground text-sm font-medium">
+              {busy
+                ? 'Enviando…'
+                : isUploaded
+                  ? 'Cardápio enviado'
+                  : 'Escolher o PDF ou a foto do cardápio'}
+            </span>
+            <span className="text-muted-foreground text-[13px]">
+              {isUploaded ? 'Clique para trocar o arquivo' : 'PDF, JPG ou PNG, até 8 MB'}
+            </span>
           </span>
           {isUploaded && !busy ? (
             <a

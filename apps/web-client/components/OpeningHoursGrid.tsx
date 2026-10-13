@@ -57,89 +57,112 @@ export function OpeningHoursGrid({
 
   const copyToAllDays = (day: number) => update(schedule.map(() => [...schedule[day]]));
 
+  // Uma única ação de "repetir" no primeiro dia aberto: o dono preenche a
+  // segunda-feira e replica, sem um botão igual em cada linha.
+  const firstOpenDay = DAY_ORDER.find((day) => schedule[day].length > 0);
+
   return (
     <div className="flex flex-col gap-3">
       {legacyText ? (
         <p className="border-border bg-surface/40 text-muted-foreground rounded-xl border px-3.5 py-2.5 text-[13px]">
-          Horário atual: <span className="text-foreground">{legacyText}</span>. Marque os dias
-          abaixo para substituir.
+          Horário atual: <span className="text-foreground">{legacyText}</span>. Ative os dias abaixo
+          para substituir.
         </p>
       ) : null}
 
-      <ul className="border-border divide-border divide-y rounded-xl border">
+      <ul className="border-border divide-border bg-surface/20 divide-y rounded-xl border">
         {DAY_ORDER.map((day) => {
           const shifts = schedule[day];
           const isOpen = shifts.length > 0;
+          const dayLabel = WEEKDAY_SHORT_LABELS[day];
           return (
-            <li key={day} className="flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3">
-              <label className="flex w-28 cursor-pointer items-center gap-2.5">
+            <li
+              key={day}
+              className="grid grid-cols-1 gap-x-4 gap-y-2.5 px-4 py-3.5 sm:grid-cols-[8.5rem_1fr]"
+            >
+              <label className="flex cursor-pointer items-center gap-3 sm:h-12">
                 <input
                   type="checkbox"
                   checked={isOpen}
                   onChange={(e) => setDay(day, e.target.checked ? [...DEFAULT_SHIFTS] : [])}
-                  className="accent-primary h-4.5 w-4.5"
+                  aria-label={`${dayLabel}: aberto`}
+                  className="peer sr-only"
                 />
-                <span className="text-foreground text-sm font-medium">
-                  {WEEKDAY_SHORT_LABELS[day]}
-                </span>
+                <span
+                  aria-hidden
+                  className="bg-surface-elevated peer-focus-visible:ring-primary peer-checked:bg-primary relative h-6 w-11 shrink-0 rounded-full transition-colors peer-focus-visible:ring-2 after:absolute after:top-0.5 after:left-0.5 after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-transform after:content-[''] peer-checked:after:translate-x-5"
+                />
+                <span className="text-foreground text-[15px] font-semibold">{dayLabel}</span>
+                {isOpen ? null : (
+                  <span className="text-muted-foreground ml-auto text-sm sm:hidden">Fechado</span>
+                )}
               </label>
 
               {isOpen ? (
-                <div className="flex flex-1 flex-wrap items-center gap-2">
+                <div className="flex flex-col gap-2">
                   {shifts.map((shift, shiftIndex) => (
-                    <div key={shiftIndex} className="flex items-center gap-1.5">
+                    <div key={shiftIndex} className="flex items-center gap-2">
                       <TimePicker
                         value={shift.open}
                         onValueChange={(open) => setShift(day, shiftIndex, { open })}
-                        ariaLabel={`${WEEKDAY_SHORT_LABELS[day]}: abre às`}
-                        className="w-24"
+                        ariaLabel={`${dayLabel}: abre às`}
+                        className="w-24 gap-2 tabular-nums sm:w-28"
                       />
                       <span className="text-muted-foreground text-sm">às</span>
                       <TimePicker
                         value={shift.close}
                         onValueChange={(close) => setShift(day, shiftIndex, { close })}
-                        ariaLabel={`${WEEKDAY_SHORT_LABELS[day]}: fecha às`}
-                        className="w-24"
+                        ariaLabel={`${dayLabel}: fecha às`}
+                        className="w-24 gap-2 tabular-nums sm:w-28"
                       />
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setDay(
-                            day,
-                            shifts.filter((_, index) => index !== shiftIndex),
-                          )
-                        }
-                        title="Remover horário"
-                        className="text-muted-foreground hover:text-foreground rounded-full p-1.5 transition-colors"
-                      >
-                        <XIcon size={14} />
-                        <span className="sr-only">Remover horário</span>
-                      </button>
+                      {shifts.length > 1 ? (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setDay(
+                              day,
+                              shifts.filter((_, index) => index !== shiftIndex),
+                            )
+                          }
+                          title="Remover este horário"
+                          className="text-muted-foreground hover:text-foreground hover:bg-surface-elevated focus-visible:ring-primary flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-colors outline-none focus-visible:ring-2"
+                        >
+                          <XIcon size={16} />
+                          <span className="sr-only">Remover este horário de {dayLabel}</span>
+                        </button>
+                      ) : null}
                     </div>
                   ))}
 
-                  {shifts.length < MAX_SHIFTS_PER_DAY ? (
-                    <button
-                      type="button"
-                      onClick={() => setDay(day, withComplementaryShift(shifts))}
-                      className="text-primary flex items-center gap-1 text-[13px] font-medium hover:underline"
-                    >
-                      <PlusIcon size={12} weight="bold" />
-                      Intervalo
-                    </button>
+                  {shifts.length < MAX_SHIFTS_PER_DAY || day === firstOpenDay ? (
+                    <div className="flex flex-wrap items-center gap-x-5 gap-y-1 pt-0.5">
+                      {shifts.length < MAX_SHIFTS_PER_DAY ? (
+                        <button
+                          type="button"
+                          onClick={() => setDay(day, withComplementaryShift(shifts))}
+                          className="text-primary focus-visible:ring-primary flex items-center gap-1.5 rounded text-[13px] font-medium underline-offset-4 outline-none hover:underline focus-visible:ring-2"
+                        >
+                          <PlusIcon size={13} weight="bold" />
+                          Adicionar intervalo
+                        </button>
+                      ) : null}
+                      {day === firstOpenDay ? (
+                        <button
+                          type="button"
+                          onClick={() => copyToAllDays(day)}
+                          className="text-muted-foreground hover:text-foreground focus-visible:ring-primary flex items-center gap-1.5 rounded text-[13px] outline-none focus-visible:ring-2"
+                        >
+                          <CopyIcon size={14} />
+                          Usar este horário nos 7 dias
+                        </button>
+                      ) : null}
+                    </div>
                   ) : null}
-
-                  <button
-                    type="button"
-                    onClick={() => copyToAllDays(day)}
-                    className="text-muted-foreground hover:text-foreground ml-auto flex items-center gap-1 text-[13px]"
-                  >
-                    <CopyIcon size={13} />
-                    Copiar para todos
-                  </button>
                 </div>
               ) : (
-                <span className="text-muted-foreground text-sm">Fechado</span>
+                <span className="text-muted-foreground hidden h-12 items-center text-sm sm:flex">
+                  Fechado
+                </span>
               )}
             </li>
           );
