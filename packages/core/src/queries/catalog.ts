@@ -204,13 +204,31 @@ function mapNotification(row: NotificationRow): AppNotification {
  *
  * Invariante: esta ordenacao (starts_at asc) deve casar com o fallback mock
  * em packages/core/src/services/catalog.ts (sortByStartsAtAsc).
+ *
+ * `range` filtra no servidor (dias locais 'YYYY-MM-DD', limites iguais aos de
+ * isWithinDateRange em utils/filters.ts): filtrar só no cliente sobre as
+ * páginas já carregadas perdia eventos de períodos ainda não paginados.
  */
+export type EventDateRange = { start: string; end: string };
+
+export function eventRangeBounds(range: EventDateRange): { from: string; to: string } {
+  return {
+    from: new Date(`${range.start}T00:00:00`).toISOString(),
+    to: new Date(`${range.end}T23:59:59.999`).toISOString(),
+  };
+}
+
 export async function listEvents(
   client: SupabaseClient<Database>,
   cursor: string | null = null,
   limit: number = DEFAULT_PAGE_SIZE,
+  range: EventDateRange | null = null,
 ): Promise<CatalogPage<Event>> {
-  const base = eventsFrom(client).select(EVENT_COLUMNS);
+  let base = eventsFrom(client).select(EVENT_COLUMNS);
+  if (range) {
+    const { from, to } = eventRangeBounds(range);
+    base = base.gte('starts_at', from).lte('starts_at', to);
+  }
   const decoded = decodeCursor(cursor);
   const filtered = decoded
     ? base.or(

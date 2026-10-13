@@ -11,10 +11,12 @@ import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import * as catalog from '../services/catalog';
 import { catalogKeys } from '../services/queryKeys';
 
-export function useEventsQuery() {
+export function useEventsQuery(dateRange: { start: string; end: string } | null = null) {
   return useInfiniteQuery({
-    queryKey: catalogKeys.events.list,
-    queryFn: ({ pageParam }) => catalog.listEvents(pageParam),
+    queryKey: dateRange
+      ? catalogKeys.events.listInRange(dateRange.start, dateRange.end)
+      : catalogKeys.events.list,
+    queryFn: ({ pageParam }) => catalog.listEvents(pageParam, undefined, dateRange),
     initialPageParam: null as string | null,
     getNextPageParam: (lastPage) => lastPage.nextCursor,
   });

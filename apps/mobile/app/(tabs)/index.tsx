@@ -57,7 +57,7 @@ export default function FeedScreen() {
       ? (filters.cityIds.length === 1 ? filters.cityIds[0] : undefined)
       : (city && !isVirtualCityId(city.id) ? city.id : undefined);
 
-  const eventsQuery = useEventsQuery();
+  const eventsQuery = useEventsQuery(filters.dateRange);
   const establishmentsQuery = useEstablishmentsQuery(effectiveCityId);
   const events = flattenPages(eventsQuery.data);
   const establishments = flattenPages(establishmentsQuery.data);

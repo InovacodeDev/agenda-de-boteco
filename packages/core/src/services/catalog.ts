@@ -139,13 +139,22 @@ function mockListNotifications(): AppNotification[] {
 export async function listEvents(
   cursor: string | null = null,
   limit: number = DEFAULT_PAGE_SIZE,
+  range: coreQueries.EventDateRange | null = null,
 ): Promise<CatalogPage<Event>> {
   const client = getConfiguredSupabase();
   if (client === null) {
-    return paginateMock(mockListEvents(), cursor, limit, (event) => event.starts_at);
+    const all = mockListEvents();
+    const events = range
+      ? all.filter((event) => {
+          const { from, to } = coreQueries.eventRangeBounds(range);
+          const at = Date.parse(event.starts_at);
+          return at >= Date.parse(from) && at <= Date.parse(to);
+        })
+      : all;
+    return paginateMock(events, cursor, limit, (event) => event.starts_at);
   }
   try {
-    return await coreQueries.listEvents(client, cursor, limit);
+    return await coreQueries.listEvents(client, cursor, limit, range);
   } catch (error) {
     return handleServiceError(error, { method: 'catalog.listEvents' });
   }

@@ -12,6 +12,8 @@ export const catalogKeys = {
     // Feed paginado. Primeiro segmento 'events' de proposito: a invalidacao
     // por prefixo do realtime precisa alcancar esta key tambem.
     list: ['events', 'list'] as const,
+    listInRange: (start: string, end: string) =>
+      ['events', 'list', 'range', start, end] as const,
     detail: (id: string) => ['events', 'detail', id] as const,
     byEstablishment: (establishmentId: string) =>
       ['events', 'by-establishment', establishmentId] as const,
