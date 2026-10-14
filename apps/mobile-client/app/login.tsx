@@ -248,6 +248,13 @@ export default function LoginScreen() {
     });
   };
 
+  const switchTab = (next: Tab) => {
+    setTab(next);
+    toast.dismissAll();
+    setSignUpStep('email');
+    setCode('');
+  };
+
   const submitLabel =
     tab === 'signIn' ? 'Entrar' : signUpStep === 'email' ? 'Enviar código' : 'Criar acesso';
 
@@ -296,19 +303,18 @@ export default function LoginScreen() {
                         key={item.id}
                         accessibilityRole="tab"
                         accessibilityState={{ selected }}
-                        onPress={() => {
-                          setTab(item.id);
-                          toast.dismissAll();
-                          setSignUpStep('email');
-                          setCode('');
-                        }}
-                        className={`h-10 flex-1 items-center justify-center rounded-lg ${
+                        onPress={() => switchTab(item.id)}
+                        className={`h-11 flex-1 items-center justify-center rounded-lg ${
                           selected ? 'bg-background' : ''
                         }`}
                       >
                         <Text
-                          className={`font-body-medium text-[14px] ${
-                            selected ? 'text-foreground' : 'text-muted-foreground'
+                          className={`font-body-semibold text-[15px] ${
+                            selected
+                              ? 'text-foreground'
+                              : item.id === 'signUp'
+                                ? 'text-primary'
+                                : 'text-muted-foreground'
                           }`}
                         >
                           {item.label}
@@ -442,6 +448,20 @@ export default function LoginScreen() {
                   fullWidth
                   className="bg-surface"
                 />
+
+                {tab === 'signIn' ? (
+                  <View className="border-border mt-5 items-center gap-2.5 border-t pt-5">
+                    <Text className="font-body-medium text-foreground text-[15px]">
+                      Primeira vez aqui?
+                    </Text>
+                    <Button
+                      label="Criar conta do meu estabelecimento"
+                      variant="outline"
+                      onPress={() => switchTab('signUp')}
+                      fullWidth
+                    />
+                  </View>
+                ) : null}
               </View>
 
               <View className="mt-4">

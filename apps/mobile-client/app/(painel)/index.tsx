@@ -4,6 +4,7 @@ import {
   Card,
   Icon,
   type IconName,
+  Image,
   Screen,
   ScrollView,
   Text,
@@ -54,30 +55,61 @@ export default function DashboardScreen() {
   const router = useRouter();
   const { data: establishment } = useOwnedEstablishment();
   const { isTablet } = useResponsive();
+  const coverUrl = establishment?.cover_url;
 
   return (
     <Screen noTopInset noBottomInset>
       <ScrollView contentContainerClassName={`${scrollContentClassName(isTablet)} gap-6`}>
         <View className="overflow-hidden rounded-[20px]">
-          <LinearGradient
-            colors={['#1dd75e', '#19e6c4']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={StyleSheet.absoluteFill}
-          />
+          {coverUrl ? (
+            <>
+              <Image
+                source={{ uri: coverUrl }}
+                contentFit="cover"
+                className="absolute inset-0 h-full w-full"
+              />
+              <LinearGradient
+                colors={['rgba(0,0,0,0.35)', 'rgba(0,0,0,0.85)']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 0, y: 1 }}
+                style={StyleSheet.absoluteFill}
+              />
+            </>
+          ) : (
+            <LinearGradient
+              colors={['#1dd75e', '#19e6c4']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={StyleSheet.absoluteFill}
+            />
+          )}
 
-          <View className="p-6">
-            <Icon name="wand-magic-sparkles" size={32} color="#0f0f0f" />
+          <View className={`p-6 ${coverUrl ? 'min-h-64 justify-end' : ''}`}>
+            {coverUrl ? (
+              establishment?.logo_url ? (
+                <Image
+                  source={{ uri: establishment.logo_url }}
+                  contentFit="cover"
+                  className="h-20 w-20 rounded-2xl bg-white"
+                />
+              ) : null
+            ) : (
+              <Icon name="wand-magic-sparkles" size={32} color="#0f0f0f" />
+            )}
 
             <Text
-              className={`font-heading text-background mt-4 font-bold ${
+              className={`font-heading mt-4 font-bold ${coverUrl ? 'text-white' : 'text-background'} ${
                 isTablet ? 'text-3xl' : 'text-2xl'
               }`}
             >
               Bem-vindo{establishment?.name ? `, ${establishment.name}` : ''}!
             </Text>
 
-            <Text className="font-body text-background mt-2 max-w-xl text-base leading-[24px]">
+            <Text
+              className={`font-body mt-2 max-w-xl text-base leading-[24px] ${
+                coverUrl ? 'text-white' : 'text-background'
+              }`}
+            >
               Seu painel está pronto. Cadastre o primeiro evento e apareça no feed dos amantes da
               noite.
             </Text>

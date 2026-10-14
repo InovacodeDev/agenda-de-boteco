@@ -21,3 +21,11 @@
 - Métricas, Avaliações e Configurações são liberadas ao mesmo tempo no app e no painel web
 - Coleta de dados de uso do painel, como já descrito na política de privacidade
 - Avaliações carregam aos poucos ao rolar a lista, e a nota média considera todas as avaliações do bar
+- Horário de funcionamento vira uma grade com os 7 dias, até dois turnos por dia e atalho para repetir o horário na semana toda
+- Cadastro do bar busca rua, bairro e cidade pelo CEP
+- Cardápio pode ser enviado como foto, além de link
+- Faixa de preço aceita "Não definido"
+- Tipo de ambiente permite marcar mais de uma opção
+- Início do painel mostra a capa e o logo do bar
+- Métricas mostram o desempenho de cada evento, com detalhe ao tocar
+- Botão "Criar conta" fica em destaque no login, com atalho "Primeira vez aqui?"
