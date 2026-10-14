@@ -8,6 +8,7 @@ export {
   aggregateMetrics,
   type DayBucket,
   type EventMetricsSummary,
+  useMetricsEvents,
   useOwnedFavoritesCount,
   useOwnedMetrics,
 } from '@agenda/core';

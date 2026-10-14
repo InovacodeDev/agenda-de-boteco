@@ -1,7 +1,7 @@
 import {
   aggregateMetrics,
   flattenPages,
-  useOwnedEvents,
+  useMetricsEvents,
   useOwnedFavoritesCount,
   useOwnedMetrics,
 } from '@agenda/core';
@@ -19,7 +19,11 @@ import {
   View,
 } from '@agenda/shared-ui-mobile';
 import { useMemo, useState } from 'react';
-import { ActivityIndicator } from 'react-native';
+import {
+  ActivityIndicator,
+  type NativeScrollEvent,
+  type NativeSyntheticEvent,
+} from 'react-native';
 
 import { EventMetricsRow } from '@/components/EventMetricsRow';
 import { EventMetricsSheet } from '@/components/EventMetricsSheet';
@@ -37,23 +41,29 @@ export default function MetricsScreen() {
   const [sinceDays, setSinceDays] = useState('30');
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
 
-  const eventsQuery = useOwnedEvents();
-  const events = flattenPages(eventsQuery.data);
-
   const { data: rows, isPending: metricsPending } = useOwnedMetrics(Number(sinceDays));
   const { data: favoritesByEvent } = useOwnedFavoritesCount();
-
-  const isPending = metricsPending || eventsQuery.isPending;
 
   const { byEvent, byDay, totals } = useMemo(
     () => aggregateMetrics(rows ?? [], favoritesByEvent ?? {}),
     [rows, favoritesByEvent],
   );
 
-  /**
-   * ponytail: eventsById só cobre a página já carregada de useOwnedEvents; evento com
-   * métrica fora dela fica sem linha (igual ao web). Totais seguem corretos.
-   */
+  const eventIds = useMemo(() => byEvent.map((summary) => summary.eventId), [byEvent]);
+  const eventsQuery = useMetricsEvents(eventIds);
+  const events = flattenPages(eventsQuery.data);
+
+  const isPending = metricsPending || eventsQuery.isPending;
+
+  const handleScroll = ({ nativeEvent }: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const { layoutMeasurement, contentOffset, contentSize } = nativeEvent;
+    const reachedThreshold =
+      layoutMeasurement.height + contentOffset.y >= contentSize.height * 0.8;
+    if (reachedThreshold && eventsQuery.hasNextPage && !eventsQuery.isFetchingNextPage) {
+      void eventsQuery.fetchNextPage();
+    }
+  };
+
   const eventsById = useMemo(() => new Map(events.map((e) => [e.id, e])), [events]);
 
   const selectedSummary = selectedEventId
@@ -69,7 +79,11 @@ export default function MetricsScreen() {
         subtitle="Visualizações e cliques dos seus eventos, somando app e site."
       />
 
-      <ScrollView contentContainerClassName={`${scrollContentClassName(isTablet)} gap-5`}>
+      <ScrollView
+        contentContainerClassName={`${scrollContentClassName(isTablet)} gap-5`}
+        onScroll={handleScroll}
+        scrollEventThrottle={200}
+      >
         <View className="flex-row items-center justify-end">
           <View className="w-48">
             <SelectField value={sinceDays} onValueChange={setSinceDays} options={PERIOD_OPTIONS} />
@@ -140,6 +154,11 @@ export default function MetricsScreen() {
                 })}
               </View>
             )}
+            {eventsQuery.isFetchingNextPage ? (
+              <View className="items-center py-2">
+                <ActivityIndicator size="small" color="#1dd75e" />
+              </View>
+            ) : null}
           </>
         )}
       </ScrollView>

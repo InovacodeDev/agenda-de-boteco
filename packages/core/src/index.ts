@@ -45,6 +45,7 @@ export * from './hooks/useFeatureFlag';
 export * from './hooks/useGuardedClick';
 export * from './hooks/useGuardedPress';
 export * from './hooks/useInfiniteScrollSentinel';
+export * from './hooks/useMetricsEvents';
 export * from './hooks/useMusicianLeads';
 export * from './hooks/useNearbyEstablishments';
 export * from './hooks/useOwnedEstablishment';
