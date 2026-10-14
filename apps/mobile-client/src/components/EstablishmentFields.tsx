@@ -34,6 +34,7 @@ import * as WebBrowser from 'expo-web-browser';
 import { useRef, useState } from 'react';
 import type { TextInput as RNTextInput } from 'react-native';
 
+import { resolveDevAssetUrl } from '../lib/devUrl';
 import { AttributeAutocomplete } from './AttributeAutocomplete';
 import { CityCombobox } from './CityCombobox';
 import { OpeningHoursGrid } from './OpeningHoursGrid';
@@ -125,6 +126,7 @@ export function IdentityFields({ draft, set, onUpload }: FieldGroupProps) {
       <ImagePickerField
         label="Logotipo do Bar"
         value={draft.logoUrl}
+        previewUrl={draft.logoUrl ? resolveDevAssetUrl(draft.logoUrl) : undefined}
         onChange={(url) => set('logoUrl', url)}
         onUpload={onUpload}
         aspect={[1, 1]}
@@ -133,6 +135,7 @@ export function IdentityFields({ draft, set, onUpload }: FieldGroupProps) {
       <ImagePickerField
         label="Foto de Capa do Perfil"
         value={draft.coverUrl}
+        previewUrl={draft.coverUrl ? resolveDevAssetUrl(draft.coverUrl) : undefined}
         onChange={(url) => set('coverUrl', url)}
         onUpload={onUpload}
         aspect={[16, 9]}
@@ -520,6 +523,7 @@ function MenuField({ value, onChange }: { value: string; onChange: (url: string)
           <ImagePickerField
             label="Foto do cardápio"
             value={isUploaded ? value : ''}
+            previewUrl={isUploaded && value ? resolveDevAssetUrl(value) : undefined}
             onChange={handleUploaded}
             onUpload={uploadMenuImage}
             aspect={[3, 4]}

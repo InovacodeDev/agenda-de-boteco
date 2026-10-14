@@ -1,7 +1,8 @@
 import * as ExpoImagePicker from 'expo-image-picker';
 import { useState } from 'react';
-import { ActivityIndicator, Alert } from 'react-native';
+import { ActivityIndicator, Alert, StyleSheet } from 'react-native';
 
+import { Button } from './Button';
 import { cn } from './cn';
 import { Icon } from './Icon';
 import { Image, Pressable, Text, View } from './tw';
@@ -13,6 +14,11 @@ export interface ImagePickerFieldProps {
   onUpload: (file: Blob) => Promise<string>;
   aspect?: [number, number];
   className?: string;
+  /**
+   * URL usada só para exibir a prévia (ex.: host de dev reescrito); `value`
+   * continua sendo o que é salvo.
+   */
+  previewUrl?: string;
 }
 
 export function ImagePickerField({
@@ -22,9 +28,15 @@ export function ImagePickerField({
   onUpload,
   aspect = [16, 9],
   className,
+  previewUrl,
 }: ImagePickerFieldProps) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [failedUrl, setFailedUrl] = useState<string | null>(null);
+
+  const shownUrl = previewUrl || value;
+  const isSquare = aspect[0] === aspect[1];
+  const previewFailed = failedUrl === shownUrl;
 
   const pickImage = async () => {
     try {
@@ -68,49 +80,96 @@ export function ImagePickerField({
         <Text className="font-body-medium text-foreground text-sm">{label}</Text>
       )}
 
-      <Pressable
-        onPress={pickImage}
-        disabled={busy}
-        className={cn(
-          'relative h-44 w-full items-center justify-center overflow-hidden rounded-2xl border border-dashed border-border bg-surface active:opacity-80',
-          className,
-        )}
-      >
-        {value ? (
-          <>
-            <Image
-              source={{ uri: value }}
-              contentFit="cover"
-              className="absolute inset-0 h-full w-full"
-            />
-            <View className="absolute inset-0 items-center justify-center bg-black/40">
-              <View className="flex-row items-center gap-2 rounded-xl bg-black/70 px-3 py-1.5">
-                <Icon name="pencil" size={14} color="#fafafa" />
-                <Text className="font-body-medium text-xs text-white">Alterar imagem</Text>
+      {value ? (
+        <View className={isSquare ? 'flex-row items-center gap-4' : 'flex-col gap-3'}>
+          <Pressable
+            accessibilityRole="imagebutton"
+            accessibilityLabel={label ? `${label}: trocar imagem` : 'Trocar imagem'}
+            accessibilityState={{ busy }}
+            onPress={() => void pickImage()}
+            disabled={busy}
+            className={cn(
+              'overflow-hidden rounded-2xl border border-border bg-surface active:opacity-80',
+              isSquare ? 'w-28' : 'w-full',
+            )}
+            style={{ aspectRatio: aspect[0] / aspect[1] }}
+          >
+            {previewFailed ? (
+              <View className="h-full w-full items-center justify-center gap-1.5 p-3">
+                <Icon name="warning" size={20} color="#a6a6a6" />
+                <Text className="font-body text-muted-foreground text-center text-xs">
+                  Não foi possível exibir a imagem atual
+                </Text>
               </View>
-            </View>
-          </>
-        ) : busy ? (
-          <View className="items-center justify-center gap-2">
-            <ActivityIndicator size="small" color="#1dd75e" />
-            <Text className="font-body text-muted-foreground text-xs">Enviando imagem…</Text>
-          </View>
-        ) : (
-          <View className="items-center justify-center gap-2 p-4">
-            <Icon name="upload" size={24} color="#737373" />
-            <Text className="font-body-medium text-foreground text-sm">
-              Toque para selecionar imagem
-            </Text>
-            <Text className="font-body text-muted-foreground text-xs">
-              JPG, PNG ou WEBP até 8MB
-            </Text>
-          </View>
-        )}
-      </Pressable>
+            ) : (
+              <Image
+                key={shownUrl}
+                source={{ uri: shownUrl }}
+                contentFit="cover"
+                transition={150}
+                onError={() => setFailedUrl(shownUrl)}
+                className="h-full w-full"
+              />
+            )}
 
-      {error ? (
-        <Text className="font-body text-destructive text-xs">{error}</Text>
-      ) : null}
+            {busy ? (
+              <View
+                style={StyleSheet.absoluteFill}
+                className="items-center justify-center gap-2 bg-black/60"
+              >
+                <ActivityIndicator size="small" color="#1dd75e" />
+                <Text className="font-body-medium text-xs text-white">Enviando…</Text>
+              </View>
+            ) : null}
+          </Pressable>
+
+          <View className={isSquare ? 'min-w-0 flex-1 gap-2.5' : 'gap-2.5'}>
+            {isSquare ? (
+              <Text className="font-body text-muted-foreground text-xs">
+                Imagem cadastrada
+              </Text>
+            ) : null}
+            <Button
+              label="Trocar imagem"
+              variant="outline"
+              busy={busy}
+              icon={<Icon name="pencil" size={14} color="#fafafa" />}
+              onPress={() => void pickImage()}
+              className={isSquare ? 'self-start' : 'self-start px-5'}
+            />
+          </View>
+        </View>
+      ) : (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={label ? `${label}: selecionar imagem` : 'Selecionar imagem'}
+          onPress={() => void pickImage()}
+          disabled={busy}
+          className={cn(
+            'h-44 w-full items-center justify-center overflow-hidden rounded-2xl border border-dashed border-border bg-surface active:opacity-80',
+            className,
+          )}
+        >
+          {busy ? (
+            <View className="items-center justify-center gap-2">
+              <ActivityIndicator size="small" color="#1dd75e" />
+              <Text className="font-body text-muted-foreground text-xs">Enviando imagem…</Text>
+            </View>
+          ) : (
+            <View className="items-center justify-center gap-2 p-4">
+              <Icon name="upload" size={24} color="#737373" />
+              <Text className="font-body-medium text-foreground text-sm">
+                Toque para selecionar imagem
+              </Text>
+              <Text className="font-body text-muted-foreground text-xs">
+                JPG, PNG ou WEBP até 8MB
+              </Text>
+            </View>
+          )}
+        </Pressable>
+      )}
+
+      {error ? <Text className="font-body text-destructive text-xs">{error}</Text> : null}
     </View>
   );
 }

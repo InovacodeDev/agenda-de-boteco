@@ -38,6 +38,7 @@ import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 
 import { useResponsive } from '../hooks/useResponsive';
+import { resolveDevAssetUrl } from '../lib/devUrl';
 import { scrollContentClassName } from '../lib/screenLayout';
 import { KeyboardAwareBody } from './KeyboardAwareBody';
 
@@ -219,6 +220,7 @@ export function EventForm({ event }: EventFormProps) {
               <ImagePickerField
                 label="Banner do evento"
                 value={bannerUrl}
+                previewUrl={bannerUrl ? resolveDevAssetUrl(bannerUrl) : undefined}
                 onChange={setBannerUrl}
                 onUpload={handleUpload}
                 aspect={[16, 9]}
