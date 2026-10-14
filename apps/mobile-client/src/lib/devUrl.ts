@@ -107,3 +107,17 @@ export function resolveDevSupabaseUrl(
 
   return effectiveUrl;
 }
+
+/**
+ * URLs públicas do Storage local são gravadas com o host loopback do Supabase;
+ * num aparelho físico esse host é o próprio aparelho e a imagem nunca carrega.
+ * Fora de dev (ou já com host real) devolve a URL intacta.
+ */
+export function resolveDevAssetUrl(
+  url: string,
+  os: string = Platform.OS,
+  isDev: boolean = typeof __DEV__ !== 'undefined' ? __DEV__ : process.env.NODE_ENV !== 'production',
+  hostIpOverride?: string | null,
+): string {
+  return resolveDevSupabaseUrl(url, os, isDev, hostIpOverride) ?? url;
+}

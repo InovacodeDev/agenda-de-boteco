@@ -1,6 +1,11 @@
 import Constants from 'expo-constants';
 
-import { extractHostname, getDevHostIp, resolveDevSupabaseUrl } from './devUrl';
+import {
+  extractHostname,
+  getDevHostIp,
+  resolveDevAssetUrl,
+  resolveDevSupabaseUrl,
+} from './devUrl';
 
 jest.mock('expo-constants', () => ({
   __esModule: true,
@@ -92,5 +97,25 @@ describe('devUrl', () => {
 
   it('retorna null em getDevHostIp quando não houver fonte válida de host', () => {
     expect(getDevHostIp()).toBeNull();
+  });
+
+  describe('resolveDevAssetUrl', () => {
+    const storageUrl =
+      'http://127.0.0.1:54321/storage/v1/object/public/catalog-images/establishments/logo.jpg';
+
+    it('troca o host loopback pelo IP da máquina em dev, preservando o caminho', () => {
+      expect(resolveDevAssetUrl(storageUrl, 'android', true, '192.168.1.10')).toBe(
+        'http://192.168.1.10:54321/storage/v1/object/public/catalog-images/establishments/logo.jpg',
+      );
+    });
+
+    it('mantém a URL em produção', () => {
+      expect(resolveDevAssetUrl(storageUrl, 'android', false, '192.168.1.10')).toBe(storageUrl);
+    });
+
+    it('mantém URL que já tem host real', () => {
+      const remote = 'https://abc.supabase.co/storage/v1/object/public/catalog-images/x.jpg';
+      expect(resolveDevAssetUrl(remote, 'ios', true, '192.168.1.10')).toBe(remote);
+    });
   });
 });

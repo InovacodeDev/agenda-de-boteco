@@ -32,3 +32,4 @@
 - Cardápio também pode ser enviado em PDF
 - Depois de encontrar o CEP, o cursor vai para o próximo campo a preencher
 - Métricas listam todos os eventos, carregando mais ao rolar
+- Card de boas-vindas mostra o logo do bar quando ele existe e volta ao visual padrão se a capa ou o logo não carregarem
