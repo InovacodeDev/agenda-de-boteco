@@ -25,6 +25,7 @@ export * from './utils/images';
 export * from './utils/links';
 export * from './utils/masks';
 export * from './utils/moderation';
+export * from './utils/opening-hours';
 export * from './utils/pagination';
 export * from './utils/platform';
 export * from './utils/pressGuard';
@@ -38,6 +39,7 @@ export * from './utils/status-light';
 export * from './hooks/queries';
 export * from './hooks/useActiveCity';
 export * from './hooks/useConnectivity';
+export * from './hooks/useDebouncedValue';
 export * from './hooks/useEstablishmentRating';
 export * from './hooks/useFeatureFlag';
 export * from './hooks/useGuardedClick';
@@ -65,9 +67,11 @@ export {
   getEvent,
   listCities,
   listEstablishments,
+  listEstablishmentsByIds,
   listEventAttractions,
   listEvents,
   listEventsByEstablishment,
+  listEventsByIds,
   listMusicStyles,
   listNotifications,
   listOwnedEvents,
@@ -75,6 +79,7 @@ export {
   upsertEvent,
   upsertNotification,
 } from './services/catalog';
+export * from './services/cep';
 export * from './services/connectivity';
 export * from './services/establishment-owner';
 export * from './services/establishment-ratings';

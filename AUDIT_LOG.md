@@ -11,4 +11,5 @@ dois arquivos divergirem.
 
 | Data | Issue | Escopo |
 | --- | --- | --- |
+| 2026-10-13 | #108 | `pnpm audit` (antes: 4 críticas, 10 altas, 6 moderadas, 3 baixas; depois: 0 críticas, 4 altas, 2 moderadas, 0 baixas — restantes sem correção compatível publicada), N+1 e paginação, mapa de PII × políticas de privacidade, rate limit × cooldowns de UI |
 | 2026-09-03 | #94 | Performance e N+1, dependências e CVEs, mapa de PII (LGPD), rate limiting |

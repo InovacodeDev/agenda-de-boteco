@@ -7,3 +7,4 @@
 - Campo de couvert passa a formatar o valor em reais automaticamente enquanto você digita
 - Identificação de uso interno passa a usar um identificador que não expõe o id da conta
 - Atualização automática das listas quando bares e eventos mudam fica mais estável
+- Faixa de preço do estabelecimento aceita "Não definido"

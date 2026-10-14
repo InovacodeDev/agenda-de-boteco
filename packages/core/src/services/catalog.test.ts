@@ -352,6 +352,8 @@ type FakeError = { message: string; details: string; hint: string; code: string 
  * Quando `injectedError` é fornecido, resolve `{ data: null, error }` em ambos
  * os caminhos (lista e maybeSingle) para cobrir a propagação de erro do core.
  */
+const calls: unknown[][] = [];
+
 function createQueryBuilder(rows: Row[], injectedError: FakeError | null = null) {
   let current = [...rows];
   const orderClauses: { column: string; ascending: boolean }[] = [];
@@ -370,6 +372,16 @@ function createQueryBuilder(rows: Row[], injectedError: FakeError | null = null)
     },
     lt(column: string, value: unknown) {
       current = current.filter((row) => String(row[column]) < String(value));
+      return builder;
+    },
+    gte(column: string, value: unknown) {
+      calls.push(['gte', column, value]);
+      current = current.filter((row) => Date.parse(String(row[column])) >= Date.parse(String(value)));
+      return builder;
+    },
+    lte(column: string, value: unknown) {
+      calls.push(['lte', column, value]);
+      current = current.filter((row) => Date.parse(String(row[column])) <= Date.parse(String(value)));
       return builder;
     },
     /**
@@ -797,6 +809,33 @@ describe('paginacao por cursor', () => {
 
     expect(first.items).toHaveLength(1);
     expect(second.items[0]?.id).not.toBe(first.items[0]?.id);
+  });
+
+  it('listEvents com range aplica gte/lte nos limites do dia local', async () => {
+    calls.length = 0;
+    const page = await listEvents(null, 50, { start: '2000-01-01', end: '2000-01-02' });
+
+    expect(page.items).toHaveLength(0);
+    expect(calls).toEqual([
+      ['gte', 'starts_at', new Date('2000-01-01T00:00:00').toISOString()],
+      ['lte', 'starts_at', new Date('2000-01-02T23:59:59.999').toISOString()],
+    ]);
+  });
+
+  it('listEvents com range largo mantém os eventos; sem range não filtra', async () => {
+    const wide = await listEvents(null, 999, { start: '2000-01-01', end: '2999-12-31' });
+    calls.length = 0;
+    const all = await listEvents(null, 999);
+
+    expect(wide.items.length).toBe(all.items.length);
+    expect(calls).toEqual([]);
+  });
+
+  it('listEvents com range filtra também o fallback mock', async () => {
+    mockGetSupabase.mockReturnValue(null);
+    const page = await listEvents(null, 999, { start: '2000-01-01', end: '2000-01-02' });
+
+    expect(page.items).toHaveLength(0);
   });
 
   it('listEstablishments pagina por cursor sem repetir itens', async () => {

@@ -13,3 +13,8 @@
 - Desconexão de outros dispositivos, detecção do método de login e atualização em tempo real do catálogo passam a ser centralizadas no núcleo compartilhado
 - Base para notificações push no painel do dono: registro do aparelho e preferências de notificação salvas na conta
 - Novo link de pré-visualização da página pública do evento a partir do painel
+- Filtro de eventos por período passa a ser aplicado no servidor
+- Horário de funcionamento passa a aceitar vários turnos por dia e horários diferentes por dia
+- Busca de endereço por CEP e máscara de CEP
+- Faixa de preço do estabelecimento passa a ser opcional
+- Dono de bar passa a poder enviar logo, capa e cardápio (PDF ou imagem)

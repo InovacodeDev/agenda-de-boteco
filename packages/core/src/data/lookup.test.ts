@@ -1,5 +1,5 @@
 import type { Event } from '../schemas';
-import { indexById, musicStylesForEvent } from './lookup';
+import { findMissingEstablishmentIds, indexById, musicStylesForEvent } from './lookup';
 import { CITIES, ESTABLISHMENTS, EVENTS, MUSIC_STYLES } from './mock';
 
 describe('indexById', () => {
@@ -24,6 +24,33 @@ describe('indexById', () => {
   it('retorna undefined para id inexistente', () => {
     expect(indexById(EVENTS)['nao-existe']).toBeUndefined();
     expect(indexById(ESTABLISHMENTS)['nao-existe']).toBeUndefined();
+  });
+});
+
+describe('findMissingEstablishmentIds', () => {
+  const events = [
+    { establishment_id: 'e1' },
+    { establishment_id: 'e2' },
+    { establishment_id: 'e1' },
+    { establishment_id: 'e3' },
+  ];
+
+  it('devolve só os ids ausentes, sem repetição e na ordem de aparição', () => {
+    expect(findMissingEstablishmentIds(events, { e1: true })).toEqual(['e2', 'e3']);
+  });
+
+  it('devolve lista vazia quando todos os bares já estão carregados', () => {
+    expect(findMissingEstablishmentIds(events, { e1: 1, e2: 2, e3: 3 })).toEqual([]);
+  });
+
+  it('devolve lista vazia para lista de eventos vazia', () => {
+    expect(findMissingEstablishmentIds([], {})).toEqual([]);
+  });
+
+  it('não confunde propriedade herdada do objeto com bar carregado', () => {
+    expect(findMissingEstablishmentIds([{ establishment_id: 'toString' }], {})).toEqual([
+      'toString',
+    ]);
   });
 });
 

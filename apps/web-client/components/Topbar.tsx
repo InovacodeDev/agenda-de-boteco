@@ -16,9 +16,20 @@ export function Topbar() {
 
   return (
     <header className="border-border bg-background flex items-center justify-between gap-4 border-b px-8 py-5">
-      <span className="font-heading text-foreground truncate text-[18px] font-600">
-        {establishment?.name ?? 'Seu estabelecimento'}
-      </span>
+      <div className="flex min-w-0 items-center gap-3">
+        {/* Logo do próprio bar em todas as telas: o dono reconhece que está
+            dentro da página dele, não num painel genérico. */}
+        {establishment?.logo_url ? (
+          <img
+            src={establishment.logo_url}
+            alt=""
+            className="border-border h-10 w-10 shrink-0 rounded-xl border bg-white object-cover"
+          />
+        ) : null}
+        <span className="font-heading text-foreground truncate text-[18px] font-600">
+          {establishment?.name ?? 'Seu estabelecimento'}
+        </span>
+      </div>
 
       <div
         className="relative"

@@ -6,6 +6,7 @@ import {
   getFriendlyErrorMessage,
   identifyAnalyticsUser,
   isCurrentUserEstablishmentOwner,
+  OTP_HOURLY_LIMIT_MESSAGE,
   sendPasswordReset,
   signInWithEmailOtp,
   signInWithOAuth,
@@ -223,6 +224,13 @@ export default function LoginPage() {
     });
   };
 
+  const switchTab = (next: Tab) => {
+    setTab(next);
+    toast.dismissAll();
+    setSignUpStep('email');
+    setCode('');
+  };
+
   const guardedSubmit = useGuardedClick(handleSubmit);
   const guardedReset = useGuardedClick(handleReset);
 
@@ -255,16 +263,13 @@ export default function LoginPage() {
                 role="tab"
                 type="button"
                 aria-selected={tab === item.id}
-                onClick={() => {
-                  setTab(item.id);
-                  toast.dismissAll();
-                  setSignUpStep('email');
-                  setCode('');
-                }}
-                className={`flex-1 rounded-lg py-2 text-[14px] font-medium transition-colors ${
+                onClick={() => switchTab(item.id)}
+                className={`flex-1 rounded-lg py-2.5 text-[15px] font-semibold transition-colors ${
                   tab === item.id
                     ? 'bg-background text-foreground'
-                    : 'text-muted-foreground hover:text-foreground'
+                    : item.id === 'signUp'
+                      ? 'text-primary hover:bg-background/60'
+                      : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
                 {item.label}
@@ -376,8 +381,7 @@ export default function LoginPage() {
                 </button>
                 {resend.hasReachedHourlyLimit ? (
                   <p className="mt-2 text-[12px] text-muted-foreground">
-                    Você já solicitou 2 códigos nesta hora. Aguarde antes de tentar novamente para
-                    não ser bloqueado temporariamente.
+                    {OTP_HOURLY_LIMIT_MESSAGE}
                   </p>
                 ) : null}
                 <button
@@ -420,6 +424,23 @@ export default function LoginPage() {
             <GoogleIcon className="h-[18px] w-[18px]" />
             Google
           </button>
+
+          {/* A aba sozinha passava despercebida para quem chega pela primeira
+              vez; o dono de bar novo precisa de um caminho óbvio. */}
+          {tab === 'signIn' ? (
+            <div className="border-border mt-5 flex flex-col items-center gap-2.5 border-t pt-5">
+              <p className="text-foreground text-[15px] font-medium">
+                Primeira vez aqui?
+              </p>
+              <button
+                type="button"
+                onClick={() => switchTab('signUp')}
+                className="border-primary text-primary hover:bg-primary/10 h-12 w-full rounded-xl border-2 text-[15px] font-semibold transition-colors"
+              >
+                Criar conta do meu estabelecimento
+              </button>
+            </div>
+          ) : null}
         </div>
 
         <Link

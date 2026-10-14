@@ -3,7 +3,6 @@
 import {
   catalogKeys,
   getFriendlyErrorMessage,
-  type PriceRange,
   updateOwnedEstablishment,
 } from '@agenda/core';
 import { FloppyDiskIcon } from '@phosphor-icons/react';
@@ -54,7 +53,7 @@ export default function PerfilPage() {
         whatsapp: establishment.whatsapp,
         instagram: establishment.instagram ?? '',
         openingHours: establishment.opening_hours,
-        priceRange: establishment.price_range,
+        priceRange: establishment.price_range ?? '',
         ambiance: establishment.ambiance,
         menuUrl: establishment.menu_pdf_url ?? '',
         attributes: establishment.attributes,
@@ -104,8 +103,7 @@ export default function PerfilPage() {
         whatsapp: draft.whatsapp.trim(),
         instagram: draft.instagram.trim(),
         openingHours: draft.openingHours.trim(),
-        // A tela carrega a faixa atual do bar, então nunca sai vazia daqui.
-        priceRange: draft.priceRange as PriceRange,
+        priceRange: draft.priceRange || null,
         ambiance: draft.ambiance,
         menuUrl: draft.menuUrl.trim(),
         attributes: draft.attributes,

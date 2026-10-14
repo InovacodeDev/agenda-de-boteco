@@ -23,7 +23,7 @@ import {
   notificationWriteSchema,
 } from '../schemas/catalog';
 import type { Database, Json } from '../types';
-import { isUuid } from '../utils/ids';
+import { isUuid, uniqueSortedIds } from '../utils/ids';
 import {
   type CatalogPage,
   decodeCursor,
@@ -31,6 +31,7 @@ import {
   encodeCursor,
   quoteCursorValue,
 } from '../utils/pagination';
+import { buildNameSearchPattern } from '../utils/search';
 import { slugify } from '../utils/slug';
 
 type CityRow = Database['public']['Tables']['cities']['Row'];
@@ -204,13 +205,31 @@ function mapNotification(row: NotificationRow): AppNotification {
  *
  * Invariante: esta ordenacao (starts_at asc) deve casar com o fallback mock
  * em packages/core/src/services/catalog.ts (sortByStartsAtAsc).
+ *
+ * `range` filtra no servidor (dias locais 'YYYY-MM-DD', limites iguais aos de
+ * isWithinDateRange em utils/filters.ts): filtrar só no cliente sobre as
+ * páginas já carregadas perdia eventos de períodos ainda não paginados.
  */
+export type EventDateRange = { start: string; end: string };
+
+export function eventRangeBounds(range: EventDateRange): { from: string; to: string } {
+  return {
+    from: new Date(`${range.start}T00:00:00`).toISOString(),
+    to: new Date(`${range.end}T23:59:59.999`).toISOString(),
+  };
+}
+
 export async function listEvents(
   client: SupabaseClient<Database>,
   cursor: string | null = null,
   limit: number = DEFAULT_PAGE_SIZE,
+  range: EventDateRange | null = null,
 ): Promise<CatalogPage<Event>> {
-  const base = eventsFrom(client).select(EVENT_COLUMNS);
+  let base = eventsFrom(client).select(EVENT_COLUMNS);
+  if (range) {
+    const { from, to } = eventRangeBounds(range);
+    base = base.gte('starts_at', from).lte('starts_at', to);
+  }
   const decoded = decodeCursor(cursor);
   const filtered = decoded
     ? base.or(
@@ -228,6 +247,30 @@ export async function listEvents(
   const nextCursor =
     items.length < limit || !last ? null : encodeCursor({ value: last.starts_at, id: last.id });
   return { items, nextCursor };
+}
+
+/**
+ * Eventos por id interno (`events.id`), sem paginação — favoritos. Lista vazia
+ * não consulta. Mesma ordem de listEvents (starts_at asc, id), aplicada depois
+ * de reunir os chunks. Sem filtro de status: a RLS já esconde rascunho alheio.
+ */
+export async function listEventsByIds(
+  client: SupabaseClient<Database>,
+  ids: readonly string[],
+): Promise<Event[]> {
+  const chunks = chunkIds(uniqueSortedIds(ids));
+  const results = await Promise.all(
+    chunks.map(async (chunk) => {
+      const { data, error } = await eventsFrom(client).select(EVENT_COLUMNS).in('id', chunk);
+      if (error) throw error;
+      return ((data ?? []) as EventRow[]).map(mapEvent);
+    }),
+  );
+  return results
+    .flat()
+    .sort(
+      (a, b) => Date.parse(a.starts_at) - Date.parse(b.starts_at) || a.id.localeCompare(b.id),
+    );
 }
 
 /**
@@ -258,15 +301,22 @@ export async function listEstablishments(
   cityId?: string,
   cursor: string | null = null,
   limit: number = DEFAULT_PAGE_SIZE,
+  /**
+   * Termo de busca por nome, aplicado no servidor (ILIKE) para achar bares que
+   * ainda não estão nas páginas carregadas. Filtro e cursor se combinam em E.
+   */
+  search?: string,
 ): Promise<CatalogPage<Establishment>> {
   const decoded = decodeCursor(cursor);
   const base = establishmentsFrom(client).select(ESTABLISHMENT_COLUMNS);
   const withCityFilter = cityId ? base.eq('city_id', cityId) : base;
+  const pattern = search ? buildNameSearchPattern(search) : null;
+  const withSearch = pattern ? withCityFilter.ilike('name', pattern) : withCityFilter;
   const filtered = decoded
-    ? withCityFilter.or(
+    ? withSearch.or(
         `name.gt.${quoteCursorValue(decoded.value)},and(name.eq.${quoteCursorValue(decoded.value)},id.gt.${quoteCursorValue(decoded.id)})`,
       )
-    : withCityFilter;
+    : withSearch;
 
   const { data, error } = await filtered
     .order('name', { ascending: true })
@@ -278,6 +328,45 @@ export async function listEstablishments(
   const nextCursor =
     items.length < limit || !last ? null : encodeCursor({ value: last.name, id: last.id });
   return { items, nextCursor };
+}
+
+/**
+ * Teto de ids por `.in()`: a lista vai na query string do GET, e URL longa
+ * demais estoura o limite do gateway. Acima disso a leitura é fatiada.
+ */
+export const IN_FILTER_CHUNK_SIZE = 100;
+
+function chunkIds(ids: string[]): string[][] {
+  const chunks: string[][] = [];
+  for (let start = 0; start < ids.length; start += IN_FILTER_CHUNK_SIZE) {
+    chunks.push(ids.slice(start, start + IN_FILTER_CHUNK_SIZE));
+  }
+  return chunks;
+}
+
+/**
+ * Bares por id interno (`establishments.id`), sem paginação: o caller já sabe
+ * quais quer (bares dos eventos do feed, favoritos). Lista vazia não consulta.
+ * Ordem final por nome, igual ao mock — não vem do banco porque o resultado de
+ * vários chunks seria reunido fora de ordem.
+ */
+export async function listEstablishmentsByIds(
+  client: SupabaseClient<Database>,
+  ids: readonly string[],
+): Promise<Establishment[]> {
+  const chunks = chunkIds(uniqueSortedIds(ids));
+  const results = await Promise.all(
+    chunks.map(async (chunk) => {
+      const { data, error } = await establishmentsFrom(client)
+        .select(ESTABLISHMENT_COLUMNS)
+        .in('id', chunk);
+      if (error) throw error;
+      return ((data ?? []) as EstablishmentRow[]).map(mapEstablishment);
+    }),
+  );
+  return results
+    .flat()
+    .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR') || a.id.localeCompare(b.id));
 }
 
 /** Mesma resolução de getEvent: external_id (atual) ou id interno (legado). */

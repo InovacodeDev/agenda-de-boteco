@@ -76,7 +76,7 @@ interface NearbyRow {
   instagram: string | null;
   opening_hours: string;
   menu_items: unknown;
-  price_range: string;
+  price_range: string | null;
   ambiance: string;
   rating_avg: number;
   rating_count: number;

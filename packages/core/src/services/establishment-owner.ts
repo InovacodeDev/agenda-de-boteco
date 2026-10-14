@@ -135,7 +135,7 @@ export interface CreateOwnedEstablishmentInput {
   whatsapp: string;
   instagram: string;
   openingHours: string;
-  /** Vazio quando o dono não escolheu; a RPC aplica o default. */
+  /** Vazio quando o dono não definiu; a RPC grava null. */
   priceRange: string;
   ambiance: string;
   menuUrl: string;
@@ -228,7 +228,7 @@ export async function createOwnedEstablishment(
  */
 export async function updateOwnedEstablishment(
   id: string,
-  input: CreateOwnedEstablishmentInput & { priceRange: PriceRange },
+  input: Omit<CreateOwnedEstablishmentInput, 'priceRange'> & { priceRange: PriceRange | null },
 ): Promise<void> {
   const client = getConfiguredSupabase();
   if (!client) {
@@ -249,8 +249,7 @@ export async function updateOwnedEstablishment(
         // Coluna anulável: string vazia viraria um "@" fantasma no perfil público.
         instagram: input.instagram || null,
         opening_hours: input.openingHours,
-        // Na criação a RPC aplica o default do banco quando vazio; aqui o valor
-        // sempre existe, porque a tela carrega o atual do estabelecimento.
+        // null = "Não definido": o dono pode preferir não publicar a faixa.
         price_range: input.priceRange,
         ambiance: input.ambiance,
         menu_pdf_url: input.menuUrl || null,

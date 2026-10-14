@@ -4,6 +4,8 @@ import {
   formatRelativeDay,
   formatTime,
   formatTimeRange,
+  hoursUntilNextClose,
+  hoursUntilNextOpen,
   isOpenNow,
   isWeekend,
   relativeTime,
@@ -263,6 +265,50 @@ describe('isOpenNow', () => {
     it('retorna false sem dias reconhecíveis', () => {
       expect(isOpenNow('17h às 01h', FIXED_NOW)).toBe(false);
     });
+  });
+});
+
+describe('turnos partidos (08h às 12h e 18h às 00h)', () => {
+  const hours = 'Seg-Sex 08h às 12h e 18h às 00h; Sáb 18h às 02h';
+
+  it('aberto às 10h na quarta', () => {
+    expect(isOpenNow(hours, new Date(2026, 5, 10, 10, 0))).toBe(true);
+  });
+
+  it('fechado às 15h na quarta', () => {
+    expect(isOpenNow(hours, new Date(2026, 5, 10, 15, 0))).toBe(false);
+  });
+
+  it('aberto às 23h na quarta', () => {
+    expect(isOpenNow(hours, new Date(2026, 5, 10, 23, 0))).toBe(true);
+  });
+
+  it('fechado após a meia-noite na quarta', () => {
+    expect(isOpenNow(hours, new Date(2026, 5, 11, 0, 30))).toBe(false);
+  });
+
+  it('sábado vira domingo: aberto no domingo à 01h, fechado às 03h', () => {
+    expect(isOpenNow(hours, new Date(2026, 5, 14, 1, 0))).toBe(true);
+    expect(isOpenNow(hours, new Date(2026, 5, 14, 3, 0))).toBe(false);
+  });
+
+  it('hoursUntilNextOpen às 15h é 3 (turno das 18h)', () => {
+    expect(hoursUntilNextOpen(hours, new Date(2026, 5, 10, 15, 0))).toBe(3);
+  });
+
+  it('hoursUntilNextClose no turno da manhã e no da noite', () => {
+    expect(hoursUntilNextClose(hours, new Date(2026, 5, 10, 10, 0))).toBe(2);
+    expect(hoursUntilNextClose(hours, new Date(2026, 5, 10, 22, 0))).toBe(2);
+    expect(hoursUntilNextClose(hours, new Date(2026, 5, 10, 15, 0))).toBeNull();
+  });
+
+  it('hoursUntilNextOpen vira a semana (sábado 03h até segunda 08h)', () => {
+    expect(hoursUntilNextOpen(hours, new Date(2026, 5, 14, 3, 0))).toBe(29);
+  });
+
+  it('retorna null em formato não reconhecido', () => {
+    expect(hoursUntilNextOpen('Fechado', FIXED_NOW)).toBeNull();
+    expect(hoursUntilNextClose('Fechado', FIXED_NOW)).toBeNull();
   });
 });
 

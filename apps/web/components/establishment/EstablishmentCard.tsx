@@ -3,6 +3,7 @@
 import {
   buildInstagramProfileUrl,
   type Establishment,
+  formatAmbianceAndPrice,
   formatInstagramHandle,
   formatRating,
   useEstablishmentStatusLight,
@@ -61,7 +62,7 @@ export function EstablishmentCard({ establishment }: EstablishmentCardProps) {
             segunda linha quando os diferenciais eram longos. */}
         <div className="flex items-center justify-between gap-2">
           <p className="truncate text-[11px] font-[family-name:var(--font-body)] text-muted-foreground">
-            {establishment.ambiance} · {establishment.price_range}
+            {formatAmbianceAndPrice(establishment)}
           </p>
           <StatusLightBadge light={statusLight} />
         </div>

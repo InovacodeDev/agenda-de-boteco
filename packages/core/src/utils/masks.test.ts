@@ -1,9 +1,27 @@
 import {
   currencyToMask,
+  maskCEP,
   maskCurrencyBR,
   maskPhoneBR,
   parseCurrencyBR,
 } from './masks';
+
+describe('maskCEP', () => {
+  it('formata progressivamente enquanto digita', () => {
+    expect(maskCEP('8')).toBe('8');
+    expect(maskCEP('88015')).toBe('88015');
+    expect(maskCEP('880150')).toBe('88015-0');
+    expect(maskCEP('88015200')).toBe('88015-200');
+  });
+
+  it('ignora não-dígitos e trunca em 8', () => {
+    expect(maskCEP('88.015-200999')).toBe('88015-200');
+  });
+
+  it('vazio → vazio', () => {
+    expect(maskCEP('')).toBe('');
+  });
+});
 
 describe('maskPhoneBR', () => {
   it('formata celular (11 dígitos) como (XX) XXXXX-XXXX', () => {

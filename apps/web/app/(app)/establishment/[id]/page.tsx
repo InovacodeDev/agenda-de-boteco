@@ -6,6 +6,7 @@ import {
   buildWhatsAppUrl,
   FEATURES,
   flattenPages,
+  formatAmbianceAndPrice,
   formatInstagramHandle,
   getAttributeMeta,
   indexById,
@@ -194,7 +195,7 @@ function EstablishmentDetailContent() {
           )}
           <div className="flex flex-col gap-0.5 pb-1">
             <p className="text-[12px] font-[family-name:var(--font-body)] text-muted-foreground">
-              {establishment.ambiance} · {establishment.price_range}
+              {formatAmbianceAndPrice(establishment)}
             </p>
             {instagramHandle && instagramUrl ? (
               <a

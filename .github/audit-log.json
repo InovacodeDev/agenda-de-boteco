@@ -1,6 +1,6 @@
 {
-  "lastAuditDate": "2026-09-03",
-  "issue": 94,
-  "scope": ["performance", "dependencies", "lgpd", "rate-limiting"],
+  "lastAuditDate": "2026-10-13",
+  "issue": 108,
+  "scope": ["performance", "pagination", "dependencies", "lgpd", "rate-limiting"],
   "maxAgeDays": 30
 }

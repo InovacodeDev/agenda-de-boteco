@@ -20,3 +20,4 @@
 - Política de privacidade completa e acessível a partir do login
 - Métricas, Avaliações e Configurações são liberadas ao mesmo tempo no app e no painel web
 - Coleta de dados de uso do painel, como já descrito na política de privacidade
+- Avaliações carregam aos poucos ao rolar a lista, e a nota média considera todas as avaliações do bar

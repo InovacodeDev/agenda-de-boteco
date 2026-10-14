@@ -1,34 +1,14 @@
-import type { MetricEvent } from '../services/metrics';
+import type { MetricAggregate } from '../services/metrics';
 import { catalogKeys, panelKeys } from '../services/queryKeys';
 import { aggregateMetrics } from './useOwnedMetrics';
 
 describe('useOwnedMetrics / aggregateMetrics', () => {
   it('agrega views, clicks e favorites corretamente', () => {
-    const rows: MetricEvent[] = [
-      {
-        establishmentId: 'est-1',
-        eventId: 'event-1',
-        kind: 'view',
-        createdAt: '2026-09-10T12:00:00Z',
-      },
-      {
-        establishmentId: 'est-1',
-        eventId: 'event-1',
-        kind: 'click_map',
-        createdAt: '2026-09-10T14:00:00Z',
-      },
-      {
-        establishmentId: 'est-1',
-        eventId: 'event-2',
-        kind: 'view',
-        createdAt: '2026-09-11T10:00:00Z',
-      },
-      {
-        establishmentId: 'est-1',
-        eventId: 'event-2',
-        kind: 'click_contact',
-        createdAt: '2026-09-11T11:00:00Z',
-      },
+    const rows: MetricAggregate[] = [
+      { day: '2026-09-10', eventId: 'event-1', kind: 'view', total: 1 },
+      { day: '2026-09-10', eventId: 'event-1', kind: 'click_map', total: 1 },
+      { day: '2026-09-11', eventId: 'event-2', kind: 'view', total: 1 },
+      { day: '2026-09-11', eventId: 'event-2', kind: 'click_contact', total: 1 },
     ];
 
     const favorites = {
@@ -48,6 +28,21 @@ describe('useOwnedMetrics / aggregateMetrics', () => {
     expect(byDay[0]?.date).toBe('2026-09-10');
     expect(byDay[0]?.views).toBe(1);
     expect(byDay[0]?.clicks).toBe(1);
+  });
+
+  it('soma o total de cada linha agregada', () => {
+    const rows: MetricAggregate[] = [
+      { day: '2026-09-10', eventId: 'event-1', kind: 'view', total: 7 },
+      { day: '2026-09-10', eventId: 'event-1', kind: 'click_share', total: 3 },
+      { day: '2026-09-10', eventId: null, kind: 'view', total: 2 },
+    ];
+
+    const { byEvent, byDay, totals } = aggregateMetrics(rows, {});
+
+    expect(totals.views).toBe(9);
+    expect(totals.clicksByKind.click_share).toBe(3);
+    expect(byDay).toEqual([{ date: '2026-09-10', views: 9, clicks: 3 }]);
+    expect(byEvent[0]?.views).toBe(7);
   });
 
   it('lida com lista vazia de métricas', () => {

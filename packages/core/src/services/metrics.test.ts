@@ -70,36 +70,40 @@ describe('listOwnedMetrics', () => {
     await expect(listOwnedMetrics('es1', { sinceDays: 30 })).resolves.toEqual([]);
   });
 
-  it('busca linhas do período via gte(created_at) e valida com zod', async () => {
+  it('chama a RPC agregada e mapeia as linhas (total bigint vem como string)', async () => {
     const rows = [
-      { establishment_id: 'es1', event_id: 'ev1', kind: 'view', created_at: '2026-08-01T00:00:00Z' },
-      { establishment_id: 'es1', event_id: null, kind: 'click_map', created_at: '2026-08-02T00:00:00Z' },
+      { day: '2026-08-01', event_id: 'ev1', kind: 'view', total: '1500' },
+      { day: '2026-08-02', event_id: null, kind: 'click_map', total: 3 },
     ];
-    const gte = jest.fn().mockResolvedValue({ data: rows, error: null });
-    const eq = jest.fn().mockReturnValue({ gte });
-    const select = jest.fn().mockReturnValue({ eq });
-    const client = { from: jest.fn().mockReturnValue({ select }) };
-    mockGetSupabase.mockReturnValue(client);
+    const rpc = jest.fn().mockResolvedValue({ data: rows, error: null });
+    mockGetSupabase.mockReturnValue({ rpc });
 
     const result = await listOwnedMetrics('es1', { sinceDays: 30 });
 
-    expect(client.from).toHaveBeenCalledWith('establishment_metrics');
-    expect(eq).toHaveBeenCalledWith('establishment_id', 'es1');
+    expect(rpc).toHaveBeenCalledWith('get_owned_metrics_aggregate', {
+      p_establishment_id: 'es1',
+      p_since_days: 30,
+    });
     expect(result).toEqual([
-      { establishmentId: 'es1', eventId: 'ev1', kind: 'view', createdAt: '2026-08-01T00:00:00Z' },
-      { establishmentId: 'es1', eventId: null, kind: 'click_map', createdAt: '2026-08-02T00:00:00Z' },
+      { day: '2026-08-01', eventId: 'ev1', kind: 'view', total: 1500 },
+      { day: '2026-08-02', eventId: null, kind: 'click_map', total: 3 },
     ]);
   });
 
-  it('propaga erro do select', async () => {
-    const error = new Error('select failed');
-    const gte = jest.fn().mockResolvedValue({ data: null, error });
-    const eq = jest.fn().mockReturnValue({ gte });
-    const select = jest.fn().mockReturnValue({ eq });
-    const client = { from: jest.fn().mockReturnValue({ select }) };
-    mockGetSupabase.mockReturnValue(client);
+  it('propaga erro da RPC', async () => {
+    const error = new Error('rpc failed');
+    const rpc = jest.fn().mockResolvedValue({ data: null, error });
+    mockGetSupabase.mockReturnValue({ rpc });
 
     await expect(listOwnedMetrics('es1', { sinceDays: 30 })).rejects.toBe(error);
+  });
+
+  it.each([0, -1, 366, 1.5, Number.NaN])('rejeita período inválido %p sem chamar a RPC', async (sinceDays) => {
+    const rpc = jest.fn();
+    mockGetSupabase.mockReturnValue({ rpc });
+
+    await expect(listOwnedMetrics('es1', { sinceDays })).rejects.toThrow('Período de métricas inválido');
+    expect(rpc).not.toHaveBeenCalled();
   });
 });
 

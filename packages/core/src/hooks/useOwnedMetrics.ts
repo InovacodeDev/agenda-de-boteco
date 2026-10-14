@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import {
   getOwnedFavoritesCountByEstablishment,
   listOwnedMetrics,
-  type MetricEvent,
+  type MetricAggregate,
   type MetricKind,
 } from '../services/metrics';
 import { catalogKeys } from '../services/queryKeys';
@@ -50,7 +50,7 @@ const ZERO_CLICKS_BY_KIND: Record<MetricKind, number> = {
 };
 
 export function aggregateMetrics(
-  rows: MetricEvent[],
+  rows: MetricAggregate[],
   favoritesByEvent: Record<string, number>,
 ): {
   byEvent: EventMetricsSummary[];
@@ -66,15 +66,15 @@ export function aggregateMetrics(
   };
 
   for (const row of rows) {
-    const day = row.createdAt.slice(0, 10);
+    const day = row.day;
     const dayBucket = byDayMap.get(day) ?? { date: day, views: 0, clicks: 0 };
     if (row.kind === 'view') {
-      dayBucket.views += 1;
-      totals.views += 1;
+      dayBucket.views += row.total;
+      totals.views += row.total;
     } else {
-      dayBucket.clicks += 1;
+      dayBucket.clicks += row.total;
     }
-    totals.clicksByKind[row.kind] += 1;
+    totals.clicksByKind[row.kind] += row.total;
     byDayMap.set(day, dayBucket);
 
     if (row.eventId) {
@@ -85,9 +85,9 @@ export function aggregateMetrics(
         favorites: favoritesByEvent[row.eventId] ?? 0,
       };
       if (row.kind === 'view') {
-        eventSummary.views += 1;
+        eventSummary.views += row.total;
       }
-      eventSummary.clicksByKind[row.kind] += 1;
+      eventSummary.clicksByKind[row.kind] += row.total;
       byEventMap.set(row.eventId, eventSummary);
     }
   }

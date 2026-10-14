@@ -1,8 +1,9 @@
 import {
-  calculateRatingsSummary,
+  flattenPages,
   formatEventDate,
   useOwnedEstablishmentId,
   useOwnerEstablishmentRatings,
+  useOwnerRatingsSummary,
 } from '@agenda/core';
 import {
   Card,
@@ -14,8 +15,11 @@ import {
   Text,
   View,
 } from '@agenda/shared-ui-mobile';
-import { useMemo } from 'react';
-import { ActivityIndicator } from 'react-native';
+import {
+  ActivityIndicator,
+  type NativeScrollEvent,
+  type NativeSyntheticEvent,
+} from 'react-native';
 
 import { useResponsive } from '@/hooks/useResponsive';
 import { scrollContentClassName } from '@/lib/screenLayout';
@@ -25,13 +29,26 @@ const STAR_LEVELS = [5, 4, 3, 2, 1] as const;
 export default function ReviewsScreen() {
   const { isTablet } = useResponsive();
   const { data: establishmentId, isPending: isEstIdPending } = useOwnedEstablishmentId();
-  const { data: ratings, isPending: isRatingsPending } = useOwnerEstablishmentRatings(
-    establishmentId ?? '',
-  );
+  const ratingsQuery = useOwnerEstablishmentRatings(establishmentId ?? '');
+  const summaryQuery = useOwnerRatingsSummary(establishmentId ?? '');
+  const ratings = flattenPages(ratingsQuery.data);
 
-  const isPending = isEstIdPending || isRatingsPending;
+  const isPending = isEstIdPending || ratingsQuery.isPending || summaryQuery.isPending;
 
-  const summary = useMemo(() => calculateRatingsSummary(ratings ?? []), [ratings]);
+  const summary = summaryQuery.data ?? {
+    avg: 0,
+    count: 0,
+    distribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
+  };
+
+  const handleScroll = ({ nativeEvent }: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const { layoutMeasurement, contentOffset, contentSize } = nativeEvent;
+    const reachedThreshold =
+      layoutMeasurement.height + contentOffset.y >= contentSize.height * 0.8;
+    if (reachedThreshold && ratingsQuery.hasNextPage && !ratingsQuery.isFetchingNextPage) {
+      void ratingsQuery.fetchNextPage();
+    }
+  };
 
   return (
     <Screen noTopInset noBottomInset>
@@ -40,7 +57,11 @@ export default function ReviewsScreen() {
         subtitle="Acompanhe as notas recebidas pelo seu estabelecimento e o histórico de clientes."
       />
 
-      <ScrollView contentContainerClassName={`${scrollContentClassName(isTablet)} gap-5`}>
+      <ScrollView
+        contentContainerClassName={`${scrollContentClassName(isTablet)} gap-5`}
+        onScroll={handleScroll}
+        scrollEventThrottle={200}
+      >
         {isPending ? (
           <View className="items-center justify-center p-8">
             <ActivityIndicator size="large" color="#1dd75e" />
@@ -136,7 +157,7 @@ export default function ReviewsScreen() {
                 Histórico de Avaliações
               </Text>
 
-              {!ratings || ratings.length === 0 ? (
+              {ratings.length === 0 ? (
                 <EmptyState
                   icon={<Icon name="star" size={32} color="#f9a91f" />}
                   message="Seu estabelecimento ainda não recebeu nenhuma avaliação de clientes."
