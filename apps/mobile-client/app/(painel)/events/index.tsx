@@ -30,9 +30,35 @@ import { ActivityIndicator, Modal, TouchableWithoutFeedback } from 'react-native
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useResponsive } from '@/hooks/useResponsive';
+import { resolveDevAssetUrl } from '@/lib/devUrl';
 import { listContentStyle } from '@/lib/screenLayout';
 
 const BACKDROP_PADDING = 20;
+
+function EventBanner({ url }: { url: string | null | undefined }) {
+  const shownUrl = url ? resolveDevAssetUrl(url) : null;
+  const [failedUrl, setFailedUrl] = useState<string | null>(null);
+
+  if (!shownUrl || failedUrl === shownUrl) {
+    return (
+      <View className="h-full w-full items-center justify-center">
+        <Icon name="image" size={32} color="#737373" />
+      </View>
+    );
+  }
+
+  return (
+    <Image
+      key={shownUrl}
+      source={{ uri: shownUrl }}
+      contentFit="cover"
+      transition={150}
+      recyclingKey={shownUrl}
+      onError={() => setFailedUrl(shownUrl)}
+      className="h-full w-full"
+    />
+  );
+}
 
 export default function EventsListScreen() {
   const router = useRouter();
@@ -139,17 +165,7 @@ export default function EventsListScreen() {
                 <View className={isTablet ? 'p-2' : 'pb-4'}>
                   <Card className="overflow-hidden p-0">
                     <View className="relative h-36 w-full bg-surface">
-                      {item.banner_url ? (
-                        <Image
-                          source={{ uri: item.banner_url }}
-                          contentFit="cover"
-                          className="h-full w-full"
-                        />
-                      ) : (
-                        <View className="h-full w-full items-center justify-center">
-                          <Icon name="image" size={32} color="#737373" />
-                        </View>
-                      )}
+                      <EventBanner url={item.banner_url} />
                       <View className="absolute top-3 right-3">
                         <Badge
                           label={item.status === 'published' ? 'Publicado' : 'Rascunho'}
