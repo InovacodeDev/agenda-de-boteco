@@ -2,6 +2,7 @@ import {
   CATALOG_IMAGES_BUCKET,
   deleteImage,
   pathFromPublicUrl,
+  UnsupportedFileTypeError,
   uploadImage,
 } from './storage';
 
@@ -77,6 +78,24 @@ describe('uploadImage', () => {
       expect.anything(),
       expect.objectContaining({ contentType: 'application/pdf' }),
     );
+  });
+
+  it('recusa Blob sem tipo antes de chamar o storage', async () => {
+    const { client, upload } = makeBucketClient();
+    mockGetSupabase.mockReturnValue(client);
+    await expect(
+      uploadImage(new Blob(['d']), { pathPrefix: 'establishments' }),
+    ).rejects.toBeInstanceOf(UnsupportedFileTypeError);
+    expect(upload).not.toHaveBeenCalled();
+  });
+
+  it('recusa tipo fora da allowlist (ex.: html) antes de chamar o storage', async () => {
+    const { client, upload } = makeBucketClient();
+    mockGetSupabase.mockReturnValue(client);
+    await expect(
+      uploadImage(new Blob(['d'], { type: 'text/html' }), { pathPrefix: 'events' }),
+    ).rejects.toBeInstanceOf(UnsupportedFileTypeError);
+    expect(upload).not.toHaveBeenCalled();
   });
 
   it('propaga erro do upload', async () => {

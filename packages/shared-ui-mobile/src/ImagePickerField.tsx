@@ -21,6 +21,24 @@ export interface ImagePickerFieldProps {
   previewUrl?: string;
 }
 
+const MIME_BY_EXTENSION: Record<string, string> = {
+  jpg: 'image/jpeg',
+  jpeg: 'image/jpeg',
+  png: 'image/png',
+  webp: 'image/webp',
+  gif: 'image/gif',
+  heic: 'image/heic',
+};
+
+/**
+ * No Android, `fetch(uri).blob()` pode vir sem `type`; sem ele o upload não
+ * tem como derivar a extensão e o storage recusa o arquivo.
+ */
+function mimeFromUri(uri: string): string | undefined {
+  const extension = uri.split('?')[0]?.split('.').pop()?.toLowerCase();
+  return extension ? MIME_BY_EXTENSION[extension] : undefined;
+}
+
 export function ImagePickerField({
   label,
   value,
@@ -61,9 +79,11 @@ export function ImagePickerField({
       setBusy(true);
       setError(null);
 
-      const localUri = result.assets[0].uri;
-      const res = await fetch(localUri);
-      const blob = await res.blob();
+      const asset = result.assets[0];
+      const res = await fetch(asset.uri);
+      const raw = await res.blob();
+      const mimeType = raw.type || asset.mimeType || mimeFromUri(asset.uri);
+      const blob = raw.type || !mimeType ? raw : new Blob([raw], { type: mimeType });
 
       const uploadedUrl = await onUpload(blob);
       onChange(uploadedUrl);
