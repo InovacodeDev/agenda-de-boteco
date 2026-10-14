@@ -8,3 +8,4 @@ export * from './styles';
 export * from './TextArea';
 export * from './TextInput';
 export * from './TimePicker';
+export * from './Toast';

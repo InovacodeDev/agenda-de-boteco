@@ -4,6 +4,7 @@ import {
   buildEstablishmentShareUrl,
   buildEventShareUrl,
   buildInstagramProfileUrl,
+  buildPanelEventPreviewUrl,
   buildWhatsAppUrl,
   formatInstagramHandle,
 } from './links';
@@ -175,5 +176,25 @@ describe('buildEstablishmentShareUrl', () => {
         'https://x.com',
       ),
     ).toBe('https://x.com/establishments/s%C3%A3o%20paulo/bar%20do%20z%C3%A9');
+  });
+});
+
+describe('buildPanelEventPreviewUrl', () => {
+  it('monta a URL singular sem segmento de cidade', () => {
+    expect(buildPanelEventPreviewUrl('e1', 'https://agenda.example.com/app')).toBe(
+      'https://agenda.example.com/app/event/e1',
+    );
+  });
+
+  it('normaliza a barra final do baseUrl (sem dupla barra)', () => {
+    expect(buildPanelEventPreviewUrl('e1', 'https://agenda.example.com/app/')).toBe(
+      'https://agenda.example.com/app/event/e1',
+    );
+  });
+
+  it('faz URL-encode do externalId', () => {
+    expect(buildPanelEventPreviewUrl('a/b', 'https://x.com')).toBe(
+      'https://x.com/event/a%2Fb',
+    );
   });
 });

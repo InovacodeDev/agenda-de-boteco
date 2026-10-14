@@ -88,3 +88,12 @@ export function buildEstablishmentShareUrl(
     : '';
   return `${base}/establishments/${citySegment}${slug}`;
 }
+
+/**
+ * URL da página pública de evento vista pelo painel do dono (preview em
+ * browser externo) — mesma rota que `apps/web-client`'s `EventCard` abre como
+ * link relativo (`/app/event/{id}`): `baseUrl` aqui já inclui o `/app`.
+ */
+export function buildPanelEventPreviewUrl(externalId: string, baseUrl: string): string {
+  return `${normalizeBaseUrl(baseUrl)}/event/${encodeURIComponent(externalId)}`;
+}
