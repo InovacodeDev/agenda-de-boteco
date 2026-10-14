@@ -31,6 +31,7 @@ export interface ButtonProps {
   busy?: boolean;
   icon?: ReactNode;
   className?: string;
+  labelClassName?: string;
   style?: React.ComponentProps<typeof Pressable>['style'];
 }
 
@@ -43,6 +44,7 @@ export function Button({
   busy = false,
   icon,
   className,
+  labelClassName,
   style,
 }: ButtonProps) {
   const isInactive = disabled || busy;
@@ -76,6 +78,7 @@ export function Button({
           className={cn(
             'font-body-semibold shrink text-center text-[15px] leading-[20px]',
             labelByVariant[variant],
+            labelClassName,
           )}
         >
           {busy ? 'Aguarde…' : label}

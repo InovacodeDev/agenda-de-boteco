@@ -457,6 +457,8 @@ export default function LoginScreen() {
                     <Button
                       label="Criar conta do meu estabelecimento"
                       variant="outline"
+                      className="border-2 border-primary"
+                      labelClassName="text-primary"
                       onPress={() => switchTab('signUp')}
                       fullWidth
                     />

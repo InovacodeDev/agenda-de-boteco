@@ -8,6 +8,7 @@ import {
   lookupCep,
   maskCEP,
   maskPhoneBR,
+  MAX_IMAGE_BYTES,
   normalizeText,
   pathFromPublicUrl,
   PRICE_RANGE_LABELS,
@@ -18,6 +19,7 @@ import {
 import {
   cn,
   Field,
+  Icon,
   ImagePickerField,
   Pressable,
   SelectField,
@@ -27,7 +29,10 @@ import {
   View,
 } from '@agenda/shared-ui-mobile';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
+import * as DocumentPicker from 'expo-document-picker';
+import * as WebBrowser from 'expo-web-browser';
+import { useRef, useState } from 'react';
+import type { TextInput as RNTextInput } from 'react-native';
 
 import { AttributeAutocomplete } from './AttributeAutocomplete';
 import { CityCombobox } from './CityCombobox';
@@ -158,6 +163,10 @@ export function LocationFields({ draft, set, onError }: FieldGroupProps) {
   const queryClient = useQueryClient();
   const [cep, setCep] = useState('');
   const [cepNotice, setCepNotice] = useState<CepNotice>(CEP_HINT);
+  const neighborhoodRef = useRef<RNTextInput>(null);
+  const addressRef = useRef<RNTextInput>(null);
+  const whatsappRef = useRef<RNTextInput>(null);
+  const instagramRef = useRef<RNTextInput>(null);
 
   const { data: cities = [] } = useQuery({
     queryKey: catalogKeys.cities,
@@ -172,6 +181,17 @@ export function LocationFields({ draft, set, onError }: FieldGroupProps) {
     } catch (error: unknown) {
       onError?.(getFriendlyErrorMessage(error));
     }
+  };
+
+  /** Rua achada termina em ", " (falta o número), então o endereço conta como vazio. */
+  const focusNextEmptyAfterCep = (found: { street?: string; neighborhood?: string }) => {
+    const order = [
+      { ref: neighborhoodRef, filled: Boolean(found.neighborhood || draft.neighborhood) },
+      { ref: addressRef, filled: !found.street && Boolean(draft.address) },
+      { ref: whatsappRef, filled: Boolean(draft.whatsapp) },
+      { ref: instagramRef, filled: Boolean(draft.instagram) },
+    ];
+    order.find((item) => !item.filled)?.ref.current?.focus();
   };
 
   /** CEP só sugere rua, bairro e cidade; não é gravado (a tabela não tem a coluna). */
@@ -189,6 +209,7 @@ export function LocationFields({ draft, set, onError }: FieldGroupProps) {
           tone: 'error',
           message: 'CEP não encontrado. Confira os números ou preencha o endereço abaixo.',
         });
+        addressRef.current?.focus();
         return;
       }
       setCepNotice({
@@ -205,8 +226,10 @@ export function LocationFields({ draft, set, onError }: FieldGroupProps) {
       } else {
         await handleCreateCity(found.city, found.uf);
       }
+      focusNextEmptyAfterCep(found);
     } catch (error: unknown) {
       setCepNotice({ tone: 'error', message: getFriendlyErrorMessage(error) });
+      addressRef.current?.focus();
     }
   };
 
@@ -235,6 +258,7 @@ export function LocationFields({ draft, set, onError }: FieldGroupProps) {
 
       <Field label="Bairro">
         <TextInput
+          ref={neighborhoodRef}
           value={draft.neighborhood}
           onChangeText={(value) => set('neighborhood', value)}
           placeholder="Vila Madalena"
@@ -243,6 +267,7 @@ export function LocationFields({ draft, set, onError }: FieldGroupProps) {
 
       <Field label="Endereço completo">
         <TextInput
+          ref={addressRef}
           value={draft.address}
           onChangeText={(value) => set('address', value)}
           placeholder="Rua, número"
@@ -251,6 +276,7 @@ export function LocationFields({ draft, set, onError }: FieldGroupProps) {
 
       <Field label="WhatsApp">
         <TextInput
+          ref={whatsappRef}
           keyboardType="phone-pad"
           value={draft.whatsapp}
           onChangeText={(value) => set('whatsapp', maskPhoneBR(value))}
@@ -260,6 +286,7 @@ export function LocationFields({ draft, set, onError }: FieldGroupProps) {
 
       <Field label="Instagram">
         <TextInput
+          ref={instagramRef}
           autoCapitalize="none"
           value={draft.instagram}
           onChangeText={(value) => set('instagram', value)}
@@ -345,39 +372,178 @@ export function OperationFields({ draft, set }: FieldGroupProps) {
 
 const uploadMenuImage = (blob: Blob) => uploadImage(blob, { pathPrefix: MENU_PATH_PREFIX });
 
+const PDF_MIME = 'application/pdf';
+
+type MenuMode = 'link' | 'file';
+
+const MENU_MODES: { id: MenuMode; label: string }[] = [
+  { id: 'link', label: 'Colar link' },
+  { id: 'file', label: 'Enviar PDF ou foto' },
+];
+
 /**
- * Cardápio por link externo ou por foto no bucket; ambos gravam uma URL em
- * `menu_pdf_url`. Foto enviada substitui (e apaga) a anterior; PDF só no web.
+ * Cardápio por link externo ou por arquivo no bucket; ambos gravam uma URL em
+ * `menu_pdf_url`. Arquivo novo (PDF ou foto) substitui e apaga o anterior.
  */
 function MenuField({ value, onChange }: { value: string; onChange: (url: string) => void }) {
   const isUploaded = pathFromPublicUrl(value) !== null;
+  const isPdf = isUploaded && value.toLowerCase().endsWith('.pdf');
+  const [mode, setMode] = useState<MenuMode>(isUploaded ? 'file' : 'link');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handlePhoto = (url: string) => {
+  const dropPrevious = () => {
     if (isUploaded) {
       void deleteImage(value).catch(() => undefined);
     }
+  };
+
+  const handleUploaded = (url: string) => {
+    dropPrevious();
     onChange(url);
+  };
+
+  const handleRemove = () => {
+    dropPrevious();
+    onChange('');
+  };
+
+  const pickPdf = async () => {
+    setError(null);
+    setBusy(true);
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: PDF_MIME,
+        copyToCacheDirectory: true,
+      });
+      const asset = result.assets?.[0];
+      if (result.canceled || !asset) return;
+      if (asset.size !== undefined && asset.size > MAX_IMAGE_BYTES) {
+        setError('Arquivo acima de 8MB.');
+        return;
+      }
+      const response = await fetch(asset.uri);
+      const raw = await response.blob();
+      const url = await uploadMenuImage(new Blob([raw], { type: PDF_MIME }));
+      handleUploaded(url);
+    } catch (e: unknown) {
+      setError(getFriendlyErrorMessage(e));
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
     <View className="flex-col gap-3">
-      <Field label="Link do cardápio">
+      <Field label="Cardápio">
+        <View className="flex-row flex-wrap gap-2">
+          {MENU_MODES.map((item) => {
+            const selected = mode === item.id;
+            return (
+              <Pressable
+                key={item.id}
+                accessibilityRole="button"
+                accessibilityState={{ selected }}
+                onPress={() => setMode(item.id)}
+                className={cn(
+                  'min-h-10 justify-center rounded-full border px-4 py-2',
+                  selected ? 'border-primary' : 'border-border',
+                )}
+              >
+                <Text
+                  className={cn(
+                    'font-body text-sm',
+                    selected ? 'font-body-medium text-primary' : 'text-muted-foreground',
+                  )}
+                >
+                  {item.label}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      </Field>
+
+      {mode === 'link' ? (
         <TextInput
+          accessibilityLabel="Link do cardápio"
           autoCapitalize="none"
+          autoCorrect={false}
           keyboardType="url"
           value={isUploaded ? '' : value}
           onChangeText={onChange}
           placeholder="https://..."
         />
-      </Field>
+      ) : isPdf ? (
+        <View className="flex-col gap-3 rounded-2xl border border-dashed border-border bg-surface p-4">
+          <View className="flex-row items-center gap-3.5">
+            <View className="h-10 w-10 items-center justify-center rounded-lg bg-primary/15">
+              <Icon name="file-pdf" size={20} color="#1dd75e" />
+            </View>
+            <View className="flex-1 flex-col gap-0.5">
+              <Text className="font-body-medium text-foreground text-sm">
+                {busy ? 'Enviando…' : 'Cardápio enviado'}
+              </Text>
+              <Text className="font-body text-muted-foreground text-xs">
+                Toque em Trocar para enviar outro arquivo
+              </Text>
+            </View>
+          </View>
+          <View className="flex-row flex-wrap gap-2">
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => void WebBrowser.openBrowserAsync(value)}
+              className="min-h-10 justify-center rounded-full border border-primary px-4 py-2"
+            >
+              <Text className="font-body-medium text-primary text-sm">Abrir</Text>
+            </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              disabled={busy}
+              onPress={() => void pickPdf()}
+              className="min-h-10 justify-center rounded-full border border-border px-4 py-2"
+            >
+              <Text className="font-body text-foreground text-sm">Trocar</Text>
+            </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              disabled={busy}
+              onPress={handleRemove}
+              className="min-h-10 justify-center rounded-full border border-destructive px-4 py-2"
+            >
+              <Text className="font-body text-destructive text-sm">Remover</Text>
+            </Pressable>
+          </View>
+        </View>
+      ) : (
+        <>
+          <ImagePickerField
+            label="Foto do cardápio"
+            value={isUploaded ? value : ''}
+            onChange={handleUploaded}
+            onUpload={uploadMenuImage}
+            aspect={[3, 4]}
+          />
+          <Pressable
+            accessibilityRole="button"
+            disabled={busy}
+            onPress={() => void pickPdf()}
+            className="flex-row items-center gap-3.5 rounded-2xl border border-dashed border-border bg-surface p-4 active:opacity-80"
+          >
+            <View className="h-10 w-10 items-center justify-center rounded-lg bg-surface-elevated">
+              <Icon name="file-pdf" size={20} color="#737373" />
+            </View>
+            <View className="flex-1 flex-col gap-0.5">
+              <Text className="font-body-medium text-foreground text-sm">
+                {busy ? 'Enviando…' : 'Escolher o PDF do cardápio'}
+              </Text>
+              <Text className="font-body text-muted-foreground text-xs">PDF até 8 MB</Text>
+            </View>
+          </Pressable>
+        </>
+      )}
 
-      <ImagePickerField
-        label="Ou envie uma foto do cardápio"
-        value={isUploaded ? value : ''}
-        onChange={handlePhoto}
-        onUpload={uploadMenuImage}
-        aspect={[3, 4]}
-      />
+      {error ? <Text className="font-body text-destructive text-xs">{error}</Text> : null}
     </View>
   );
 }

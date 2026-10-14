@@ -17,6 +17,8 @@ import { StyleSheet } from 'react-native';
 import { useResponsive } from '@/hooks/useResponsive';
 import { scrollContentClassName } from '@/lib/screenLayout';
 
+const LOGO_SHADOW = { boxShadow: '0 8px 24px -8px rgba(0, 0, 0, 0.6)' } as const;
+
 interface ShortcutItem {
   href: Href;
   title: string;
@@ -87,11 +89,16 @@ export default function DashboardScreen() {
           <View className={`p-6 ${coverUrl ? 'min-h-64 justify-end' : ''}`}>
             {coverUrl ? (
               establishment?.logo_url ? (
-                <Image
-                  source={{ uri: establishment.logo_url }}
-                  contentFit="cover"
-                  className="h-20 w-20 rounded-2xl bg-white"
-                />
+                <View
+                  className="h-[84px] w-[84px] rounded-[18px] border-2 border-white/90"
+                  style={LOGO_SHADOW}
+                >
+                  <Image
+                    source={{ uri: establishment.logo_url }}
+                    contentFit="cover"
+                    className="h-20 w-20 rounded-2xl bg-white"
+                  />
+                </View>
               ) : null
             ) : (
               <Icon name="wand-magic-sparkles" size={32} color="#0f0f0f" />

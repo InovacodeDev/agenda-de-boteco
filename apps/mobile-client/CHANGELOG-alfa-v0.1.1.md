@@ -29,3 +29,6 @@
 - Início do painel mostra a capa e o logo do bar
 - Métricas mostram o desempenho de cada evento, com detalhe ao tocar
 - Botão "Criar conta" fica em destaque no login, com atalho "Primeira vez aqui?"
+- Cardápio também pode ser enviado em PDF
+- Depois de encontrar o CEP, o cursor vai para o próximo campo a preencher
+- Métricas listam todos os eventos, carregando mais ao rolar

@@ -1,6 +1,6 @@
 import { maskCurrencyBR } from '@agenda/core';
-import type { ReactNode } from 'react';
-import type { TextInputProps as RNTextInputProps } from 'react-native';
+import type { ReactNode, Ref } from 'react';
+import type { TextInput as RNTextInput, TextInputProps as RNTextInputProps } from 'react-native';
 
 import { cn } from './cn';
 import { TextInput as StyledTextInput, View } from './tw';
@@ -13,6 +13,7 @@ export interface TextInputProps extends RNTextInputProps {
   containerClassName?: string;
   type?: 'text' | 'password' | 'email' | 'currency' | string;
   prefix?: boolean | string;
+  ref?: Ref<RNTextInput>;
 }
 
 export function TextInput({
@@ -27,6 +28,7 @@ export function TextInput({
   keyboardType,
   placeholder,
   prefix,
+  ref,
   ...props
 }: TextInputProps) {
   const isCurrency = type === 'currency';
@@ -50,6 +52,7 @@ export function TextInput({
     >
       {leftIcon ? <View className="mr-2.5">{leftIcon}</View> : null}
       <StyledTextInput
+        ref={ref}
         placeholderTextColor="#737373"
         style={style}
         keyboardType={isCurrency ? (keyboardType ?? 'numeric') : keyboardType}
