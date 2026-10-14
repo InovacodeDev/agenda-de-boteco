@@ -172,3 +172,6 @@ apps/mobile/android/
 
 # graft's local graph cache — regenerable, not committed (run `graft build`).
 /graft/
+
+# Local agent scratch (branch diffs, notes) — never committed.
+/.context/
