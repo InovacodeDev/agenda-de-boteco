@@ -1,0 +1,38 @@
+# Changelog 0.1.1 (alfa)
+
+- Atualização interna da plataforma do app para mais estabilidade
+- Corrige tela preta ao abrir o app: login, cadastro e painel voltam a aparecer
+- Painel com a mesma navegação do site: abas no celular e menu lateral no tablet, com nome do bar e opção de sair sempre à mão
+- Avaliações ganham tela própria, separada das métricas
+- Cadastro e perfil do bar permitem buscar e cadastrar uma cidade nova e procurar diferenciais por nome
+- Lista de eventos com atalho para ver a página pública do evento
+- Criar conta com Google já vincula você como dono do bar
+- Configurações alinhadas ao site, incluindo aviso para quem entra com Google
+- Receba notificações push no celular, configuráveis em Configurações
+- Corrige erro ao abrir o app em ambientes sem suporte a push
+- Tela de login com o mesmo visual do painel web: logo, textos e botão do Google
+- Avisos de erro e de sucesso no login aparecem como notificações flutuantes no topo da tela
+- Nova navegação no celular: Início, Eventos, botão central para criar evento, Artistas e um menu "Mais" com Perfil, Métricas, Avaliações, Configurações e Sair
+- Dashboard, eventos, artistas, perfil, métricas e avaliações com os mesmos textos e organização do painel web
+- Avisos dessas telas também passam a aparecer como notificações flutuantes
+- Painel respeita o entalhe e as bordas da tela: topo, menu lateral e barra de abas não ficam mais sob o relógio ou a barra de gestos
+- Textos não aparecem mais cortados e toda tela rola até o fim, inclusive com o teclado aberto nos formulários
+- Política de privacidade completa e acessível a partir do login
+- Métricas, Avaliações e Configurações são liberadas ao mesmo tempo no app e no painel web
+- Coleta de dados de uso do painel, como já descrito na política de privacidade
+- Avaliações carregam aos poucos ao rolar a lista, e a nota média considera todas as avaliações do bar
+- Horário de funcionamento vira uma grade com os 7 dias, até dois turnos por dia e atalho para repetir o horário na semana toda
+- Cadastro do bar busca rua, bairro e cidade pelo CEP
+- Cardápio pode ser enviado como foto, além de link
+- Faixa de preço aceita "Não definido"
+- Tipo de ambiente permite marcar mais de uma opção
+- Início do painel mostra a capa e o logo do bar
+- Métricas mostram o desempenho de cada evento, com detalhe ao tocar
+- Botão "Criar conta" fica em destaque no login, com atalho "Primeira vez aqui?"
+- Cardápio também pode ser enviado em PDF
+- Depois de encontrar o CEP, o cursor vai para o próximo campo a preencher
+- Métricas listam todos os eventos, carregando mais ao rolar
+- Card de boas-vindas mostra o logo do bar quando ele existe e volta ao visual padrão se a capa ou o logo não carregarem
+- Perfil mostra o logo, a capa e a foto do cardápio já cadastrados, com botão "Trocar imagem" sempre visível
+- Lista de eventos mostra o banner de cada evento e volta ao ícone padrão quando a imagem não carrega
+- Corrige falha ao enviar fotos (logo, capa, cardápio e banner do evento) em alguns aparelhos Android

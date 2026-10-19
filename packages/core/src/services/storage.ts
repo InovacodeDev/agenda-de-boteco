@@ -14,8 +14,18 @@ export const CATALOG_IMAGES_BUCKET = 'catalog-images';
 /** 8MB — limite de sanidade no cliente; o bucket aceita até 50MiB. */
 export const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 
-// mime → extensão. Fallback 'bin' se o tipo for desconhecido (não deveria
-// acontecer: o input restringe a image/*).
+/**
+ * Tipo fora da allowlist. Barrado aqui porque a policy do storage recusaria a
+ * extensão com um erro de RLS que não diz nada ao usuário — no RN, um Blob de
+ * `fetch(uri)` pode chegar sem `type`.
+ */
+export class UnsupportedFileTypeError extends Error {
+  constructor() {
+    super('Formato de arquivo não suportado. Use JPG, PNG, WEBP ou PDF.');
+    this.name = 'UnsupportedFileTypeError';
+  }
+}
+
 const EXT_BY_MIME: Record<string, string> = {
   'image/jpeg': 'jpg',
   'image/jpg': 'jpg',
@@ -27,8 +37,8 @@ const EXT_BY_MIME: Record<string, string> = {
   'application/pdf': 'pdf',
 };
 
-function extFor(contentType: string): string {
-  return EXT_BY_MIME[contentType.toLowerCase()] ?? 'bin';
+function extFor(contentType: string): string | null {
+  return EXT_BY_MIME[contentType.toLowerCase()] ?? null;
 }
 
 // Id único sem depender de import de node. crypto.randomUUID existe em browser
@@ -63,8 +73,12 @@ export async function uploadImage(
   { pathPrefix }: UploadImageOptions,
 ): Promise<string> {
   const bucket = requireStorage();
-  const contentType = file.type || 'application/octet-stream';
-  const path = `${pathPrefix}/${uniqueId()}.${extFor(contentType)}`;
+  const contentType = file.type;
+  const ext = extFor(contentType);
+  if (!ext) {
+    throw new UnsupportedFileTypeError();
+  }
+  const path = `${pathPrefix}/${uniqueId()}.${ext}`;
 
   const { error } = await bucket.upload(path, file, { contentType, upsert: false });
   if (error) {

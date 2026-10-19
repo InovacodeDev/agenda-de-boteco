@@ -73,4 +73,18 @@ export const catalogKeys = {
     summary: (establishmentId: string) =>
       ['establishment-ratings', 'summary', establishmentId] as const,
   },
+  panel: {
+    ownedEstablishmentId: ['panel', 'owned-establishment-id'] as const,
+    metrics: (establishmentId: string, sinceDays: number) =>
+      ['panel', 'metrics', 'owned', establishmentId, sinceDays] as const,
+    favoritesCount: (establishmentId: string) =>
+      ['panel', 'metrics', 'favorites-count', establishmentId] as const,
+    // Eventos exibidos na tela de métricas. Os ids entram NA ORDEM recebida (sem
+    // uniqueSortedIds): a ordem é por views e define o conteúdo de cada página.
+    // Fora do cache persistido: 'panel' não está no allowlist.
+    metricsEvents: (eventIds: readonly string[]) =>
+      ['panel', 'metrics', 'events', eventIds] as const,
+  },
 } as const;
+
+export const panelKeys = catalogKeys.panel;

@@ -1,0 +1,13 @@
+{
+  "extends": "@agenda/typescript-config/base.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "moduleResolution": "bundler",
+    "skipLibCheck": true,
+    "types": ["jest"],
+    "paths": {
+      "@agenda/core": ["../core/src/index.ts"]
+    }
+  },
+  "include": ["src"]
+}
