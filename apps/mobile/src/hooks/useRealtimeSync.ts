@@ -2,7 +2,6 @@ import { useEffect } from 'react';
 import { AppState, type AppStateStatus } from 'react-native';
 
 import { queryClient } from '@/lib/queryClient';
-import { getSupabase } from '@/lib/supabase';
 import { catalogKeys } from '@/services/queryKeys';
 import { subscribeToCatalogChanges } from '@/services/realtime';
 
@@ -75,17 +74,12 @@ export function nextRealtimeState(
  */
 export function useRealtimeSync(): void {
   useEffect(() => {
-    const client = getSupabase();
-    if (!client) {
-      return;
-    }
-
     const invalidate = (keys: ReadonlyArray<readonly unknown[]>): void => {
       keys.forEach((queryKey) => queryClient.invalidateQueries({ queryKey }));
     };
 
     const actions: RealtimeStateActions = {
-      subscribe: () => subscribeToCatalogChanges(client, invalidate),
+      subscribe: () => subscribeToCatalogChanges(invalidate),
       invalidateRoots: () => invalidate(REALTIME_ROOTS),
       teardown: (unsubscribe) => unsubscribe(),
     };

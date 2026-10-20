@@ -3,8 +3,10 @@
 import {
   type AuthProvider,
   detectPlatform,
+  getCurrentUserExternalId,
   getFriendlyErrorMessage,
   identifyAnalyticsUser,
+  OTP_HOURLY_LIMIT_MESSAGE,
   type Platform,
   signInWithEmailOtp,
   signInWithOAuth,
@@ -39,7 +41,6 @@ function usePlatform(): Platform {
 export default function LoginPage() {
   const router = useRouter();
   const status = useAuthStore((state) => state.status);
-  const userId = useAuthStore((state) => state.user?.id);
   const platform = usePlatform();
 
   const [emailStep, setEmailStep] = useState<EmailStep>('hidden');
@@ -54,10 +55,16 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (status === 'signedIn') {
-      if (userId) identifyAnalyticsUser(userId);
+      // identify nunca bloqueia o redirect: falha de leitura do profile não
+      // pode travar o login, só o analytics fica sem distinct_id nesta sessão.
+      void getCurrentUserExternalId()
+        .then((externalId) => {
+          if (externalId) identifyAnalyticsUser(externalId);
+        })
+        .catch(() => {});
       router.replace('/');
     }
-  }, [status, userId, router]);
+  }, [status, router]);
 
   // OAuth no web: o supabase-js redireciona o browser (não há fluxo RN nativo).
   // A sessão volta pela URL (detectSessionInUrl no client) e o authStore observa.
@@ -223,8 +230,7 @@ export default function LoginPage() {
               </button>
               {resend.hasReachedHourlyLimit ? (
                 <p className="text-muted-foreground text-center text-[12px]">
-                  Você já solicitou 2 códigos nesta hora. Aguarde antes de tentar novamente para
-                  não ser bloqueado temporariamente.
+                  {OTP_HOURLY_LIMIT_MESSAGE}
                 </p>
               ) : null}
               <button

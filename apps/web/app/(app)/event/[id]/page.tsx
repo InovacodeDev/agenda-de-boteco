@@ -216,7 +216,7 @@ export default function EventDetailPage() {
           <InfoCard label="Horário" value={formatTimeRange(event.starts_at, event.ends_at)} icon={<ClockIcon size={13} />} />
         </div>
         <div className="flex gap-3">
-          <Link href={`/establishment/${establishment.id}`} className="flex flex-1 transition-opacity hover:opacity-90">
+          <Link href={`/establishment/${establishment.external_id}`} className="flex flex-1 transition-opacity hover:opacity-90">
             <InfoCard
               label="Local"
               value={`${establishment.name} · ${establishment.neighborhood}`}
@@ -282,7 +282,7 @@ export default function EventDetailPage() {
         </a>
         <button
           type="button"
-          onClick={() => router.push(`/establishment/${establishment.id}`)}
+          onClick={() => router.push(`/establishment/${establishment.external_id}`)}
           className="flex flex-1 items-center justify-center gap-2 rounded-full bg-primary px-4 py-3 text-[14px] font-[family-name:var(--font-body)] font-medium text-primary-foreground transition-opacity hover:opacity-80"
         >
           <StoreIcon size={16} />

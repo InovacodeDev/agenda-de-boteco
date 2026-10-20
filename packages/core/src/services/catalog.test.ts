@@ -83,6 +83,12 @@ describe('catalog service — fallback mock (client nulo)', () => {
       expect(() => eventSchema.parse(event)).not.toThrow();
     });
 
+    it('retorna o evento pelo external_id quando o id recebido é UUID', async () => {
+      const legacy = await getEvent('ev1');
+      const byExternalId = await getEvent(legacy!.external_id);
+      expect(byExternalId?.id).toBe('ev1');
+    });
+
     it('retorna null para id inexistente', async () => {
       await expect(getEvent('nao-existe')).resolves.toBeNull();
     });
@@ -256,6 +262,7 @@ const cityRows: Row[] = CITIES.map((city) => ({
 
 const establishmentRows: Row[] = ESTABLISHMENTS.map((establishment) => ({
   id: establishment.id,
+  external_id: establishment.external_id,
   name: establishment.name,
   description: establishment.description,
   logo_url: establishment.logo_url,
@@ -279,6 +286,7 @@ const establishmentRows: Row[] = ESTABLISHMENTS.map((establishment) => ({
 
 const eventRows: Row[] = EVENTS.map((event) => ({
   id: event.id,
+  external_id: event.external_id,
   name: event.name,
   attraction: event.attraction,
   description: event.description,
@@ -308,6 +316,14 @@ const notificationRows: Row[] = NOTIFICATIONS.map((notification) => ({
   read: notification.read,
   event_id: optionalToNull(notification.event_id),
   establishment_id: optionalToNull(notification.establishment_id),
+  // Espelha o embed event:events(external_id)/establishment:establishments(external_id)
+  // — PostgREST devolve embed de FK-to-one como array de 0 ou 1 item.
+  event: notification.event_external_id
+    ? [{ external_id: notification.event_external_id }]
+    : [],
+  establishment: notification.establishment_external_id
+    ? [{ external_id: notification.establishment_external_id }]
+    : [],
 }));
 
 const attractionRows: Row[] = EVENT_ATTRACTIONS.map((attraction) => ({
@@ -336,6 +352,8 @@ type FakeError = { message: string; details: string; hint: string; code: string 
  * Quando `injectedError` é fornecido, resolve `{ data: null, error }` em ambos
  * os caminhos (lista e maybeSingle) para cobrir a propagação de erro do core.
  */
+const calls: unknown[][] = [];
+
 function createQueryBuilder(rows: Row[], injectedError: FakeError | null = null) {
   let current = [...rows];
   const orderClauses: { column: string; ascending: boolean }[] = [];
@@ -354,6 +372,16 @@ function createQueryBuilder(rows: Row[], injectedError: FakeError | null = null)
     },
     lt(column: string, value: unknown) {
       current = current.filter((row) => String(row[column]) < String(value));
+      return builder;
+    },
+    gte(column: string, value: unknown) {
+      calls.push(['gte', column, value]);
+      current = current.filter((row) => Date.parse(String(row[column])) >= Date.parse(String(value)));
+      return builder;
+    },
+    lte(column: string, value: unknown) {
+      calls.push(['lte', column, value]);
+      current = current.filter((row) => Date.parse(String(row[column])) <= Date.parse(String(value)));
       return builder;
     },
     /**
@@ -516,12 +544,21 @@ describe('catalog service — caminho Supabase (client fake)', () => {
   });
 
   describe('getEvent', () => {
-    it('retorna o evento pelo id via maybeSingle', async () => {
+    it('retorna o evento pelo id legado via maybeSingle', async () => {
       const event = await getEvent('ev1');
       expect(event).not.toBeNull();
       expect(event?.id).toBe('ev1');
       expect(event?.name).toBe('Samba na Varanda');
       expect(() => eventSchema.parse(event)).not.toThrow();
+    });
+
+    // Rota/deep link atual passa o external_id (UUID); getEvent decide a
+    // coluna pelo formato do id recebido — ambos resolvem a mesma linha.
+    it('retorna o evento pelo external_id quando o id recebido é UUID', async () => {
+      const legacy = await getEvent('ev1');
+      const byExternalId = await getEvent(legacy!.external_id);
+      expect(byExternalId).not.toBeNull();
+      expect(byExternalId?.id).toBe('ev1');
     });
 
     it('retorna null para id inexistente via maybeSingle', async () => {
@@ -577,11 +614,18 @@ describe('catalog service — caminho Supabase (client fake)', () => {
   });
 
   describe('getEstablishment', () => {
-    it('retorna o estabelecimento pelo id', async () => {
+    it('retorna o estabelecimento pelo id legado', async () => {
       const establishment = await getEstablishment('e1');
       expect(establishment).not.toBeNull();
       expect(establishment?.name).toBe('Boteco do Zé');
       expect(() => establishmentSchema.parse(establishment)).not.toThrow();
+    });
+
+    it('retorna o estabelecimento pelo external_id quando o id recebido é UUID', async () => {
+      const legacy = await getEstablishment('e1');
+      const byExternalId = await getEstablishment(legacy!.external_id);
+      expect(byExternalId).not.toBeNull();
+      expect(byExternalId?.id).toBe('e1');
     });
 
     it('retorna null para id inexistente', async () => {
@@ -647,6 +691,20 @@ describe('catalog service — caminho Supabase (client fake)', () => {
       const n4 = page.items.find((item) => item.id === 'n4');
       expect(n4).toBeDefined();
       expect(n4?.event_id).toBeUndefined();
+    });
+
+    // NotificationCard navega pelo external_id do embed (event:events/establishment:establishments),
+    // nunca pelo id interno — confere que o mapper extrai os dois do embed.
+    it('mapeia event_external_id/establishment_external_id do embed', async () => {
+      const page = await listNotifications();
+      const n1 = page.items.find((item) => item.id === 'n1');
+      const n4 = page.items.find((item) => item.id === 'n4');
+      expect(n1?.event_external_id).toBe(
+        EVENTS.find((event) => event.id === 'ev1')?.external_id,
+      );
+      expect(n4?.establishment_external_id).toBe(
+        ESTABLISHMENTS.find((establishment) => establishment.id === 'e5')?.external_id,
+      );
     });
   });
 
@@ -751,6 +809,33 @@ describe('paginacao por cursor', () => {
 
     expect(first.items).toHaveLength(1);
     expect(second.items[0]?.id).not.toBe(first.items[0]?.id);
+  });
+
+  it('listEvents com range aplica gte/lte nos limites do dia local', async () => {
+    calls.length = 0;
+    const page = await listEvents(null, 50, { start: '2000-01-01', end: '2000-01-02' });
+
+    expect(page.items).toHaveLength(0);
+    expect(calls).toEqual([
+      ['gte', 'starts_at', new Date('2000-01-01T00:00:00').toISOString()],
+      ['lte', 'starts_at', new Date('2000-01-02T23:59:59.999').toISOString()],
+    ]);
+  });
+
+  it('listEvents com range largo mantém os eventos; sem range não filtra', async () => {
+    const wide = await listEvents(null, 999, { start: '2000-01-01', end: '2999-12-31' });
+    calls.length = 0;
+    const all = await listEvents(null, 999);
+
+    expect(wide.items.length).toBe(all.items.length);
+    expect(calls).toEqual([]);
+  });
+
+  it('listEvents com range filtra também o fallback mock', async () => {
+    mockGetSupabase.mockReturnValue(null);
+    const page = await listEvents(null, 999, { start: '2000-01-01', end: '2000-01-02' });
+
+    expect(page.items).toHaveLength(0);
   });
 
   it('listEstablishments pagina por cursor sem repetir itens', async () => {

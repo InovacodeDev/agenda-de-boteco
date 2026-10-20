@@ -4,6 +4,9 @@ import { useFavoritesStore } from './useFavoritesStore';
 const mockAddServerFavorite = jest.fn<Promise<void>, [string, FavoriteTarget]>(() =>
   Promise.resolve(),
 );
+const mockAddServerFavorites = jest.fn<Promise<void>, [string, FavoriteTarget[]]>(() =>
+  Promise.resolve(),
+);
 const mockRemoveServerFavorite = jest.fn<Promise<void>, [string, FavoriteTarget]>(() =>
   Promise.resolve(),
 );
@@ -14,6 +17,8 @@ const mockFetchServerFavorites = jest.fn<Promise<FavoriteTarget[]>, []>(() =>
 jest.mock('../services/favorites', () => ({
   addServerFavorite: (userId: string, target: FavoriteTarget) =>
     mockAddServerFavorite(userId, target),
+  addServerFavorites: (userId: string, targets: FavoriteTarget[]) =>
+    mockAddServerFavorites(userId, targets),
   removeServerFavorite: (userId: string, target: FavoriteTarget) =>
     mockRemoveServerFavorite(userId, target),
   fetchServerFavorites: () => mockFetchServerFavorites(),
@@ -22,6 +27,7 @@ jest.mock('../services/favorites', () => ({
 describe('useFavoritesStore', () => {
   beforeEach(() => {
     mockAddServerFavorite.mockClear();
+    mockAddServerFavorites.mockClear();
     mockRemoveServerFavorite.mockClear();
     mockFetchServerFavorites.mockClear();
     mockAddServerFavorite.mockImplementation(() => Promise.resolve());
@@ -104,12 +110,12 @@ describe('useFavoritesStore', () => {
       pendingOps: [],
     });
     await useFavoritesStore.getState().mergeLocalIntoServer('userX');
-    expect(mockAddServerFavorite).toHaveBeenCalledWith('userX', { type: 'event', id: 'ev2' });
-    expect(mockAddServerFavorite).toHaveBeenCalledWith('userX', {
-      type: 'establishment',
-      id: 'es1',
-    });
-    expect(mockAddServerFavorite).not.toHaveBeenCalledWith('userX', { type: 'event', id: 'ev1' });
+    expect(mockAddServerFavorites).toHaveBeenCalledTimes(1);
+    expect(mockAddServerFavorites).toHaveBeenCalledWith('userX', [
+      { type: 'event', id: 'ev2' },
+      { type: 'establishment', id: 'es1' },
+    ]);
+    expect(mockAddServerFavorite).not.toHaveBeenCalled();
   });
 
   it('mergeLocalIntoServer hidrata o estado local com favoritos do servidor', async () => {

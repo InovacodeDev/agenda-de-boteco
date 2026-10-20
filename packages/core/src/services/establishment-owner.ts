@@ -35,6 +35,39 @@ export async function isCurrentUserEstablishmentOwner(): Promise<boolean> {
 }
 
 /**
+ * external_id de profiles do usuário logado — é o que identifyAnalyticsUser
+ * envia ao PostHog em vez do auth.uid() puro (evita vazar o id interno da
+ * conta para analytics). RLS deixa cada um ler só o próprio perfil; sem
+ * client/sessão ou sem linha em profiles retorna null (identify vira no-op).
+ */
+export async function getCurrentUserExternalId(): Promise<string | null> {
+  const client = getConfiguredSupabase();
+  if (!client) {
+    return null;
+  }
+  try {
+    const { data: sessionData } = await client.auth.getSession();
+    const userId = sessionData.session?.user?.id;
+    if (!userId) {
+      return null;
+    }
+    const { data, error } = await client
+      .from('profiles')
+      .select('external_id')
+      .eq('id', userId)
+      .maybeSingle();
+    if (error) {
+      throw error;
+    }
+    return (data as { external_id?: string } | null)?.external_id ?? null;
+  } catch (error) {
+    return handleServiceError(error, {
+      method: 'establishmentOwner.getCurrentUserExternalId',
+    });
+  }
+}
+
+/**
  * Marca a conta autenticada como dona de estabelecimento, liberando o painel.
  * Age sempre sobre auth.uid() — a sessão é a prova de posse do e-mail, já que o
  * Supabase só a emite após confirmação. É o passo que promove uma conta que já
@@ -102,7 +135,7 @@ export interface CreateOwnedEstablishmentInput {
   whatsapp: string;
   instagram: string;
   openingHours: string;
-  /** Vazio quando o dono não escolheu; a RPC aplica o default. */
+  /** Vazio quando o dono não definiu; a RPC grava null. */
   priceRange: string;
   ambiance: string;
   menuUrl: string;
@@ -195,7 +228,7 @@ export async function createOwnedEstablishment(
  */
 export async function updateOwnedEstablishment(
   id: string,
-  input: CreateOwnedEstablishmentInput & { priceRange: PriceRange },
+  input: Omit<CreateOwnedEstablishmentInput, 'priceRange'> & { priceRange: PriceRange | null },
 ): Promise<void> {
   const client = getConfiguredSupabase();
   if (!client) {
@@ -216,8 +249,7 @@ export async function updateOwnedEstablishment(
         // Coluna anulável: string vazia viraria um "@" fantasma no perfil público.
         instagram: input.instagram || null,
         opening_hours: input.openingHours,
-        // Na criação a RPC aplica o default do banco quando vazio; aqui o valor
-        // sempre existe, porque a tela carrega o atual do estabelecimento.
+        // null = "Não definido": o dono pode preferir não publicar a faixa.
         price_range: input.priceRange,
         ambiance: input.ambiance,
         menu_pdf_url: input.menuUrl || null,

@@ -1,11 +1,10 @@
 'use client';
 
 import {
-  flattenPages,
   indexById,
   musicStylesForEvent,
-  useEstablishmentsQuery,
-  useEventsQuery,
+  useEstablishmentsByIds,
+  useEventsByIds,
   useFavoritesStore,
   useMusicStylesQuery,
 } from '@agenda/core';
@@ -25,13 +24,25 @@ export default function FavoritesPage() {
   const eventIds = useFavoritesStore((state) => state.eventIds);
   const establishmentIds = useFavoritesStore((state) => state.establishmentIds);
 
-  const eventsQuery = useEventsQuery();
-  const events = flattenPages(eventsQuery.data);
-  const establishmentsQuery = useEstablishmentsQuery();
-  const establishments = flattenPages(establishmentsQuery.data);
+  // Busca direta por id: os favoritos podem estar fora das páginas do feed.
+  // O resultado pode ser o da seleção anterior (placeholder), por isso os
+  // filtros abaixo reconferem os ids atuais da store.
+  const eventsQuery = useEventsByIds(eventIds);
+  const favoriteEstablishmentsQuery = useEstablishmentsByIds(establishmentIds);
+  const events = eventsQuery.data;
+  const favoriteEstablishmentsData = favoriteEstablishmentsQuery.data;
+  const eventEstablishmentIds = useMemo(
+    () => (events ?? []).map((event) => event.establishment_id),
+    [events],
+  );
+  const eventEstablishmentsQuery = useEstablishmentsByIds(eventEstablishmentIds);
+  const eventEstablishments = eventEstablishmentsQuery.data;
   const { data: musicStyles } = useMusicStylesQuery();
 
-  const establishmentsById = useMemo(() => indexById(establishments ?? []), [establishments]);
+  const establishmentsById = useMemo(
+    () => indexById([...(favoriteEstablishmentsData ?? []), ...(eventEstablishments ?? [])]),
+    [favoriteEstablishmentsData, eventEstablishments],
+  );
   const stylesById = useMemo(() => indexById(musicStyles ?? []), [musicStyles]);
 
   // Descarta eventos cujo estabelecimento ainda não chegou (latências de query
@@ -44,10 +55,14 @@ export default function FavoritesPage() {
     [events, eventIds, establishmentsById],
   );
   const favoriteEstablishments = useMemo(
-    () => (establishments ?? []).filter((e) => establishmentIds.includes(e.id)),
-    [establishments, establishmentIds],
+    () => (favoriteEstablishmentsData ?? []).filter((e) => establishmentIds.includes(e.id)),
+    [favoriteEstablishmentsData, establishmentIds],
   );
 
+  const isLoading =
+    eventsQuery.isLoading ||
+    favoriteEstablishmentsQuery.isLoading ||
+    eventEstablishmentsQuery.isLoading;
   const showingEvents = activeTab === 0;
   const isEmpty = showingEvents
     ? favoriteEvents.length === 0
@@ -70,7 +85,7 @@ export default function FavoritesPage() {
         onChange={setActiveTab}
       />
 
-      {isEmpty ? (
+      {isLoading && isEmpty ? null : isEmpty ? (
         <EmptyState
           icon={<HeartIcon size={32} />}
           message={

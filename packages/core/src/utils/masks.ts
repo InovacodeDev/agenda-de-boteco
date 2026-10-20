@@ -22,21 +22,29 @@ export function maskPhoneBR(value: string): string {
   if (d.length <= 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`;
   return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
 }
+/** CEP: `00000-000`, formatado progressivamente (máx. 8 dígitos). */
+export function maskCEP(value: string): string {
+  const d = digits(value).slice(0, 8);
+  return d.length > 5 ? `${d.slice(0, 5)}-${d.slice(5)}` : d;
+}
 
+export interface MaskCurrencyOptions {
+  prefix?: boolean | string;
+}
 
-/**
- * Moeda BR com entrada da direita para a esquerda: o último dígito é o
- * centavo. Digitar "1" → "R$ 0,01"; "123" → "R$ 1,23"; "150000" → "R$ 1.500,00".
- * Vazio → "" (deixa o placeholder aparecer).
- */
-export function maskCurrencyBR(value: string): string {
-  const d = digits(value).replace(/^0+/, ''); // remove zeros à esquerda
+export function maskCurrencyBR(value: string, options?: MaskCurrencyOptions): string {
+  const d = digits(value).replace(/^0+/, '');
   if (!d) return '';
   const cents = d.padStart(3, '0');
   const int = cents.slice(0, -2);
   const dec = cents.slice(-2);
   const grouped = int.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-  return `R$ ${grouped},${dec}`;
+  const formatted = `${grouped},${dec}`;
+  if (options?.prefix) {
+    const prefixStr = typeof options.prefix === 'string' ? options.prefix : 'R$ ';
+    return `${prefixStr}${formatted}`;
+  }
+  return formatted;
 }
 
 /**
@@ -54,7 +62,7 @@ export function parseCurrencyBR(masked: string): number {
  * Formata um número (reais) para o texto mascarado, para popular o campo ao
  * editar um registro existente. 1500 → "R$ 1.500,00"; 0 → "".
  */
-export function currencyToMask(value: number): string {
+export function currencyToMask(value: number, options?: MaskCurrencyOptions): string {
   if (!value) return '';
-  return maskCurrencyBR(String(Math.round(value * 100)));
+  return maskCurrencyBR(String(Math.round(value * 100)), options);
 }

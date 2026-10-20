@@ -82,7 +82,7 @@ export const EventCard = memo(function EventCard({
     <GuardedPressable
       accessibilityRole="button"
       accessibilityLabel={`Evento ${event.name} no ${establishment.name}`}
-      onPress={() => router.push(`/event/${event.id}`)}
+      onPress={() => router.push(`/event/${event.external_id}`)}
       className="bg-card overflow-hidden rounded-2xl active:opacity-90"
     >
       <View className="h-[340px]">

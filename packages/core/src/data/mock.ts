@@ -40,6 +40,7 @@ export const CITIES: City[] = [
 export const ESTABLISHMENTS: Establishment[] = [
   {
     id: 'e1',
+    external_id: '00000000-0000-4000-8000-00000000e001',
     name: 'Boteco do Zé',
     description:
       'Boteco tradicional com chope gelado, petiscos generosos e roda de samba aos fins de semana.',
@@ -71,6 +72,7 @@ export const ESTABLISHMENTS: Establishment[] = [
   },
   {
     id: 'e2',
+    external_id: '00000000-0000-4000-8000-00000000e002',
     name: 'Garage Pub',
     description:
       'Pub estilo industrial com cervejas artesanais e bandas de rock toda semana.',
@@ -97,6 +99,7 @@ export const ESTABLISHMENTS: Establishment[] = [
   },
   {
     id: 'e3',
+    external_id: '00000000-0000-4000-8000-00000000e003',
     name: 'Cantinho Sertanejo',
     description:
       'Casa moderna com pista, dupla sertaneja todo fim de semana e drinks autorais.',
@@ -120,6 +123,7 @@ export const ESTABLISHMENTS: Establishment[] = [
   },
   {
     id: 'e4',
+    external_id: '00000000-0000-4000-8000-00000000e004',
     name: 'Vinil MPB Bar',
     description:
       'Bar intimista com música ao vivo todas as noites: MPB, jazz e bossa.',
@@ -143,6 +147,7 @@ export const ESTABLISHMENTS: Establishment[] = [
   },
   {
     id: 'e5',
+    external_id: '00000000-0000-4000-8000-00000000e005',
     name: 'Choperia Vila',
     description:
       'Choperia ampla no coração da Vila Madalena, palco aberto e ambiente jovial.',
@@ -166,6 +171,7 @@ export const ESTABLISHMENTS: Establishment[] = [
   },
   {
     id: 'e6',
+    external_id: '00000000-0000-4000-8000-00000000e006',
     name: 'Lapa 40 Graus',
     description:
       'Casa noturna na Lapa com samba, pagode e rodas que viram a madrugada.',
@@ -189,6 +195,7 @@ export const ESTABLISHMENTS: Establishment[] = [
   },
   {
     id: 'e7',
+    external_id: '00000000-0000-4000-8000-00000000e007',
     name: 'Forró da Esquina',
     description:
       'Forró pé de serra todas as quartas e sábados, ambiente animado.',
@@ -211,6 +218,7 @@ export const ESTABLISHMENTS: Establishment[] = [
   },
   {
     id: 'e8',
+    external_id: '00000000-0000-4000-8000-00000000e008',
     name: 'Subsolo Eletrônica',
     description:
       'Club underground com line-up de DJs nacionais e internacionais.',
@@ -236,6 +244,7 @@ export const ESTABLISHMENTS: Establishment[] = [
 export const EVENTS: Event[] = [
   {
     id: 'ev1',
+    external_id: '00000000-0000-4000-8000-0000000000e1',
     name: 'Samba na Varanda',
     attraction: 'Grupo Resenha',
     description:
@@ -253,6 +262,7 @@ export const EVENTS: Event[] = [
   },
   {
     id: 'ev2',
+    external_id: '00000000-0000-4000-8000-0000000000e2',
     name: 'Rock Night',
     attraction: 'Banda The Garage',
     description: 'Os maiores hits do rock clássico em uma noite eletrizante.',
@@ -268,6 +278,7 @@ export const EVENTS: Event[] = [
   },
   {
     id: 'ev3',
+    external_id: '00000000-0000-4000-8000-0000000000e3',
     name: 'Sertanejo Universitário',
     attraction: 'Dupla João & Marcelo',
     description: 'Modão, sofrência e os hits do momento.',
@@ -283,6 +294,7 @@ export const EVENTS: Event[] = [
   },
   {
     id: 'ev4',
+    external_id: '00000000-0000-4000-8000-0000000000e4',
     name: 'Noite MPB',
     attraction: 'Marina Costa Trio',
     description: 'Tributo a Elis Regina, Djavan e Caetano Veloso.',
@@ -297,6 +309,7 @@ export const EVENTS: Event[] = [
   },
   {
     id: 'ev5',
+    external_id: '00000000-0000-4000-8000-0000000000e5',
     name: 'Happy Hour Acústico',
     attraction: 'Léo Voz e Violão',
     description:
@@ -313,6 +326,7 @@ export const EVENTS: Event[] = [
   },
   {
     id: 'ev6',
+    external_id: '00000000-0000-4000-8000-0000000000e6',
     name: 'Pagode da Lapa',
     attraction: 'Grupo Suingue Carioca',
     description: 'Pagode raiz na Lapa com a melhor energia do Rio.',
@@ -327,6 +341,7 @@ export const EVENTS: Event[] = [
   },
   {
     id: 'ev7',
+    external_id: '00000000-0000-4000-8000-0000000000e7',
     name: 'Forró Raiz',
     attraction: 'Trio Xote do Bem',
     description: 'Forró pé de serra com aulas grátis a partir das 21h.',
@@ -342,6 +357,7 @@ export const EVENTS: Event[] = [
   },
   {
     id: 'ev8',
+    external_id: '00000000-0000-4000-8000-0000000000e8',
     name: 'Techno Underground',
     attraction: 'DJ Marina K · DJ Pulse',
     description: 'Line-up nacional com techno e house até o amanhecer.',
@@ -356,6 +372,7 @@ export const EVENTS: Event[] = [
   },
   {
     id: 'ev9',
+    external_id: '00000000-0000-4000-8000-0000000000e9',
     name: 'Stand-up Comedy Night',
     attraction: 'Pedro Lima e convidados',
     description: 'Uma noite de risadas com o melhor do humor independente.',
@@ -370,6 +387,7 @@ export const EVENTS: Event[] = [
   },
   {
     id: 'ev10',
+    external_id: '00000000-0000-4000-8000-0000000000ea',
     name: 'Jazz & Vinho',
     attraction: 'Quarteto Blue Note',
     description:
@@ -386,6 +404,7 @@ export const EVENTS: Event[] = [
   },
   {
     id: 'ev11',
+    external_id: '00000000-0000-4000-8000-0000000000eb',
     name: 'Samba de Domingo',
     attraction: 'Grupo Resenha',
     description:
@@ -402,6 +421,7 @@ export const EVENTS: Event[] = [
   },
   {
     id: 'ev12',
+    external_id: '00000000-0000-4000-8000-0000000000ec',
     name: 'Vila Acústica',
     attraction: 'Banda Maré Alta',
     description: 'Hits do reggae e MPB em versão acústica.',
@@ -421,6 +441,25 @@ export const EVENT_ATTRACTIONS = [
   { id: 'att2', event_id: 'ev1', name: 'Banda Abertura', position: 1 },
 ];
 
+function eventExternalId(eventId: string): string {
+  const event = EVENTS.find((item) => item.id === eventId);
+  if (!event) throw new Error(`mock: evento "${eventId}" não existe`);
+  return event.external_id;
+}
+
+function establishmentExternalId(establishmentId: string): string {
+  const establishment = ESTABLISHMENTS.find((item) => item.id === establishmentId);
+  if (!establishment) {
+    throw new Error(`mock: estabelecimento "${establishmentId}" não existe`);
+  }
+  return establishment.external_id;
+}
+
+/**
+ * Espelha o embed `event:events(external_id)` / `establishment:establishments(external_id)`
+ * que a query real usa (queries/catalog.ts) — deriva de EVENTS/ESTABLISHMENTS
+ * em vez de duplicar o UUID à mão, que divergiria no primeiro id trocado.
+ */
 export const NOTIFICATIONS: AppNotification[] = [
   {
     id: 'n1',
@@ -430,6 +469,7 @@ export const NOTIFICATIONS: AppNotification[] = [
     created_at: buildEventDate(0, 9),
     read: false,
     event_id: 'ev1',
+    event_external_id: eventExternalId('ev1'),
   },
   {
     id: 'n2',
@@ -439,6 +479,7 @@ export const NOTIFICATIONS: AppNotification[] = [
     created_at: buildEventDate(0, 8),
     read: false,
     event_id: 'ev2',
+    event_external_id: eventExternalId('ev2'),
   },
   {
     id: 'n3',
@@ -448,7 +489,9 @@ export const NOTIFICATIONS: AppNotification[] = [
     created_at: buildEventDate(-1, 18),
     read: true,
     establishment_id: 'e1',
+    establishment_external_id: establishmentExternalId('e1'),
     event_id: 'ev11',
+    event_external_id: eventExternalId('ev11'),
   },
   {
     id: 'n4',
@@ -458,5 +501,6 @@ export const NOTIFICATIONS: AppNotification[] = [
     created_at: buildEventDate(-1, 12),
     read: true,
     establishment_id: 'e5',
+    establishment_external_id: establishmentExternalId('e5'),
   },
 ];

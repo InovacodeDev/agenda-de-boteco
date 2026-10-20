@@ -3,8 +3,10 @@
 import {
   getFriendlyErrorMessage,
   isAuthAvailable,
+  OTP_HOURLY_LIMIT_MESSAGE,
   requestAccountDeletion,
   signInWithEmailOtp,
+  useResendCooldown,
   verifyEmailOtp,
 } from '@agenda/core';
 import { useState } from 'react';
@@ -53,6 +55,8 @@ function DeletionForm() {
   const [busy, setBusy] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  const resend = useResendCooldown();
+
   const unavailable = !isAuthAvailable();
 
   const handleSendCode = async () => {
@@ -62,6 +66,7 @@ function DeletionForm() {
     try {
       await signInWithEmailOtp(email.trim());
       setStep('otp');
+      resend.start();
     } catch (error: unknown) {
       setErrorMessage(getFriendlyErrorMessage(error));
     } finally {
@@ -177,11 +182,25 @@ function DeletionForm() {
           </button>
           <button
             type="button"
+            disabled={busy || !resend.isReady}
+            onClick={() => void handleSendCode()}
+            className="flex h-12 w-full items-center justify-center rounded-xl border border-border bg-transparent text-[15px] font-medium text-foreground transition-colors hover:bg-card/50 disabled:opacity-50"
+          >
+            {resend.isReady ? 'Reenviar código' : `Reenviar em ${resend.remainingSeconds}s`}
+          </button>
+          {resend.hasReachedHourlyLimit ? (
+            <p className="text-center text-[12px] font-[family-name:var(--font-body)] text-muted-foreground">
+              {OTP_HOURLY_LIMIT_MESSAGE}
+            </p>
+          ) : null}
+          <button
+            type="button"
             disabled={busy}
             onClick={() => {
               setStep('email');
               setOtp('');
               setErrorMessage(null);
+              resend.reset();
             }}
             className="flex h-12 w-full items-center justify-center rounded-xl border border-border bg-transparent text-[15px] font-medium text-foreground transition-colors hover:bg-card/50 disabled:opacity-50"
           >

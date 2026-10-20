@@ -34,6 +34,8 @@ import {
 } from '../schemas';
 import { getConfiguredSupabase } from '../supabase/client';
 import { handleServiceError } from '../utils/errors';
+import { normalizeText } from '../utils/filters';
+import { isUuid, uniqueSortedIds } from '../utils/ids';
 import {
   type CatalogPage,
   decodeCursor,
@@ -85,21 +87,41 @@ function mockListEvents(): Event[] {
 }
 
 function mockGetEvent(id: string): Event | null {
-  const event = EVENTS.find((item) => item.id === id);
+  const event = EVENTS.find((item) =>
+    isUuid(id) ? item.external_id === id : item.id === id,
+  );
   return event ? eventSchema.parse(event) : null;
 }
 
-function mockListEstablishments(cityId?: string): Establishment[] {
-  const items = cityId
+function mockListEstablishments(cityId?: string, search?: string): Establishment[] {
+  const byCity = cityId
     ? ESTABLISHMENTS.filter((item) => item.city_id === cityId)
     : ESTABLISHMENTS;
+  const term = search ? normalizeText(search.trim()) : '';
+  const items = term
+    ? byCity.filter((item) => normalizeText(item.name).includes(term))
+    : byCity;
   return establishmentListSchema
     .parse(items)
     .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
 }
 
+function mockListEstablishmentsByIds(ids: string[]): Establishment[] {
+  const wanted = new Set(ids);
+  return establishmentListSchema
+    .parse(ESTABLISHMENTS.filter((item) => wanted.has(item.id)))
+    .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
+}
+
+function mockListEventsByIds(ids: string[]): Event[] {
+  const wanted = new Set(ids);
+  return sortByStartsAtAsc(eventListSchema.parse(EVENTS.filter((item) => wanted.has(item.id))));
+}
+
 function mockGetEstablishment(id: string): Establishment | null {
-  const establishment = ESTABLISHMENTS.find((item) => item.id === id);
+  const establishment = ESTABLISHMENTS.find((item) =>
+    isUuid(id) ? item.external_id === id : item.id === id,
+  );
   return establishment ? establishmentSchema.parse(establishment) : null;
 }
 
@@ -134,13 +156,22 @@ function mockListNotifications(): AppNotification[] {
 export async function listEvents(
   cursor: string | null = null,
   limit: number = DEFAULT_PAGE_SIZE,
+  range: coreQueries.EventDateRange | null = null,
 ): Promise<CatalogPage<Event>> {
   const client = getConfiguredSupabase();
   if (client === null) {
-    return paginateMock(mockListEvents(), cursor, limit, (event) => event.starts_at);
+    const all = mockListEvents();
+    const events = range
+      ? all.filter((event) => {
+          const { from, to } = coreQueries.eventRangeBounds(range);
+          const at = Date.parse(event.starts_at);
+          return at >= Date.parse(from) && at <= Date.parse(to);
+        })
+      : all;
+    return paginateMock(events, cursor, limit, (event) => event.starts_at);
   }
   try {
-    return await coreQueries.listEvents(client, cursor, limit);
+    return await coreQueries.listEvents(client, cursor, limit, range);
   } catch (error) {
     return handleServiceError(error, { method: 'catalog.listEvents' });
   }
@@ -162,22 +193,63 @@ export async function listEstablishments(
   cityId?: string,
   cursor: string | null = null,
   limit: number = DEFAULT_PAGE_SIZE,
+  search?: string,
 ): Promise<CatalogPage<Establishment>> {
   const client = getConfiguredSupabase();
   if (client === null) {
     return paginateMock(
-      mockListEstablishments(cityId),
+      mockListEstablishments(cityId, search),
       cursor,
       limit,
       (establishment) => establishment.name,
     );
   }
   try {
-    return await coreQueries.listEstablishments(client, cityId, cursor, limit);
+    return await coreQueries.listEstablishments(client, cityId, cursor, limit, search);
   } catch (error) {
     return handleServiceError(error, {
       method: 'catalog.listEstablishments',
       args: { cityId },
+    });
+  }
+}
+
+/** Bares por id, sem paginação. Lista vazia não consulta o servidor. */
+export async function listEstablishmentsByIds(ids: readonly string[]): Promise<Establishment[]> {
+  const unique = uniqueSortedIds(ids);
+  if (unique.length === 0) {
+    return [];
+  }
+  const client = getConfiguredSupabase();
+  if (client === null) {
+    return mockListEstablishmentsByIds(unique);
+  }
+  try {
+    return await coreQueries.listEstablishmentsByIds(client, unique);
+  } catch (error) {
+    return handleServiceError(error, {
+      method: 'catalog.listEstablishmentsByIds',
+      args: { count: unique.length },
+    });
+  }
+}
+
+/** Eventos por id, sem paginação. Lista vazia não consulta o servidor. */
+export async function listEventsByIds(ids: readonly string[]): Promise<Event[]> {
+  const unique = uniqueSortedIds(ids);
+  if (unique.length === 0) {
+    return [];
+  }
+  const client = getConfiguredSupabase();
+  if (client === null) {
+    return mockListEventsByIds(unique);
+  }
+  try {
+    return await coreQueries.listEventsByIds(client, unique);
+  } catch (error) {
+    return handleServiceError(error, {
+      method: 'catalog.listEventsByIds',
+      args: { count: unique.length },
     });
   }
 }

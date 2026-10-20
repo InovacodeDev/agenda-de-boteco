@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 
-const LAST_UPDATED = '3 de setembro de 2026';
+const LAST_UPDATED = '13 de outubro de 2026';
 const CONTACT_EMAIL = 'contato@inovacode.dev';
 
 export const metadata: Metadata = {
@@ -66,7 +66,7 @@ export default function ArtistPrivacyPolicyPage() {
           exatamente para essa finalidade.
         </Bullet>
         <Bullet>
-          <span className="text-foreground">Instagram (opcional).</span> Permite que o bar veja seu
+          <span className="text-foreground">Instagram.</span> Permite que o bar veja seu
           trabalho antes de chamar.
         </Bullet>
         <Bullet>
@@ -96,8 +96,9 @@ export default function ArtistPrivacyPolicyPage() {
           acesso restrito por regras no servidor.
         </Bullet>
         <Bullet>
-          <span className="text-foreground">PostHog</span> — recebe apenas dados de uso da página
-          (quais telas foram abertas), sem nome, telefone ou Instagram.
+          <span className="text-foreground">PostHog</span> — recebe dados de uso da página (quais
+          telas foram abertas) e o registro de que um cadastro foi enviado, sem nome, telefone ou
+          Instagram.
         </Bullet>
       </Section>
 

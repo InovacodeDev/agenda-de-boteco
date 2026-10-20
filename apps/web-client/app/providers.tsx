@@ -14,6 +14,7 @@ import {
   useAuthStore,
   webStorage,
 } from '@agenda/core';
+import { ToastProvider } from '@agenda/shared-ui';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { usePathname } from 'next/navigation';
 import posthog from 'posthog-js';
@@ -54,10 +55,7 @@ function AppSyncBridge() {
   }, [initialize]);
 
   useEffect(() => {
-    const client = getSupabase();
-    if (!client) return;
-    // Mudanças no catálogo (inclusive as feitas aqui no painel) invalidam o cache.
-    return subscribeToCatalogChanges(client, (keys) => {
+    return subscribeToCatalogChanges((keys) => {
       for (const queryKey of keys) {
         void queryClient.invalidateQueries({ queryKey });
       }
@@ -83,7 +81,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <QueryClientProvider client={queryClient}>
       <AppSyncBridge />
       <PostHogPageview />
-      {children}
+      <ToastProvider>{children}</ToastProvider>
     </QueryClientProvider>
   );
 }

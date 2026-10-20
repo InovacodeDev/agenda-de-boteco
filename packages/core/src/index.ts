@@ -20,10 +20,12 @@ export * from './utils/filters';
 export * from './utils/format';
 export * from './utils/formErrors';
 export * from './utils/geo';
+export * from './utils/ids';
 export * from './utils/images';
 export * from './utils/links';
 export * from './utils/masks';
 export * from './utils/moderation';
+export * from './utils/opening-hours';
 export * from './utils/pagination';
 export * from './utils/platform';
 export * from './utils/pressGuard';
@@ -37,12 +39,18 @@ export * from './utils/status-light';
 export * from './hooks/queries';
 export * from './hooks/useActiveCity';
 export * from './hooks/useConnectivity';
+export * from './hooks/useDebouncedValue';
 export * from './hooks/useEstablishmentRating';
 export * from './hooks/useFeatureFlag';
 export * from './hooks/useGuardedClick';
 export * from './hooks/useGuardedPress';
 export * from './hooks/useInfiniteScrollSentinel';
+export * from './hooks/useMetricsEvents';
+export * from './hooks/useMusicianLeads';
 export * from './hooks/useNearbyEstablishments';
+export * from './hooks/useOwnedEstablishment';
+export * from './hooks/useOwnedEvents';
+export * from './hooks/useOwnedMetrics';
 export * from './hooks/useRecordView';
 export * from './hooks/useResendCooldown';
 export * from './hooks/useStatusLight';
@@ -60,9 +68,11 @@ export {
   getEvent,
   listCities,
   listEstablishments,
+  listEstablishmentsByIds,
   listEventAttractions,
   listEvents,
   listEventsByEstablishment,
+  listEventsByIds,
   listMusicStyles,
   listNotifications,
   listOwnedEvents,
@@ -70,6 +80,7 @@ export {
   upsertEvent,
   upsertNotification,
 } from './services/catalog';
+export * from './services/cep';
 export * from './services/connectivity';
 export * from './services/establishment-owner';
 export * from './services/establishment-ratings';
@@ -79,6 +90,7 @@ export * from './services/moderation';
 export * from './services/musician-leads';
 export * from './services/owned-events';
 export * from './services/proximity';
+export * from './services/push';
 export * from './services/queryKeys';
 export * from './services/realtime';
 export * from './services/storage';

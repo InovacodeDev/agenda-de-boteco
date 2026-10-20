@@ -1,3 +1,4 @@
+import { uniqueSortedIds } from '../utils/ids';
 import type { MusicianLeadFilters, MusicianLeadSort } from './musician-leads';
 
 /**
@@ -12,6 +13,8 @@ export const catalogKeys = {
     // Feed paginado. Primeiro segmento 'events' de proposito: a invalidacao
     // por prefixo do realtime precisa alcancar esta key tambem.
     list: ['events', 'list'] as const,
+    listInRange: (start: string, end: string) =>
+      ['events', 'list', 'range', start, end] as const,
     detail: (id: string) => ['events', 'detail', id] as const,
     byEstablishment: (establishmentId: string) =>
       ['events', 'by-establishment', establishmentId] as const,
@@ -21,6 +24,9 @@ export const catalogKeys = {
     // a invalidação por prefixo após salvar/apagar evento também a alcance.
     owned: (establishmentId: string) =>
       ['events', 'owned', establishmentId] as const,
+    // Lookup por ids (favoritos). Ids normalizados aqui para a mesma seleção
+    // sempre cair na mesma key. Fora do cache persistido (ver cachePolicy.ts).
+    byIds: (ids: readonly string[]) => ['events', 'by-ids', uniqueSortedIds(ids)] as const,
   },
   establishments: {
     root: ['establishments'] as const,
@@ -29,6 +35,15 @@ export const catalogKeys = {
         ? (['establishments', 'list', cityId] as const)
         : (['establishments', 'list'] as const),
     detail: (id: string) => ['establishments', 'detail', id] as const,
+    // Busca por nome no servidor. `term` já vem aparado. Segmento próprio
+    // ('search') em vez de filho de 'list' para o cachePolicy deixá-lo fora do
+    // storage persistido: o termo digitado é texto do usuário.
+    search: (cityId: string | undefined, term: string) =>
+      ['establishments', 'search', cityId ?? '', term] as const,
+    // Lookup por ids (bares de eventos fora das páginas carregadas, favoritos).
+    // Fora do cache persistido: a key de favoritos revelaria os ids salvos.
+    byIds: (ids: readonly string[]) =>
+      ['establishments', 'by-ids', uniqueSortedIds(ids)] as const,
     // Começa com 'establishments' de propósito: a invalidação por prefixo da
     // Etapa 7 (realtime sobre 'establishments') também cobre as queries nearby.
     // lat/lng devem chegar já arredondados (coarseLatLng) para estabilizar a key.
@@ -55,5 +70,21 @@ export const catalogKeys = {
       ['establishment-ratings', 'user', establishmentId] as const,
     byEstablishment: (establishmentId: string) =>
       ['establishment-ratings', 'by-establishment', establishmentId] as const,
+    summary: (establishmentId: string) =>
+      ['establishment-ratings', 'summary', establishmentId] as const,
+  },
+  panel: {
+    ownedEstablishmentId: ['panel', 'owned-establishment-id'] as const,
+    metrics: (establishmentId: string, sinceDays: number) =>
+      ['panel', 'metrics', 'owned', establishmentId, sinceDays] as const,
+    favoritesCount: (establishmentId: string) =>
+      ['panel', 'metrics', 'favorites-count', establishmentId] as const,
+    // Eventos exibidos na tela de métricas. Os ids entram NA ORDEM recebida (sem
+    // uniqueSortedIds): a ordem é por views e define o conteúdo de cada página.
+    // Fora do cache persistido: 'panel' não está no allowlist.
+    metricsEvents: (eventIds: readonly string[]) =>
+      ['panel', 'metrics', 'events', eventIds] as const,
   },
 } as const;
+
+export const panelKeys = catalogKeys.panel;

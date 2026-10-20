@@ -83,10 +83,38 @@ jobs:
       - name: Run Test
         run: pnpm run test
 
+  migrate:
+    name: Apply Supabase migrations
+    runs-on: ubuntu-latest
+    needs: verify
+    if: github.ref_name == 'release'
+
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+      SUPABASE_PROJECT_REF: ${{ vars.SUPABASE_PROJECT_REF }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Link production project
+        run: supabase link --project-ref "$SUPABASE_PROJECT_REF"
+
+      - name: Push pending migrations
+        run: supabase db push --yes
+
   deploy:
     name: Build & Deploy
     runs-on: ubuntu-latest
-    needs: [version-gate, verify]
+    needs: [version-gate, verify, migrate]
+    # NOTE: migrate só roda em release; em alfa fica "skipped" e o deploy precisa seguir mesmo assim.
+    if: ${{ !cancelled() && needs.version-gate.result == 'success' && needs.verify.result == 'success' && needs.migrate.result != 'failure' }}
 
     env:
       EAS_PROJECT_ID: ${{ vars.EAS_PROJECT_ID }}

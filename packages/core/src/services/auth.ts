@@ -177,6 +177,44 @@ export async function signOut(): Promise<void> {
   }
 }
 
+export async function signOutOtherSessions(): Promise<void> {
+  const client = getConfiguredSupabase();
+  if (!client) {
+    return;
+  }
+  try {
+    const { error } = await client.auth.signOut({ scope: 'others' });
+    if (error) {
+      throw error;
+    }
+  } catch (error) {
+    return handleServiceError(error, { method: 'auth.signOutOtherSessions' });
+  }
+}
+
+export async function getUserAuthProvider(): Promise<'google' | 'apple' | 'email' | null> {
+  const client = getConfiguredSupabase();
+  if (!client) {
+    return null;
+  }
+  try {
+    const { data, error } = await client.auth.getUser();
+    if (error || !data.user) {
+      return null;
+    }
+    const provider = data.user.app_metadata?.provider;
+    if (provider === 'google' || provider === 'apple') {
+      return provider;
+    }
+    if (data.user.email) {
+      return 'email';
+    }
+    return null;
+  } catch (error) {
+    return handleServiceError(error, { method: 'auth.getUserAuthProvider' });
+  }
+}
+
 /**
  * Enfileira a exclusão definitiva da conta do usuário autenticado. A anon key
  * não pode apagar `auth.users`; em vez disso chamamos a RPC SECURITY DEFINER

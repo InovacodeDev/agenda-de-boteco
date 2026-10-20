@@ -12,7 +12,7 @@ export interface EstablishmentDetailAgendaItemProps {
 export function EstablishmentDetailAgendaItem({ event, styles }: EstablishmentDetailAgendaItemProps) {
   return (
     <Link
-      href={`/event/${event.id}`}
+      href={`/event/${event.external_id}`}
       aria-label={`Evento ${event.name}`}
       className="flex gap-3 rounded-2xl bg-card p-3 transition-opacity hover:opacity-90"
     >

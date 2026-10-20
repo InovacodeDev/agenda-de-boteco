@@ -18,7 +18,7 @@ export function AgendaItem({ event, styles }: AgendaItemProps) {
     <GuardedPressable
       accessibilityRole="button"
       accessibilityLabel={`Evento ${event.name}`}
-      onPress={() => router.push(`/event/${event.id}`)}
+      onPress={() => router.push(`/event/${event.external_id}`)}
       className="bg-card flex-row gap-3 rounded-2xl p-3 active:opacity-90"
     >
       <Image

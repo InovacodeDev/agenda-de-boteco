@@ -1,6 +1,12 @@
 'use client';
 
-import { getFriendlyErrorMessage, updatePassword, useAuthStore } from '@agenda/core';
+import {
+  getFriendlyErrorMessage,
+  getUserAuthProvider,
+  signOutOtherSessions,
+  updatePassword,
+  useAuthStore,
+} from '@agenda/core';
 import {
   CheckCircleIcon,
   DeviceMobileIcon,
@@ -12,7 +18,6 @@ import type { FormEvent } from 'react';
 import { useEffect, useState } from 'react';
 
 import { GoogleIcon } from '@/components/GoogleIcon';
-import { getSupabase } from '@/lib/supabase';
 
 interface AccountSectionProps {
   onSuccessNotice?: (message: string) => void;
@@ -32,15 +37,11 @@ export function AccountSection({ onSuccessNotice }: AccountSectionProps) {
   const [sessionsNotice, setSessionsNotice] = useState<string | null>(null);
 
   useEffect(() => {
-    const supabase = getSupabase();
-    if (!supabase) return;
-
     let active = true;
-    void supabase.auth.getUser().then(({ data }) => {
+    void getUserAuthProvider().then((detected) => {
       if (!active) return;
-      const detectedProvider = data.user?.app_metadata?.provider;
       queueMicrotask(() => {
-        setProvider(detectedProvider === 'google' ? 'google' : 'email');
+        setProvider(detected === 'google' ? 'google' : 'email');
       });
     });
 
@@ -81,13 +82,10 @@ export function AccountSection({ onSuccessNotice }: AccountSectionProps) {
   };
 
   const handleSignOutOthers = async () => {
-    const supabase = getSupabase();
-    if (!supabase) return;
-
     setBusySignOutOthers(true);
     setSessionsNotice(null);
     try {
-      await supabase.auth.signOut({ scope: 'others' });
+      await signOutOtherSessions();
       setSessionsNotice('Sessões em outros dispositivos foram desconectadas.');
     } catch (error: unknown) {
       setSessionsNotice(getFriendlyErrorMessage(error));

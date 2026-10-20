@@ -2,9 +2,11 @@
 
 import {
   claimEstablishmentOwner,
+  getCurrentUserExternalId,
   getFriendlyErrorMessage,
   identifyAnalyticsUser,
   isCurrentUserEstablishmentOwner,
+  OTP_HOURLY_LIMIT_MESSAGE,
   sendPasswordReset,
   signInWithEmailOtp,
   signInWithOAuth,
@@ -16,6 +18,7 @@ import {
   useResendCooldown,
   verifyEmailOtp,
 } from '@agenda/core';
+import { type ToastInput, useToast } from '@agenda/shared-ui';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -25,7 +28,6 @@ import { GoogleIcon } from '@/components/GoogleIcon';
 import logo from '@/public/logo.png';
 
 type Tab = 'signIn' | 'signUp';
-type Notice = { tone: 'error' | 'success' | 'denied'; message: string };
 
 /**
  * O cadastro é em duas etapas: pedimos o código por e-mail ('email') e depois
@@ -59,7 +61,6 @@ const LABEL_CLASS = 'text-[13px] font-semibold text-foreground';
 export default function LoginPage() {
   const router = useRouter();
   const status = useAuthStore((state) => state.status);
-  const user = useAuthStore((state) => state.user);
 
   const [tab, setTab] = useState<Tab>('signIn');
   const [signUpStep, setSignUpStep] = useState<SignUpStep>('email');
@@ -69,7 +70,7 @@ export default function LoginPage() {
   const [busy, setBusy] = useState(false);
   /** Ligado enquanto o cadastro conclui, para o efeito de sessão não interferir. */
   const [claiming, setClaiming] = useState(false);
-  const [notice, setNotice] = useState<Notice | null>(null);
+  const toast = useToast();
 
   const resend = useResendCooldown();
 
@@ -99,7 +100,8 @@ export default function LoginPage() {
           window.sessionStorage.removeItem(OAUTH_SIGNUP_KEY);
           await claimEstablishmentOwner();
           if (active) {
-            if (user) identifyAnalyticsUser(user.id);
+            const externalId = await getCurrentUserExternalId();
+            if (externalId) identifyAnalyticsUser(externalId);
             router.replace('/');
           }
           return;
@@ -107,31 +109,44 @@ export default function LoginPage() {
         const isOwner = await isCurrentUserEstablishmentOwner();
         if (!active) return;
         if (isOwner) {
-          if (user) identifyAnalyticsUser(user.id);
+          const externalId = await getCurrentUserExternalId();
+          if (externalId) identifyAnalyticsUser(externalId);
           router.replace('/');
           return;
         }
         await signOut();
-        if (active) setNotice({ tone: 'denied', message: DENIED_MESSAGE });
+        if (active) {
+          toast.show({
+            tone: 'error',
+            message: DENIED_MESSAGE,
+            action: {
+              label: 'Criar meu acesso',
+              onPress: () => {
+                setTab('signUp');
+                setPassword('');
+              },
+            },
+          });
+        }
       } catch (error: unknown) {
-        if (active) setNotice({ tone: 'error', message: getFriendlyErrorMessage(error) });
+        if (active) toast.show({ tone: 'error', message: getFriendlyErrorMessage(error) });
       }
     })();
 
     return () => {
       active = false;
     };
-  }, [status, claiming, router, user]);
+  }, [status, claiming, router, toast]);
 
-  /** Envolve a ação: limpa aviso, trava o botão e traduz o erro do Supabase. */
-  const run = async (action: () => Promise<void>, onDone?: Notice) => {
-    setNotice(null);
+  /** Envolve a ação: limpa avisos, trava o botão e traduz o erro do Supabase. */
+  const run = async (action: () => Promise<void>, onDone?: ToastInput) => {
+    toast.dismissAll();
     setBusy(true);
     try {
       await action();
-      if (onDone) setNotice(onDone);
+      if (onDone) toast.show(onDone);
     } catch (error: unknown) {
-      setNotice({ tone: 'error', message: getFriendlyErrorMessage(error) });
+      toast.show({ tone: 'error', message: getFriendlyErrorMessage(error) });
     } finally {
       setBusy(false);
     }
@@ -145,18 +160,18 @@ export default function LoginPage() {
    */
   const handleSignUpStart = async () => {
     if (!canSubmit) return;
-    setNotice(null);
+    toast.dismissAll();
     setBusy(true);
     try {
       await signInWithEmailOtp(email.trim());
       setSignUpStep('code');
       resend.start();
-      setNotice({
+      toast.show({
         tone: 'success',
         message: `Enviamos um código para ${email.trim()}. Ele confirma que o e-mail é seu.`,
       });
     } catch (error: unknown) {
-      setNotice({ tone: 'error', message: getFriendlyErrorMessage(error) });
+      toast.show({ tone: 'error', message: getFriendlyErrorMessage(error) });
     } finally {
       setBusy(false);
     }
@@ -169,7 +184,7 @@ export default function LoginPage() {
    */
   const handleSignUpVerify = async () => {
     if (!canSubmit) return;
-    setNotice(null);
+    toast.dismissAll();
     setBusy(true);
     setClaiming(true);
     try {
@@ -178,7 +193,7 @@ export default function LoginPage() {
       await claimEstablishmentOwner();
       router.replace('/');
     } catch (error: unknown) {
-      setNotice({ tone: 'error', message: getFriendlyErrorMessage(error) });
+      toast.show({ tone: 'error', message: getFriendlyErrorMessage(error) });
       setClaiming(false);
     } finally {
       setBusy(false);
@@ -200,13 +215,20 @@ export default function LoginPage() {
 
   const handleReset = () => {
     if (!email.trim()) {
-      setNotice({ tone: 'error', message: 'Informe seu e-mail para recuperar a senha.' });
+      toast.show({ tone: 'error', message: 'Informe seu e-mail para recuperar a senha.' });
       return;
     }
     void run(() => sendPasswordReset(email.trim()), {
       tone: 'success',
       message: 'Enviamos um link de recuperação para o seu e-mail.',
     });
+  };
+
+  const switchTab = (next: Tab) => {
+    setTab(next);
+    toast.dismissAll();
+    setSignUpStep('email');
+    setCode('');
   };
 
   const guardedSubmit = useGuardedClick(handleSubmit);
@@ -241,16 +263,13 @@ export default function LoginPage() {
                 role="tab"
                 type="button"
                 aria-selected={tab === item.id}
-                onClick={() => {
-                  setTab(item.id);
-                  setNotice(null);
-                  setSignUpStep('email');
-                  setCode('');
-                }}
-                className={`flex-1 rounded-lg py-2 text-[14px] font-medium transition-colors ${
+                onClick={() => switchTab(item.id)}
+                className={`flex-1 rounded-lg py-2.5 text-[15px] font-semibold transition-colors ${
                   tab === item.id
                     ? 'bg-background text-foreground'
-                    : 'text-muted-foreground hover:text-foreground'
+                    : item.id === 'signUp'
+                      ? 'text-primary hover:bg-background/60'
+                      : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
                 {item.label}
@@ -261,37 +280,6 @@ export default function LoginPage() {
           {unavailable ? (
             <p className="mt-4 rounded-xl bg-surface px-3.5 py-2.5 text-[12px] text-muted-foreground">
               Login indisponível: configuração do Supabase ausente.
-            </p>
-          ) : null}
-
-          {notice?.tone === 'denied' ? (
-            <div
-              role="status"
-              className="mt-4 flex flex-col items-start gap-2 rounded-xl border border-border bg-surface px-3.5 py-3"
-            >
-              <p className="text-[12px] leading-relaxed text-muted-foreground">
-                {notice.message}
-              </p>
-              <button
-                type="button"
-                onClick={() => {
-                  setTab('signUp');
-                  setNotice(null);
-                  setPassword('');
-                }}
-                className="text-[12px] font-semibold text-primary underline-offset-2 hover:underline"
-              >
-                Criar meu acesso
-              </button>
-            </div>
-          ) : notice ? (
-            <p
-              role="status"
-              className={`mt-4 text-[12px] ${
-                notice.tone === 'error' ? 'text-destructive' : 'text-primary'
-              }`}
-            >
-              {notice.message}
             </p>
           ) : null}
 
@@ -393,8 +381,7 @@ export default function LoginPage() {
                 </button>
                 {resend.hasReachedHourlyLimit ? (
                   <p className="mt-2 text-[12px] text-muted-foreground">
-                    Você já solicitou 2 códigos nesta hora. Aguarde antes de tentar novamente para
-                    não ser bloqueado temporariamente.
+                    {OTP_HOURLY_LIMIT_MESSAGE}
                   </p>
                 ) : null}
                 <button
@@ -403,7 +390,7 @@ export default function LoginPage() {
                   onClick={() => {
                     setSignUpStep('email');
                     setCode('');
-                    setNotice(null);
+                    toast.dismissAll();
                     resend.reset();
                   }}
                   className="mt-3 text-[13px] font-medium text-muted-foreground underline-offset-2 hover:underline"
@@ -437,6 +424,23 @@ export default function LoginPage() {
             <GoogleIcon className="h-[18px] w-[18px]" />
             Google
           </button>
+
+          {/* A aba sozinha passava despercebida para quem chega pela primeira
+              vez; o dono de bar novo precisa de um caminho óbvio. */}
+          {tab === 'signIn' ? (
+            <div className="border-border mt-5 flex flex-col items-center gap-2.5 border-t pt-5">
+              <p className="text-foreground text-[15px] font-medium">
+                Primeira vez aqui?
+              </p>
+              <button
+                type="button"
+                onClick={() => switchTab('signUp')}
+                className="border-primary text-primary hover:bg-primary/10 h-12 w-full rounded-xl border-2 text-[15px] font-semibold transition-colors"
+              >
+                Criar conta do meu estabelecimento
+              </button>
+            </div>
+          ) : null}
         </div>
 
         <Link

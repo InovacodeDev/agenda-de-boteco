@@ -158,7 +158,7 @@ export type Database = {
           name: string
           neighborhood: string
           opening_hours: string
-          price_range: Database["public"]["Enums"]["price_range_enum"]
+          price_range: Database["public"]["Enums"]["price_range_enum"] | null
           rating_avg: number
           rating_count: number
           slug: string | null
@@ -183,7 +183,7 @@ export type Database = {
           name: string
           neighborhood: string
           opening_hours: string
-          price_range: Database["public"]["Enums"]["price_range_enum"]
+          price_range?: Database["public"]["Enums"]["price_range_enum"] | null
           rating_avg?: number
           rating_count?: number
           slug?: string | null
@@ -208,7 +208,7 @@ export type Database = {
           name?: string
           neighborhood?: string
           opening_hours?: string
-          price_range?: Database["public"]["Enums"]["price_range_enum"]
+          price_range?: Database["public"]["Enums"]["price_range_enum"] | null
           rating_avg?: number
           rating_count?: number
           slug?: string | null
@@ -332,6 +332,42 @@ export type Database = {
         }
         Relationships: []
       }
+      notification_preferences: {
+        Row: {
+          alert_empty_schedule: boolean
+          alert_event_status: boolean
+          alert_musicians: boolean
+          alert_reviews: boolean
+          alert_weekly_digest: boolean
+          channel_email: boolean
+          channel_push: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          alert_empty_schedule?: boolean
+          alert_event_status?: boolean
+          alert_musicians?: boolean
+          alert_reviews?: boolean
+          alert_weekly_digest?: boolean
+          channel_email?: boolean
+          channel_push?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          alert_empty_schedule?: boolean
+          alert_event_status?: boolean
+          alert_musicians?: boolean
+          alert_reviews?: boolean
+          alert_weekly_digest?: boolean
+          channel_email?: boolean
+          channel_push?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           body: string
@@ -401,6 +437,36 @@ export type Database = {
           id?: string
           is_admin?: boolean
           is_establishment_owner?: boolean
+        }
+        Relationships: []
+      }
+      push_tokens: {
+        Row: {
+          app: string
+          created_at: string
+          id: string
+          platform: string
+          token: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          app?: string
+          created_at?: string
+          id?: string
+          platform: string
+          token: string
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          app?: string
+          created_at?: string
+          id?: string
+          platform?: string
+          token?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -777,6 +843,22 @@ export type Database = {
         Returns: boolean
       }
       geomfromewkt: { Args: { "": string }; Returns: unknown }
+      get_owned_metrics_aggregate: {
+        Args: { p_establishment_id: string; p_since_days: number }
+        Returns: {
+          day: string
+          event_id: string | null
+          kind: string
+          total: number
+        }[]
+      }
+      get_owned_ratings_distribution: {
+        Args: { p_establishment_id: string }
+        Returns: {
+          rating: number
+          total: number
+        }[]
+      }
       gettransactionid: { Args: never; Returns: unknown }
       is_admin: { Args: never; Returns: boolean }
       is_establishment_owner: { Args: never; Returns: boolean }
@@ -806,7 +888,7 @@ export type Database = {
           name: string
           neighborhood: string
           opening_hours: string
-          price_range: Database["public"]["Enums"]["price_range_enum"]
+          price_range: Database["public"]["Enums"]["price_range_enum"] | null
           rating_avg: number
           rating_count: number
           slug: string
@@ -858,6 +940,10 @@ export type Database = {
       postgis_version: { Args: never; Returns: string }
       postgis_wagyu_version: { Args: never; Returns: string }
       process_account_deletion_queue: { Args: never; Returns: number }
+      register_push_token: {
+        Args: { p_platform: string; p_token: string }
+        Returns: undefined
+      }
       request_account_deletion: { Args: never; Returns: undefined }
       slugify: { Args: { input: string }; Returns: string }
       st_3dclosestpoint: {

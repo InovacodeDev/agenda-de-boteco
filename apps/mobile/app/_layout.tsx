@@ -4,7 +4,12 @@ import '@/store/storage';
 // bootstrap: registra client supabase, redirect de auth e handler de erro — NÃO remover
 import '@/lib/bootstrap';
 
-import { identifyAnalyticsUser, resetAnalytics, trackPageview } from '@agenda/core';
+import {
+  getCurrentUserExternalId,
+  identifyAnalyticsUser,
+  resetAnalytics,
+  trackPageview,
+} from '@agenda/core';
 import {
   Inter_400Regular,
   Inter_500Medium,
@@ -99,7 +104,13 @@ export default function RootLayout() {
       const nextUserId = user?.id ?? null;
       if (nextUserId !== null && nextUserId !== lastUserId) {
         mergeLocalIntoServer(nextUserId);
-        identifyAnalyticsUser(nextUserId);
+        // identify nunca bloqueia o merge de favoritos: falha de leitura do
+        // profile só deixa o analytics sem distinct_id nesta sessão.
+        void getCurrentUserExternalId()
+          .then((externalId) => {
+            if (externalId) identifyAnalyticsUser(externalId);
+          })
+          .catch(() => {});
       } else if (nextUserId === null && lastUserId !== null) {
         resetAnalytics();
       }
