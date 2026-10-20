@@ -4,7 +4,7 @@ import type { NextConfig } from 'next';
 // connect-src sairia sem o banco e a CSP bloquearia as chamadas em silêncio —
 // e um painel admin sem banco não tem função. Build de deploy falha alto;
 // dev e CI (que buildam sem env) só avisam.
-const SUPABASE_ORIGIN = process.env.NEXT_PUBLIC_SUPABASE_URL ?? '';
+const SUPABASE_ORIGIN = (process.env.NEXT_PUBLIC_SUPABASE_URL ?? '').replace(/\/+$/, '');
 
 if (!SUPABASE_ORIGIN) {
   const message =
@@ -29,9 +29,9 @@ const CSP = [
   "default-src 'self'",
   `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV === 'development' ? " 'unsafe-eval'" : ''} ${POSTHOG_ORIGINS}`,
   "style-src 'self' 'unsafe-inline'",
-  `img-src 'self' data: blob: ${SUPABASE_ORIGIN} https:`,
+  `img-src 'self' data: blob: ${SUPABASE_ORIGIN} https://*.supabase.co https:`,
   "font-src 'self' data:",
-  `connect-src 'self' ${SUPABASE_ORIGIN} ${SUPABASE_WS} ${POSTHOG_ORIGINS}`,
+  `connect-src 'self' ${SUPABASE_ORIGIN} ${SUPABASE_WS} https://*.supabase.co wss://*.supabase.co ${POSTHOG_ORIGINS}`,
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self'",

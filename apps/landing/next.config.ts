@@ -13,7 +13,7 @@ const CSP = [
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https:",
   "font-src 'self' data:",
-  `connect-src 'self' ${POSTHOG_ORIGINS}`,
+  `connect-src 'self' https://*.supabase.co wss://*.supabase.co ${POSTHOG_ORIGINS}`,
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self'",

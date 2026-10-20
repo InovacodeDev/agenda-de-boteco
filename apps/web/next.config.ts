@@ -6,7 +6,7 @@ import { BASE_PATH } from './lib/basePath';
 // connect-src sairia sem o banco e a CSP bloquearia as chamadas em silêncio —
 // por isso o build de deploy falha alto em vez de publicar um site quebrado.
 // Dev e CI (que buildam sem env, com o app degradando para mock) só avisam.
-const SUPABASE_ORIGIN = process.env.NEXT_PUBLIC_SUPABASE_URL ?? '';
+const SUPABASE_ORIGIN = (process.env.NEXT_PUBLIC_SUPABASE_URL ?? '').replace(/\/+$/, '');
 
 if (!SUPABASE_ORIGIN) {
   const message =
@@ -31,9 +31,9 @@ const CSP = [
   "default-src 'self'",
   `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV === 'development' ? " 'unsafe-eval'" : ''} ${POSTHOG_ORIGINS}`,
   "style-src 'self' 'unsafe-inline'",
-  `img-src 'self' data: blob: ${SUPABASE_ORIGIN} https://*.tile.openstreetmap.org https:`,
+  `img-src 'self' data: blob: ${SUPABASE_ORIGIN} https://*.supabase.co https://*.tile.openstreetmap.org https:`,
   "font-src 'self' data:",
-  `connect-src 'self' ${SUPABASE_ORIGIN} ${SUPABASE_WS} ${POSTHOG_ORIGINS}`,
+  `connect-src 'self' ${SUPABASE_ORIGIN} ${SUPABASE_WS} https://*.supabase.co wss://*.supabase.co ${POSTHOG_ORIGINS}`,
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self'",
