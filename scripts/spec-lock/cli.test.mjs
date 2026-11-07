@@ -97,6 +97,15 @@ describe('Tratamento de erro: CLI no pre-commit e no gate', () => {
     assert.equal(cli(['gate', '--base', 'nao-existe']).code, 2);
   });
 
+  it('gate retorna 3 quando teste travado muda sem atualizar o lock', () => {
+    writeFileSync(join(repo, 'a.test.ts'), `${CONTRACT}// sem approve\n`);
+    try {
+      assert.equal(cli(['gate', '--base', 'HEAD']).code, 3);
+    } finally {
+      writeFileSync(join(repo, 'a.test.ts'), CONTRACT);
+    }
+  });
+
   it('approve recusa em CI sem tocar o lock', () => {
     const before = readFileSync(join(repo, '.github/test-lock.json'), 'utf8');
 

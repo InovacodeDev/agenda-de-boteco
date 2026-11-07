@@ -182,7 +182,10 @@ function cmdGate(args) {
   const baseLock = JSON.parse(git(['show', `${base}:${LOCK_PATH}`]));
   const { changed, removed } = diffAgainstBase(baseLock, readLock());
   const verifyCode = cmdVerify([]);
-  if (changed.length === 0 && removed.length === 0 && verifyCode === 0) {
+  if (verifyCode !== 0) {
+    return 3;
+  }
+  if (changed.length === 0 && removed.length === 0) {
     console.log('spec-lock: nenhum teste travado na base foi alterado neste PR.');
     return 0;
   }

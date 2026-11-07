@@ -155,6 +155,14 @@ export function getFriendlyErrorMessage(error: unknown): string {
     return 'Erro interno ao processar dados. O aplicativo pode precisar ser atualizado.';
   }
 
+  if (type === 'FileTooLargeError') {
+    return 'Arquivo muito grande. O limite é 8 MB.';
+  }
+
+  if (type === 'UnsupportedFileTypeError') {
+    return 'Formato de arquivo não suportado. Use JPG, PNG, WEBP ou PDF.';
+  }
+
   return 'Ocorreu um erro inesperado. Por favor, tente novamente.';
 }
 

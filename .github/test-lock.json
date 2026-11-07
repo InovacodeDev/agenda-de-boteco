@@ -216,6 +216,11 @@
       "lockedAt": "2026-11-07",
       "reason": "new test file"
     },
+    "packages/core/src/schemas/catalog.url.contract.test.ts": {
+      "sha256": "93a9b38e4a7e26385891eea4c706eed4ee88183b3a7b93a02ebe2b8c09fbcecb",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
     "packages/core/src/schemas/musician-lead.test.ts": {
       "sha256": "e217cc7b89a1b1ae1e7cd9e4bad46284d08b3d37f8175d0cc72f6b5934bddc35",
       "lockedAt": "2026-11-07",
@@ -346,6 +351,11 @@
       "lockedAt": "2026-11-07",
       "reason": "new test file"
     },
+    "packages/core/src/stores/useAuthStore.init.contract.test.ts": {
+      "sha256": "cc585f4b6425493976d4cca0610893efd0760a8a6454ce8679498d4193fdbcba",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
     "packages/core/src/stores/useAuthStore.test.ts": {
       "sha256": "7c78a8b39837ec37b1999d4831fc82da251901defae98e5f47f21cab1b6aba72",
       "lockedAt": "2026-11-07",
@@ -398,6 +408,11 @@
     },
     "packages/core/src/utils/errors.test.ts": {
       "sha256": "ef60ba23ab2cd6f0cf486b82b3738619eb4cfe3e37688c6b12e536cdc13d56c6",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/utils/errors.upload.contract.test.ts": {
+      "sha256": "f4866a54a781a21c429e3855651f9bf33454e7f55673c597b5e9b3987ce421a0",
       "lockedAt": "2026-11-07",
       "reason": "new test file"
     },
@@ -501,6 +516,11 @@
       "lockedAt": "2026-11-07",
       "reason": "new test file"
     },
+    "packages/shared-ui-mobile/src/Field.test.tsx": {
+      "sha256": "b8b57cfd1ca3109c1ec6325827c6d350e92dbbdbff87f8065336f13340cbd07d",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
     "packages/shared-ui-mobile/src/ImagePickerField.test.tsx": {
       "sha256": "8719ff08db8351e752ce506012de51d6b178257f7cf7d550f6fcae4cad4cf8db",
       "lockedAt": "2026-11-07",
@@ -508,6 +528,11 @@
     },
     "packages/shared-ui/src/Button.test.tsx": {
       "sha256": "5263c26394fffb625337bced03b0181152b62dfd6f0983e05995296b0a20b841",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/shared-ui/src/Field.a11y.test.tsx": {
+      "sha256": "058d50a42cfbc8cf9d3494fec703d21349b1e5ad729fc95d7322f8b7888d7534",
       "lockedAt": "2026-11-07",
       "reason": "new test file"
     },
