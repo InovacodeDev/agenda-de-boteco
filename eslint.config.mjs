@@ -11,6 +11,7 @@
 // to switch off any ESLint rule that would fight Prettier.
 
 import js from '@eslint/js';
+import jest from 'eslint-plugin-jest';
 import tseslint from 'typescript-eslint';
 import react from 'eslint-plugin-react';
 import reactHooks from 'eslint-plugin-react-hooks';
@@ -84,12 +85,26 @@ export default tseslint.config(
     },
   },
 
-  // 5) (Optional) idiomatic Expo rules for the mobile app:
+  // 5) Anti-sabotagem de testes (spec-lock): skip, only, teste comentado ou
+  //    sem asserção quebram o lint em vez de passar em silêncio.
+  {
+    files: ['**/*.test.{ts,tsx}', '**/*.spec.ts'],
+    ...jest.configs['flat/recommended'],
+    rules: {
+      'jest/no-disabled-tests': 'error',
+      'jest/no-focused-tests': 'error',
+      'jest/no-commented-out-tests': 'error',
+      'jest/expect-expect': 'error',
+      'jest/valid-expect': 'error',
+    },
+  },
+
+  // 6) (Optional) idiomatic Expo rules for the mobile app:
   //      pnpm add -D -w eslint-config-expo
   //      import expo from 'eslint-config-expo/flat';
   //    then add, scoped to the app:
   //      { files: ['apps/mobile/**/*.{ts,tsx,js,jsx}'], extends: [expo] },
 
-  // 6) Prettier LAST — turns off all formatting-related lint rules
+  // 7) Prettier LAST — turns off all formatting-related lint rules
   prettier,
 );
