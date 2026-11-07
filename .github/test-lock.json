@@ -476,6 +476,21 @@
       "lockedAt": "2026-11-07",
       "reason": "new test file"
     },
+    "packages/shared-ui-mobile/src/Button.test.tsx": {
+      "sha256": "0af2b539d157ae0af5c22e222e57c6fe66b146e161dbaa547b0024485a94fc66",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/shared-ui-mobile/src/ConfirmDialog.test.tsx": {
+      "sha256": "f29cdbe9c616b24f682fb998a5909180000153345ab1740061232cdf36d96ec4",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/shared-ui-mobile/src/ImagePickerField.test.tsx": {
+      "sha256": "8719ff08db8351e752ce506012de51d6b178257f7cf7d550f6fcae4cad4cf8db",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
     "packages/shared-ui/src/Button.test.tsx": {
       "sha256": "5263c26394fffb625337bced03b0181152b62dfd6f0983e05995296b0a20b841",
       "lockedAt": "2026-11-07",
