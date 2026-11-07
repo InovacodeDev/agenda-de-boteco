@@ -36,3 +36,4 @@
 - Perfil mostra o logo, a capa e a foto do cardápio já cadastrados, com botão "Trocar imagem" sempre visível
 - Lista de eventos mostra o banner de cada evento e volta ao ícone padrão quando a imagem não carrega
 - Corrige falha ao enviar fotos (logo, capa, cardápio e banner do evento) em alguns aparelhos Android
+- Reforço da verificação automática de qualidade
