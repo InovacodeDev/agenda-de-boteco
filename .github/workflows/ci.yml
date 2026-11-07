@@ -59,7 +59,7 @@ jobs:
 
           if [ -z "$range" ]; then
             mobile_changed=true
-          elif git diff --name-only "$range" -- apps/mobile/ | grep -q .; then
+          elif git diff --name-only "$range" -- apps/mobile/ apps/mobile-client/ packages/core/ packages/shared-ui-mobile/ | grep -q .; then
             mobile_changed=true
           else
             mobile_changed=false
