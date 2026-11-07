@@ -79,6 +79,12 @@ export const establishmentAttributeSchema = z.enum([
   'counter-service',
 ]);
 
+function isEstablishmentAttribute(
+  value: string,
+): value is z.infer<typeof establishmentAttributeSchema> {
+  return establishmentAttributeSchema.safeParse(value).success;
+}
+
 export const establishmentSchema = z.object({
   id: z.string(),
   /** Identificador opaco exposto em URL/analytics — nunca o `id` interno. */
@@ -100,11 +106,14 @@ export const establishmentSchema = z.object({
   instagram: z.string().optional(),
   opening_hours: z.string(),
   menu_items: z.array(menuItemSchema).default([]),
-  price_range: priceRangeSchema.nullable(),
+  price_range: priceRangeSchema.nullable().catch(null),
   ambiance: z.string(),
   rating_avg: z.number().min(0).max(5),
   rating_count: z.number().int().nonnegative(),
-  attributes: z.array(establishmentAttributeSchema).default([]),
+  attributes: z
+    .array(z.string())
+    .default([])
+    .transform((values) => values.filter(isEstablishmentAttribute)),
   slug: z.string().optional(),
   menu_pdf_url: safePathOrHttpUrlSchema.nullable().optional(),
   menu_photo_urls: z.array(safePathOrHttpUrlSchema).default([]),
@@ -139,7 +148,7 @@ export const eventSchema = z.object({
    * Default 'published' espelha o default do banco: evento gravado antes da
    * coluna existir (e mock sem o campo) continua público ao ser lido.
    */
-  status: eventStatusSchema.default('published'),
+  status: eventStatusSchema.catch('draft').default('published'),
   /** Lotação do evento; só o painel do dono usa. null = dono não controla. */
   capacity: z.number().int().positive().nullable().optional(),
   /** Agrupa as ocorrências geradas por recorrência. null = evento único. */
@@ -182,6 +191,10 @@ export const notificationSchema = z.object({
   establishment_external_id: z.string().uuid().optional(),
 });
 
+export const notificationReadSchema = notificationSchema.extend({
+  type: notificationTypeSchema.catch('promo'),
+});
+
 /**
  * Schemas de input para escrita (admin). Derivam dos schemas de leitura via
  * .omit()/.partial() — não redefinem campos, então mudanças no schema base
@@ -190,14 +203,24 @@ export const notificationSchema = z.object({
  */
 export const establishmentWriteSchema = establishmentSchema
   .omit({ rating_avg: true, rating_count: true, external_id: true })
+  .extend({
+    price_range: priceRangeSchema.nullable(),
+    attributes: z.array(establishmentAttributeSchema).default([]),
+  })
   .partial({ id: true });
 
 export const eventWriteSchema = eventSchema
   .omit({ external_id: true })
+  .extend({
+    status: eventStatusSchema.default('published'),
+  })
   .partial({ id: true });
 
 export const notificationWriteSchema = notificationSchema
   .omit({ created_at: true, read: true, event_external_id: true, establishment_external_id: true })
+  .extend({
+    type: notificationTypeSchema,
+  })
   .partial({ id: true });
 
 export type MusicStyle = z.infer<typeof musicStyleSchema>;

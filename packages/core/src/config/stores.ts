@@ -8,3 +8,5 @@ export const STORE_URLS = {
 } as const;
 
 export type StoreKey = keyof typeof STORE_URLS;
+
+export const PERSISTED_STORE_VERSION = 1;

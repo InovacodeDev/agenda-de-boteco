@@ -1,8 +1,10 @@
+import { z } from 'zod';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
+import { PERSISTED_STORE_VERSION } from '../config/stores';
 import { appJsonStorage, registerRehydrator } from '../platform/storage';
-import type { City } from '../schemas';
+import { type City, citySchema } from '../schemas';
 import { isVirtualCityId } from '../utils/geo';
 
 export interface PreferencesState {
@@ -30,6 +32,31 @@ type PreferencesPersistedState = Pick<
   'cityId' | 'customCity' | 'hasOnboarded'
 >;
 
+const DEFAULT_PREFERENCES_PERSISTED: PreferencesPersistedState = {
+  cityId: 'fln',
+  customCity: null,
+  hasOnboarded: false,
+};
+
+const preferencesPersistedSchema = z.object({
+  cityId: z.string(),
+  customCity: citySchema.nullable(),
+  hasOnboarded: z.boolean(),
+});
+
+function migratePreferencesState(
+  persisted: unknown,
+  fromVersion: number,
+): PreferencesPersistedState {
+  if (fromVersion === 0) {
+    const parsed = preferencesPersistedSchema.safeParse(persisted);
+    if (parsed.success) {
+      return parsed.data;
+    }
+  }
+  return DEFAULT_PREFERENCES_PERSISTED;
+}
+
 export const usePreferencesStore = create<PreferencesState>()(
   persist(
     (set) => ({
@@ -45,6 +72,8 @@ export const usePreferencesStore = create<PreferencesState>()(
     }),
     {
       name: 'preferences',
+      version: PERSISTED_STORE_VERSION,
+      migrate: migratePreferencesState,
       storage: appJsonStorage,
       partialize: (state): PreferencesPersistedState => ({
         cityId: state.cityId,

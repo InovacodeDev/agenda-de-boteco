@@ -28,6 +28,8 @@ node_modules/
 
 # Keys, certificates & signing material
 *.pem
+!apps/*/certs/certificate.pem
+apps/*/keys/
 *.key
 *.p8
 *.p12

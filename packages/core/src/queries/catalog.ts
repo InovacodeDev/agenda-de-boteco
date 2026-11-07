@@ -18,7 +18,7 @@ import {
   menuItemSchema,
   type MusicStyle,
   musicStyleSchema,
-  notificationSchema,
+  notificationReadSchema,
   type NotificationWriteInput,
   notificationWriteSchema,
 } from '../schemas/catalog';
@@ -180,7 +180,7 @@ function mapMusicStyle(row: MusicStyleRow): MusicStyle {
 }
 
 function mapNotification(row: NotificationRow): AppNotification {
-  return notificationSchema.parse({
+  return notificationReadSchema.parse({
     id: row.id,
     title: row.title,
     body: row.body,

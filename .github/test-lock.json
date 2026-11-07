@@ -56,6 +56,11 @@
       "lockedAt": "2026-11-07",
       "reason": "new test file"
     },
+    "apps/mobile-client/src/lib/updates.test.ts": {
+      "sha256": "a89a3e945fc0ee29fde73e94e5ec6bfde3312609d1fe4027b33b2125e232087c",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
     "apps/mobile-client/src/services/landing.test.ts": {
       "sha256": "aabd25a79faec1dfa979926f96ea66c13360ee820f18dfbf5f4a27db33146248",
       "lockedAt": "2026-11-07",
@@ -103,6 +108,11 @@
     },
     "apps/mobile/src/lib/devUrl.test.ts": {
       "sha256": "4e071807f1ad90d43bdefdceef62bc7f01fb9a9efee1591a09273d9b58837bff",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "apps/mobile/src/lib/updates.test.ts": {
+      "sha256": "999724fde230317ef45122cce14f71c361134bd306ecdfd32a0b65ba86b9b1b7",
       "lockedAt": "2026-11-07",
       "reason": "new test file"
     },
@@ -223,6 +233,11 @@
     },
     "packages/core/src/queries/catalog.byIds.test.ts": {
       "sha256": "1945bbbeb7e806453ca18c53c56932bf7f654902804458c65e374d419b69b6e8",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/schemas/catalog.ota.contract.test.ts": {
+      "sha256": "80406adaf753ed112ac5fa6d20dc6e70acbeb420cc337fe73ac04ce36ea6870e",
       "lockedAt": "2026-11-07",
       "reason": "new test file"
     },
@@ -376,6 +391,11 @@
       "lockedAt": "2026-11-07",
       "reason": "new test file"
     },
+    "packages/core/src/stores/useFavoritesStore.ota.contract.test.ts": {
+      "sha256": "8dc43f97cd2cb149d2a1ed2ce9c27fccc1e998de49d4296c9321c93a5a6db265",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
     "packages/core/src/stores/useFavoritesStore.test.ts": {
       "sha256": "49b0ca2c0f9783f01c5d85a46156307af7c31a08b1389f1ff54a46aa63dc45f8",
       "lockedAt": "2026-11-07",
@@ -386,8 +406,18 @@
       "lockedAt": "2026-11-07",
       "reason": "new test file"
     },
+    "packages/core/src/stores/useNotificationsStore.ota.contract.test.ts": {
+      "sha256": "abe72b1715ddfb8f13911a706bdf539da30b836a708412bf5b29995a864dd627",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
     "packages/core/src/stores/useNotificationsStore.test.ts": {
       "sha256": "305cf013d5a764620e8650b56cd8721add3beed80f00f9ac7910cc21724d6381",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/stores/usePreferencesStore.ota.contract.test.ts": {
+      "sha256": "cb1dc1a0bfb5bc3acbd5598c0e2968020f1cdada08fef484f783000e5ca16230",
       "lockedAt": "2026-11-07",
       "reason": "new test file"
     },
@@ -568,6 +598,16 @@
     },
     "packages/shared-ui/src/Toast.test.tsx": {
       "sha256": "3d0021683f4c76d24a1e6cebd257946993b961a289bc028a46f9bf50c4757f35",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "supabase/functions/_shared/ota/protocol.test.ts": {
+      "sha256": "538f3f649af28563cda75846439725de167446e3dc53525e7337163268a39d2e",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "supabase/functions/_shared/ota/signing.test.ts": {
+      "sha256": "95fa07208dfa0a94c3cac711943c55c534ec088cdf4d409769afd635f84a7831",
       "lockedAt": "2026-11-07",
       "reason": "new test file"
     }

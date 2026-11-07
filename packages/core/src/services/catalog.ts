@@ -29,7 +29,7 @@ import {
   type EventWriteInput,
   type MusicStyle,
   musicStyleSchema,
-  notificationSchema,
+  notificationReadSchema,
   type NotificationWriteInput,
 } from '../schemas';
 import { getConfiguredSupabase } from '../supabase/client';
@@ -48,7 +48,7 @@ const eventListSchema = z.array(eventSchema);
 const establishmentListSchema = z.array(establishmentSchema);
 const musicStyleListSchema = z.array(musicStyleSchema);
 const cityListSchema = z.array(citySchema);
-const notificationListSchema = z.array(notificationSchema);
+const notificationListSchema = z.array(notificationReadSchema);
 
 // Invariante: esta ordenação (starts_at asc) deve casar com o .order() do core
 // em packages/core/src/queries/catalog.ts (listEvents, listEventsByEstablishment).

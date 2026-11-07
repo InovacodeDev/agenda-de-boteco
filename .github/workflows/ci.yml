@@ -72,7 +72,7 @@ jobs:
 
             if [ -z "$range" ]; then
               changed=true
-            elif git diff --name-only "$range" -- "apps/$app/" | grep -q .; then
+            elif git diff --name-only "$range" -- "apps/$app/" packages/core/ packages/shared-ui-mobile/ | grep -q .; then
               changed=true
             else
               changed=false
@@ -143,6 +143,9 @@ jobs:
 
       - name: Run Tests
         run: pnpm run test
+
+      - name: Run OTA Test
+        run: pnpm run test:ota
 
       - name: Run Build
         run: pnpm run build

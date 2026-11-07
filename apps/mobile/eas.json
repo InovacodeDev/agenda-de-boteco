@@ -11,19 +11,23 @@
     },
     "preview": {
       "distribution": "internal",
-      "environment": "preview"
+      "environment": "preview",
+      "channel": "alfa"
     },
     "production": {
       "autoIncrement": true,
-      "environment": "production"
+      "environment": "production",
+      "channel": "production"
     },
     "alfa": {
       "extends": "production",
-      "environment": "preview"
+      "environment": "preview",
+      "channel": "alfa"
     },
     "beta": {
       "extends": "production",
-      "environment": "preview"
+      "environment": "preview",
+      "channel": "beta"
     }
   },
   "submit": {

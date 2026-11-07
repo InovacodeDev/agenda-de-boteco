@@ -1,6 +1,6 @@
 {
   "name": "@agenda/mobile",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "main": "expo-router/entry",
   "private": true,
   "dependencies": {
@@ -34,6 +34,7 @@
     "expo-secure-store": "~57.0.4",
     "expo-splash-screen": "~57.0.9",
     "expo-status-bar": "~57.0.1",
+    "expo-updates": "~57.0.27",
     "expo-web-browser": "~57.0.3",
     "nativewind": "5.0.0-preview.2",
     "phosphor-react-native": "^3.0.6",
