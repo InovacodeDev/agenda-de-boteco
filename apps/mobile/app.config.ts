@@ -2,11 +2,14 @@ import type { ConfigContext, ExpoConfig } from 'expo/config';
 
 import { version } from './package.json';
 
+const STRICT_PROFILES = ['production', 'preview', 'alfa', 'beta'] as const;
+
 // Validação defensiva para garantir que chaves críticas não fiquem undefined em produção/preview
 const getEnvVar = (value: string | undefined, name: string): string => {
-  const isEasProduction =
-    process.env.EAS_BUILD_PROFILE === 'production' || process.env.EAS_BUILD_PROFILE === 'preview';
-  if (!value && isEasProduction) {
+  const isStrictProfile = (STRICT_PROFILES as readonly string[]).includes(
+    process.env.EAS_BUILD_PROFILE ?? '',
+  );
+  if (!value && isStrictProfile) {
     throw new Error(
       `[FALHA NO BUILD] A variável de ambiente obrigatória "${name}" não foi definida.`,
     );
@@ -14,13 +17,36 @@ const getEnvVar = (value: string | undefined, name: string): string => {
   return value || '';
 };
 
-export default ({ config }: ConfigContext): ExpoConfig => ({
-  ...config,
-  name: 'Agenda de Boteco',
-  slug: 'agenda-de-boteco',
-  // Fonte única da versão: package.json. Alterar lá propaga para o build (Expo/EAS).
-  version,
-  orientation: 'portrait',
+export default ({ config }: ConfigContext): ExpoConfig => {
+  const manifestUrl = getEnvVar(
+    process.env.EXPO_PUBLIC_OTA_MANIFEST_URL,
+    'EXPO_PUBLIC_OTA_MANIFEST_URL',
+  );
+
+  return {
+    ...config,
+    name: 'Agenda de Boteco',
+    slug: 'agenda-de-boteco',
+    // Fonte única da versão: package.json. Alterar lá propaga para o build (Expo/EAS).
+    version,
+    runtimeVersion: {
+      policy: 'fingerprint',
+    },
+    updates: {
+      url: manifestUrl || undefined,
+      enabled: Boolean(manifestUrl),
+      checkAutomatically: 'ON_LOAD',
+      fallbackToCacheTimeout: 0,
+      codeSigningCertificate: './certs/certificate.pem',
+      codeSigningMetadata: {
+        keyid: 'main',
+        alg: 'rsa-v1_5-sha256',
+      },
+      requestHeaders: {
+        'x-app-slug': 'agenda-de-boteco',
+      },
+    },
+    orientation: 'portrait',
   icon: './assets/icon.png',
   scheme: 'agenda-de-boteco',
   userInterfaceStyle: 'dark',
@@ -78,6 +104,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     ],
     'expo-image',
     'expo-localization',
+    'expo-updates',
   ],
   experiments: {
     typedRoutes: true,
@@ -87,4 +114,5 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       projectId: '14d06c33-6b50-40ef-81b6-ab4a404b3e7f',
     },
   },
-});
+  };
+};

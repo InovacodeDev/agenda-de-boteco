@@ -7,6 +7,23 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   name: 'Agenda de Boteco - Estabelecimento',
   slug: 'agenda-de-boteco-client',
   version,
+  runtimeVersion: {
+    policy: 'fingerprint',
+  },
+  updates: {
+    url: process.env.EXPO_PUBLIC_OTA_MANIFEST_URL,
+    enabled: Boolean(process.env.EXPO_PUBLIC_OTA_MANIFEST_URL),
+    checkAutomatically: 'ON_LOAD',
+    fallbackToCacheTimeout: 0,
+    codeSigningCertificate: './certs/certificate.pem',
+    codeSigningMetadata: {
+      keyid: 'main',
+      alg: 'rsa-v1_5-sha256',
+    },
+    requestHeaders: {
+      'x-app-slug': 'agenda-de-boteco-client',
+    },
+  },
   orientation: 'default',
   icon: './assets/icon.png',
   scheme: 'agenda-boteco-client',
@@ -46,6 +63,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         color: '#0F0F0F',
       },
     ],
+    'expo-updates',
   ],
   extra: {
     ...config.extra,
