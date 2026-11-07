@@ -1,6 +1,11 @@
 {
   "version": 1,
   "files": {
+    "apps/mobile-client/app/(painel)/_layout.test.tsx": {
+      "sha256": "df0a54c4d650f45ad627217473b09ef6bc713eca7cf129d24c5d233508ae6a4d",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
     "apps/mobile-client/src/hooks/usePanelFlags.test.ts": {
       "sha256": "1e2d3958d53454b2a04bc5f1ce910ee3f6223c68190cd8ad3a102045c4121909",
       "lockedAt": "2026-11-07",
