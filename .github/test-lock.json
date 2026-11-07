@@ -6,6 +6,11 @@
       "lockedAt": "2026-11-07",
       "reason": "new test file"
     },
+    "apps/mobile-client/app/new-password.test.tsx": {
+      "sha256": "692a98dcff11dfdd8802b836335d2069002d92abfe87b246da7fad8bf6735eb0",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
     "apps/mobile-client/src/hooks/usePanelFlags.test.ts": {
       "sha256": "1e2d3958d53454b2a04bc5f1ce910ee3f6223c68190cd8ad3a102045c4121909",
       "lockedAt": "2026-11-07",
