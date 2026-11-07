@@ -1,6 +1,7 @@
 import {
   catalogKeys,
   currencyToMask,
+  deleteImage,
   type Event,
   type EventStatus,
   formatEventDate,
@@ -223,6 +224,7 @@ export function EventForm({ event }: EventFormProps) {
                 previewUrl={bannerUrl ? resolveDevAssetUrl(bannerUrl) : undefined}
                 onChange={setBannerUrl}
                 onUpload={handleUpload}
+                onReplaced={(previous) => void deleteImage(previous).catch(() => undefined)}
                 aspect={[16, 9]}
               />
 

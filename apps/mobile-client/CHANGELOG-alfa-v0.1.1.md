@@ -44,3 +44,4 @@
 - Aviso discreto quando o celular está sem internet, mostrando os dados salvos
 - Em caso de falha inesperada, o app mostra uma tela para tentar novamente em vez de fechar
 - Erro ao salvar uma configuração aparece uma vez só, sem alerta repetido
+- Trocar logo, capa ou banner do evento não deixa mais a imagem antiga guardada, e falhas de envio mostram uma mensagem clara
