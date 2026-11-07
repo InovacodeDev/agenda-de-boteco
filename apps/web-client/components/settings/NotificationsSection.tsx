@@ -1,6 +1,13 @@
 'use client';
 
-import { useAuthStore } from '@agenda/core';
+import {
+  DEFAULT_NOTIFICATION_PREFERENCES,
+  getFriendlyErrorMessage,
+  getNotificationPreferences,
+  type NotificationPreferences,
+  saveNotificationPreferences,
+  useAuthStore,
+} from '@agenda/core';
 import {
   BellRingingIcon,
   BellSimpleIcon,
@@ -12,27 +19,15 @@ import {
   MicrophoneStageIcon,
   StarIcon,
 } from '@phosphor-icons/react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 
-export interface NotificationSettings {
-  channelEmail: boolean;
-  channelPush: boolean;
-  alertReviews: boolean;
-  alertMusicians: boolean;
-  alertEventStatus: boolean;
-  alertEmptySchedule: boolean;
-  alertWeeklyDigest: boolean;
-}
-
-const DEFAULT_SETTINGS: NotificationSettings = {
-  channelEmail: true,
-  channelPush: true,
-  alertReviews: true,
-  alertMusicians: true,
-  alertEventStatus: true,
-  alertEmptySchedule: true,
-  alertWeeklyDigest: false,
-};
+/**
+ * Mesma key do mobile-client e fora do PERSIST_ALLOWLIST de propósito:
+ * preferência de conta não vai para o cache em disco.
+ */
+const notificationPreferencesKey = (userId: string) =>
+  ['panel', 'notification-preferences', userId] as const;
 
 function Switch({
   checked,
@@ -65,44 +60,44 @@ function Switch({
 }
 
 export function NotificationsSection() {
-  const userId = useAuthStore((state) => state.user?.id);
-  const [settings, setSettings] = useState<NotificationSettings>(DEFAULT_SETTINGS);
+  const userId = useAuthStore((state) => state.user?.id) ?? '';
+  const queryClient = useQueryClient();
+  const queryKey = notificationPreferencesKey(userId);
   const [savedNotice, setSavedNotice] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const { data: settings = DEFAULT_NOTIFICATION_PREFERENCES } = useQuery({
+    queryKey,
+    queryFn: getNotificationPreferences,
+    enabled: Boolean(userId),
+  });
+
+  const mutation = useMutation({
+    mutationFn: saveNotificationPreferences,
+    onMutate: async (next: NotificationPreferences) => {
+      await queryClient.cancelQueries({ queryKey });
+      const previous = queryClient.getQueryData<NotificationPreferences>(queryKey);
+      queryClient.setQueryData(queryKey, next);
+      return { previous };
+    },
+    onError: (error, _next, context) => {
+      queryClient.setQueryData(queryKey, context?.previous);
+      setErrorMessage(getFriendlyErrorMessage(error));
+    },
+    onSuccess: () => {
+      setSavedNotice(true);
+    },
+  });
 
   useEffect(() => {
-    if (!userId) return;
-    queueMicrotask(() => {
-      try {
-        const raw = localStorage.getItem(`web-client:notifications:${userId}`);
-        if (raw) {
-          const parsed = JSON.parse(raw) as Partial<NotificationSettings>;
-          setSettings({ ...DEFAULT_SETTINGS, ...parsed });
-        }
-      } catch {
-        // ignore
-      }
-    });
-  }, [userId]);
+    if (!savedNotice) return;
+    const timer = setTimeout(() => setSavedNotice(false), 2500);
+    return () => clearTimeout(timer);
+  }, [savedNotice]);
 
-  const updateSetting = <K extends keyof NotificationSettings>(
-    key: K,
-    value: NotificationSettings[K],
-  ) => {
-    const next = { ...settings, [key]: value };
-    setSettings(next);
-    setSavedNotice(true);
-
-    if (userId) {
-      try {
-        localStorage.setItem(`web-client:notifications:${userId}`, JSON.stringify(next));
-      } catch {
-        // ignore
-      }
-    }
-
-    setTimeout(() => {
-      setSavedNotice(false);
-    }, 2500);
+  const updateSetting = (key: keyof NotificationPreferences, value: boolean) => {
+    setErrorMessage(null);
+    mutation.mutate({ ...settings, [key]: value });
   };
 
   return (
@@ -132,6 +127,12 @@ export function NotificationsSection() {
           </span>
         ) : null}
       </div>
+
+      {errorMessage ? (
+        <p role="alert" className="text-destructive mb-4 text-sm">
+          {errorMessage}
+        </p>
+      ) : null}
 
       <div className="flex flex-col gap-6">
         <div>
