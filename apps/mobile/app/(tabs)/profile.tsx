@@ -7,6 +7,12 @@ import { Button } from '@/components/ui/Button';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { Icon } from '@/components/ui/Icon';
 import { useActiveCity } from '@/hooks/useActiveCity';
+import {
+  applyDownloadedUpdate,
+  checkForAppUpdate,
+  getShortUpdateId,
+  isOtaUpdateAvailable,
+} from '@/lib/updates';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useFavoritesStore } from '@/store/useFavoritesStore';
 import { colors } from '@/theme/colors';
@@ -66,6 +72,66 @@ function SignedOutProfile() {
       <View className="bg-card mt-2 overflow-hidden rounded-2xl">
         <PrivacyLink />
       </View>
+
+      <AppUpdateSection />
+    </View>
+  );
+}
+
+function AppUpdateSection() {
+  const [checking, setChecking] = useState(false);
+  const [feedback, setFeedback] = useState<string | null>(null);
+  const [restartVisible, setRestartVisible] = useState(false);
+  const otaAvailable = isOtaUpdateAvailable();
+
+  const handleCheckUpdate = async () => {
+    if (checking) return;
+    setChecking(true);
+    setFeedback(null);
+    try {
+      const result = await checkForAppUpdate();
+      if (result.status === 'ready-to-restart') {
+        setRestartVisible(true);
+      } else if (result.status === 'up-to-date') {
+        setFeedback('Você já está na versão mais recente');
+      } else if (result.status === 'error') {
+        setFeedback('Não foi possível verificar agora. Tente novamente mais tarde.');
+      }
+    } finally {
+      setChecking(false);
+    }
+  };
+
+  return (
+    <View className="gap-2">
+      {otaAvailable ? (
+        <Button
+          label={checking ? 'Verificando…' : 'Verificar atualizações'}
+          variant="outline"
+          fullWidth
+          disabled={checking}
+          icon={<Icon name="download" color={colors.primary} size={18} />}
+          onPress={() => void handleCheckUpdate()}
+        />
+      ) : null}
+      {feedback ? (
+        <Text className="font-body text-muted-foreground text-center text-[13px]">{feedback}</Text>
+      ) : null}
+      <Text className="font-body text-muted-foreground text-center text-[12px]">
+        Versão OTA: {getShortUpdateId()}
+      </Text>
+      <ConfirmDialog
+        visible={restartVisible}
+        title="Atualização baixada. Reiniciar agora?"
+        message="O aplicativo será reiniciado para aplicar a nova versão."
+        confirmLabel="Reiniciar"
+        cancelLabel="Cancelar"
+        onCancel={() => setRestartVisible(false)}
+        onConfirm={() => {
+          setRestartVisible(false);
+          void applyDownloadedUpdate();
+        }}
+      />
     </View>
   );
 }
@@ -165,6 +231,8 @@ function SignedInProfile() {
 
         <PrivacyLink />
       </View>
+
+      <AppUpdateSection />
 
       <View className="flex-1" />
 

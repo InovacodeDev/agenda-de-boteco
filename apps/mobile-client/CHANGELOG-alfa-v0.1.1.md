@@ -37,3 +37,4 @@
 - Lista de eventos mostra o banner de cada evento e volta ao ícone padrão quando a imagem não carrega
 - Corrige falha ao enviar fotos (logo, capa, cardápio e banner do evento) em alguns aparelhos Android
 - O app passa a receber correções e melhorias sem precisar atualizar pela loja
+- Nova opção para verificar atualizações nas configurações

@@ -1,3 +1,4 @@
+import { useGuardedPress } from '@agenda/core';
 import {
   Button,
   ConfirmDialog,
@@ -18,6 +19,12 @@ import { NotificationsSection } from '@/components/settings/NotificationsSection
 import { useResponsive } from '@/hooks/useResponsive';
 import { signOutAndUnregister } from '@/lib/push';
 import { scrollContentClassName } from '@/lib/screenLayout';
+import {
+  applyDownloadedUpdate,
+  checkForAppUpdate,
+  getShortUpdateId,
+  isOtaUpdateAvailable,
+} from '@/lib/updates';
 
 export default function SettingsScreen() {
   const router = useRouter();
@@ -25,6 +32,29 @@ export default function SettingsScreen() {
   const [globalNotice, setGlobalNotice] = useState<string | null>(null);
   const [confirmSignOut, setConfirmSignOut] = useState(false);
   const [busySignOut, setBusySignOut] = useState(false);
+  const [checkingUpdate, setCheckingUpdate] = useState(false);
+  const [updateFeedback, setUpdateFeedback] = useState<string | null>(null);
+  const [confirmRestart, setConfirmRestart] = useState(false);
+  const otaAvailable = isOtaUpdateAvailable();
+
+  const handleCheckUpdate = useGuardedPress(() => {
+    if (checkingUpdate) return;
+    setCheckingUpdate(true);
+    setUpdateFeedback(null);
+    void checkForAppUpdate()
+      .then((result) => {
+        if (result.status === 'ready-to-restart') {
+          setConfirmRestart(true);
+        } else if (result.status === 'up-to-date') {
+          setUpdateFeedback('Você já está na versão mais recente');
+        } else if (result.status === 'error') {
+          setUpdateFeedback('Não foi possível verificar agora. Tente novamente mais tarde.');
+        }
+      })
+      .finally(() => {
+        setCheckingUpdate(false);
+      });
+  });
 
   useEffect(() => {
     if (!globalNotice) return;
@@ -82,6 +112,23 @@ export default function SettingsScreen() {
               </>
             )}
 
+            {otaAvailable ? (
+              <Button
+                label="Verificar atualizações"
+                variant="outline"
+                busy={checkingUpdate}
+                icon={<Icon name="download" size={16} color="#fafafa" />}
+                onPress={handleCheckUpdate}
+                fullWidth
+              />
+            ) : null}
+
+            {updateFeedback ? (
+              <Text className="font-body text-muted-foreground text-center text-xs">
+                {updateFeedback}
+              </Text>
+            ) : null}
+
             <Button
               label="Sair da conta"
               variant="outline"
@@ -89,9 +136,26 @@ export default function SettingsScreen() {
               onPress={() => setConfirmSignOut(true)}
               fullWidth
             />
+
+            <Text className="font-body text-muted-foreground text-center text-xs">
+              Versão OTA: {getShortUpdateId()}
+            </Text>
           </View>
         </ScrollView>
       </KeyboardAwareBody>
+
+      <ConfirmDialog
+        visible={confirmRestart}
+        title="Atualização baixada. Reiniciar agora?"
+        message="O aplicativo será reiniciado para aplicar a nova versão."
+        confirmLabel="Reiniciar"
+        cancelLabel="Cancelar"
+        onConfirm={() => {
+          setConfirmRestart(false);
+          void applyDownloadedUpdate();
+        }}
+        onCancel={() => setConfirmRestart(false)}
+      />
 
       <ConfirmDialog
         visible={confirmSignOut}

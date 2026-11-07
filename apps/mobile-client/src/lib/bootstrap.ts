@@ -10,9 +10,12 @@ import { Alert } from 'react-native';
 
 import { initAnalytics } from './analytics';
 import { getSupabase } from './supabase';
+import { reportUpdateContext } from './updates';
 
 configureSupabase(getSupabase);
-configureAnalytics(initAnalytics());
+const analytics = initAnalytics();
+configureAnalytics(analytics);
+reportUpdateContext(analytics);
 configureAuthRedirect(() => Linking.createURL('/'));
 configureQueryErrorHandler((error: unknown) => {
   Alert.alert('Erro', getFriendlyErrorMessage(error));
