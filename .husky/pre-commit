@@ -8,3 +8,7 @@ case "$branch" in
 esac
 
 bash scripts/hooks/check-audit-log.bash
+
+node scripts/spec-lock/cli.mjs verify
+node scripts/spec-lock/cli.mjs lock-new --stage
+pnpm turbo run test --filter='...[HEAD]'
