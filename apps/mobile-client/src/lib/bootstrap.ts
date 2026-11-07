@@ -14,6 +14,7 @@ import { getSupabase } from './supabase';
 configureSupabase(getSupabase);
 configureAnalytics(initAnalytics());
 configureAuthRedirect(() => Linking.createURL('/'));
-configureQueryErrorHandler((error: unknown) => {
+configureQueryErrorHandler((error, { handledLocally }) => {
+  if (handledLocally) return;
   Alert.alert('Erro', getFriendlyErrorMessage(error));
 });

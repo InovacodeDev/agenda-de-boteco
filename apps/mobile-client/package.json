@@ -1,6 +1,6 @@
 {
   "name": "@agenda/mobile-client",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "main": "expo-router/entry",
   "private": true,
   "dependencies": {
@@ -18,6 +18,7 @@
     "@tanstack/react-query-persist-client": "^5.101.0",
     "clsx": "^2.1.1",
     "expo": "~57.0.26",
+    "expo-apple-authentication": "~57.0.2",
     "expo-application": "~57.0.3",
     "expo-constants": "~57.0.20",
     "expo-device": "~57.0.2",
@@ -59,7 +60,13 @@
     "ios": "expo run:ios",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
-    "test": "jest"
+    "test": "jest",
+    "build:alfa:android": "eas build --local --platform android --profile alfa",
+    "build:alfa:ios": "eas build --platform ios --profile alfa",
+    "build:beta:android": "eas build --local --platform android --profile beta",
+    "build:beta:ios": "eas build --platform ios --profile beta",
+    "build:release:android": "eas build --local --platform android --profile production",
+    "build:release:ios": "eas build --platform ios --profile production"
   },
   "devDependencies": {
     "@agenda/typescript-config": "workspace:*",

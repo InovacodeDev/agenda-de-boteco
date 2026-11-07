@@ -2,6 +2,20 @@ import type { ConfigContext, ExpoConfig } from 'expo/config';
 
 import { version } from './package.json';
 
+/** Perfis que geram binário de loja/teste: sem projectId o push token não existe. */
+const STORE_PROFILES = ['production', 'preview', 'alfa', 'beta'];
+
+function requireProjectId(): string | undefined {
+  const projectId = process.env.EAS_PROJECT_ID;
+  const profile = process.env.EAS_BUILD_PROFILE;
+  if (!projectId && profile && STORE_PROFILES.includes(profile)) {
+    throw new Error(
+      '[FALHA NO BUILD] A variável de ambiente obrigatória "EAS_PROJECT_ID" não foi definida.',
+    );
+  }
+  return projectId;
+}
+
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: 'Agenda de Boteco - Estabelecimento',
@@ -15,8 +29,12 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ios: {
     supportsTablet: true,
     bundleIdentifier: 'com.agenda.boteco.client',
+    usesAppleSignIn: true,
     config: {
       usesNonExemptEncryption: false,
+    },
+    entitlements: {
+      'com.apple.developer.applesignin': ['Default'],
     },
   },
   android: {
@@ -29,6 +47,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   plugins: [
     'expo-router',
     'expo-font',
+    'expo-apple-authentication',
     [
       'expo-splash-screen',
       {
@@ -51,7 +70,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     ...config.extra,
     eas: {
       ...config.extra?.eas,
-      projectId: process.env.EAS_PROJECT_ID,
+      projectId: requireProjectId(),
     },
   },
   experiments: {

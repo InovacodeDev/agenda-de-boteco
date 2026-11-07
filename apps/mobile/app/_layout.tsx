@@ -10,6 +10,7 @@ import {
   resetAnalytics,
   trackPageview,
 } from '@agenda/core';
+import { ErrorBoundary, OfflineBanner } from '@agenda/shared-ui-mobile';
 import {
   Inter_400Regular,
   Inter_500Medium,
@@ -29,8 +30,6 @@ import { useEffect } from 'react';
 import { AppState } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-import { ErrorBoundary } from '@/components/ErrorBoundary';
-import { OfflineBanner } from '@/components/ui/OfflineBanner';
 import { useRealtimeSync } from '@/hooks/useRealtimeSync';
 import { queryClient } from '@/lib/queryClient';
 import { persister } from '@/lib/queryPersister';

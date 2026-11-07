@@ -21,6 +21,9 @@ jobs:
       version: ${{ steps.check.outputs.version }}
       tag: ${{ steps.check.outputs.tag }}
       mobile_changed: ${{ steps.check.outputs.mobile_changed }}
+      client_version: ${{ steps.check.outputs.client_version }}
+      client_tag: ${{ steps.check.outputs.client_tag }}
+      client_changed: ${{ steps.check.outputs.client_changed }}
 
     steps:
       - name: Checkout repository
@@ -32,12 +35,8 @@ jobs:
         id: check
         run: |
           set -euo pipefail
-          version=$(jq -r '.version' apps/mobile/package.json)
           # Em pull_request, GITHUB_REF_NAME é "42/merge" — o canal é a branch base.
           channel="${GITHUB_BASE_REF:-$GITHUB_REF_NAME}"
-          tag="${channel}-v${version}"
-          echo "version=$version" >> "$GITHUB_OUTPUT"
-          echo "tag=$tag" >> "$GITHUB_OUTPUT"
 
           # Faixa de comparação: PR = base..head; push = antes..depois.
           if [ "${GITHUB_EVENT_NAME}" = "pull_request" ]; then
@@ -49,7 +48,7 @@ jobs:
             range="origin/${GITHUB_BASE_REF}...HEAD"
           else
             before="${{ github.event.before }}"
-            # Primeiro push da branch (before = zeros): trata como "mexeu no mobile".
+            # Primeiro push da branch (before = zeros): trata como "mexeu no app".
             if [ -z "$before" ] || [ "$before" = "0000000000000000000000000000000000000000" ]; then
               range=""
             else
@@ -57,28 +56,47 @@ jobs:
             fi
           fi
 
-          if [ -z "$range" ]; then
-            mobile_changed=true
-          elif git diff --name-only "$range" -- apps/mobile/ | grep -q .; then
-            mobile_changed=true
-          else
-            mobile_changed=false
-          fi
-          echo "mobile_changed=$mobile_changed" >> "$GITHUB_OUTPUT"
-
-          # Só valida a versão quando o mobile mudou — outras mudanças (web, docs,
-          # CI) não são bloqueadas por versão já publicada.
-          if [ "$mobile_changed" != "true" ]; then
-            echo "apps/mobile/ não mudou — version gate ignorado."
-            exit 0
-          fi
-
           git fetch --tags --force
-          if git rev-parse -q --verify "refs/tags/$tag" >/dev/null; then
-            echo "::error::apps/mobile/ mudou e a versão $version já foi publicada no canal $GITHUB_REF_NAME (tag $tag existe). Bumpe apps/mobile/package.json."
-            exit 1
-          fi
-          echo "Tag $tag ainda não existe — liberado."
+
+          # Cada app Expo tem versão e tag próprias. O mobile mantém o formato
+          # histórico "<canal>-v<versão>"; o mobile-client ganha prefixo para
+          # não colidir quando as versões coincidirem.
+          # Formato: <dir em apps/>:<prefixo do output>:<prefixo da tag>
+          failed=0
+          for entry in "mobile::" "mobile-client:client_:mobile-client-"; do
+            IFS=':' read -r app out tag_prefix <<< "$entry"
+            version=$(jq -r '.version' "apps/$app/package.json")
+            tag="${tag_prefix}${channel}-v${version}"
+            echo "${out}version=$version" >> "$GITHUB_OUTPUT"
+            echo "${out}tag=$tag" >> "$GITHUB_OUTPUT"
+
+            if [ -z "$range" ]; then
+              changed=true
+            elif git diff --name-only "$range" -- "apps/$app/" | grep -q .; then
+              changed=true
+            else
+              changed=false
+            fi
+            if [ "$app" = "mobile" ]; then
+              echo "mobile_changed=$changed" >> "$GITHUB_OUTPUT"
+            else
+              echo "${out}changed=$changed" >> "$GITHUB_OUTPUT"
+            fi
+
+            # Só valida a versão quando o app mudou — outras mudanças (web, docs,
+            # CI) não são bloqueadas por versão já publicada.
+            if [ "$changed" != "true" ]; then
+              echo "apps/$app/ não mudou — version gate ignorado."
+              continue
+            fi
+            if git rev-parse -q --verify "refs/tags/$tag" >/dev/null; then
+              echo "::error::apps/$app/ mudou e a versão $version já foi publicada no canal $channel (tag $tag existe). Bumpe apps/$app/package.json."
+              failed=1
+              continue
+            fi
+            echo "Tag $tag ainda não existe — liberado."
+          done
+          exit "$failed"
 
   verify:
     name: Build & Verify
@@ -120,7 +138,7 @@ jobs:
       - name: Run Build
         run: pnpm run build
 
-  # Cria a tag do canal só em push, e só quando o mobile mudou (senão a tag da
+  # Cria a tag do canal só em push, e só para o app que mudou (senão a tag da
   # versão atual já existe de um push anterior). `git tag` é idempotente aqui:
   # pula se a tag já existe, para não falhar em pushes subsequentes.
   # NOTA: enquanto o deploy.yml não roda no GitHub, o CI é o dono das tags de
@@ -130,7 +148,10 @@ jobs:
     name: Tag channel version
     runs-on: ubuntu-latest
     needs: [version-gate, verify]
-    if: github.event_name == 'push' && needs.version-gate.outputs.mobile_changed == 'true'
+    if: >-
+      github.event_name == 'push' &&
+      (needs.version-gate.outputs.mobile_changed == 'true' ||
+       needs.version-gate.outputs.client_changed == 'true')
 
     steps:
       - name: Checkout repository
@@ -139,21 +160,30 @@ jobs:
           fetch-depth: 0
 
       - name: Tag version for this channel
+        env:
+          MOBILE_CHANGED: ${{ needs.version-gate.outputs.mobile_changed }}
+          MOBILE_TAG: ${{ needs.version-gate.outputs.tag }}
+          CLIENT_CHANGED: ${{ needs.version-gate.outputs.client_changed }}
+          CLIENT_TAG: ${{ needs.version-gate.outputs.client_tag }}
         run: |
           set -euo pipefail
-          tag="${{ needs.version-gate.outputs.tag }}"
           git fetch --tags --force
-          if git rev-parse -q --verify "refs/tags/$tag" >/dev/null; then
-            echo "Tag $tag já existe — nada a fazer."
-            exit 0
-          fi
-          git tag "$tag"
-          # Tolera corrida: se outra execução (ou o deploy) criou a tag entre o
-          # verify acima e este push, aceita em vez de falhar o job.
-          if ! git push origin "refs/tags/$tag"; then
-            git fetch --tags --force
-            git rev-parse -q --verify "refs/tags/$tag" >/dev/null || exit 1
-            echo "Tag $tag criada em paralelo — ok."
-            exit 0
-          fi
-          echo "Tag $tag criada — este canal fica bloqueado até o próximo bump de versão."
+          for entry in "$MOBILE_CHANGED:$MOBILE_TAG" "$CLIENT_CHANGED:$CLIENT_TAG"; do
+            changed="${entry%%:*}"
+            tag="${entry#*:}"
+            [ "$changed" = "true" ] || continue
+            if git rev-parse -q --verify "refs/tags/$tag" >/dev/null; then
+              echo "Tag $tag já existe — nada a fazer."
+              continue
+            fi
+            git tag "$tag"
+            # Tolera corrida: se outra execução (ou o deploy) criou a tag entre o
+            # verify acima e este push, aceita em vez de falhar o job.
+            if ! git push origin "refs/tags/$tag"; then
+              git fetch --tags --force
+              git rev-parse -q --verify "refs/tags/$tag" >/dev/null || exit 1
+              echo "Tag $tag criada em paralelo — ok."
+              continue
+            fi
+            echo "Tag $tag criada — este canal fica bloqueado até o próximo bump de versão."
+          done
