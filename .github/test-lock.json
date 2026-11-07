@@ -111,8 +111,23 @@
       "lockedAt": "2026-11-07",
       "reason": "new test file"
     },
+    "packages/core/src/hooks/queries.test.ts": {
+      "sha256": "60786c8233c3d424bce36ff96d64af104a34d22598683ce73f515132588243ba",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/hooks/useActiveCity.test.ts": {
+      "sha256": "b61380704f0cc88178a93fbfde989fe9051422ea9a876b9bcc7b53ce52b0c3f2",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
     "packages/core/src/hooks/useDebouncedValue.test.ts": {
       "sha256": "e1fbb4e95650de496d15110a6a0819c8e81a38dbca466e5e1dc20f17758ac844",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/hooks/useEstablishmentRating.test.ts": {
+      "sha256": "50bb3eba23f9df7466cf460345674ad0454f0b22ab059f041c7d080b0bfd4fef",
       "lockedAt": "2026-11-07",
       "reason": "new test file"
     },
@@ -126,6 +141,11 @@
       "lockedAt": "2026-11-07",
       "reason": "new test file"
     },
+    "packages/core/src/hooks/useGuardedPress.test.ts": {
+      "sha256": "c2227eea66aeebf1faa339fcabe984b748e1d2694d1744924d94d588f0fa5584",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
     "packages/core/src/hooks/useInfiniteScrollSentinel.test.ts": {
       "sha256": "0b82c164a1fedb91f149143c887e469cc8c6230db703460ca3bde207251bf919",
       "lockedAt": "2026-11-07",
@@ -133,6 +153,16 @@
     },
     "packages/core/src/hooks/useMetricsEvents.test.ts": {
       "sha256": "bbf0e26e18a546c4c782e98e1ddecc7724b51ae5e165d4d77316e902dcbc4d58",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/hooks/useNearbyEstablishments.test.ts": {
+      "sha256": "5d40324a2ebe739ced08373c0fc1268c83bcc5750dc4cb8bf0493feb3c825639",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/hooks/useOwnedEvents.test.ts": {
+      "sha256": "9beb958fabfdedcadfe6cca58bd11600e7e6ad62f3e9a4e824e8c57f39ab4f27",
       "lockedAt": "2026-11-07",
       "reason": "new test file"
     },
@@ -148,6 +178,11 @@
     },
     "packages/core/src/hooks/useResendCooldown.test.ts": {
       "sha256": "c447c1fb353349bdcd150631bc060f3de2504ae25e25668ddeb0eee6587c6e45",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/lib/queryClient.test.ts": {
+      "sha256": "89da116e77395e4ce7e8f8aa5fb1f485afce0a6d394a2ee86851cef148dc7251",
       "lockedAt": "2026-11-07",
       "reason": "new test file"
     },
@@ -318,6 +353,11 @@
     },
     "packages/core/src/stores/usePreferencesStore.test.ts": {
       "sha256": "7b1f2bdca7bcea477a4f57136cd17b2019b01ec7b783597a4cad62497ba2b266",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/supabase/client.test.ts": {
+      "sha256": "f71c2a0bf6d2da4ce44179f28327a88d49a87ababa82913e34b17e431c210da2",
       "lockedAt": "2026-11-07",
       "reason": "new test file"
     },
