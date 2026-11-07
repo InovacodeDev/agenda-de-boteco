@@ -40,3 +40,6 @@
 - Novo login com Apple no iPhone e iPad
 - Quem confirma o cadastro e já tem um bar vinculado vai direto para o painel
 - Link de recuperação de senha recebido por e-mail abre o app direto na tela de nova senha
+- Listas de eventos e dados do bar se atualizam sozinhas quando algo muda no painel web
+- Aviso discreto quando o celular está sem internet, mostrando os dados salvos
+- Em caso de falha inesperada, o app mostra uma tela para tentar novamente em vez de fechar

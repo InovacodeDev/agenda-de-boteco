@@ -15,7 +15,7 @@ import {
   trackPageview,
   useAuthStore,
 } from '@agenda/core';
-import { ToastProvider } from '@agenda/shared-ui-mobile';
+import { ErrorBoundary, OfflineBanner, ToastProvider } from '@agenda/shared-ui-mobile';
 import {
   Inter_400Regular,
   Inter_500Medium,
@@ -34,6 +34,7 @@ import { useEffect } from 'react';
 import { AppState } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { useRealtimeSync } from '@/hooks/useRealtimeSync';
 import { handleAuthDeepLink } from '@/lib/auth';
 import { usePushNotifications } from '@/lib/push';
 import { persister } from '@/lib/queryPersister';
@@ -109,9 +110,7 @@ export default function RootLayout() {
       ),
     );
     const teardownFocus = setupFocusManager((listener) => {
-      const sub = AppState.addEventListener('change', (status) =>
-        listener(status === 'active'),
-      );
+      const sub = AppState.addEventListener('change', (status) => listener(status === 'active'));
       return () => sub.remove();
     });
     return () => {
@@ -130,6 +129,7 @@ export default function RootLayout() {
   });
 
   usePushNotifications(fontsLoaded);
+  useRealtimeSync();
 
   useEffect(() => {
     if (fontsLoaded) {
@@ -152,25 +152,28 @@ export default function RootLayout() {
       }}
     >
       <SafeAreaProvider>
-        <ToastProvider>
-          <StatusBar style="light" />
-          <PostHogScreenTracker />
-          <AuthDeepLinkHandler />
-          <Stack
-            screenOptions={{
-              headerShown: false,
-              contentStyle: { backgroundColor: '#0f0f0f' },
-            }}
-          >
-            <Stack.Screen name="index" />
-            <Stack.Screen name="(painel)" />
-            <Stack.Screen name="login" />
-            <Stack.Screen name="onboarding" />
-            <Stack.Screen name="privacy" />
-            <Stack.Screen name="delete-account" />
-            <Stack.Screen name="new-password" />
-          </Stack>
-        </ToastProvider>
+        <ErrorBoundary>
+          <ToastProvider>
+            <StatusBar style="light" />
+            <PostHogScreenTracker />
+            <AuthDeepLinkHandler />
+            <Stack
+              screenOptions={{
+                headerShown: false,
+                contentStyle: { backgroundColor: '#0f0f0f' },
+              }}
+            >
+              <Stack.Screen name="index" />
+              <Stack.Screen name="(painel)" />
+              <Stack.Screen name="login" />
+              <Stack.Screen name="onboarding" />
+              <Stack.Screen name="privacy" />
+              <Stack.Screen name="delete-account" />
+              <Stack.Screen name="new-password" />
+            </Stack>
+            <OfflineBanner />
+          </ToastProvider>
+        </ErrorBoundary>
       </SafeAreaProvider>
     </PersistQueryClientProvider>
   );
