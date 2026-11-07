@@ -11,6 +11,11 @@
       "lockedAt": "2026-11-07",
       "reason": "new test file"
     },
+    "apps/mobile-client/src/components/settings/NotificationsSection.test.tsx": {
+      "sha256": "6db5069e37c4a4907e65a823a2ae6468028216d52eaafb813ffe3b6e52adce5c",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
     "apps/mobile-client/src/hooks/usePanelFlags.test.ts": {
       "sha256": "1e2d3958d53454b2a04bc5f1ce910ee3f6223c68190cd8ad3a102045c4121909",
       "lockedAt": "2026-11-07",
