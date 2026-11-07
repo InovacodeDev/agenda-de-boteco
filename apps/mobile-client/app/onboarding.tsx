@@ -3,6 +3,7 @@ import {
   createOwnedEstablishment,
   getFriendlyErrorMessage,
   isCurrentUserEstablishmentOwner,
+  trackEvent,
   uploadImage,
   useAuthStore,
 } from '@agenda/core';
@@ -107,6 +108,7 @@ export default function OnboardingScreen() {
         attributes: draft.attributes,
       });
       await queryClient.invalidateQueries({ queryKey: catalogKeys.panel.ownedEstablishmentId });
+      trackEvent('establishment_claimed');
       router.replace('/(painel)');
     } catch (err: unknown) {
       setErrorMessage(getFriendlyErrorMessage(err));

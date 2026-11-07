@@ -13,6 +13,7 @@ import {
   saveOwnedEvent,
   saveRecurringOwnedEvents,
   shiftDate,
+  trackEvent,
   uploadImage,
   useMusicStylesQuery,
   useOwnedEstablishmentId,
@@ -194,6 +195,7 @@ export function EventForm({ event }: EventFormProps) {
       }
 
       await queryClient.invalidateQueries({ queryKey: catalogKeys.events.root });
+      trackEvent('event_saved', { isEdit: Boolean(event?.id) });
       router.replace('/(painel)/events');
     } catch (err: unknown) {
       toast.show({ tone: 'error', message: getFriendlyErrorMessage(err) });
