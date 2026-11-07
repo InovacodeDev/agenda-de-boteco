@@ -1,3 +1,5 @@
+import { PERSISTED_STORE_VERSION } from '../config/stores';
+import { getAppStorage } from '../platform/storage';
 import type { FavoriteTarget } from '../services/favorites';
 import { useFavoritesStore } from './useFavoritesStore';
 
@@ -155,5 +157,44 @@ describe('useFavoritesStore', () => {
     expect(useFavoritesStore.getState().pendingOps).toHaveLength(1);
     await useFavoritesStore.getState().mergeLocalIntoServer('userX');
     expect(useFavoritesStore.getState().pendingOps).toEqual([]);
+  });
+
+  it('usa PERSISTED_STORE_VERSION e migra payload legado sem version (version 0)', async () => {
+    expect(useFavoritesStore.persist.getOptions().version).toBe(PERSISTED_STORE_VERSION);
+    getAppStorage()?.setItem(
+      'favorites',
+      JSON.stringify({
+        state: {
+          eventIds: ['ev-legacy'],
+          establishmentIds: ['es-legacy'],
+          pendingOps: [],
+        },
+      }),
+    );
+    await useFavoritesStore.persist.rehydrate();
+    expect(useFavoritesStore.getState().eventIds).toEqual(['ev-legacy']);
+    expect(useFavoritesStore.getState().establishmentIds).toEqual(['es-legacy']);
+  });
+
+  it('volta para os defaults quando o payload persistido tem version desconhecida', async () => {
+    useFavoritesStore.setState({
+      eventIds: ['ev1'],
+      establishmentIds: ['es1'],
+      pendingOps: [],
+    });
+    getAppStorage()?.setItem(
+      'favorites',
+      JSON.stringify({
+        state: {
+          eventIds: ['ev-future'],
+          establishmentIds: ['es-future'],
+          pendingOps: [],
+        },
+        version: 99,
+      }),
+    );
+    await useFavoritesStore.persist.rehydrate();
+    expect(useFavoritesStore.getState().eventIds).toEqual([]);
+    expect(useFavoritesStore.getState().establishmentIds).toEqual([]);
   });
 });

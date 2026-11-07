@@ -1,12 +1,37 @@
+import { z } from 'zod';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
+import { PERSISTED_STORE_VERSION } from '../config/stores';
 import { appJsonStorage, registerRehydrator } from '../platform/storage';
 
 export interface NotificationsState {
   readIds: string[];
   markRead: (id: string) => void;
   markAllRead: (ids: string[]) => void;
+}
+
+type NotificationsPersistedState = Pick<NotificationsState, 'readIds'>;
+
+const DEFAULT_NOTIFICATIONS_PERSISTED: NotificationsPersistedState = {
+  readIds: [],
+};
+
+const notificationsPersistedSchema = z.object({
+  readIds: z.array(z.string()),
+});
+
+function migrateNotificationsState(
+  persisted: unknown,
+  fromVersion: number,
+): NotificationsPersistedState {
+  if (fromVersion === 0) {
+    const parsed = notificationsPersistedSchema.safeParse(persisted);
+    if (parsed.success) {
+      return parsed.data;
+    }
+  }
+  return DEFAULT_NOTIFICATIONS_PERSISTED;
 }
 
 export const useNotificationsStore = create<NotificationsState>()(
@@ -24,6 +49,8 @@ export const useNotificationsStore = create<NotificationsState>()(
     }),
     {
       name: 'notifications',
+      version: PERSISTED_STORE_VERSION,
+      migrate: migrateNotificationsState,
       storage: appJsonStorage,
     },
   ),

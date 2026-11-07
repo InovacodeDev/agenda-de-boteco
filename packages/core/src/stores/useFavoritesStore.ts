@@ -1,6 +1,8 @@
+import { z } from 'zod';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
+import { PERSISTED_STORE_VERSION } from '../config/stores';
 import { appJsonStorage, registerRehydrator } from '../platform/storage';
 import {
   addServerFavorite,
@@ -33,6 +35,44 @@ function toggleId(ids: string[], id: string): string[] {
 function mergeIds(local: string[], incoming: string[]): string[] {
   const known = new Set(local);
   return [...local, ...incoming.filter((id) => !known.has(id))];
+}
+
+type FavoritesPersistedState = Pick<
+  FavoritesState,
+  'eventIds' | 'establishmentIds' | 'pendingOps'
+>;
+
+const DEFAULT_FAVORITES_PERSISTED: FavoritesPersistedState = {
+  eventIds: [],
+  establishmentIds: [],
+  pendingOps: [],
+};
+
+const pendingOpSchema = z.object({
+  op: z.enum(['add', 'remove']),
+  target: z.object({
+    type: z.enum(['event', 'establishment']),
+    id: z.string(),
+  }),
+});
+
+const favoritesPersistedSchema = z.object({
+  eventIds: z.array(z.string()),
+  establishmentIds: z.array(z.string()),
+  pendingOps: z.array(pendingOpSchema).default([]),
+});
+
+function migrateFavoritesState(
+  persisted: unknown,
+  fromVersion: number,
+): FavoritesPersistedState {
+  if (fromVersion === 0) {
+    const parsed = favoritesPersistedSchema.safeParse(persisted);
+    if (parsed.success) {
+      return parsed.data;
+    }
+  }
+  return DEFAULT_FAVORITES_PERSISTED;
 }
 
 export const useFavoritesStore = create<FavoritesState>()(
@@ -110,6 +150,8 @@ export const useFavoritesStore = create<FavoritesState>()(
     }),
     {
       name: 'favorites',
+      version: PERSISTED_STORE_VERSION,
+      migrate: migrateFavoritesState,
       storage: appJsonStorage,
     },
   ),
