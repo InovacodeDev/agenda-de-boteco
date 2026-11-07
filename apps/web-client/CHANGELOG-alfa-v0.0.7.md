@@ -2,3 +2,4 @@
 
 - Métricas passam a listar todos os eventos com visualizações ou cliques, carregando mais ao rolar a página
 - Corrige envio do banner do evento pelo painel
+- Atalho de Métricas no início do painel é liberado junto com a tela de Métricas
