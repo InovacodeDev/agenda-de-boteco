@@ -1,0 +1,575 @@
+{
+  "version": 1,
+  "files": {
+    "apps/mobile-client/app/(painel)/_layout.test.tsx": {
+      "sha256": "df0a54c4d650f45ad627217473b09ef6bc713eca7cf129d24c5d233508ae6a4d",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "apps/mobile-client/app/new-password.test.tsx": {
+      "sha256": "692a98dcff11dfdd8802b836335d2069002d92abfe87b246da7fad8bf6735eb0",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "apps/mobile-client/src/components/settings/NotificationsSection.test.tsx": {
+      "sha256": "6db5069e37c4a4907e65a823a2ae6468028216d52eaafb813ffe3b6e52adce5c",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "apps/mobile-client/src/hooks/usePanelFlags.test.ts": {
+      "sha256": "1e2d3958d53454b2a04bc5f1ce910ee3f6223c68190cd8ad3a102045c4121909",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "apps/mobile-client/src/hooks/useRealtimeSync.test.ts": {
+      "sha256": "9eb82a04bbec3b7d8eb480a640ff2b636d4a30140391876337b9ff32d1333b87",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "apps/mobile-client/src/hooks/useResponsive.test.ts": {
+      "sha256": "e70291a420ce2b1e6822b2ea19e6ed90ca0550d9b1b95cc78a1a263313e57e7e",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "apps/mobile-client/src/iconMap.test.ts": {
+      "sha256": "9262b1382a4ee637064bea051332de75f0007155078b7050176e49cff988ba5e",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "apps/mobile-client/src/lib/analytics.test.ts": {
+      "sha256": "f7eafe33752c4c3853e93249157592dacb6a2870bee0b11363966d94ca119219",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "apps/mobile-client/src/lib/auth.test.ts": {
+      "sha256": "54ff70bf77f8f48f3ffae2878d57bf070d7d528a9946be68072125903fb9cc88",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "apps/mobile-client/src/lib/devUrl.test.ts": {
+      "sha256": "15cd11751afcc6864b30349f9ddac95aec64dde0ea7a9a92492a0df00dafa6a2",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "apps/mobile-client/src/lib/push.test.ts": {
+      "sha256": "a5b58a6bd3efa95f2b290f53608673d80e30f374c75ac387d4ff14605f9b2a50",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "apps/mobile-client/src/services/landing.test.ts": {
+      "sha256": "aabd25a79faec1dfa979926f96ea66c13360ee820f18dfbf5f4a27db33146248",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "apps/mobile-client/src/utils/deepLinks.test.ts": {
+      "sha256": "98009eb6141115cc8c8d6b017baa301cf2dfb8ae392fbd45f0db95d3d0d94bf8",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "apps/mobile/src/components/ui/iconMap.test.ts": {
+      "sha256": "814f4e4fe6404563c21a0ab57668a13b226f1ec5d5e0db90d02c7560d9c7b4e6",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "apps/mobile/src/hooks/useConnectivity.test.ts": {
+      "sha256": "01a408ecf2080aa0b3a9837ee973beeb3397ee1bb9ad0aabe2e077d7642a1b60",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "apps/mobile/src/hooks/useFirstLaunchLocation.test.ts": {
+      "sha256": "4f1df8175aed20b72054fbd8c4053781cf327b5e02f9539f7a0504b873e9ded3",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "apps/mobile/src/hooks/useRealtimeSync.test.ts": {
+      "sha256": "9eb82a04bbec3b7d8eb480a640ff2b636d4a30140391876337b9ff32d1333b87",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "apps/mobile/src/hooks/useResponsive.test.ts": {
+      "sha256": "774cc4468da7e4e6224d5a9e6cd38956c067bec74e2e6aa1cc1b9797d5504f32",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "apps/mobile/src/lib/analytics.test.ts": {
+      "sha256": "95eea657d624b219636a1acefe3fb1aeccaa57e1946e231eff4b51cc9ac16205",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "apps/mobile/src/lib/bootstrap.test.ts": {
+      "sha256": "2ed02f995e0b5ac16575471004fbc864d267e92e35d56a94cf126cc6993d24b8",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "apps/mobile/src/lib/devUrl.test.ts": {
+      "sha256": "4e071807f1ad90d43bdefdceef62bc7f01fb9a9efee1591a09273d9b58837bff",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "apps/mobile/src/services/auth.test.ts": {
+      "sha256": "0d677ca29a77e03899405649cc9ce102a02270f55226d8db03825d94aef213f3",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "apps/mobile/src/tw/useStyledElement.test.ts": {
+      "sha256": "1bb9ec1c187034f384c060942f60972ca42e94f5d852133f394defe582db435a",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "apps/mobile/src/utils/deepLinks.test.ts": {
+      "sha256": "b3f8fdb15a815307d6fe879454f5d9f64553e98ebf2acb14ae7c7224215c8ecf",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "apps/mobile/src/utils/errors.test.ts": {
+      "sha256": "6b50397934cf32267d651e93507ebee3fa32d0b40fce1495c9d7ce06ef1b6ca7",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "apps/mobile/src/utils/nativeIntent.test.ts": {
+      "sha256": "c056ca39ff1033d391e6139e271e76ca8e8b5e3f6099ea2b588a43969d1825b0",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/config/features.test.ts": {
+      "sha256": "3edcfd27c0bf5012d6f41a2e5a3664e5549c1fb745e1b701be186bac496ae92e",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/data/lookup.test.ts": {
+      "sha256": "e9e304f16a3dd30b8a49ac2f7530ece48065e1e313fc12002be5632497c28b02",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/hooks/queries.test.ts": {
+      "sha256": "60786c8233c3d424bce36ff96d64af104a34d22598683ce73f515132588243ba",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/hooks/useActiveCity.test.ts": {
+      "sha256": "b61380704f0cc88178a93fbfde989fe9051422ea9a876b9bcc7b53ce52b0c3f2",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/hooks/useDebouncedValue.test.ts": {
+      "sha256": "e1fbb4e95650de496d15110a6a0819c8e81a38dbca466e5e1dc20f17758ac844",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/hooks/useEstablishmentRating.test.ts": {
+      "sha256": "50bb3eba23f9df7466cf460345674ad0454f0b22ab059f041c7d080b0bfd4fef",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/hooks/useFeatureFlag.test.ts": {
+      "sha256": "596e4c19126ce4aca06e4fa88c65a2ad9035d505a9f828deeb2ecfc0b837051c",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/hooks/useGuardedClick.test.ts": {
+      "sha256": "5482a7d923897a0a56f784b69f6f23c1a2193bf23c8d456ec70e6c7e28798eac",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/hooks/useGuardedPress.test.ts": {
+      "sha256": "c2227eea66aeebf1faa339fcabe984b748e1d2694d1744924d94d588f0fa5584",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/hooks/useInfiniteScrollSentinel.test.ts": {
+      "sha256": "0b82c164a1fedb91f149143c887e469cc8c6230db703460ca3bde207251bf919",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/hooks/useMetricsEvents.test.ts": {
+      "sha256": "bbf0e26e18a546c4c782e98e1ddecc7724b51ae5e165d4d77316e902dcbc4d58",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/hooks/useNearbyEstablishments.test.ts": {
+      "sha256": "5d40324a2ebe739ced08373c0fc1268c83bcc5750dc4cb8bf0493feb3c825639",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/hooks/useOwnedEvents.test.ts": {
+      "sha256": "9beb958fabfdedcadfe6cca58bd11600e7e6ad62f3e9a4e824e8c57f39ab4f27",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/hooks/useOwnedMetrics.test.ts": {
+      "sha256": "478694a342b3b73ceda7cef65d07d2650f6c03b72df1cd12d52b6bcf6421a78d",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/hooks/useRecordView.test.ts": {
+      "sha256": "24e9eed83ab636df5bcf96b8eb69b75c3a086b6d8c00c61c63c4ab52a4d20d9a",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/hooks/useResendCooldown.test.ts": {
+      "sha256": "c447c1fb353349bdcd150631bc060f3de2504ae25e25668ddeb0eee6587c6e45",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/lib/queryClient.test.ts": {
+      "sha256": "4b3b72a0e580ad9517caf5b12880dab2defbc06a67802b3f104bd1f42460dafd",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/platform/storage.test.ts": {
+      "sha256": "922d78b6e1014588dea0fb71d14293a8294106ec3c4c7ae8da525605365da1ba",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/queries/catalog.byIds.test.ts": {
+      "sha256": "1945bbbeb7e806453ca18c53c56932bf7f654902804458c65e374d419b69b6e8",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/schemas/catalog.test.ts": {
+      "sha256": "d6e3412c58af1483f4361bd1e571b38bbbdfe68bfe0327ce9c18359586bde48a",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/schemas/catalog.url.contract.test.ts": {
+      "sha256": "93a9b38e4a7e26385891eea4c706eed4ee88183b3a7b93a02ebe2b8c09fbcecb",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/schemas/musician-lead.test.ts": {
+      "sha256": "e217cc7b89a1b1ae1e7cd9e4bad46284d08b3d37f8175d0cc72f6b5934bddc35",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/schemas/ratings.test.ts": {
+      "sha256": "1845415ffd406646c7961e295fa2a760766fc3ba68e73c64edf6b8766472daae",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/services/analytics.test.ts": {
+      "sha256": "2416a5c28b97192a73059ba89730629bbc0e810c0e830512d53f804bed31ac51",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/services/auth.admin.test.ts": {
+      "sha256": "f331a2f8062fee8ea85d39309f0fb13ef2c9b3bbe1100cb1c192ad1d345e0a95",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/services/auth.test.ts": {
+      "sha256": "425d26d815138c8822c83446a35737703ee2f10dde2e02f280d7b82e1e381479",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/services/cachePolicy.test.ts": {
+      "sha256": "96421d57551f1aa5be0da5d0b4cd46ed131ef9bb53552a59efad771de73e0fe8",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/services/catalog.byIds.test.ts": {
+      "sha256": "00bae911370f78cef07a4decdc29e5d97e860c1d903c8c24db3acbeda74b0738",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/services/catalog.test.ts": {
+      "sha256": "29a1dec4d08cb5b3125d73fda30adf764a4530e91fff0f07d14fec8b42fbd374",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/services/catalog.write.test.ts": {
+      "sha256": "6dd9832946bdc791ed89d476726c9b9149f6d3f02ace69f71b4b91f25446d6a4",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/services/cep.test.ts": {
+      "sha256": "a9b1571ff06cca828550b546cd01bab1342d8ed1158a64dfcbf16a0765b0354b",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/services/connectivity.test.ts": {
+      "sha256": "2b4ddd691afc907b90c7e6ceed48f27c676227b9a50ccbd91e537f7c18d23f21",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/services/establishment-owner.test.ts": {
+      "sha256": "ff531aad13b56fe5e29019ec8d339ec62c14e3f7063be678d1d5b2dd7029a452",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/services/establishment-ratings.test.ts": {
+      "sha256": "90cee085a9d96d8bc185c66bd1d84309042b50efa337af32306f04a96589844e",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/services/favorites.test.ts": {
+      "sha256": "aaf9601bb1fc5dde458ad6683c9e6cde0fe76d7ee1199a610ba470e7b72a657f",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/services/metrics.test.ts": {
+      "sha256": "c594553a4191e1b0533ec3c6efef71c178e2d37f8d374e4cfd19da1f160794fa",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/services/moderation.test.ts": {
+      "sha256": "5d23d70f25236db3ec37c5ea8ca58c29561d536fbe9e56692b1c0fb5c3e8ede9",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/services/musician-leads.test.ts": {
+      "sha256": "071561e75df14d99b0896faa1d26ba32ddf14ad63a834fc09cafc2cac1ddfad4",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/services/owned-events.contract.test.ts": {
+      "sha256": "06c36ccbabccb2ba59d39720b03ad3446bf94a2325c7574fcf0d4ed412716468",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/services/owned-events.test.ts": {
+      "sha256": "618358a31815a3dcbf813eaf067a9bbf2ecdd5d121d30d2af77248da8e444fd5",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/services/proximity.test.ts": {
+      "sha256": "c6b8eef03cfd036ffb66722f48ae5c2a229e4c09ce3ecea09441263863036b63",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/services/push.test.ts": {
+      "sha256": "36054425f31da20e238dab403758d5756958637c062e357c4ad67a7b3189ab8b",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/services/queryKeys.test.ts": {
+      "sha256": "7023c916a0a561ccda12ca6a1213e1e9b0df7be793541b9b0bbf8f5b183ce2d4",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/services/realtime.test.ts": {
+      "sha256": "bfddc86535f1a852186e5553486711bd0ad16e9c64f4284fe3d05c3a74d7baa4",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/services/storage.contract.test.ts": {
+      "sha256": "b3e3da5ac77e5ad8a9bd2513f2078401cdba742e21bcfcb6578eff05983fa857",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/services/storage.test.ts": {
+      "sha256": "b24a8412ac2ad0f8116270f98820858219845b8f7af8d7d4e682a6e6ba6c56fd",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/stores/useAuthStore.contract.test.ts": {
+      "sha256": "194644b579bbc414c014b971b4c8fbd2b6921efe967c9363458bcd64cc771896",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/stores/useAuthStore.init.contract.test.ts": {
+      "sha256": "cc585f4b6425493976d4cca0610893efd0760a8a6454ce8679498d4193fdbcba",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/stores/useAuthStore.test.ts": {
+      "sha256": "7c78a8b39837ec37b1999d4831fc82da251901defae98e5f47f21cab1b6aba72",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/stores/useFavoritesStore.test.ts": {
+      "sha256": "49b0ca2c0f9783f01c5d85a46156307af7c31a08b1389f1ff54a46aa63dc45f8",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/stores/useFiltersStore.test.ts": {
+      "sha256": "ac4cf34a4e07bf0e3e58838f4110b5cd5405d2ac0469205fb6a2c6ab7cefa328",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/stores/useNotificationsStore.test.ts": {
+      "sha256": "305cf013d5a764620e8650b56cd8721add3beed80f00f9ac7910cc21724d6381",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/stores/usePreferencesStore.test.ts": {
+      "sha256": "7b1f2bdca7bcea477a4f57136cd17b2019b01ec7b783597a4cad62497ba2b266",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/supabase/client.test.ts": {
+      "sha256": "f71c2a0bf6d2da4ce44179f28327a88d49a87ababa82913e34b17e431c210da2",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/utils/auth.test.ts": {
+      "sha256": "ffdd69bbd33039681bdf8b58ec0707bed8e884fc5efae3f8fa518fe575b7c32c",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/utils/cn.test.ts": {
+      "sha256": "20c356f803b04082383bcb09da63a04c9c39c42f5920a08aee11af60d0f5f321",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/utils/dates.test.ts": {
+      "sha256": "33bf4698a0eef6c9a27f679cf6c819eb0040d984e3e4272a479959a12b0cce2f",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/utils/errors.contract.test.ts": {
+      "sha256": "fc01f5004e5da190a99d7f04e7856497ce7222256cccc455b3f90e791af53b85",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/utils/errors.test.ts": {
+      "sha256": "ef60ba23ab2cd6f0cf486b82b3738619eb4cfe3e37688c6b12e536cdc13d56c6",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/utils/errors.upload.contract.test.ts": {
+      "sha256": "f4866a54a781a21c429e3855651f9bf33454e7f55673c597b5e9b3987ce421a0",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/utils/events.test.ts": {
+      "sha256": "5cc0b84257d7c3ebee6d818c07c2170308489875811dd813b489203a59ce5227",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/utils/filters.test.ts": {
+      "sha256": "1c378968fb79f3c3b894df6dd81ff211ca4649b53e3e6aaafc37267f10afbc94",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/utils/formErrors.test.ts": {
+      "sha256": "b0da8d95c5439ca73bbfcdf810a5060b905fe5c73f45de8cbb46a7ef42ba9815",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/utils/format.test.ts": {
+      "sha256": "45c71907e32d732b4881cf85381fd458a5c1b1d11861c0fd7eecca16b089827c",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/utils/geo.test.ts": {
+      "sha256": "13d1e58276ab1b9442dd22b37ce934b3a17b8864480bedaee3b48daf4695efb5",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/utils/ids.test.ts": {
+      "sha256": "ef8350d635e52ae2d068dcb8df282cf0a43dc3134aba5e0c08547b6b64be26be",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/utils/images.test.ts": {
+      "sha256": "1c2f2e1fa1646b17e7b7e10090e353905205fa7f26b27ee7b5e7d4534fc76a7b",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/utils/links.test.ts": {
+      "sha256": "6c17a834b28fc9957400fc75c3d1ba3dead2d0721cd9888fcbb3c7186516c581",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/utils/masks.test.ts": {
+      "sha256": "86fd793d66537ad8809887a9b0e9b8d93773b980f04e67f1e92193503b6615cc",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/utils/moderation.test.ts": {
+      "sha256": "4079895a93c17bf6d5c21d954e514b519ffc3d819c08a729e613e4610841daf1",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/utils/opening-hours.test.ts": {
+      "sha256": "db0d19032d5d4294ad0c33621c480f63d0ab11e33c1da067acaff86ac0a3a59a",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/utils/pagination.test.ts": {
+      "sha256": "8c7fe4fa688bf9d870d6c0011ca32bc3516cfcfca928f1a3c6c88fa343a95e54",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/utils/platform.test.ts": {
+      "sha256": "77e725f070556a68f733ec39fa8d4ae682c84be16c324c2465a74ebcc188d26a",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/utils/pressGuard.test.ts": {
+      "sha256": "23b77d1d1ddcd577559dcb1568f98d78e64065c4ac4ac2166652a000c1c5cc46",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/utils/responsiveType.test.ts": {
+      "sha256": "094f5deff147eac886453a948e5be35a5bcf41e15207e967759c6df14201c7fa",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/utils/search.test.ts": {
+      "sha256": "36ac080d1b8f1ad46428f4903a549db07f22667a058da017a02c2a2655ea0c1a",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/utils/slug.test.ts": {
+      "sha256": "c5bc2151396fe324fb7fa7d821bf9b85456382877bc31a860ea321f60d5719d0",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/utils/status-light.test.ts": {
+      "sha256": "7833e4f2d4714718bf45e7aeff1f60bd8078ee3283f14a2d52d86e3fade9c0b0",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/shared-ui-mobile/src/Button.test.tsx": {
+      "sha256": "0af2b539d157ae0af5c22e222e57c6fe66b146e161dbaa547b0024485a94fc66",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/shared-ui-mobile/src/ConfirmDialog.test.tsx": {
+      "sha256": "f29cdbe9c616b24f682fb998a5909180000153345ab1740061232cdf36d96ec4",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/shared-ui-mobile/src/Field.test.tsx": {
+      "sha256": "b8b57cfd1ca3109c1ec6325827c6d350e92dbbdbff87f8065336f13340cbd07d",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/shared-ui-mobile/src/ImagePickerField.test.tsx": {
+      "sha256": "8719ff08db8351e752ce506012de51d6b178257f7cf7d550f6fcae4cad4cf8db",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/shared-ui/src/Button.test.tsx": {
+      "sha256": "5263c26394fffb625337bced03b0181152b62dfd6f0983e05995296b0a20b841",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/shared-ui/src/Field.a11y.test.tsx": {
+      "sha256": "058d50a42cfbc8cf9d3494fec703d21349b1e5ad729fc95d7322f8b7888d7534",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/shared-ui/src/Field.test.tsx": {
+      "sha256": "9e0ad000eabe757d90410cb3e7f057b5ee653615bd9ec9f79881a35e20d507b3",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/shared-ui/src/Select.test.tsx": {
+      "sha256": "aa943d1ab3bec04ef2053efed79085589a4eb1facbe60edc0865196a045a7bb5",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/shared-ui/src/TimePicker.test.tsx": {
+      "sha256": "a11cde0b2698d984f1b51260b78cb83f919dd8608e5d706ad54523ff9d1d6677",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/shared-ui/src/Toast.test.tsx": {
+      "sha256": "3d0021683f4c76d24a1e6cebd257946993b961a289bc028a46f9bf50c4757f35",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    }
+  }
+}

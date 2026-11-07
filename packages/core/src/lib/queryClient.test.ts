@@ -7,24 +7,27 @@ beforeEach(() => {
   configureQueryErrorHandler(handler);
 });
 
-afterAll(() => {
+afterEach(() => {
   queryClient.clear();
+  jest.restoreAllMocks();
 });
 
 function runMutation(options: { onError?: () => void }) {
   const failure = new Error('falhou');
   const mutation = queryClient.getMutationCache().build(queryClient, {
     mutationFn: () => Promise.reject(failure),
+    retry: false,
     ...options,
   });
   return { failure, done: mutation.execute(undefined).catch(() => undefined) };
 }
 
-describe('configureQueryErrorHandler', () => {
-  it('marca mutação sem onError como não tratada', async () => {
-    const { failure, done } = runMutation({});
-    await done;
-    expect(handler).toHaveBeenCalledWith(failure, { source: 'mutation', handledLocally: false });
+describe('Regra de negócio: QueryClient do app', () => {
+  it('mantém gcTime acima das 24h do persister e staleTime de 5 minutos', () => {
+    const defaults = queryClient.getDefaultOptions().queries;
+
+    expect(defaults?.gcTime).toBe(25 * 60 * 60_000);
+    expect(defaults?.staleTime).toBe(5 * 60_000);
   });
 
   it('marca mutação com onError próprio como tratada localmente', async () => {
@@ -33,6 +36,14 @@ describe('configureQueryErrorHandler', () => {
     await done;
     expect(onError).toHaveBeenCalled();
     expect(handler).toHaveBeenCalledWith(failure, { source: 'mutation', handledLocally: true });
+  });
+});
+
+describe('Tratamento de erro: QueryClient do app', () => {
+  it('marca mutação sem onError como não tratada', async () => {
+    const { failure, done } = runMutation({});
+    await done;
+    expect(handler).toHaveBeenCalledWith(failure, { source: 'mutation', handledLocally: false });
   });
 
   it('erros de query chegam como não tratados', async () => {

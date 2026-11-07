@@ -22,6 +22,19 @@ export const menuItemSchema = z.object({
 
 export const priceRangeSchema = z.enum(['$', '$$', '$$$', '$$$$']);
 
+const httpUrlSchema = z
+  .string()
+  .url()
+  .refine((value) => /^https?:\/\//i.test(value), {
+    message: 'URL deve usar http ou https',
+  });
+
+const safePathOrHttpUrlSchema = z
+  .string()
+  .refine((value) => !/^\s*(?:javascript|data|vbscript):/i.test(value), {
+    message: 'Esquema de URI não permitido',
+  });
+
 /**
  * Atributos do estabelecimento. Espelha o enum `establishment_attribute_enum`
  * do banco — a ordem e os rótulos de exibição ficam em
@@ -76,8 +89,8 @@ export const establishmentSchema = z.object({
   // o bar nasce sem elas até o dono subir as imagens em /perfil. Exigir URL
   // aqui deixava o estabelecimento gravado mas ilegível — o parse quebrava na
   // leitura. A UI já trata ausência de imagem.
-  logo_url: z.union([z.string().url(), z.literal('')]),
-  cover_url: z.union([z.string().url(), z.literal('')]),
+  logo_url: z.union([httpUrlSchema, z.literal('')]),
+  cover_url: z.union([httpUrlSchema, z.literal('')]),
   address: z.string(),
   neighborhood: z.string(),
   city_id: z.string(),
@@ -93,8 +106,8 @@ export const establishmentSchema = z.object({
   rating_count: z.number().int().nonnegative(),
   attributes: z.array(establishmentAttributeSchema).default([]),
   slug: z.string().optional(),
-  menu_pdf_url: z.string().nullable().optional(),
-  menu_photo_urls: z.array(z.string()).default([]),
+  menu_pdf_url: safePathOrHttpUrlSchema.nullable().optional(),
+  menu_photo_urls: z.array(safePathOrHttpUrlSchema).default([]),
 });
 
 /** Espelha `event_status_enum` do banco. 'draft' não aparece no feed público. */
@@ -111,8 +124,8 @@ export const eventSchema = z.object({
   // opcional no formulário do dono e a coluna é NOT NULL, então um evento sem
   // imagem grava '' — exigir URL aqui gravava o evento e quebrava o parse na
   // leitura. A UI já trata ausência de banner.
-  banner_url: z.union([z.string().url(), z.literal('')]),
-  photo_urls: z.array(z.string().url()).default([]),
+  banner_url: z.union([httpUrlSchema, z.literal('')]),
+  photo_urls: z.array(httpUrlSchema).default([]),
   music_style_ids: z.array(z.string()),
   establishment_id: z.string(),
   starts_at: z.string().datetime({ offset: true }),
@@ -137,7 +150,7 @@ export const eventSchema = z.object({
     .optional()
     .catch(undefined)
     .transform((value) =>
-      value && z.string().url().safeParse(value).success ? value : undefined,
+      value && httpUrlSchema.safeParse(value).success ? value : undefined,
     ),
 });
 
