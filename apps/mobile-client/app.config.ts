@@ -15,8 +15,12 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ios: {
     supportsTablet: true,
     bundleIdentifier: 'com.agenda.boteco.client',
+    usesAppleSignIn: true,
     config: {
       usesNonExemptEncryption: false,
+    },
+    entitlements: {
+      'com.apple.developer.applesignin': ['Default'],
     },
   },
   android: {
@@ -29,6 +33,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   plugins: [
     'expo-router',
     'expo-font',
+    'expo-apple-authentication',
     [
       'expo-splash-screen',
       {

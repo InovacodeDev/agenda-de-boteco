@@ -5,7 +5,6 @@ import {
   isCurrentUserEstablishmentOwner,
   sendPasswordReset,
   signInWithEmailOtp,
-  signInWithOAuth,
   signInWithPassword,
   updatePassword,
   useAuthStore,
@@ -14,6 +13,7 @@ import {
 } from '@agenda/core';
 import {
   Button,
+  Icon,
   Image,
   KeyboardAvoidingView,
   Pressable,
@@ -33,6 +33,7 @@ import { Platform, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { GoogleIcon } from '@/components/GoogleIcon';
+import { signInWithProvider } from '@/lib/auth';
 import { signOutAndUnregister } from '@/lib/push';
 
 type Tab = 'signIn' | 'signUp';
@@ -206,7 +207,8 @@ export default function LoginScreen() {
       await verifyEmailOtp(email.trim(), code.trim());
       await updatePassword(password);
       await claimEstablishmentOwner();
-      router.replace('/onboarding');
+      const establishmentId = await getOwnedEstablishmentId();
+      router.replace(establishmentId ? '/(painel)' : '/onboarding');
     } catch (error: unknown) {
       toast.show({ tone: 'error', message: getFriendlyErrorMessage(error) });
       setClaiming(false);
@@ -239,12 +241,12 @@ export default function LoginScreen() {
     });
   };
 
-  const handleGoogle = () => {
+  const handleSocial = (provider: 'google' | 'apple') => {
     void run(async () => {
       if (tab === 'signUp') {
         await AsyncStorage.setItem(OAUTH_SIGNUP_KEY, '1');
       }
-      await signInWithOAuth('google');
+      await signInWithProvider(provider);
     });
   };
 
@@ -443,11 +445,23 @@ export default function LoginScreen() {
                   label="Google"
                   variant="outline"
                   disabled={busy || unavailable}
-                  onPress={handleGoogle}
+                  onPress={() => handleSocial('google')}
                   icon={<GoogleIcon size={18} />}
                   fullWidth
                   className="bg-surface"
                 />
+
+                {Platform.OS === 'ios' ? (
+                  <Button
+                    label="Apple"
+                    variant="outline"
+                    disabled={busy || unavailable}
+                    onPress={() => handleSocial('apple')}
+                    icon={<Icon name="apple" size={18} />}
+                    fullWidth
+                    className="bg-surface mt-3"
+                  />
+                ) : null}
 
                 {tab === 'signIn' ? (
                   <View className="border-border mt-5 items-center gap-2.5 border-t pt-5">

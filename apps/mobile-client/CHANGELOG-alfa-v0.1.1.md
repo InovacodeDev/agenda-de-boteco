@@ -36,3 +36,6 @@
 - Perfil mostra o logo, a capa e a foto do cardápio já cadastrados, com botão "Trocar imagem" sempre visível
 - Lista de eventos mostra o banner de cada evento e volta ao ícone padrão quando a imagem não carrega
 - Corrige falha ao enviar fotos (logo, capa, cardápio e banner do evento) em alguns aparelhos Android
+- Entrar e criar conta com Google volta a funcionar no app instalado no celular
+- Novo login com Apple no iPhone e iPad
+- Quem confirma o cadastro e já tem um bar vinculado vai direto para o painel

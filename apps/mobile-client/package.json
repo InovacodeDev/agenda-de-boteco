@@ -18,6 +18,7 @@
     "@tanstack/react-query-persist-client": "^5.101.0",
     "clsx": "^2.1.1",
     "expo": "~57.0.26",
+    "expo-apple-authentication": "~57.0.2",
     "expo-application": "~57.0.3",
     "expo-constants": "~57.0.20",
     "expo-device": "~57.0.2",
