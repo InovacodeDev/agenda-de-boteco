@@ -31,10 +31,12 @@ const notificationPreferencesKey = (userId: string) =>
 
 function Switch({
   checked,
+  disabled = false,
   onChange,
   label,
 }: {
   checked: boolean;
+  disabled?: boolean;
   onChange: (value: boolean) => void;
   label: string;
 }) {
@@ -44,10 +46,11 @@ function Switch({
       role="switch"
       aria-label={label}
       aria-checked={checked}
+      disabled={disabled}
       onClick={() => onChange(!checked)}
-      className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-        checked ? 'bg-primary' : 'bg-surface-elevated'
-      }`}
+      className={`relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+        disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
+      } ${checked ? 'bg-primary' : 'bg-surface-elevated'}`}
     >
       <span
         aria-hidden="true"
@@ -66,11 +69,12 @@ export function NotificationsSection() {
   const [savedNotice, setSavedNotice] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const { data: settings = DEFAULT_NOTIFICATION_PREFERENCES } = useQuery({
+  const { data: settings = DEFAULT_NOTIFICATION_PREFERENCES, isPending } = useQuery({
     queryKey,
     queryFn: getNotificationPreferences,
     enabled: Boolean(userId),
   });
+  const switchDisabled = !userId || isPending;
 
   const mutation = useMutation({
     mutationFn: saveNotificationPreferences,
@@ -159,6 +163,7 @@ export function NotificationsSection() {
               <Switch
                 label="Ativar notificações por e-mail"
                 checked={settings.channelEmail}
+                disabled={switchDisabled}
                 onChange={(checked) => updateSetting('channelEmail', checked)}
               />
             </div>
@@ -182,6 +187,7 @@ export function NotificationsSection() {
               <Switch
                 label="Ativar notificações push"
                 checked={settings.channelPush}
+                disabled={switchDisabled}
                 onChange={(checked) => updateSetting('channelPush', checked)}
               />
             </div>
@@ -214,6 +220,7 @@ export function NotificationsSection() {
               <Switch
                 label="Alertas de novas avaliações"
                 checked={settings.alertReviews}
+                disabled={switchDisabled}
                 onChange={(checked) => updateSetting('alertReviews', checked)}
               />
             </div>
@@ -241,6 +248,7 @@ export function NotificationsSection() {
               <Switch
                 label="Alertas de músicos interessados"
                 checked={settings.alertMusicians}
+                disabled={switchDisabled}
                 onChange={(checked) => updateSetting('alertMusicians', checked)}
               />
             </div>
@@ -268,6 +276,7 @@ export function NotificationsSection() {
               <Switch
                 label="Alertas de status de eventos"
                 checked={settings.alertEventStatus}
+                disabled={switchDisabled}
                 onChange={(checked) => updateSetting('alertEventStatus', checked)}
               />
             </div>
@@ -295,6 +304,7 @@ export function NotificationsSection() {
               <Switch
                 label="Lembrete de agenda de fim de semana"
                 checked={settings.alertEmptySchedule}
+                disabled={switchDisabled}
                 onChange={(checked) => updateSetting('alertEmptySchedule', checked)}
               />
             </div>
@@ -322,6 +332,7 @@ export function NotificationsSection() {
               <Switch
                 label="Resumo semanal de métricas"
                 checked={settings.alertWeeklyDigest}
+                disabled={switchDisabled}
                 onChange={(checked) => updateSetting('alertWeeklyDigest', checked)}
               />
             </div>

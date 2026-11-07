@@ -31,18 +31,37 @@ function isAuthUrl(path: string): boolean {
   return AUTH_PARAMS.some((param) => path.includes(`${param}=`));
 }
 
-function pathnameOf(path: string): string {
+function isRecoverySuffix(suffix: string): boolean {
+  const hashIndex = suffix.indexOf('#');
+  const queryIndex = suffix.indexOf('?');
+  const fragment = hashIndex >= 0 ? suffix.slice(hashIndex + 1) : '';
+  const query =
+    queryIndex >= 0 ? suffix.slice(queryIndex + 1, hashIndex >= 0 ? hashIndex : undefined) : '';
+  return (
+    new URLSearchParams(fragment).get('type') === 'recovery' ||
+    new URLSearchParams(query).get('type') === 'recovery'
+  );
+}
+
+function splitPath(path: string): { pathname: string; suffix: string } {
   const cuts = [path.indexOf('?'), path.indexOf('#')].filter((index) => index >= 0);
   const cut = cuts.length > 0 ? Math.min(...cuts) : path.length;
   const pathname = path.slice(0, cut).replace(/\/+$/, '');
-  return pathname.length > 0 ? pathname : '/';
+  return {
+    pathname: pathname.length > 0 ? pathname : '/',
+    suffix: path.slice(cut),
+  };
 }
 
 export function mapIncomingPathToRoute(path: string): string {
+  const { pathname, suffix } = splitPath(path);
   if (isAuthUrl(path)) {
-    return path;
+    if (isRecoverySuffix(suffix)) {
+      return `/new-password${suffix}`;
+    }
+    const target = (EXACT_ROUTES as readonly string[]).includes(pathname) ? pathname : '/';
+    return `${target}${suffix}`;
   }
-  const pathname = pathnameOf(path);
   if ((EXACT_ROUTES as readonly string[]).includes(pathname) || EVENT_DETAIL.test(pathname)) {
     return path;
   }

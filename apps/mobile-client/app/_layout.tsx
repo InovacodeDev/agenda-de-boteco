@@ -56,12 +56,15 @@ function PostHogScreenTracker() {
  * os tokens na URL; no nativo não há `detectSessionInUrl`, então a sessão é
  * gravada aqui e a recuperação segue para `/new-password`.
  */
+let lastHandledAuthUrl: string | null = null;
+
 function AuthDeepLinkHandler() {
   const url = Linking.useURL();
   const router = useRouter();
 
   useEffect(() => {
-    if (!url) return;
+    if (!url || lastHandledAuthUrl === url) return;
+    lastHandledAuthUrl = url;
     let active = true;
     void handleAuthDeepLink(url).then((result) => {
       if (active && result === 'recovery') router.replace('/new-password');

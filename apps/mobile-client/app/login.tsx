@@ -27,7 +27,7 @@ import {
 import brandLogo from '@assets/logo.png';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useRouter } from 'expo-router';
+import { usePathname, useRouter } from 'expo-router';
 import { type ReactNode, useEffect, useState } from 'react';
 import { Platform, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -100,6 +100,7 @@ function TextLink({
 
 export default function LoginScreen() {
   const router = useRouter();
+  const pathname = usePathname();
   const toast = useToast();
   const status = useAuthStore((state) => state.status);
 
@@ -125,7 +126,7 @@ export default function LoginScreen() {
   })();
 
   useEffect(() => {
-    if (status !== 'signedIn' || claiming) return;
+    if (status !== 'signedIn' || claiming || pathname !== '/login') return;
     let active = true;
 
     void (async () => {
@@ -165,7 +166,7 @@ export default function LoginScreen() {
     return () => {
       active = false;
     };
-  }, [status, claiming, router, toast]);
+  }, [status, claiming, pathname, router, toast]);
 
   const run = async (action: () => Promise<void>, onDone?: ToastInput) => {
     toast.dismissAll();
@@ -220,7 +221,10 @@ export default function LoginScreen() {
   const handleSubmit = () => {
     if (!canSubmit) return;
     if (tab === 'signIn') {
-      void run(() => signInWithPassword(email.trim(), password));
+      void run(async () => {
+        await AsyncStorage.removeItem(OAUTH_SIGNUP_KEY);
+        await signInWithPassword(email.trim(), password);
+      });
       return;
     }
     if (signUpStep === 'email') {
@@ -245,8 +249,18 @@ export default function LoginScreen() {
     void run(async () => {
       if (tab === 'signUp') {
         await AsyncStorage.setItem(OAUTH_SIGNUP_KEY, '1');
+      } else {
+        await AsyncStorage.removeItem(OAUTH_SIGNUP_KEY);
       }
-      await signInWithProvider(provider);
+      try {
+        await signInWithProvider(provider);
+      } catch (error: unknown) {
+        await AsyncStorage.removeItem(OAUTH_SIGNUP_KEY);
+        throw error;
+      }
+      if (Platform.OS !== 'web' && useAuthStore.getState().status !== 'signedIn') {
+        await AsyncStorage.removeItem(OAUTH_SIGNUP_KEY);
+      }
     });
   };
 
@@ -255,6 +269,9 @@ export default function LoginScreen() {
     toast.dismissAll();
     setSignUpStep('email');
     setCode('');
+    if (next === 'signIn') {
+      void AsyncStorage.removeItem(OAUTH_SIGNUP_KEY);
+    }
   };
 
   const submitLabel =
