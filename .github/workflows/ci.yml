@@ -117,6 +117,9 @@ jobs:
       - name: Run Typecheck
         run: pnpm run typecheck
 
+      - name: Run Tests
+        run: pnpm run test
+
       - name: Run Build
         run: pnpm run build
 
