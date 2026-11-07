@@ -17,6 +17,7 @@ const analytics = initAnalytics();
 configureAnalytics(analytics);
 reportUpdateContext(analytics);
 configureAuthRedirect(() => Linking.createURL('/'));
-configureQueryErrorHandler((error: unknown) => {
+configureQueryErrorHandler((error, { handledLocally }) => {
+  if (handledLocally) return;
   Alert.alert('Erro', getFriendlyErrorMessage(error));
 });

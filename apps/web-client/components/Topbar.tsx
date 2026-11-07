@@ -3,6 +3,7 @@
 import { signOut, useAuthStore } from '@agenda/core';
 import { useState } from 'react';
 
+import { MobileNavDrawer } from '@/components/MobileNavDrawer';
 import { LogoutConfirmModal } from '@/components/ui/LogoutConfirmModal';
 import { useOwnedEstablishment } from '@/hooks/use-owned-establishment';
 
@@ -15,8 +16,9 @@ export function Topbar() {
   const initial = email?.trim().charAt(0).toUpperCase() ?? '?';
 
   return (
-    <header className="border-border bg-background flex items-center justify-between gap-4 border-b px-8 py-5">
+    <header className="border-border bg-background flex items-center justify-between gap-4 border-b px-4 py-4 md:px-8 md:py-5">
       <div className="flex min-w-0 items-center gap-3">
+        <MobileNavDrawer />
         {/* Logo do próprio bar em todas as telas: o dono reconhece que está
             dentro da página dele, não num painel genérico. */}
         {establishment?.logo_url ? (
@@ -26,7 +28,7 @@ export function Topbar() {
             className="border-border h-10 w-10 shrink-0 rounded-xl border bg-white object-cover"
           />
         ) : null}
-        <span className="font-heading text-foreground truncate text-[18px] font-600">
+        <span className="font-heading text-foreground font-600 truncate text-[18px]">
           {establishment?.name ?? 'Seu estabelecimento'}
         </span>
       </div>

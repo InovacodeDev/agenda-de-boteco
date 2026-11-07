@@ -38,7 +38,7 @@ const mutableUpdates = Updates as {
   isEmbeddedLaunch: boolean;
 };
 
-describe('updates', () => {
+describe('Regra de negócio: verificação e aplicação de OTA', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mutableUpdates.isEnabled = true;
@@ -71,17 +71,6 @@ describe('updates', () => {
     expect(mockFetchUpdateAsync).toHaveBeenCalledTimes(1);
   });
 
-  it('logs via logErrorToTerminal without args and returns error when checkForUpdateAsync throws', async () => {
-    const err = new Error('network failed');
-    mockCheckForUpdateAsync.mockRejectedValueOnce(err);
-
-    const res = await checkForAppUpdate();
-    expect(res).toEqual({ status: 'error' });
-    expect(mockLogErrorToTerminal).toHaveBeenCalledWith(err, {
-      method: 'updates.checkForAppUpdate',
-    });
-  });
-
   it('reportUpdateContext is a safe no-op when analytics is null and captures 4 fields when present', () => {
     expect(() => reportUpdateContext(null)).not.toThrow();
 
@@ -112,5 +101,23 @@ describe('updates', () => {
 
     mutableUpdates.updateId = null;
     expect(getShortUpdateId()).toBe('embutido');
+  });
+});
+
+describe('Tratamento de erro: falha ao consultar atualização OTA', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mutableUpdates.isEnabled = true;
+  });
+
+  it('logs via logErrorToTerminal without args and returns error when checkForUpdateAsync throws', async () => {
+    const err = new Error('network failed');
+    mockCheckForUpdateAsync.mockRejectedValueOnce(err);
+
+    const res = await checkForAppUpdate();
+    expect(res).toEqual({ status: 'error' });
+    expect(mockLogErrorToTerminal).toHaveBeenCalledWith(err, {
+      method: 'updates.checkForAppUpdate',
+    });
   });
 });

@@ -2,10 +2,10 @@ import type { ConfigContext, ExpoConfig } from 'expo/config';
 
 import { version } from './package.json';
 
-const STRICT_PROFILES = ['production', 'preview', 'alfa', 'beta'] as const;
+const STORE_PROFILES = ['production', 'preview', 'alfa', 'beta'] as const;
 
 const getEnvVar = (value: string | undefined, name: string): string => {
-  const isStrictProfile = (STRICT_PROFILES as readonly string[]).includes(
+  const isStrictProfile = (STORE_PROFILES as readonly string[]).includes(
     process.env.EAS_BUILD_PROFILE ?? '',
   );
   if (!value && isStrictProfile) {
@@ -15,6 +15,17 @@ const getEnvVar = (value: string | undefined, name: string): string => {
   }
   return value || '';
 };
+
+function requireProjectId(): string | undefined {
+  const projectId = process.env.EAS_PROJECT_ID;
+  const profile = process.env.EAS_BUILD_PROFILE;
+  if (!projectId && profile && (STORE_PROFILES as readonly string[]).includes(profile)) {
+    throw new Error(
+      '[FALHA NO BUILD] A variável de ambiente obrigatória "EAS_PROJECT_ID" não foi definida.',
+    );
+  }
+  return projectId;
+}
 
 export default ({ config }: ConfigContext): ExpoConfig => {
   const manifestUrl = getEnvVar(
@@ -52,8 +63,12 @@ export default ({ config }: ConfigContext): ExpoConfig => {
   ios: {
     supportsTablet: true,
     bundleIdentifier: 'com.agenda.boteco.client',
+    usesAppleSignIn: true,
     config: {
       usesNonExemptEncryption: false,
+    },
+    entitlements: {
+      'com.apple.developer.applesignin': ['Default'],
     },
   },
   android: {
@@ -66,6 +81,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
   plugins: [
     'expo-router',
     'expo-font',
+    'expo-apple-authentication',
     [
       'expo-splash-screen',
       {
@@ -89,7 +105,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     ...config.extra,
     eas: {
       ...config.extra?.eas,
-      projectId: process.env.EAS_PROJECT_ID,
+      projectId: requireProjectId(),
     },
   },
   experiments: {

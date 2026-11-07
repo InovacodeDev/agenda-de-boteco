@@ -15,6 +15,7 @@ import { type Href, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet } from 'react-native';
 
+import { type PanelFlag, usePanelFlags } from '@/hooks/usePanelFlags';
 import { useResponsive } from '@/hooks/useResponsive';
 import { resolveDevAssetUrl } from '@/lib/devUrl';
 import { scrollContentClassName } from '@/lib/screenLayout';
@@ -27,7 +28,8 @@ interface ShortcutItem {
   description: string;
   cta: string;
   icon: IconName;
-  disabled?: boolean;
+  /** Atalho só liberado quando a flag do PostHog está ligada (mesma do menu). */
+  flag?: PanelFlag;
 }
 
 const SHORTCUTS: ShortcutItem[] = [
@@ -49,9 +51,9 @@ const SHORTCUTS: ShortcutItem[] = [
     href: '/(painel)/metrics',
     title: 'Métricas',
     description: 'Acompanhe visualizações e cliques',
-    cta: 'Em breve',
+    cta: 'Ver métricas',
     icon: 'chart-bar',
-    disabled: true,
+    flag: 'panel-metrics',
   },
 ];
 
@@ -59,6 +61,7 @@ export default function DashboardScreen() {
   const router = useRouter();
   const { data: establishment } = useOwnedEstablishment();
   const { isTablet } = useResponsive();
+  const flags = usePanelFlags();
   const coverUrl = establishment?.cover_url ? resolveDevAssetUrl(establishment.cover_url) : null;
   const logoUrl = establishment?.logo_url ? resolveDevAssetUrl(establishment.logo_url) : null;
   const [loadedCoverUrl, setLoadedCoverUrl] = useState<string | null>(null);
@@ -117,11 +120,7 @@ export default function DashboardScreen() {
                 />
               </View>
             ) : (
-              <Icon
-                name="wand-magic-sparkles"
-                size={32}
-                color={hasCover ? '#ffffff' : '#0f0f0f'}
-              />
+              <Icon name="wand-magic-sparkles" size={32} color={hasCover ? '#ffffff' : '#0f0f0f'} />
             )}
 
             <Text
@@ -141,7 +140,7 @@ export default function DashboardScreen() {
               label="Cadastrar primeiro evento"
               variant="ghost"
               fullWidth={!isTablet}
-              className={`mt-6 bg-background ${isTablet ? 'self-start' : ''}`}
+              className={`bg-background mt-6 ${isTablet ? 'self-start' : ''}`}
               icon={<Icon name="plus" size={14} color="#fafafa" weight="bold" />}
               onPress={() => router.push('/(painel)/events/new')}
             />
@@ -149,23 +148,26 @@ export default function DashboardScreen() {
         </View>
 
         <View className={`gap-4 ${isTablet ? 'flex-row flex-wrap' : 'flex-col'}`}>
-          {SHORTCUTS.map((item) => (
-            <Card key={item.title} className={isTablet ? 'w-[31%] grow' : 'w-full'}>
-              <Icon name={item.icon} size={24} color="#1dd75e" />
-              <Text className="font-heading text-foreground mb-1 mt-3 text-base font-semibold">
-                {item.title}
-              </Text>
-              <Text className="font-body text-muted-foreground mb-4 text-sm">
-                {item.description}
-              </Text>
-              <Button
-                label={item.cta}
-                variant="outline"
-                disabled={item.disabled}
-                onPress={() => router.push(item.href)}
-              />
-            </Card>
-          ))}
+          {SHORTCUTS.map((item) => {
+            const locked = item.flag !== undefined && !flags[item.flag];
+            return (
+              <Card key={item.title} className={isTablet ? 'w-[31%] grow' : 'w-full'}>
+                <Icon name={item.icon} size={24} color="#1dd75e" />
+                <Text className="font-heading text-foreground mt-3 mb-1 text-base font-semibold">
+                  {item.title}
+                </Text>
+                <Text className="font-body text-muted-foreground mb-4 text-sm">
+                  {item.description}
+                </Text>
+                <Button
+                  label={locked ? 'Em breve' : item.cta}
+                  variant="outline"
+                  disabled={locked}
+                  onPress={() => router.push(item.href)}
+                />
+              </Card>
+            );
+          })}
         </View>
       </ScrollView>
     </Screen>

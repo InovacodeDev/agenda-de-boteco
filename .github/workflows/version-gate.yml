@@ -16,8 +16,20 @@ concurrency:
 
 jobs:
   check:
-    name: Minor bump required
+    name: Minor bump required (${{ matrix.app }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # O mobile mantém a regra histórica (sempre checado, tag "<canal>-v*").
+          # O mobile-client tem tags próprias e só é checado quando o PR o altera.
+          - app: mobile
+            tag_prefix: ''
+            only_if_changed: 'false'
+          - app: mobile-client
+            tag_prefix: 'mobile-client-'
+            only_if_changed: 'true'
 
     steps:
       - name: Checkout repository
@@ -26,16 +38,30 @@ jobs:
           fetch-depth: 0
 
       - name: Require minor bump over the channel's last release
+        env:
+          APP: ${{ matrix.app }}
+          TAG_PREFIX: ${{ matrix.tag_prefix }}
+          ONLY_IF_CHANGED: ${{ matrix.only_if_changed }}
         run: |
           set -euo pipefail
 
           # Destino do merge. GITHUB_REF_NAME aqui seria o ref do PR
           # ("42/merge"), não a branch de destino.
           channel="${GITHUB_BASE_REF}"
-          version=$(jq -r '.version' apps/mobile/package.json)
+          manifest="apps/$APP/package.json"
+
+          if [ "$ONLY_IF_CHANGED" = "true" ]; then
+            git fetch --no-tags origin "$channel" || true
+            if ! git diff --name-only "origin/${channel}...HEAD" -- "apps/$APP/" | grep -q .; then
+              echo "apps/$APP/ não mudou neste PR — gate ignorado."
+              exit 0
+            fi
+          fi
+
+          version=$(jq -r '.version' "$manifest")
 
           if ! [[ "$version" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
-            echo "::error file=apps/mobile/package.json::Versão '$version' não é semver (major.minor.patch)."
+            echo "::error file=$manifest::Versão '$version' não é semver (major.minor.patch)."
             exit 1
           fi
           new_major="${BASH_REMATCH[1]}"
@@ -48,8 +74,8 @@ jobs:
           # numérico: sem ele 0.0.9 apareceria como maior que 0.0.10.
           # `|| true`: sem nenhuma tag no canal o grep sai 1 e, com pipefail,
           # derrubaria o script antes do caso "primeira versão do canal".
-          last=$(git tag -l "${channel}-v*" \
-            | sed "s|^${channel}-v||" \
+          last=$(git tag -l "${TAG_PREFIX}${channel}-v*" \
+            | sed "s|^${TAG_PREFIX}${channel}-v||" \
             | { grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' || true; } \
             | sort -V \
             | tail -1)
@@ -71,13 +97,13 @@ jobs:
             || { [ "$new_major" -eq "$last_major" ] && [ "$new_minor" -lt "$last_minor" ]; } \
             || { [ "$new_major" -eq "$last_major" ] && [ "$new_minor" -eq "$last_minor" ] \
                  && [ "$new_patch" -le "$last_patch" ]; }; then
-            echo "::error file=apps/mobile/package.json::Versão $version não avança sobre $last, já publicada em '$channel'. Bumpe apps/mobile/package.json para $((last_major)).$((last_minor + 1)).0 ou superior."
+            echo "::error file=$manifest::Versão $version não avança sobre $last, já publicada em '$channel'. Bumpe $manifest para $((last_major)).$((last_minor + 1)).0 ou superior."
             exit 1
           fi
 
           # Canal estável: o minor precisa mudar.
           if [ "$new_major" -eq "$last_major" ] && [ "$new_minor" -eq "$last_minor" ]; then
-            echo "::error file=apps/mobile/package.json::'$channel' exige bump de minor sobre $last. Versão $version só muda o patch — use $((last_major)).$((last_minor + 1)).0 ou superior."
+            echo "::error file=$manifest::'$channel' exige bump de minor sobre $last. Versão $version só muda o patch — use $((last_major)).$((last_minor + 1)).0 ou superior."
             exit 1
           fi
 

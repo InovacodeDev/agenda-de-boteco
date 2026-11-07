@@ -61,7 +61,7 @@ const sampleUpdateRow: ReleaseRow = {
   },
 };
 
-describe('parseManifestRequest', () => {
+describe('Regra de negócio: protocolo Expo Updates v1 (manifest, diretiva e multipart)', () => {
   it('accepts valid Expo Updates v1 headers with signature expectation', () => {
     const res = parseManifestRequest(
       makeHeaders({ 'expo-current-update-id': 'aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee' }),
@@ -86,31 +86,7 @@ describe('parseManifestRequest', () => {
     }
   });
 
-  it('rejects unknown app slug, path traversal channel, invalid platform, protocol 0, and malformed runtime', () => {
-    const badCases: Array<Record<string, string | null>> = [
-      { 'x-app-slug': 'evil' },
-      { 'x-app-slug': null },
-      { 'expo-channel-name': '../production' },
-      { 'expo-channel-name': null },
-      { 'expo-platform': 'web' },
-      { 'expo-protocol-version': '0' },
-      { 'expo-runtime-version': '' },
-      { 'expo-runtime-version': 'a'.repeat(129) },
-      { 'expo-runtime-version': 'abc/def' },
-      { 'expo-runtime-version': 'abc..def' },
-    ];
-    for (const overrides of badCases) {
-      const res = parseManifestRequest(makeHeaders(overrides));
-      assert.equal(res.ok, false, `Expected rejection for ${JSON.stringify(overrides)}`);
-      if (!res.ok) {
-        assert.equal(res.status, 400);
-      }
-    }
-  });
-});
-
-describe('selectServableRelease', () => {
-  it('returns null for empty list', () => {
+  it('returns null for empty release list', () => {
     assert.equal(selectServableRelease([], 'production', new Date('2026-11-07T12:00:00Z')), null);
   });
 
@@ -124,9 +100,7 @@ describe('selectServableRelease', () => {
     assert.equal(selectServableRelease([thirtyDaysAgo], 'beta', now), null);
     assert.deepEqual(selectServableRelease([thirtyDaysAgo], 'production', now), thirtyDaysAgo);
   });
-});
 
-describe('buildManifestBody', () => {
   it('builds Expo Updates v1 manifest with public URLs, strips .map assets, and normalizes trailing slash', () => {
     const body = buildManifestBody(sampleUpdateRow, 'rt-123', 'https://ota.example.com/');
     const parsed = JSON.parse(body);
@@ -145,9 +119,7 @@ describe('buildManifestBody', () => {
     assert.equal(parsed.assets[0].path, undefined);
     assert.equal(parsed.launchAsset.path, undefined);
   });
-});
 
-describe('buildDirectiveBody', () => {
   it('builds rollBackToEmbedded directive with commitTime', () => {
     const row: ReleaseRow = {
       id: '22222222-3333-4444-8555-666666666666',
@@ -161,9 +133,7 @@ describe('buildDirectiveBody', () => {
       parameters: { commitTime: '2026-11-07T15:00:00.000Z' },
     });
   });
-});
 
-describe('buildMultipart', () => {
   it('includes expo-signature header when signed and omits it when null', () => {
     const signed = buildMultipart(
       { name: 'manifest', body: '{"id":"1"}', signature: 'sig="abc==", keyid="main"' },
@@ -181,9 +151,7 @@ describe('buildMultipart', () => {
     assert.doesNotMatch(unsigned, /expo-signature:/i);
     assert.match(unsigned, /content-disposition: form-data; name="directive"/i);
   });
-});
 
-describe('isReleaseAlreadyRunning', () => {
   it('returns true when update id matches currentUpdateId or rollback_embedded when already on embedded', () => {
     assert.equal(
       isReleaseAlreadyRunning(sampleUpdateRow, {
@@ -220,5 +188,29 @@ describe('isReleaseAlreadyRunning', () => {
       }),
       false,
     );
+  });
+});
+
+describe('Tratamento de erro: cabeçalhos OTA inválidos', () => {
+  it('rejects unknown app slug, path traversal channel, invalid platform, protocol 0, and malformed runtime', () => {
+    const badCases: Array<Record<string, string | null>> = [
+      { 'x-app-slug': 'evil' },
+      { 'x-app-slug': null },
+      { 'expo-channel-name': '../production' },
+      { 'expo-channel-name': null },
+      { 'expo-platform': 'web' },
+      { 'expo-protocol-version': '0' },
+      { 'expo-runtime-version': '' },
+      { 'expo-runtime-version': 'a'.repeat(129) },
+      { 'expo-runtime-version': 'abc/def' },
+      { 'expo-runtime-version': 'abc..def' },
+    ];
+    for (const overrides of badCases) {
+      const res = parseManifestRequest(makeHeaders(overrides));
+      assert.equal(res.ok, false, `Expected rejection for ${JSON.stringify(overrides)}`);
+      if (!res.ok) {
+        assert.equal(res.status, 400);
+      }
+    }
   });
 });

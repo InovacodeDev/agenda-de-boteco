@@ -20,6 +20,7 @@ let timer: ReturnType<typeof setInterval> | null = null;
 function subscribe(listener: (now: Date) => void): () => void {
   subscribers.add(listener);
   if (timer === null) {
+    sharedNow = new Date();
     timer = setInterval(() => {
       sharedNow = new Date();
       for (const notify of subscribers) notify(sharedNow);
@@ -35,7 +36,7 @@ function subscribe(listener: (now: Date) => void): () => void {
 }
 
 function useSharedNow(): Date {
-  const [now, setNow] = useState(sharedNow);
+  const [now, setNow] = useState(() => (subscribers.size > 0 ? sharedNow : new Date()));
   useEffect(() => subscribe(setNow), []);
   return now;
 }

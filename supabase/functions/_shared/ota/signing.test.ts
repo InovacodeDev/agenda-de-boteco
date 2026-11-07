@@ -15,7 +15,7 @@ function arrayBufferToPem(buffer: ArrayBuffer, label: string): string {
   return `-----BEGIN ${label}-----\n${lines.join('\n')}\n-----END ${label}-----`;
 }
 
-describe('signing', () => {
+describe('Regra de negócio: assinatura RSA-SHA256 de manifest OTA', () => {
   it('imports PKCS#8 PEM and produces a verifiable RSA-SHA256 expo-signature header', async () => {
     const keyPair = await crypto.subtle.generateKey(
       {
@@ -72,7 +72,9 @@ describe('signing', () => {
     );
     assert.equal(verified, true);
   });
+});
 
+describe('Tratamento de erro: chave PEM inválida sem vazar segredo', () => {
   it('rejects invalid PEM without leaking the input in the error message', async () => {
     const secretMarker = 'SUPER_SECRET_MATERIAL_DO_NOT_LEAK';
     await assert.rejects(

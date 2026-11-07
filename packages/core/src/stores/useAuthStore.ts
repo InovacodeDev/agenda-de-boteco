@@ -31,7 +31,13 @@ export const useAuthStore = create<AuthState>()((set) => ({
       set({ user: null, status: 'unavailable' });
       return;
     }
-    const user = await getCurrentUser();
+    let user: AuthUser | null;
+    try {
+      user = await getCurrentUser();
+    } catch (error) {
+      set({ user: null, status: 'signedOut' });
+      throw error;
+    }
     set({ user, status: user ? 'signedIn' : 'signedOut' });
     unsubscribe?.();
     unsubscribe = onAuthUserChange((nextUser) => {

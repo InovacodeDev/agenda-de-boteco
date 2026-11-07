@@ -1,10 +1,21 @@
 import { MutationCache, QueryCache, QueryClient } from '@tanstack/react-query';
 
-let errorHandler: (error: unknown) => void = (error) => {
+/**
+ * `handledLocally` indica mutação com `onError` próprio: a tela já mostra o
+ * erro, e o handler global deve se calar para não duplicar o aviso.
+ */
+export interface QueryErrorContext {
+  source: 'query' | 'mutation';
+  handledLocally: boolean;
+}
+
+export type QueryErrorHandler = (error: unknown, context: QueryErrorContext) => void;
+
+let errorHandler: QueryErrorHandler = (error) => {
   console.error('[query] erro não tratado (configureQueryErrorHandler não chamado):', error);
 };
 /** Cada app registra como exibir erros (mobile = Alert, web = toast/console). */
-export function configureQueryErrorHandler(fn: (error: unknown) => void): void {
+export function configureQueryErrorHandler(fn: QueryErrorHandler): void {
   errorHandler = fn;
 }
 
@@ -25,12 +36,15 @@ export const queryClient = new QueryClient({
   },
   queryCache: new QueryCache({
     onError: (error: unknown) => {
-      errorHandler(error);
+      errorHandler(error, { source: 'query', handledLocally: false });
     },
   }),
   mutationCache: new MutationCache({
-    onError: (error: unknown) => {
-      errorHandler(error);
+    onError: (error, _variables, _onMutateResult, mutation) => {
+      errorHandler(error, {
+        source: 'mutation',
+        handledLocally: typeof mutation.options.onError === 'function',
+      });
     },
   }),
 });

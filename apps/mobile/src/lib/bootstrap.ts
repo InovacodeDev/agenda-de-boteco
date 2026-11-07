@@ -13,7 +13,7 @@ import { reportUpdateContext } from './updates';
 
 configureSupabase(getSupabase);
 configureAuthRedirect(() => Linking.createURL('/'));
-configureQueryErrorHandler(showUserFriendlyAlert);
+configureQueryErrorHandler((error) => showUserFriendlyAlert(error));
 const analytics = initAnalytics();
 configureAnalytics(analytics);
 reportUpdateContext(analytics);
