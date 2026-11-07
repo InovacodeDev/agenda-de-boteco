@@ -111,6 +111,12 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Verify spec-lock
+        run: pnpm run test:verify-lock
+
+      - name: Spec-lock tooling tests
+        run: pnpm run test:spec-lock-tooling
+
       - name: Run Lint
         run: pnpm run lint
 

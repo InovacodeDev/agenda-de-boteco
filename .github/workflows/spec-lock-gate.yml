@@ -1,0 +1,49 @@
+name: Spec-Lock Gate
+
+# Bloqueia PR que altera ou remove teste já travado em .github/test-lock.json,
+# a menos que o dono aplique a label `spec-change-approved`. Compara o lock do
+# PR com o da base: apagar a entrada junto com o teste não esconde a mudança.
+on:
+  pull_request:
+    branches: [ release, beta, alfa ]
+    types: [ opened, synchronize, reopened, labeled, unlabeled ]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: spec-lock-gate-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  gate:
+    name: Spec-Lock Gate
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Compare test lock against base
+        env:
+          APPROVED: ${{ contains(github.event.pull_request.labels.*.name, 'spec-change-approved') }}
+        run: |
+          set -uo pipefail
+          git fetch --no-tags origin "${GITHUB_BASE_REF}"
+          if node scripts/spec-lock/cli.mjs gate --base "origin/${GITHUB_BASE_REF}"; then
+            exit 0
+          fi
+          if [ "$APPROVED" = "true" ]; then
+            echo "::warning::Testes travados alterados com a label spec-change-approved — revise a mudança de especificação."
+            exit 0
+          fi
+          echo "::error::PR altera ou remove teste travado sem a label spec-change-approved."
+          exit 1

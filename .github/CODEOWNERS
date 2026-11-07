@@ -1,0 +1,10 @@
+# Especificações travadas (spec-lock): mudança exige revisão do dono.
+**/*.test.ts                            @titorm
+**/*.test.tsx                           @titorm
+**/*.spec.ts                            @titorm
+/supabase/tests/                        @titorm
+/.github/test-lock.json                 @titorm
+/scripts/spec-lock/                     @titorm
+/.github/workflows/spec-lock-gate.yml   @titorm
+/.github/CODEOWNERS                     @titorm
+/.husky/                                @titorm

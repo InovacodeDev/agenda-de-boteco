@@ -20,7 +20,11 @@ const APPROVE_HINT =
   'Mudança de especificação exige aprovação humana: pnpm test:approve-spec-change <arquivo> --reason "<motivo>" (e a label spec-change-approved no PR).';
 
 function git(args) {
-  return execFileSync('git', args, { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
+  return execFileSync('git', args, {
+    encoding: 'utf8',
+    maxBuffer: 64 * 1024 * 1024,
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
 }
 
 function repoRoot() {
