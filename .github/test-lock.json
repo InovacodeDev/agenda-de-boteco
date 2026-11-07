@@ -236,6 +236,11 @@
       "lockedAt": "2026-11-07",
       "reason": "new test file"
     },
+    "packages/core/src/services/owned-events.contract.test.ts": {
+      "sha256": "06c36ccbabccb2ba59d39720b03ad3446bf94a2325c7574fcf0d4ed412716468",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
     "packages/core/src/services/owned-events.test.ts": {
       "sha256": "618358a31815a3dcbf813eaf067a9bbf2ecdd5d121d30d2af77248da8e444fd5",
       "lockedAt": "2026-11-07",
@@ -268,6 +273,11 @@
     },
     "packages/core/src/services/storage.test.ts": {
       "sha256": "b24a8412ac2ad0f8116270f98820858219845b8f7af8d7d4e682a6e6ba6c56fd",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/stores/useAuthStore.contract.test.ts": {
+      "sha256": "194644b579bbc414c014b971b4c8fbd2b6921efe967c9363458bcd64cc771896",
       "lockedAt": "2026-11-07",
       "reason": "new test file"
     },
@@ -308,6 +318,11 @@
     },
     "packages/core/src/utils/dates.test.ts": {
       "sha256": "33bf4698a0eef6c9a27f679cf6c819eb0040d984e3e4272a479959a12b0cce2f",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/utils/errors.contract.test.ts": {
+      "sha256": "fc01f5004e5da190a99d7f04e7856497ce7222256cccc455b3f90e791af53b85",
       "lockedAt": "2026-11-07",
       "reason": "new test file"
     },
