@@ -21,6 +21,11 @@
       "lockedAt": "2026-11-07",
       "reason": "new test file"
     },
+    "apps/mobile-client/src/hooks/useRealtimeSync.test.ts": {
+      "sha256": "9eb82a04bbec3b7d8eb480a640ff2b636d4a30140391876337b9ff32d1333b87",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
     "apps/mobile-client/src/hooks/useResponsive.test.ts": {
       "sha256": "e70291a420ce2b1e6822b2ea19e6ed90ca0550d9b1b95cc78a1a263313e57e7e",
       "lockedAt": "2026-11-07",
@@ -36,6 +41,11 @@
       "lockedAt": "2026-11-07",
       "reason": "new test file"
     },
+    "apps/mobile-client/src/lib/auth.test.ts": {
+      "sha256": "54ff70bf77f8f48f3ffae2878d57bf070d7d528a9946be68072125903fb9cc88",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
     "apps/mobile-client/src/lib/devUrl.test.ts": {
       "sha256": "15cd11751afcc6864b30349f9ddac95aec64dde0ea7a9a92492a0df00dafa6a2",
       "lockedAt": "2026-11-07",
@@ -48,6 +58,11 @@
     },
     "apps/mobile-client/src/services/landing.test.ts": {
       "sha256": "aabd25a79faec1dfa979926f96ea66c13360ee820f18dfbf5f4a27db33146248",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "apps/mobile-client/src/utils/deepLinks.test.ts": {
+      "sha256": "98009eb6141115cc8c8d6b017baa301cf2dfb8ae392fbd45f0db95d3d0d94bf8",
       "lockedAt": "2026-11-07",
       "reason": "new test file"
     },
@@ -197,7 +212,7 @@
       "reason": "new test file"
     },
     "packages/core/src/lib/queryClient.test.ts": {
-      "sha256": "89da116e77395e4ce7e8f8aa5fb1f485afce0a6d394a2ee86851cef148dc7251",
+      "sha256": "4b3b72a0e580ad9517caf5b12880dab2defbc06a67802b3f104bd1f42460dafd",
       "lockedAt": "2026-11-07",
       "reason": "new test file"
     },

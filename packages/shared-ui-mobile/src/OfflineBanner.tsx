@@ -1,15 +1,10 @@
+import { colors, useConnectivity } from '@agenda/core';
 import { useEffect } from 'react';
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-} from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Icon } from '@/components/ui/Icon';
-import { useConnectivity } from '@/hooks/useConnectivity';
-import { colors } from '@/theme/colors';
-import { Text, View } from '@/tw';
+import { Icon } from './Icon';
+import { Text, View } from './tw';
 
 /** Barra discreta no topo, visível apenas quando o app está offline. */
 export function OfflineBanner() {

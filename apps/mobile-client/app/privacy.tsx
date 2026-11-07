@@ -4,19 +4,15 @@ import { useRouter } from 'expo-router';
 import { useResponsive } from '@/hooks/useResponsive';
 import { scrollContentClassName } from '@/lib/screenLayout';
 
-const LAST_UPDATED = '3 de setembro de 2026';
+const LAST_UPDATED = '13 de outubro de 2026';
 const CONTACT_EMAIL = 'contato@inovacode.dev';
 
 function SectionTitle({ children }: { children: string }) {
-  return (
-    <Text className="font-heading text-foreground mt-2 text-base font-bold">{children}</Text>
-  );
+  return <Text className="font-heading text-foreground mt-2 text-base font-bold">{children}</Text>;
 }
 
 function Paragraph({ children }: { children: React.ReactNode }) {
-  return (
-    <Text className="font-body text-muted-foreground text-sm leading-[22px]">{children}</Text>
-  );
+  return <Text className="font-body text-muted-foreground text-sm leading-[22px]">{children}</Text>;
 }
 
 function Bullet({ children }: { children: React.ReactNode }) {
@@ -65,8 +61,7 @@ export default function PrivacyScreen() {
 
           <SectionTitle>2. Dados do estabelecimento</SectionTitle>
           <Paragraph>
-            As informações abaixo são comerciais e ficam visíveis no catálogo público do
-            aplicativo:
+            As informações abaixo são comerciais e ficam visíveis no catálogo público do aplicativo:
           </Paragraph>
           <Bullet>
             Nome, descrição, endereço, bairro e cidade — para o cliente encontrar e chegar até o
@@ -89,13 +84,21 @@ export default function PrivacyScreen() {
 
           <SectionTitle>3. Dados de artistas</SectionTitle>
           <Paragraph>
-            Se você acessar a lista de artistas cadastrados, verá nome, contato e região informados
-            voluntariamente por eles para receberem propostas de show. Use essas informações apenas
-            para contato profissional relacionado ao seu estabelecimento. Repassá-las a terceiros ou
-            usá-las para outra finalidade é proibido.
+            Se você acessar a lista de artistas cadastrados, verá nome, telefone/WhatsApp, região,
+            Instagram, faixa de cachê e estilos musicais informados voluntariamente por eles para
+            receberem propostas de show. Use essas informações apenas para contato profissional
+            relacionado ao seu estabelecimento. Repassá-las a terceiros ou usá-las para outra
+            finalidade é proibido.
           </Paragraph>
 
-          <SectionTitle>4. Serviços que processam esses dados</SectionTitle>
+          <SectionTitle>4. Métricas do seu estabelecimento</SectionTitle>
+          <Paragraph>
+            O painel mostra visualizações e cliques (mapa, contato e compartilhamento) na página do
+            seu bar. Essas contagens não identificam os usuários: não guardamos quem visualizou ou
+            clicou.
+          </Paragraph>
+
+          <SectionTitle>5. Serviços que processam esses dados</SectionTitle>
           <Bullet>
             Supabase — autenticação, banco de dados e armazenamento de imagens e cardápios.
           </Bullet>
@@ -103,14 +106,18 @@ export default function PrivacyScreen() {
             PostHog — recebe dados de uso do painel (quais telas foram abertas), identificados por
             um código aleatório, nunca pelo seu e-mail.
           </Bullet>
+          <Bullet>
+            ViaCEP — recebe o CEP que você digita no cadastro do estabelecimento, para sugerir rua,
+            bairro e cidade. Não guardamos o CEP.
+          </Bullet>
 
-          <SectionTitle>5. Seus direitos</SectionTitle>
+          <SectionTitle>6. Seus direitos</SectionTitle>
           <Paragraph>
             Conforme a LGPD, você pode pedir acesso, correção ou exclusão dos dados da sua conta,
             além de informações sobre como são tratados. Escreva para {CONTACT_EMAIL}.
           </Paragraph>
 
-          <SectionTitle>6. Contato</SectionTitle>
+          <SectionTitle>7. Contato</SectionTitle>
           <Paragraph>
             Dúvidas sobre privacidade ou solicitações sobre seus dados: {CONTACT_EMAIL}.
           </Paragraph>

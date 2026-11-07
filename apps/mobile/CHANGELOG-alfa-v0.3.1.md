@@ -1,3 +1,5 @@
 # Changelog 0.3.1 (alfa)
 
-- Reforço da verificação automática de qualidade
+- Aviso de modo offline e tela de recuperação de erro passam a ser os mesmos do app de estabelecimentos
+- Atualização interna no tratamento de erros, sem mudança visível
+- Atualização interna das bibliotecas da plataforma do app

@@ -196,7 +196,7 @@ export default function EventsListScreen() {
                           label="Editar"
                           variant="solid"
                           icon={<Icon name="pencil" size={14} color="#0f0f0f" />}
-                          onPress={() => router.push(`/(painel)/events/${item.id}` as Href)}
+                          onPress={() => router.push(`/(painel)/events/${item.external_id}` as Href)}
                           className="flex-1 px-3"
                         />
                         <Button

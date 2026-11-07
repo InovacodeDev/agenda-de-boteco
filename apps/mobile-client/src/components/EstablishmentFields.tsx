@@ -119,6 +119,11 @@ export interface FieldGroupProps {
   onError?: (message: string) => void;
 }
 
+/** O arquivo antigo só sai do storage depois que o novo subiu; falha aqui não bloqueia o form. */
+function dropReplacedImage(previousUrl: string) {
+  void deleteImage(previousUrl).catch(() => undefined);
+}
+
 /** Logo, capa, nome e descrição. */
 export function IdentityFields({ draft, set, onUpload }: FieldGroupProps) {
   return (
@@ -129,6 +134,7 @@ export function IdentityFields({ draft, set, onUpload }: FieldGroupProps) {
         previewUrl={draft.logoUrl ? resolveDevAssetUrl(draft.logoUrl) : undefined}
         onChange={(url) => set('logoUrl', url)}
         onUpload={onUpload}
+        onReplaced={dropReplacedImage}
         aspect={[1, 1]}
       />
 
@@ -138,6 +144,7 @@ export function IdentityFields({ draft, set, onUpload }: FieldGroupProps) {
         previewUrl={draft.coverUrl ? resolveDevAssetUrl(draft.coverUrl) : undefined}
         onChange={(url) => set('coverUrl', url)}
         onUpload={onUpload}
+        onReplaced={dropReplacedImage}
         aspect={[16, 9]}
       />
 

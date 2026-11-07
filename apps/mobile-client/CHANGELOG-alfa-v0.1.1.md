@@ -36,4 +36,17 @@
 - Perfil mostra o logo, a capa e a foto do cardápio já cadastrados, com botão "Trocar imagem" sempre visível
 - Lista de eventos mostra o banner de cada evento e volta ao ícone padrão quando a imagem não carrega
 - Corrige falha ao enviar fotos (logo, capa, cardápio e banner do evento) em alguns aparelhos Android
-- Reforço da verificação automática de qualidade
+- Entrar e criar conta com Google volta a funcionar no app instalado no celular
+- Novo login com Apple no iPhone e iPad
+- Quem confirma o cadastro e já tem um bar vinculado vai direto para o painel
+- Link de recuperação de senha recebido por e-mail abre o app direto na tela de nova senha
+- Listas de eventos e dados do bar se atualizam sozinhas quando algo muda no painel web
+- Aviso discreto quando o celular está sem internet, mostrando os dados salvos
+- Em caso de falha inesperada, o app mostra uma tela para tentar novamente em vez de fechar
+- Erro ao salvar uma configuração aparece uma vez só, sem alerta repetido
+- Trocar logo, capa ou banner do evento não deixa mais a imagem antiga guardada, e falhas de envio mostram uma mensagem clara
+- Botão "Salvar" do perfil só fica ativo quando há alguma alteração
+- Logo do bar aparece no topo do painel, ao lado do nome
+- Atalho de Métricas no início do painel é liberado junto com a tela de Métricas
+- Política de privacidade atualizada, com as seções de métricas e de busca por CEP
+- Preparação do app para publicação automática nas lojas

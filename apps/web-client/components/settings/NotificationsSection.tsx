@@ -1,6 +1,13 @@
 'use client';
 
-import { useAuthStore } from '@agenda/core';
+import {
+  DEFAULT_NOTIFICATION_PREFERENCES,
+  getFriendlyErrorMessage,
+  getNotificationPreferences,
+  type NotificationPreferences,
+  saveNotificationPreferences,
+  useAuthStore,
+} from '@agenda/core';
 import {
   BellRingingIcon,
   BellSimpleIcon,
@@ -12,34 +19,24 @@ import {
   MicrophoneStageIcon,
   StarIcon,
 } from '@phosphor-icons/react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 
-export interface NotificationSettings {
-  channelEmail: boolean;
-  channelPush: boolean;
-  alertReviews: boolean;
-  alertMusicians: boolean;
-  alertEventStatus: boolean;
-  alertEmptySchedule: boolean;
-  alertWeeklyDigest: boolean;
-}
-
-const DEFAULT_SETTINGS: NotificationSettings = {
-  channelEmail: true,
-  channelPush: true,
-  alertReviews: true,
-  alertMusicians: true,
-  alertEventStatus: true,
-  alertEmptySchedule: true,
-  alertWeeklyDigest: false,
-};
+/**
+ * Mesma key do mobile-client e fora do PERSIST_ALLOWLIST de propósito:
+ * preferência de conta não vai para o cache em disco.
+ */
+const notificationPreferencesKey = (userId: string) =>
+  ['panel', 'notification-preferences', userId] as const;
 
 function Switch({
   checked,
+  disabled = false,
   onChange,
   label,
 }: {
   checked: boolean;
+  disabled?: boolean;
   onChange: (value: boolean) => void;
   label: string;
 }) {
@@ -49,10 +46,11 @@ function Switch({
       role="switch"
       aria-label={label}
       aria-checked={checked}
+      disabled={disabled}
       onClick={() => onChange(!checked)}
-      className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-        checked ? 'bg-primary' : 'bg-surface-elevated'
-      }`}
+      className={`relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+        disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
+      } ${checked ? 'bg-primary' : 'bg-surface-elevated'}`}
     >
       <span
         aria-hidden="true"
@@ -65,44 +63,45 @@ function Switch({
 }
 
 export function NotificationsSection() {
-  const userId = useAuthStore((state) => state.user?.id);
-  const [settings, setSettings] = useState<NotificationSettings>(DEFAULT_SETTINGS);
+  const userId = useAuthStore((state) => state.user?.id) ?? '';
+  const queryClient = useQueryClient();
+  const queryKey = notificationPreferencesKey(userId);
   const [savedNotice, setSavedNotice] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const { data: settings = DEFAULT_NOTIFICATION_PREFERENCES, isPending } = useQuery({
+    queryKey,
+    queryFn: getNotificationPreferences,
+    enabled: Boolean(userId),
+  });
+  const switchDisabled = !userId || isPending;
+
+  const mutation = useMutation({
+    mutationFn: saveNotificationPreferences,
+    onMutate: async (next: NotificationPreferences) => {
+      await queryClient.cancelQueries({ queryKey });
+      const previous = queryClient.getQueryData<NotificationPreferences>(queryKey);
+      queryClient.setQueryData(queryKey, next);
+      return { previous };
+    },
+    onError: (error, _next, context) => {
+      queryClient.setQueryData(queryKey, context?.previous);
+      setErrorMessage(getFriendlyErrorMessage(error));
+    },
+    onSuccess: () => {
+      setSavedNotice(true);
+    },
+  });
 
   useEffect(() => {
-    if (!userId) return;
-    queueMicrotask(() => {
-      try {
-        const raw = localStorage.getItem(`web-client:notifications:${userId}`);
-        if (raw) {
-          const parsed = JSON.parse(raw) as Partial<NotificationSettings>;
-          setSettings({ ...DEFAULT_SETTINGS, ...parsed });
-        }
-      } catch {
-        // ignore
-      }
-    });
-  }, [userId]);
+    if (!savedNotice) return;
+    const timer = setTimeout(() => setSavedNotice(false), 2500);
+    return () => clearTimeout(timer);
+  }, [savedNotice]);
 
-  const updateSetting = <K extends keyof NotificationSettings>(
-    key: K,
-    value: NotificationSettings[K],
-  ) => {
-    const next = { ...settings, [key]: value };
-    setSettings(next);
-    setSavedNotice(true);
-
-    if (userId) {
-      try {
-        localStorage.setItem(`web-client:notifications:${userId}`, JSON.stringify(next));
-      } catch {
-        // ignore
-      }
-    }
-
-    setTimeout(() => {
-      setSavedNotice(false);
-    }, 2500);
+  const updateSetting = (key: keyof NotificationPreferences, value: boolean) => {
+    setErrorMessage(null);
+    mutation.mutate({ ...settings, [key]: value });
   };
 
   return (
@@ -133,6 +132,12 @@ export function NotificationsSection() {
         ) : null}
       </div>
 
+      {errorMessage ? (
+        <p role="alert" className="text-destructive mb-4 text-sm">
+          {errorMessage}
+        </p>
+      ) : null}
+
       <div className="flex flex-col gap-6">
         <div>
           <h3 className="font-heading text-foreground mb-3 text-sm font-semibold uppercase tracking-wider">
@@ -158,6 +163,7 @@ export function NotificationsSection() {
               <Switch
                 label="Ativar notificações por e-mail"
                 checked={settings.channelEmail}
+                disabled={switchDisabled}
                 onChange={(checked) => updateSetting('channelEmail', checked)}
               />
             </div>
@@ -181,6 +187,7 @@ export function NotificationsSection() {
               <Switch
                 label="Ativar notificações push"
                 checked={settings.channelPush}
+                disabled={switchDisabled}
                 onChange={(checked) => updateSetting('channelPush', checked)}
               />
             </div>
@@ -213,6 +220,7 @@ export function NotificationsSection() {
               <Switch
                 label="Alertas de novas avaliações"
                 checked={settings.alertReviews}
+                disabled={switchDisabled}
                 onChange={(checked) => updateSetting('alertReviews', checked)}
               />
             </div>
@@ -240,6 +248,7 @@ export function NotificationsSection() {
               <Switch
                 label="Alertas de músicos interessados"
                 checked={settings.alertMusicians}
+                disabled={switchDisabled}
                 onChange={(checked) => updateSetting('alertMusicians', checked)}
               />
             </div>
@@ -267,6 +276,7 @@ export function NotificationsSection() {
               <Switch
                 label="Alertas de status de eventos"
                 checked={settings.alertEventStatus}
+                disabled={switchDisabled}
                 onChange={(checked) => updateSetting('alertEventStatus', checked)}
               />
             </div>
@@ -294,6 +304,7 @@ export function NotificationsSection() {
               <Switch
                 label="Lembrete de agenda de fim de semana"
                 checked={settings.alertEmptySchedule}
+                disabled={switchDisabled}
                 onChange={(checked) => updateSetting('alertEmptySchedule', checked)}
               />
             </div>
@@ -321,6 +332,7 @@ export function NotificationsSection() {
               <Switch
                 label="Resumo semanal de métricas"
                 checked={settings.alertWeeklyDigest}
+                disabled={switchDisabled}
                 onChange={(checked) => updateSetting('alertWeeklyDigest', checked)}
               />
             </div>

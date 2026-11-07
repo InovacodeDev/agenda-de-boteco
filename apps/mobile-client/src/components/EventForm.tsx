@@ -1,6 +1,7 @@
 import {
   catalogKeys,
   currencyToMask,
+  deleteImage,
   type Event,
   type EventStatus,
   formatEventDate,
@@ -12,6 +13,7 @@ import {
   saveOwnedEvent,
   saveRecurringOwnedEvents,
   shiftDate,
+  trackEvent,
   uploadImage,
   useMusicStylesQuery,
   useOwnedEstablishmentId,
@@ -193,6 +195,7 @@ export function EventForm({ event }: EventFormProps) {
       }
 
       await queryClient.invalidateQueries({ queryKey: catalogKeys.events.root });
+      trackEvent('event_saved', { isEdit: Boolean(event?.id) });
       router.replace('/(painel)/events');
     } catch (err: unknown) {
       toast.show({ tone: 'error', message: getFriendlyErrorMessage(err) });
@@ -223,6 +226,7 @@ export function EventForm({ event }: EventFormProps) {
                 previewUrl={bannerUrl ? resolveDevAssetUrl(bannerUrl) : undefined}
                 onChange={setBannerUrl}
                 onUpload={handleUpload}
+                onReplaced={(previous) => void deleteImage(previous).catch(() => undefined)}
                 aspect={[16, 9]}
               />
 
