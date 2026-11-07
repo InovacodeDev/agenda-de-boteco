@@ -32,18 +32,45 @@ jobs:
         with:
           node-version: 22
 
+      # Roda a cópia do gate que está na BASE: sob pull_request o checkout é o
+      # do PR, e um PR que altera o próprio script passaria no próprio gate.
+      - name: Load gate script from base branch
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin "${GITHUB_BASE_REF}"
+          base="origin/${GITHUB_BASE_REF}"
+          dir="${RUNNER_TEMP}/spec-lock"
+          mkdir -p "$dir"
+          if git cat-file -e "${base}:scripts/spec-lock/cli.mjs" 2>/dev/null; then
+            for file in cli.mjs lib.mjs; do
+              git show "${base}:scripts/spec-lock/${file}" > "${dir}/${file}"
+            done
+            echo "SPEC_LOCK_CLI=${dir}/cli.mjs" >> "$GITHUB_ENV"
+          else
+            echo "::warning::Base sem scripts/spec-lock — usando o script do próprio PR (bootstrap)."
+            echo "SPEC_LOCK_CLI=scripts/spec-lock/cli.mjs" >> "$GITHUB_ENV"
+          fi
+
+      # A label só vale no evento `labeled` disparado por um dono listado no
+      # CODEOWNERS da base para o lock. Um push posterior (synchronize) invalida
+      # a aprovação: o dono remove e reaplica a label para aprovar o novo diff.
       - name: Compare test lock against base
         env:
-          APPROVED: ${{ contains(github.event.pull_request.labels.*.name, 'spec-change-approved') }}
+          ACTION: ${{ github.event.action }}
+          LABEL: ${{ github.event.label.name }}
+          SENDER: ${{ github.event.sender.login }}
         run: |
-          set -uo pipefail
-          git fetch --no-tags origin "${GITHUB_BASE_REF}"
-          if node scripts/spec-lock/cli.mjs gate --base "origin/${GITHUB_BASE_REF}"; then
+          set -euo pipefail
+          base="origin/${GITHUB_BASE_REF}"
+          if node "$SPEC_LOCK_CLI" gate --base "$base"; then
             exit 0
           fi
-          if [ "$APPROVED" = "true" ]; then
-            echo "::warning::Testes travados alterados com a label spec-change-approved — revise a mudança de especificação."
+          approvers="$(git show "${base}:.github/CODEOWNERS" 2>/dev/null \
+            | awk '$1 == "/.github/test-lock.json" { for (i = 2; i <= NF; i++) { sub(/^@/, "", $i); print $i } }' || true)"
+          if [ "$ACTION" = "labeled" ] && [ "$LABEL" = "spec-change-approved" ] \
+            && [ -n "$approvers" ] && printf '%s\n' "$approvers" | grep -qixF -- "$SENDER"; then
+            echo "::warning::Mudança em teste travado aprovada por @${SENDER} via label spec-change-approved."
             exit 0
           fi
-          echo "::error::PR altera ou remove teste travado sem a label spec-change-approved."
+          echo "::error::PR altera ou remove teste travado. Aprovação: um dono do CODEOWNERS (/.github/test-lock.json) aplica a label spec-change-approved após o último push (remova e reaplique se já existir)."
           exit 1

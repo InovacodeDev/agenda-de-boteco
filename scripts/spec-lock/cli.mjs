@@ -9,7 +9,7 @@
  * `approve` recusa CI e stdin sem TTY de propósito: agentes de IA rodam sem
  * terminal interativo, então não conseguem aprovar a própria mudança de spec.
  */
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { createInterface } from 'node:readline/promises';
 
@@ -35,6 +35,43 @@ function emptyLock() {
   return { version: 1, files: {} };
 }
 
+function gitBuffer(args) {
+  return execFileSync('git', args, {
+    maxBuffer: 64 * 1024 * 1024,
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
+}
+
+function isInIndex(path) {
+  return git(['ls-files', '--cached', '--', path]).trim() !== '';
+}
+
+/**
+ * De onde ler testes e lock. `worktree` (CI, checkout limpo) lê os arquivos do
+ * disco, incluindo não rastreados; `staged` (pre-commit) lê só o índice — o que
+ * de fato entra no commit. Sem isso, um teste WIP não rastreado seria travado
+ * por um commit que não o contém, e um teste alterado no índice mas restaurado
+ * no disco passaria pelo hook.
+ */
+function sourceFor(args) {
+  if (args.includes('--staged')) {
+    return {
+      list: () => git(['ls-files', '-z', '--cached']).split('\0'),
+      read: (path) => gitBuffer(['show', `:${path}`]),
+      readLock: () =>
+        isInIndex(LOCK_PATH) ? JSON.parse(git(['show', `:${LOCK_PATH}`])) : emptyLock(),
+    };
+  }
+  return {
+    list: () =>
+      git(['ls-files', '-z', '--cached', '--others', '--exclude-standard'])
+        .split('\0')
+        .filter((path) => existsSync(path)),
+    read: (path) => readFileSync(path),
+    readLock,
+  };
+}
+
 function readLock() {
   if (!existsSync(LOCK_PATH)) return emptyLock();
   return JSON.parse(readFileSync(LOCK_PATH, 'utf8'));
@@ -44,11 +81,9 @@ function writeLock(lock) {
   writeFileSync(LOCK_PATH, `${JSON.stringify(lock, null, 2)}\n`);
 }
 
-function currentTestFiles() {
-  const listed = git(['ls-files', '-z', '--cached', '--others', '--exclude-standard'])
-    .split('\0')
-    .filter((path) => path && isTestFile(path) && existsSync(path));
-  return new Map(listed.map((path) => [path, sha256(readFileSync(path))]));
+function currentTestFiles(source) {
+  const listed = source.list().filter((path) => path && isTestFile(path));
+  return new Map(listed.map((path) => [path, sha256(source.read(path))]));
 }
 
 function today() {
@@ -60,8 +95,11 @@ function flag(args, name) {
   return index === -1 ? undefined : args[index + 1];
 }
 
-function cmdVerify() {
-  const { violations } = verify(readLock(), currentTestFiles(), (path) => readFileSync(path, 'utf8'));
+function cmdVerify(args) {
+  const source = sourceFor(args);
+  const { violations } = verify(source.readLock(), currentTestFiles(source), (path) =>
+    source.read(path).toString('utf8'),
+  );
   if (violations.length === 0) {
     console.log('spec-lock: nenhum teste travado foi alterado.');
     return 0;
@@ -81,7 +119,8 @@ function cmdVerify() {
 }
 
 function cmdLockNew(args) {
-  const { lock, added } = addNew(readLock(), currentTestFiles(), today());
+  const source = sourceFor(args);
+  const { lock, added } = addNew(source.readLock(), currentTestFiles(source), today());
   if (added.length === 0) {
     console.log('spec-lock: nenhum teste novo para travar.');
     return 0;
@@ -129,15 +168,20 @@ function cmdGate(args) {
     console.error('uso: gate --base <ref>');
     return 2;
   }
-  let baseLock;
   try {
-    baseLock = JSON.parse(git(['show', `${base}:${LOCK_PATH}`]));
+    git(['rev-parse', '--verify', '--quiet', `${base}^{commit}`]);
   } catch {
-    console.log(`spec-lock: base ${base} não tem ${LOCK_PATH} — nada a comparar.`);
-    return 0;
+    console.error(`spec-lock: ref de base inválida: ${base}`);
+    return 2;
   }
+  const inBase = spawnSync('git', ['cat-file', '-e', `${base}:${LOCK_PATH}`], { stdio: 'ignore' });
+  if (inBase.status !== 0) {
+    console.log(`spec-lock: base ${base} não tem ${LOCK_PATH} — nada a comparar.`);
+    return cmdVerify([]);
+  }
+  const baseLock = JSON.parse(git(['show', `${base}:${LOCK_PATH}`]));
   const { changed, removed } = diffAgainstBase(baseLock, readLock());
-  const verifyCode = cmdVerify();
+  const verifyCode = cmdVerify([]);
   if (changed.length === 0 && removed.length === 0 && verifyCode === 0) {
     console.log('spec-lock: nenhum teste travado na base foi alterado neste PR.');
     return 0;
@@ -152,7 +196,7 @@ async function main() {
   const [command, ...args] = process.argv.slice(2);
   switch (command) {
     case 'verify':
-      return cmdVerify();
+      return cmdVerify(args);
     case 'lock-new':
       return cmdLockNew(args);
     case 'approve':

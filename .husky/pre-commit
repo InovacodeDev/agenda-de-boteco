@@ -9,6 +9,6 @@ esac
 
 bash scripts/hooks/check-audit-log.bash
 
-node scripts/spec-lock/cli.mjs verify
-node scripts/spec-lock/cli.mjs lock-new --stage
+node scripts/spec-lock/cli.mjs verify --staged
+node scripts/spec-lock/cli.mjs lock-new --staged --stage
 pnpm turbo run test --filter='...[HEAD]'

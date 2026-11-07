@@ -8,3 +8,12 @@
 /.github/workflows/spec-lock-gate.yml   @titorm
 /.github/CODEOWNERS                     @titorm
 /.husky/                                @titorm
+
+# Configuração que pode silenciar teste sem tocar arquivo travado.
+**/jest.config.*                        @titorm
+**/jest.setup.*                         @titorm
+**/__mocks__/                           @titorm
+/eslint.config.mjs                      @titorm
+/turbo.json                             @titorm
+/package.json                           @titorm
+/.github/workflows/ci.yml               @titorm
