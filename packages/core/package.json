@@ -19,7 +19,7 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "gen:types": "supabase gen types typescript --project-id \"$SUPABASE_PROJECT_ID\" > src/types/database.types.ts",
-    "test": "jest --passWithNoTests"
+    "test": "jest --coverage"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.106.2",
