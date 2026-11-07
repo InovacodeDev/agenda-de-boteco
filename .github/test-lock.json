@@ -475,6 +475,31 @@
       "sha256": "7833e4f2d4714718bf45e7aeff1f60bd8078ee3283f14a2d52d86e3fade9c0b0",
       "lockedAt": "2026-11-07",
       "reason": "new test file"
+    },
+    "packages/shared-ui/src/Button.test.tsx": {
+      "sha256": "5263c26394fffb625337bced03b0181152b62dfd6f0983e05995296b0a20b841",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/shared-ui/src/Field.test.tsx": {
+      "sha256": "9e0ad000eabe757d90410cb3e7f057b5ee653615bd9ec9f79881a35e20d507b3",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/shared-ui/src/Select.test.tsx": {
+      "sha256": "aa943d1ab3bec04ef2053efed79085589a4eb1facbe60edc0865196a045a7bb5",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/shared-ui/src/TimePicker.test.tsx": {
+      "sha256": "a11cde0b2698d984f1b51260b78cb83f919dd8608e5d706ad54523ff9d1d6677",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/shared-ui/src/Toast.test.tsx": {
+      "sha256": "3d0021683f4c76d24a1e6cebd257946993b961a289bc028a46f9bf50c4757f35",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
     }
   }
 }

@@ -14,7 +14,8 @@
   "scripts": {
     "build": "echo 'shared-ui is a source-only internal package — nothing to build'",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "jest"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.23",
@@ -30,8 +31,16 @@
     "@agenda/typescript-config": "workspace:*",
     "@phosphor-icons/react": "^2.1.10",
     "@radix-ui/react-select": "^2.3.7",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "16.3.3",
+    "@testing-library/user-event": "^14.6.8",
+    "@types/jest": "^29.5.14",
     "@types/react": "^19.2.3",
+    "jest": "~29.7.0",
+    "jest-environment-jsdom": "29.7.0",
     "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "ts-jest": "^29.4.11",
     "typescript": "^6.0.3"
   }
 }
