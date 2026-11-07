@@ -6,3 +6,5 @@ case "$branch" in
     exit 1
     ;;
 esac
+
+bash scripts/hooks/check-audit-log.bash
