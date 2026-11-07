@@ -49,3 +49,4 @@
 - Logo do bar aparece no topo do painel, ao lado do nome
 - Atalho de Métricas no início do painel é liberado junto com a tela de Métricas
 - Política de privacidade atualizada, com as seções de métricas e de busca por CEP
+- Preparação do app para publicação automática nas lojas

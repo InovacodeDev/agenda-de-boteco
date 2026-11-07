@@ -60,7 +60,13 @@
     "ios": "expo run:ios",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
-    "test": "jest"
+    "test": "jest",
+    "build:alfa:android": "eas build --local --platform android --profile alfa",
+    "build:alfa:ios": "eas build --platform ios --profile alfa",
+    "build:beta:android": "eas build --local --platform android --profile beta",
+    "build:beta:ios": "eas build --platform ios --profile beta",
+    "build:release:android": "eas build --local --platform android --profile production",
+    "build:release:ios": "eas build --platform ios --profile production"
   },
   "devDependencies": {
     "@agenda/typescript-config": "workspace:*",
