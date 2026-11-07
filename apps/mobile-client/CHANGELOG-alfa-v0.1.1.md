@@ -43,3 +43,4 @@
 - Listas de eventos e dados do bar se atualizam sozinhas quando algo muda no painel web
 - Aviso discreto quando o celular está sem internet, mostrando os dados salvos
 - Em caso de falha inesperada, o app mostra uma tela para tentar novamente em vez de fechar
+- Erro ao salvar uma configuração aparece uma vez só, sem alerta repetido

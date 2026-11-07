@@ -12,5 +12,5 @@ import { getSupabase } from './supabase';
 
 configureSupabase(getSupabase);
 configureAuthRedirect(() => Linking.createURL('/'));
-configureQueryErrorHandler(showUserFriendlyAlert);
+configureQueryErrorHandler((error) => showUserFriendlyAlert(error));
 configureAnalytics(initAnalytics());
