@@ -45,3 +45,5 @@
 - Em caso de falha inesperada, o app mostra uma tela para tentar novamente em vez de fechar
 - Erro ao salvar uma configuração aparece uma vez só, sem alerta repetido
 - Trocar logo, capa ou banner do evento não deixa mais a imagem antiga guardada, e falhas de envio mostram uma mensagem clara
+- Botão "Salvar" do perfil só fica ativo quando há alguma alteração
+- Logo do bar aparece no topo do painel, ao lado do nome
