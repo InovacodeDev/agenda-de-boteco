@@ -161,6 +161,21 @@
       "lockedAt": "2026-11-07",
       "reason": "new test file"
     },
+    "packages/core/src/schemas/catalog.test.ts": {
+      "sha256": "d6e3412c58af1483f4361bd1e571b38bbbdfe68bfe0327ce9c18359586bde48a",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/schemas/musician-lead.test.ts": {
+      "sha256": "e217cc7b89a1b1ae1e7cd9e4bad46284d08b3d37f8175d0cc72f6b5934bddc35",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/schemas/ratings.test.ts": {
+      "sha256": "1845415ffd406646c7961e295fa2a760766fc3ba68e73c64edf6b8766472daae",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
     "packages/core/src/services/analytics.test.ts": {
       "sha256": "2416a5c28b97192a73059ba89730629bbc0e810c0e830512d53f804bed31ac51",
       "lockedAt": "2026-11-07",
