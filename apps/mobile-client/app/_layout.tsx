@@ -26,13 +26,15 @@ import { SpaceGrotesk_500Medium, SpaceGrotesk_700Bold } from '@expo-google-fonts
 import NetInfo from '@react-native-community/netinfo';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { useFonts } from 'expo-font';
-import { Stack, usePathname } from 'expo-router';
+import * as Linking from 'expo-linking';
+import { Stack, usePathname, useRouter } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { AppState } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { handleAuthDeepLink } from '@/lib/auth';
 import { usePushNotifications } from '@/lib/push';
 import { persister } from '@/lib/queryPersister';
 
@@ -44,6 +46,29 @@ function PostHogScreenTracker() {
   useEffect(() => {
     trackPageview(pathname);
   }, [pathname]);
+
+  return null;
+}
+
+/**
+ * Links de e-mail do Supabase (recuperação de senha, confirmação) chegam com
+ * os tokens na URL; no nativo não há `detectSessionInUrl`, então a sessão é
+ * gravada aqui e a recuperação segue para `/new-password`.
+ */
+function AuthDeepLinkHandler() {
+  const url = Linking.useURL();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!url) return;
+    let active = true;
+    void handleAuthDeepLink(url).then((result) => {
+      if (active && result === 'recovery') router.replace('/new-password');
+    });
+    return () => {
+      active = false;
+    };
+  }, [url, router]);
 
   return null;
 }
@@ -130,6 +155,7 @@ export default function RootLayout() {
         <ToastProvider>
           <StatusBar style="light" />
           <PostHogScreenTracker />
+          <AuthDeepLinkHandler />
           <Stack
             screenOptions={{
               headerShown: false,

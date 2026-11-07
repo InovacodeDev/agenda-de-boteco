@@ -39,3 +39,4 @@
 - Entrar e criar conta com Google volta a funcionar no app instalado no celular
 - Novo login com Apple no iPhone e iPad
 - Quem confirma o cadastro e já tem um bar vinculado vai direto para o painel
+- Link de recuperação de senha recebido por e-mail abre o app direto na tela de nova senha
