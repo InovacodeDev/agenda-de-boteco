@@ -4,6 +4,7 @@ import {
   buildDirectiveBody,
   buildManifestBody,
   buildMultipart,
+  isReleaseAlreadyRunning,
   parseManifestRequest,
   type ReleaseRow,
   selectServableRelease,
@@ -54,7 +55,7 @@ Deno.serve(async (req) => {
       auth: { persistSession: false, autoRefreshToken: false },
     });
 
-    const { appSlug, channel, platform, runtimeVersion, currentUpdateId, expectSignature } =
+    const { appSlug, channel, platform, runtimeVersion, expectSignature } =
       parsedReq.value;
 
     const { data, error } = await supabase
@@ -74,7 +75,7 @@ Deno.serve(async (req) => {
 
     const rows = (data ?? []) as ReleaseRow[];
     const release = selectServableRelease(rows, channel, new Date());
-    if (!release || release.id === currentUpdateId) {
+    if (!release || isReleaseAlreadyRunning(release, parsedReq.value)) {
       return new Response(null, {
         status: 204,
         headers: {

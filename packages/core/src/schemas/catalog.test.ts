@@ -2,7 +2,9 @@ import {
   establishmentSchema,
   establishmentWriteSchema,
   eventSchema,
+  eventWriteSchema,
   notificationSchema,
+  notificationWriteSchema,
 } from './catalog';
 
 const baseEstablishment = {
@@ -93,5 +95,32 @@ describe('catalog read enum resilience', () => {
       attributes: ['pet-friendly', 'live-music'],
     });
     expect(parsed.attributes).toEqual(['pet-friendly', 'live-music']);
+  });
+
+  it('keeps write schemas strict and rejects unknown enum values on write', () => {
+    expect(
+      establishmentWriteSchema.safeParse({
+        ...baseEstablishment,
+        attributes: ['rooftop-new'],
+      }).success,
+    ).toBe(false);
+    expect(
+      establishmentWriteSchema.safeParse({
+        ...baseEstablishment,
+        price_range: '$$$$$',
+      }).success,
+    ).toBe(false);
+    expect(
+      eventWriteSchema.safeParse({
+        ...baseEvent,
+        status: 'archived',
+      }).success,
+    ).toBe(false);
+    expect(
+      notificationWriteSchema.safeParse({
+        ...baseNotification,
+        type: 'artist',
+      }).success,
+    ).toBe(false);
   });
 });

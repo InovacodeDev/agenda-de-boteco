@@ -92,4 +92,48 @@ describe('buildStoredManifest', () => {
     assert.equal(manifest.assets.length, 1);
     assert.equal(uploads.length, 2);
   });
+
+  it('deduplicates repeated assets in metadata and rejects path traversal', () => {
+    const files = makeFiles();
+    const assetPrefix = 'ota/agenda-de-boteco/production/rt1/rel3/';
+    const dupMetadata = {
+      version: 0,
+      bundler: 'metro',
+      fileMetadata: {
+        ios: {
+          bundle: '_expo/static/js/ios/entry-abc.hbc',
+          assets: [
+            { path: 'assets/4f3a9c1b2d', ext: 'png' },
+            { path: 'assets/4f3a9c1b2d', ext: 'png' },
+          ],
+        },
+      },
+    };
+    const { manifest, uploads } = buildStoredManifest({
+      metadata: dupMetadata,
+      platform: 'ios',
+      files,
+      assetPrefix,
+    });
+    assert.equal(manifest.assets.length, 1);
+    assert.equal(uploads.length, 2);
+
+    assert.throws(() =>
+      buildStoredManifest({
+        metadata: {
+          version: 0,
+          bundler: 'metro',
+          fileMetadata: {
+            ios: {
+              bundle: '../secret.js',
+              assets: [],
+            },
+          },
+        },
+        platform: 'ios',
+        files,
+        assetPrefix,
+      }),
+    );
+  });
 });

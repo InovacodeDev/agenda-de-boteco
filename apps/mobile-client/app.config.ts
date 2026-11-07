@@ -2,28 +2,48 @@ import type { ConfigContext, ExpoConfig } from 'expo/config';
 
 import { version } from './package.json';
 
-export default ({ config }: ConfigContext): ExpoConfig => ({
-  ...config,
-  name: 'Agenda de Boteco - Estabelecimento',
-  slug: 'agenda-de-boteco-client',
-  version,
-  runtimeVersion: {
-    policy: 'fingerprint',
-  },
-  updates: {
-    url: process.env.EXPO_PUBLIC_OTA_MANIFEST_URL,
-    enabled: Boolean(process.env.EXPO_PUBLIC_OTA_MANIFEST_URL),
-    checkAutomatically: 'ON_LOAD',
-    fallbackToCacheTimeout: 0,
-    codeSigningCertificate: './certs/certificate.pem',
-    codeSigningMetadata: {
-      keyid: 'main',
-      alg: 'rsa-v1_5-sha256',
+const STRICT_PROFILES = ['production', 'preview', 'alfa', 'beta'] as const;
+
+const getEnvVar = (value: string | undefined, name: string): string => {
+  const isStrictProfile = (STRICT_PROFILES as readonly string[]).includes(
+    process.env.EAS_BUILD_PROFILE ?? '',
+  );
+  if (!value && isStrictProfile) {
+    throw new Error(
+      `[FALHA NO BUILD] A variável de ambiente obrigatória "${name}" não foi definida.`,
+    );
+  }
+  return value || '';
+};
+
+export default ({ config }: ConfigContext): ExpoConfig => {
+  const manifestUrl = getEnvVar(
+    process.env.EXPO_PUBLIC_OTA_MANIFEST_URL,
+    'EXPO_PUBLIC_OTA_MANIFEST_URL',
+  );
+
+  return {
+    ...config,
+    name: 'Agenda de Boteco - Estabelecimento',
+    slug: 'agenda-de-boteco-client',
+    version,
+    runtimeVersion: {
+      policy: 'fingerprint',
     },
-    requestHeaders: {
-      'x-app-slug': 'agenda-de-boteco-client',
+    updates: {
+      url: manifestUrl || undefined,
+      enabled: Boolean(manifestUrl),
+      checkAutomatically: 'ON_LOAD',
+      fallbackToCacheTimeout: 0,
+      codeSigningCertificate: './certs/certificate.pem',
+      codeSigningMetadata: {
+        keyid: 'main',
+        alg: 'rsa-v1_5-sha256',
+      },
+      requestHeaders: {
+        'x-app-slug': 'agenda-de-boteco-client',
+      },
     },
-  },
   orientation: 'default',
   icon: './assets/icon.png',
   scheme: 'agenda-boteco-client',
@@ -75,4 +95,5 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   experiments: {
     typedRoutes: true,
   },
-});
+  };
+};

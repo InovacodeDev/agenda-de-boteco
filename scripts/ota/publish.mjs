@@ -119,7 +119,7 @@ async function main() {
   const r2Client = createR2Client(process.env);
   const bucket = getR2Bucket(process.env);
   const gitSha = process.env.GITHUB_SHA || 'local';
-  const publishedIds = [];
+  const pendingReleases = [];
 
   for (const platform of PLATFORMS) {
     const runtimeVersion = runtimeByPlatform.get(platform);
@@ -127,70 +127,77 @@ async function main() {
     const outputAbsDir = path.join(appDir, outputRelDir);
     fs.rmSync(outputAbsDir, { recursive: true, force: true });
 
-    execFileSync(
-      'npx',
-      ['expo', 'export', '--platform', platform, '--dump-sourcemap', '--output-dir', outputRelDir],
-      {
-        cwd: appDir,
-        stdio: 'inherit',
-      },
-    );
-
-    if (process.env.POSTHOG_CLI_TOKEN) {
+    try {
       execFileSync(
         'npx',
-        ['@posthog/cli', 'hermes', 'upload', '--directory', outputRelDir],
+        ['expo', 'export', '--platform', platform, '--dump-sourcemap', '--output-dir', outputRelDir],
         {
           cwd: appDir,
           stdio: 'inherit',
         },
       );
-    } else {
-      process.stdout.write(
-        `Skipping PostHog source map upload for ${appSlug}/${platform}: POSTHOG_CLI_TOKEN not set.\n`,
-      );
+
+      if (process.env.POSTHOG_CLI_TOKEN) {
+        execFileSync(
+          'npx',
+          ['@posthog/cli', 'hermes', 'upload', '--directory', outputRelDir],
+          {
+            cwd: appDir,
+            stdio: 'inherit',
+          },
+        );
+      } else {
+        process.stdout.write(
+          `Skipping PostHog source map upload for ${appSlug}/${platform}: POSTHOG_CLI_TOKEN not set.\n`,
+        );
+      }
+
+      const metadataRaw = fs.readFileSync(path.join(outputAbsDir, 'metadata.json'), 'utf8');
+      const metadata = JSON.parse(metadataRaw);
+      const files = readDirectoryFiles(outputAbsDir);
+
+      const releaseId = crypto.randomUUID();
+      const assetPrefix = `ota/${appSlug}/${channel}/${runtimeVersion}/${releaseId}/`;
+      const { manifest, uploads } = buildStoredManifest({
+        metadata,
+        platform,
+        files,
+        assetPrefix,
+      });
+
+      for (const upload of uploads) {
+        const body = files.get(upload.path);
+        await r2Client.send(
+          new PutObjectCommand({
+            Bucket: bucket,
+            Key: upload.key,
+            Body: body,
+            ContentType: upload.contentType,
+            CacheControl: 'public, max-age=31536000, immutable',
+          }),
+        );
+      }
+
+      pendingReleases.push({
+        id: releaseId,
+        app_slug: appSlug,
+        channel,
+        platform,
+        runtime_version: runtimeVersion,
+        kind: 'update',
+        asset_prefix: assetPrefix,
+        manifest,
+        git_sha: gitSha,
+      });
+    } finally {
+      fs.rmSync(outputAbsDir, { recursive: true, force: true });
     }
+  }
 
-    const metadataRaw = fs.readFileSync(path.join(outputAbsDir, 'metadata.json'), 'utf8');
-    const metadata = JSON.parse(metadataRaw);
-    const files = readDirectoryFiles(outputAbsDir);
-
-    const releaseId = crypto.randomUUID();
-    const assetPrefix = `ota/${appSlug}/${channel}/${runtimeVersion}/${releaseId}/`;
-    const { manifest, uploads } = buildStoredManifest({
-      metadata,
-      platform,
-      files,
-      assetPrefix,
-    });
-
-    for (const upload of uploads) {
-      const body = files.get(upload.path);
-      await r2Client.send(
-        new PutObjectCommand({
-          Bucket: bucket,
-          Key: upload.key,
-          Body: body,
-          ContentType: upload.contentType,
-          CacheControl: 'public, max-age=31536000, immutable',
-        }),
-      );
-    }
-
-    await insertRelease(supabaseConfig, {
-      id: releaseId,
-      app_slug: appSlug,
-      channel,
-      platform,
-      runtime_version: runtimeVersion,
-      kind: 'update',
-      asset_prefix: assetPrefix,
-      manifest,
-      git_sha: gitSha,
-    });
-
-    publishedIds.push(`${platform}:${releaseId}`);
-    fs.rmSync(outputAbsDir, { recursive: true, force: true });
+  const publishedIds = [];
+  for (const releaseRow of pendingReleases) {
+    await insertRelease(supabaseConfig, releaseRow);
+    publishedIds.push(`${releaseRow.platform}:${releaseRow.id}`);
   }
 
   writeGithubOutput('ota_release_ids', publishedIds.join(','));

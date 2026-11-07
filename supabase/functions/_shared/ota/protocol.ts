@@ -13,6 +13,7 @@ export interface ManifestRequest {
   platform: Platform;
   runtimeVersion: string;
   currentUpdateId: string | null;
+  embeddedUpdateId: string | null;
   expectSignature: boolean;
 }
 
@@ -82,6 +83,8 @@ export function parseManifestRequest(
 
   const rawCurrentUpdateId = headers.get('expo-current-update-id')?.trim() ?? '';
   const currentUpdateId = rawCurrentUpdateId.length > 0 ? rawCurrentUpdateId : null;
+  const rawEmbeddedUpdateId = headers.get('expo-embedded-update-id')?.trim() ?? '';
+  const embeddedUpdateId = rawEmbeddedUpdateId.length > 0 ? rawEmbeddedUpdateId : null;
   const expectSignatureHeader = headers.get('expo-expect-signature');
   const expectSignature =
     expectSignatureHeader !== null && expectSignatureHeader.trim().length > 0;
@@ -94,9 +97,24 @@ export function parseManifestRequest(
       platform,
       runtimeVersion,
       currentUpdateId,
+      embeddedUpdateId,
       expectSignature,
     },
   };
+}
+
+export function isReleaseAlreadyRunning(
+  release: ReleaseRow,
+  req: Pick<ManifestRequest, 'currentUpdateId' | 'embeddedUpdateId'>,
+): boolean {
+  if (release.kind === 'rollback_embedded') {
+    return (
+      req.currentUpdateId !== null &&
+      req.embeddedUpdateId !== null &&
+      req.currentUpdateId === req.embeddedUpdateId
+    );
+  }
+  return release.id === req.currentUpdateId;
 }
 
 export function selectServableRelease(

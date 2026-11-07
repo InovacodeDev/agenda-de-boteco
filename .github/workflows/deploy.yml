@@ -228,24 +228,6 @@ jobs:
               --channel "$CHANNEL_PROFILE" \
               --build-json "$RUNNER_TEMP/eas-build.json"
 
-      - name: Tag deployed version
-        run: |
-          set -euo pipefail
-          tag="${{ needs.version-gate.outputs.tag }}"
-          git fetch --tags --force
-          if git rev-parse -q --verify "refs/tags/$tag" >/dev/null; then
-            echo "Tag $tag já existe — nada a fazer."
-            exit 0
-          fi
-          git tag "$tag"
-          if ! git push origin "refs/tags/$tag"; then
-            git fetch --tags --force
-            git rev-parse -q --verify "refs/tags/$tag" >/dev/null || exit 1
-            echo "Tag $tag criada em paralelo — ok."
-            exit 0
-          fi
-          echo "Tag $tag criada — este canal fica bloqueado até o próximo bump de versão."
-
       - name: Publish build links to summary
         if: always()
         run: |
@@ -271,3 +253,32 @@ jobs:
               echo "⚠️ Nenhum deploy concluído (job pode ter falhado antes do OTA ou \`eas build\`)."
             fi
           } >> "$GITHUB_STEP_SUMMARY"
+
+  tag:
+    name: Tag deployed version
+    runs-on: ubuntu-latest
+    needs: [version-gate, deploy]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Tag deployed version
+        run: |
+          set -euo pipefail
+          tag="${{ needs.version-gate.outputs.tag }}"
+          git fetch --tags --force
+          if git rev-parse -q --verify "refs/tags/$tag" >/dev/null; then
+            echo "Tag $tag já existe — nada a fazer."
+            exit 0
+          fi
+          git tag "$tag"
+          if ! git push origin "refs/tags/$tag"; then
+            git fetch --tags --force
+            git rev-parse -q --verify "refs/tags/$tag" >/dev/null || exit 1
+            echo "Tag $tag criada em paralelo — ok."
+            exit 0
+          fi
+          echo "Tag $tag criada — este canal fica bloqueado até o próximo bump de versão."

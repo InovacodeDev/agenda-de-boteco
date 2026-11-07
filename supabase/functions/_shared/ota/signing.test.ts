@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import crypto from 'node:crypto';
 import { describe, it } from 'node:test';
 
 import { importSigningKey, signatureHeader } from './signing.ts';
@@ -44,6 +45,30 @@ describe('signing', () => {
       keyPair.publicKey,
       sigBytes,
       new TextEncoder().encode(body),
+    );
+    assert.equal(verified, true);
+  });
+
+  it('imports PKCS#1 RSA PRIVATE KEY PEM with escaped newlines and produces verifiable signature', async () => {
+    const { privateKey, publicKey } = crypto.generateKeyPairSync('rsa', {
+      modulusLength: 2048,
+    });
+    const pkcs1Pem = privateKey
+      .export({ type: 'pkcs1', format: 'pem' })
+      .toString()
+      .replace(/\n/g, '\\n');
+
+    const signingKey = await importSigningKey(pkcs1Pem);
+    const body = '{"id":"pkcs1-test"}';
+    const header = await signatureHeader(signingKey, body);
+    const match = /^sig="([A-Za-z0-9+/=]+)", keyid="main"$/.exec(header);
+    assert.ok(match);
+    const sigBytes = Buffer.from(match[1] ?? '', 'base64');
+    const verified = crypto.verify(
+      'RSA-SHA256',
+      Buffer.from(body),
+      publicKey,
+      sigBytes,
     );
     assert.equal(verified, true);
   });

@@ -82,15 +82,15 @@ export async function runPrune({ env = process.env, dryRun = false } = {}) {
   const r2Client = createR2Client(env);
   const bucket = getR2Bucket(env);
 
-  let deletedObjects = 0;
-  for (const prefix of plan.deletePrefixes) {
-    deletedObjects += await deletePrefixObjects(r2Client, bucket, prefix);
-  }
-
   const nowIso = now.toISOString();
   await markReleasesPruned(supabaseConfig, plan.pruneReleaseIds, nowIso);
   for (const runtime of plan.retireRuntimes) {
     await markRuntimeRetired(supabaseConfig, runtime, nowIso);
+  }
+
+  let deletedObjects = 0;
+  for (const prefix of plan.deletePrefixes) {
+    deletedObjects += await deletePrefixObjects(r2Client, bucket, prefix);
   }
 
   const totalBytes = await calculateBucketTotalBytes(r2Client, bucket);

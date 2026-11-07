@@ -18,7 +18,12 @@ const CONTENT_TYPE_BY_EXT = {
 };
 
 function normalizeRelPath(p) {
-  return p.replace(/\\/g, '/').replace(/^\/+/, '');
+  const normalized = p.replace(/\\/g, '/').replace(/^\/+/, '');
+  const segments = normalized.split('/');
+  if (segments.length === 0 || segments.some((seg) => seg === '' || seg === '.' || seg === '..')) {
+    throw new Error(`Invalid relative path in export metadata: ${p}`);
+  }
+  return normalized;
 }
 
 function normalizePrefix(prefix) {
@@ -88,6 +93,7 @@ export function buildStoredManifest({ metadata, platform, files, assetPrefix }) 
   ];
 
   const assets = [];
+  const seenRemoteKeys = new Set([bundleRemoteKey]);
   const rawAssets = Array.isArray(platformMeta.assets) ? platformMeta.assets : [];
 
   for (const rawAsset of rawAssets) {
@@ -106,6 +112,10 @@ export function buildStoredManifest({ metadata, platform, files, assetPrefix }) 
     const fileNameWithExt =
       ext && !baseName.toLowerCase().endsWith(ext) ? `${baseName}${ext}` : baseName;
     const remoteKey = `${normalizedPrefix}assets/${fileNameWithExt}`;
+    if (seenRemoteKeys.has(remoteKey)) {
+      continue;
+    }
+    seenRemoteKeys.add(remoteKey);
     const contentType = CONTENT_TYPE_BY_EXT[ext] ?? 'application/octet-stream';
 
     assets.push({

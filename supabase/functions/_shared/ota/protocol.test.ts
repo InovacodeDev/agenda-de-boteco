@@ -5,6 +5,7 @@ import {
   buildDirectiveBody,
   buildManifestBody,
   buildMultipart,
+  isReleaseAlreadyRunning,
   parseManifestRequest,
   type ReleaseRow,
   selectServableRelease,
@@ -179,5 +180,45 @@ describe('buildMultipart', () => {
     );
     assert.doesNotMatch(unsigned, /expo-signature:/i);
     assert.match(unsigned, /content-disposition: form-data; name="directive"/i);
+  });
+});
+
+describe('isReleaseAlreadyRunning', () => {
+  it('returns true when update id matches currentUpdateId or rollback_embedded when already on embedded', () => {
+    assert.equal(
+      isReleaseAlreadyRunning(sampleUpdateRow, {
+        currentUpdateId: sampleUpdateRow.id,
+        embeddedUpdateId: 'embedded-1',
+      }),
+      true,
+    );
+    assert.equal(
+      isReleaseAlreadyRunning(sampleUpdateRow, {
+        currentUpdateId: 'other-id',
+        embeddedUpdateId: 'embedded-1',
+      }),
+      false,
+    );
+
+    const rollbackRow: ReleaseRow = {
+      id: 'rollback-row-id',
+      kind: 'rollback_embedded',
+      manifest: null,
+      created_at: '2026-11-07T15:00:00.000Z',
+    };
+    assert.equal(
+      isReleaseAlreadyRunning(rollbackRow, {
+        currentUpdateId: 'embedded-1',
+        embeddedUpdateId: 'embedded-1',
+      }),
+      true,
+    );
+    assert.equal(
+      isReleaseAlreadyRunning(rollbackRow, {
+        currentUpdateId: 'ota-release-1',
+        embeddedUpdateId: 'embedded-1',
+      }),
+      false,
+    );
   });
 });
