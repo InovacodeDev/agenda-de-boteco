@@ -6,3 +6,4 @@
 - Dono de bar passa a poder enviar o banner dos próprios eventos
 - Envio de arquivo em formato não suportado mostra mensagem clara em vez de erro genérico
 - Reforço da verificação automática de qualidade
+- Upload de imagem recusa arquivos acima de 8 MB com mensagem clara

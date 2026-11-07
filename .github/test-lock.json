@@ -261,6 +261,11 @@
       "lockedAt": "2026-11-07",
       "reason": "new test file"
     },
+    "packages/core/src/services/storage.contract.test.ts": {
+      "sha256": "b3e3da5ac77e5ad8a9bd2513f2078401cdba742e21bcfcb6578eff05983fa857",
+      "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
     "packages/core/src/services/storage.test.ts": {
       "sha256": "b24a8412ac2ad0f8116270f98820858219845b8f7af8d7d4e682a6e6ba6c56fd",
       "lockedAt": "2026-11-07",

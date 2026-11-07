@@ -26,6 +26,18 @@ export class UnsupportedFileTypeError extends Error {
   }
 }
 
+/**
+ * Acima de MAX_IMAGE_BYTES. Checado antes do MIME e de qualquer rede: o bucket
+ * aceitaria até 50MiB, então o teto do cliente é o que barra abuso e upload
+ * longo em conexão móvel.
+ */
+export class FileTooLargeError extends Error {
+  constructor() {
+    super('Arquivo muito grande. O limite é 8 MB.');
+    this.name = 'FileTooLargeError';
+  }
+}
+
 const EXT_BY_MIME: Record<string, string> = {
   'image/jpeg': 'jpg',
   'image/jpg': 'jpg',
@@ -73,6 +85,9 @@ export async function uploadImage(
   { pathPrefix }: UploadImageOptions,
 ): Promise<string> {
   const bucket = requireStorage();
+  if (file.size > MAX_IMAGE_BYTES) {
+    throw new FileTooLargeError();
+  }
   const contentType = file.type;
   const ext = extFor(contentType);
   if (!ext) {
