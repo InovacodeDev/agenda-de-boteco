@@ -631,6 +631,11 @@
       "lockedAt": "2026-11-07",
       "reason": "new test file"
     },
+    "packages/shared-ui/src/RouteErrorFallback.test.tsx": {
+      "sha256": "d991e72b070fa0db8cbadab74b5d9f0311de86ec957fc99baf71b5a270cd1fd0",
+      "lockedAt": "2026-11-09",
+      "reason": "new test file"
+    },
     "packages/shared-ui/src/Select.test.tsx": {
       "sha256": "aa943d1ab3bec04ef2053efed79085589a4eb1facbe60edc0865196a045a7bb5",
       "lockedAt": "2026-11-07",
