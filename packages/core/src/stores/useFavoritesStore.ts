@@ -4,6 +4,7 @@ import { persist } from 'zustand/middleware';
 
 import { PERSISTED_STORE_VERSION } from '../config/stores';
 import { appJsonStorage, registerRehydrator } from '../platform/storage';
+import { reportException } from '../services/analytics';
 import {
   addServerFavorite,
   addServerFavorites,
@@ -11,10 +12,14 @@ import {
   fetchServerFavorites,
   removeServerFavorite,
 } from '../services/favorites';
+import { getErrorCode, isPermanentWriteError } from '../utils/error-classify';
+
+export const MAX_PENDING_OP_ATTEMPTS = 5;
 
 export interface PendingOp {
   op: 'add' | 'remove';
   target: FavoriteTarget;
+  attempts?: number;
 }
 
 export interface FavoritesState {
@@ -116,8 +121,19 @@ export const useFavoritesStore = create<FavoritesState>()(
             } else {
               await removeServerFavorite(userId, pending.target);
             }
-          } catch {
-            failed.push(pending);
+          } catch (error) {
+            const attempts = (pending.attempts ?? 0) + 1;
+            if (isPermanentWriteError(error) || attempts >= MAX_PENDING_OP_ATTEMPTS) {
+              // NOTE: o service já reportou o erro original (mesmo objeto, deduplicado
+              // pelo WeakSet); um Error novo garante o alerta de "fila descartou op".
+              reportException(new Error('FavoritesQueueDropped'), {
+                method: 'favorites.flushQueue',
+                fingerprint: ['favorites-queue-dropped', pending.op],
+                code: getErrorCode(error),
+              });
+            } else {
+              failed.push({ ...pending, attempts });
+            }
           }
         }
         set((state) => ({

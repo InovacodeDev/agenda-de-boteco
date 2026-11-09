@@ -50,6 +50,19 @@ export function isStorageError(error: unknown): boolean {
   );
 }
 
+const PERMANENT_WRITE_ERROR_CODES: readonly string[] = [
+  '42501',
+  '23503',
+  '23505',
+  '23514',
+  '22P02',
+];
+
+/** Erro de escrita que repetir a mesma operação nunca resolve (RLS, FK, constraint, payload inválido). */
+export function isPermanentWriteError(error: unknown): boolean {
+  return isPostgrestError(error) && PERMANENT_WRITE_ERROR_CODES.includes(error.code);
+}
+
 function hasName(error: unknown, name: string): boolean {
   return (
     error !== null &&

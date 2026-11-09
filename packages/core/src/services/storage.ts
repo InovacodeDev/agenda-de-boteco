@@ -8,6 +8,7 @@
  * .url()), então nada muda na camada de dados: só a forma de obter a URL.
  */
 import { getConfiguredSupabase } from '../supabase/client';
+import { handleServiceError } from '../utils/errors';
 
 export const CATALOG_IMAGES_BUCKET = 'catalog-images';
 
@@ -95,12 +96,18 @@ export async function uploadImage(
   }
   const path = `${pathPrefix}/${uniqueId()}.${ext}`;
 
-  const { error } = await bucket.upload(path, file, { contentType, upsert: false });
-  if (error) {
-    throw error;
+  try {
+    const { error } = await bucket.upload(path, file, { contentType, upsert: false });
+    if (error) {
+      throw error;
+    }
+    return bucket.getPublicUrl(path).data.publicUrl;
+  } catch (error) {
+    return handleServiceError(error, {
+      method: 'storage.uploadImage',
+      args: { pathPrefix },
+    });
   }
-
-  return bucket.getPublicUrl(path).data.publicUrl;
 }
 
 /**
@@ -123,8 +130,12 @@ export async function deleteImage(publicUrl: string): Promise<void> {
   const path = pathFromPublicUrl(publicUrl);
   if (path === null) return;
   const bucket = requireStorage();
-  const { error } = await bucket.remove([path]);
-  if (error) {
-    throw error;
+  try {
+    const { error } = await bucket.remove([path]);
+    if (error) {
+      throw error;
+    }
+  } catch (error) {
+    return handleServiceError(error, { method: 'storage.deleteImage' });
   }
 }

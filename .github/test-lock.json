@@ -351,9 +351,19 @@
       "lockedAt": "2026-11-07",
       "reason": "new test file"
     },
+    "packages/core/src/services/favorites.errors.test.ts": {
+      "sha256": "5014d246142861d9f637f359f63bc75373bb9e0e777daddc1e9627287f43d26e",
+      "lockedAt": "2026-11-09",
+      "reason": "new test file"
+    },
     "packages/core/src/services/favorites.test.ts": {
       "sha256": "aaf9601bb1fc5dde458ad6683c9e6cde0fe76d7ee1199a610ba470e7b72a657f",
       "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/services/metrics.errors.test.ts": {
+      "sha256": "76aebed6b208631e59da5dce53f528db1d7b1e3c177f818f2003022ff4364bba",
+      "lockedAt": "2026-11-09",
       "reason": "new test file"
     },
     "packages/core/src/services/metrics.test.ts": {
@@ -421,6 +431,11 @@
       "lockedAt": "2026-11-07",
       "reason": "new test file"
     },
+    "packages/core/src/services/storage.errors.test.ts": {
+      "sha256": "eb1c0440c36b258ca1d4e981a1412481a1a9d1ec167feadcc83474af25a60301",
+      "lockedAt": "2026-11-09",
+      "reason": "new test file"
+    },
     "packages/core/src/services/storage.test.ts": {
       "sha256": "b24a8412ac2ad0f8116270f98820858219845b8f7af8d7d4e682a6e6ba6c56fd",
       "lockedAt": "2026-11-07",
@@ -444,6 +459,11 @@
     "packages/core/src/stores/useFavoritesStore.ota.contract.test.ts": {
       "sha256": "8dc43f97cd2cb149d2a1ed2ce9c27fccc1e998de49d4296c9321c93a5a6db265",
       "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/stores/useFavoritesStore.queue.test.ts": {
+      "sha256": "002a113fc8186c90d31506da5763b0924050ae22e8a24ea4342759d5e97bc12e",
+      "lockedAt": "2026-11-09",
       "reason": "new test file"
     },
     "packages/core/src/stores/useFavoritesStore.test.ts": {
@@ -494,6 +514,11 @@
     "packages/core/src/utils/dates.test.ts": {
       "sha256": "33bf4698a0eef6c9a27f679cf6c819eb0040d984e3e4272a479959a12b0cce2f",
       "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/utils/error-classify.permanent.test.ts": {
+      "sha256": "8a009d1079b019551b77370ee223c6e0805a1af0ac2fe3e8790f51af2b3e5b01",
+      "lockedAt": "2026-11-09",
       "reason": "new test file"
     },
     "packages/core/src/utils/error-classify.test.ts": {
