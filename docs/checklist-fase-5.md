@@ -20,7 +20,7 @@ Todos os comandos `eas` rodam com `cwd` em `apps/mobile`.
 **GitHub → Settings → Secrets and variables → Actions:**
 
 - [ ] **Secret** `EXPO_TOKEN` (gerado em expo.dev → Access Tokens). Único segredo.
-- [ ] **Variable** `EAS_PROJECT_ID` (do `eas init`).
+- [ ] `projectId` do `eas init` fixado em `extra.eas.projectId` no `app.config.ts` de cada app (não é variável de CI).
 - [ ] **Variable** `ASC_APP_ID` (Apple ID do app no ASC).
 
 **Credenciais no EAS (`eas credentials`, tudo gerenciado — nada no git):**
