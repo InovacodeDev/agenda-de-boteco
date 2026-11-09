@@ -147,9 +147,7 @@ jobs:
         include: ${{ fromJSON(needs.version-gate.outputs.apps) }}
 
     env:
-      # Só o mobile-client lê EAS_PROJECT_ID (o mobile fixa o projectId no
-      # app.config.ts). Cada app tem o próprio registro na App Store Connect.
-      EAS_PROJECT_ID: ${{ vars.EAS_PROJECT_ID }}
+      # Cada app tem o próprio registro na App Store Connect.
       ASC_APP_ID: ${{ matrix.app == 'mobile-client' && vars.ASC_APP_ID_CLIENT || vars.ASC_APP_ID }}
 
     steps:
