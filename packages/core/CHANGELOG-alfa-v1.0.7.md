@@ -11,3 +11,4 @@
 - Quedas da atualização em tempo real passam a ser detectadas pela equipe
 - Medição de uso e falhas mais confiável nos painéis web
 - Sessão de medição acompanha corretamente login e saída da conta
+- Corrige a identificação da sessão de medição ao sair da conta rapidamente

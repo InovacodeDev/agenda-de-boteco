@@ -291,6 +291,11 @@
       "lockedAt": "2026-11-07",
       "reason": "new test file"
     },
+    "packages/core/src/services/analytics-identity.race.test.ts": {
+      "sha256": "f4af8d942b9bedfd72355351384007f6796ddff82f3bb4e068468f0191987c10",
+      "lockedAt": "2026-11-09",
+      "reason": "new test file"
+    },
     "packages/core/src/services/analytics-identity.test.ts": {
       "sha256": "ab821195b5ebcf72c57f1da4dad02c8201e90243736b5f6a4cd84ff24e0b81ed",
       "lockedAt": "2026-11-09",
