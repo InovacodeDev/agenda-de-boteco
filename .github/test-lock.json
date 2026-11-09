@@ -271,6 +271,11 @@
       "lockedAt": "2026-11-07",
       "reason": "new test file"
     },
+    "packages/core/src/services/auth.pii.test.ts": {
+      "sha256": "9242dc84b6acff4ec39046884a646e8b627e3778d41ee724d63e151bf444f734",
+      "lockedAt": "2026-11-09",
+      "reason": "new test file"
+    },
     "packages/core/src/services/auth.test.ts": {
       "sha256": "425d26d815138c8822c83446a35737703ee2f10dde2e02f280d7b82e1e381479",
       "lockedAt": "2026-11-07",
@@ -344,6 +349,11 @@
     "packages/core/src/services/owned-events.test.ts": {
       "sha256": "618358a31815a3dcbf813eaf067a9bbf2ecdd5d121d30d2af77248da8e444fd5",
       "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/services/proximity.pii.test.ts": {
+      "sha256": "86dd1561ac0d9437da7dd71381c967467bf8dff0b4211d762910379a683590db",
+      "lockedAt": "2026-11-09",
       "reason": "new test file"
     },
     "packages/core/src/services/proximity.test.ts": {

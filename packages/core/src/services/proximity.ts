@@ -46,7 +46,7 @@ function assertValidCoordinates(lat: number, lng: number): void {
     lng >= -180 &&
     lng <= 180;
   if (!valid) {
-    throw new Error(`Coordenada inválida: lat=${lat}, lng=${lng}`);
+    throw new Error('Coordenada inválida');
   }
 }
 
@@ -158,7 +158,7 @@ export async function listNearbyEstablishments(
   } catch (error) {
     return handleServiceError(error, {
       method: 'proximity.listNearbyEstablishments',
-      args: params as unknown as Record<string, unknown>,
+      args: { radiusKm: params.radiusKm, limit: params.limit },
     });
   }
 }
