@@ -45,7 +45,7 @@ describe('Regra de negócio: captura de exceções no mobile', () => {
             uncaughtExceptions: true,
             unhandledRejections: true,
             console: false,
-            nativeCrashes: false,
+            nativeCrashes: true,
           }),
         }),
         before_send: sanitizeCaptureEvent,

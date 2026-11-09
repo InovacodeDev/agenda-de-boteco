@@ -37,9 +37,9 @@
       "reason": "new test file"
     },
     "apps/mobile-client/src/lib/analytics.errors.test.ts": {
-      "sha256": "e093e1be655e1d92368b9ae8a79fc87258bffa445407d148948c0bf9399d1b89",
+      "sha256": "d0d7fe4cc05401383e174370d8effd6f49b5aa72a502a658c3b32b1a37ffc7f6",
       "lockedAt": "2026-11-09",
-      "reason": "new test file"
+      "reason": "Enable native crash autocapture (PostHog 2.2 Task 4)"
     },
     "apps/mobile-client/src/lib/analytics.native-crash.test.ts": {
       "sha256": "e71af22030856fcce60bbf5433794a805d80874838ecade18d62e7bde9ccc4a7",
@@ -107,9 +107,9 @@
       "reason": "new test file"
     },
     "apps/mobile/src/lib/analytics.errors.test.ts": {
-      "sha256": "6e32c517997510d79ee071a6c9d4e9ac661820d24e88e3079874fea5b467eec5",
+      "sha256": "994271de1634432ab1e301aadd5ca08ea85c0552d4750d904fb0af29ef78af5d",
       "lockedAt": "2026-11-09",
-      "reason": "new test file"
+      "reason": "Enable native crash autocapture (PostHog 2.2 Task 4)"
     },
     "apps/mobile/src/lib/analytics.native-crash.test.ts": {
       "sha256": "e71af22030856fcce60bbf5433794a805d80874838ecade18d62e7bde9ccc4a7",
@@ -322,9 +322,9 @@
       "reason": "new test file"
     },
     "packages/core/src/services/analytics.test.ts": {
-      "sha256": "2416a5c28b97192a73059ba89730629bbc0e810c0e830512d53f804bed31ac51",
-      "lockedAt": "2026-11-07",
-      "reason": "new test file"
+      "sha256": "b7296182d80da42dba2421787731a0e0c92ea0bb038d7563e458be9c32b4caf3",
+      "lockedAt": "2026-11-09",
+      "reason": "PostHog browser init gains exception capture, masking and before_send (PostHog 2.1 Task 4)"
     },
     "packages/core/src/services/analytics.ui-host.test.ts": {
       "sha256": "c6c1a89c2bc5f957d0da554a6daddd2db59ff6009aeb8c38953a8607f480dd8b",
@@ -342,9 +342,9 @@
       "reason": "new test file"
     },
     "packages/core/src/services/auth.test.ts": {
-      "sha256": "425d26d815138c8822c83446a35737703ee2f10dde2e02f280d7b82e1e381479",
-      "lockedAt": "2026-11-07",
-      "reason": "new test file"
+      "sha256": "59b8178b833727feeaba79cb1106a57b8d8ddc1b12ebce19d9eb70d01aa5edb8",
+      "lockedAt": "2026-11-09",
+      "reason": "Remove email PII from handleServiceError args (PostHog 2.1 Task 1)"
     },
     "packages/core/src/services/cachePolicy.test.ts": {
       "sha256": "96421d57551f1aa5be0da5d0b4cd46ed131ef9bb53552a59efad771de73e0fe8",

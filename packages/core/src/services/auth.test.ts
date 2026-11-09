@@ -279,7 +279,6 @@ describe('signInWithPassword', () => {
 
     expect(spy).toHaveBeenCalledWith(expect.any(Error), {
       method: 'auth.signInWithPassword',
-      args: { email: 'tito@exemplo.com' },
     });
     expect(JSON.stringify(spy.mock.calls)).not.toContain('senha-secreta');
     spy.mockRestore();
@@ -328,7 +327,6 @@ describe('signUpWithPassword', () => {
 
     expect(spy).toHaveBeenCalledWith(expect.any(Error), {
       method: 'auth.signUpWithPassword',
-      args: { email: 'tito@exemplo.com' },
     });
     expect(JSON.stringify(spy.mock.calls)).not.toContain('senha-secreta');
     spy.mockRestore();
