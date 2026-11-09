@@ -106,7 +106,9 @@ vercel login</pre></div>
   <li>Abra um terminal novo só para esta configuração e desligue o histórico dele, para que nenhuma chave fique salva em <code>~/.zsh_history</code>:</li>
 </ol>
 <div class="code"><pre>unset HISTFILE
+setopt interactivecomments
 cd ~/git/agenda-de-boteco</pre></div>
+<p><code>setopt interactivecomments</code> faz o zsh aceitar as linhas com <code>#</code> dos blocos deste guia. Sem isso, aparece <code>parse error</code>.</p>
 <div class="box warn"><strong>CUIDADO</strong>Use sempre este mesmo terminal até o fim do passo 10. Ao fechar, as variáveis carregadas somem.</div>
 
 <!-- 2 -->
@@ -345,7 +347,7 @@ gh variable set ASC_APP_ID_CLIENT    --repo "$REPO" --body "$ASC_ID_DONO"</pre><
 <h2>8. EAS — 2 apps mobile</h2>
 <p>Cada app tem 3 environments: <code>development</code>, <code>preview</code> (canais <code>alfa</code> e <code>beta</code>) e <code>production</code> (lojas). Visibilidade: <code>plaintext</code> para <code>EXPO_PUBLIC_*</code>, que é embutida no app; <code>sensitive</code> para chaves de mapa; <code>secret</code> para chave de upload.</p>
 <p>Primeiro, defina a função auxiliar (só existe neste terminal):</p>
-<div class="code"><pre>easenv() { # uso: easenv &lt;visibilidade&gt; &lt;NOME&gt; &lt;valor&gt; &lt;environments...&gt;
+<div class="code"><pre>easenv() {
   local vis="$1" name="$2" value="$3"; shift 3
   for env in "$@"; do
     eas env:create --environment "$env" --name "$name" --value "$value" \
