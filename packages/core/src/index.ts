@@ -14,6 +14,11 @@ export * from './utils/auth';
 export * from './utils/cn';
 export * from './utils/dates';
 export * from './utils/env';
+export {
+  type SafeErrorMetadata,
+  sanitizeCaptureEvent,
+  sanitizeUrl,
+} from './utils/error-reporting';
 export * from './utils/errors';
 export * from './utils/events';
 export * from './utils/filters';
