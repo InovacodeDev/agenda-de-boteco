@@ -4,3 +4,4 @@
 - Mensagens de erro mais claras quando a conexão cai no navegador ou um envio de arquivo falha
 - Base para monitoramento de falhas sem dados pessoais
 - Falhas passam a ser detectadas automaticamente pela equipe
+- Reforça a remoção de dados pessoais dos relatórios automáticos de falha

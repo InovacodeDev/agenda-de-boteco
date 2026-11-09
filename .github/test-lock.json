@@ -471,6 +471,11 @@
       "lockedAt": "2026-11-09",
       "reason": "new test file"
     },
+    "packages/core/src/utils/error-reporting.autocapture.test.ts": {
+      "sha256": "4834d919aeff2b18bee825bf10d2571f81297ce5a59d41a1ceb5fe3cc35dd3ab",
+      "lockedAt": "2026-11-09",
+      "reason": "new test file"
+    },
     "packages/core/src/utils/error-reporting.test.ts": {
       "sha256": "6f63baecdaf86533f348e46fe50c139c4a321db4bf2fe8742c8dfec5a8035aed",
       "lockedAt": "2026-11-09",

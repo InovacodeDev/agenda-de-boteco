@@ -157,18 +157,72 @@ export function sanitizeUrl(url: string): string {
   return kept.length > 0 ? `${base}?${kept.join('&')}` : base;
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function sanitizeUrlProperties(source: Record<string, unknown>): Record<string, unknown> {
+  const result = { ...source };
+  for (const [key, value] of Object.entries(result)) {
+    if (
+      typeof value === 'string' &&
+      (URL_PROPERTY_KEYS.includes(key) || /_(url|referrer|pathname)$/.test(key))
+    ) {
+      result[key] = sanitizeUrl(value);
+    }
+  }
+  return result;
+}
+
+function redactExceptionEntry(entry: unknown): unknown {
+  if (!isRecord(entry)) {
+    return entry;
+  }
+  const result: Record<string, unknown> = { ...entry };
+  if (typeof result.value === 'string') {
+    result.value = redactMessage(result.value);
+  }
+  return result;
+}
+
+function sanitizePropertyBag(source: Record<string, unknown>): Record<string, unknown> {
+  const properties = sanitizeUrlProperties(source);
+  for (const nested of ['$set', '$set_once']) {
+    const value = properties[nested];
+    if (isRecord(value)) {
+      properties[nested] = sanitizeUrlProperties(value);
+    }
+  }
+  if (typeof properties.$exception_message === 'string') {
+    properties.$exception_message = redactMessage(properties.$exception_message);
+  }
+  if (Array.isArray(properties.$exception_values)) {
+    properties.$exception_values = properties.$exception_values.map((value: unknown) =>
+      typeof value === 'string' ? redactMessage(value) : value,
+    );
+  }
+  if (Array.isArray(properties.$exception_list)) {
+    properties.$exception_list = properties.$exception_list.map(redactExceptionEntry);
+  }
+  return properties;
+}
+
 export function sanitizeCaptureEvent<T extends { properties?: Record<string, unknown> }>(
   event: T | null,
 ): T | null {
-  if (event === null || event.properties === undefined) {
+  if (event === null) {
     return event;
   }
-  const properties = { ...event.properties };
-  for (const key of URL_PROPERTY_KEYS) {
-    const value = properties[key];
-    if (typeof value === 'string') {
-      properties[key] = sanitizeUrl(value);
+  const source: Record<string, unknown> = { ...event };
+  const bags = ['properties', '$set', '$set_once'].filter((key) => isRecord(source[key]));
+  if (bags.length === 0) {
+    return event;
+  }
+  for (const key of bags) {
+    const value = source[key];
+    if (isRecord(value)) {
+      source[key] = sanitizePropertyBag(value);
     }
   }
-  return { ...event, properties };
+  return source as T;
 }
