@@ -15,14 +15,13 @@ import {
   type EventStatus,
   type EventWriteInput,
   eventWriteSchema,
-  menuItemSchema,
   type MusicStyle,
   musicStyleSchema,
   notificationReadSchema,
   type NotificationWriteInput,
   notificationWriteSchema,
 } from '../schemas/catalog';
-import type { Database, Json } from '../types';
+import type { Database } from '../types';
 import { isUuid, uniqueSortedIds } from '../utils/ids';
 import {
   type CatalogPage,
@@ -31,6 +30,7 @@ import {
   encodeCursor,
   quoteCursorValue,
 } from '../utils/pagination';
+import { mapRowsLenient } from '../utils/schema-drift';
 import { buildNameSearchPattern } from '../utils/search';
 import { slugify } from '../utils/slug';
 
@@ -56,7 +56,16 @@ type NotificationRow = Database['public']['Tables']['notifications']['Row'] & {
   establishment: { external_id: string }[] | null;
 };
 
-const CITY_COLUMNS = 'id,name,uf,lat,lng,slug';
+const EVENT_DRIFT = {
+  table: 'events',
+  idOf: (row: EventRow) => row.external_id ?? row.id,
+};
+const ESTABLISHMENT_DRIFT = {
+  table: 'establishments',
+  idOf: (row: EstablishmentRow) => row.external_id ?? row.id,
+};
+
+const CITY_COLUMNS ='id,name,uf,lat,lng,slug';
 const ESTABLISHMENT_COLUMNS =
   'id,external_id,name,description,logo_url,cover_url,address,neighborhood,city_id,lat,lng,whatsapp,instagram,opening_hours,menu_items,price_range,ambiance,rating_avg,rating_count,attributes,slug,menu_pdf_url,menu_photo_urls';
 // photo_urls, instagram_post_url, status, capacity e recurrence_group_id incluídos;
@@ -99,10 +108,6 @@ function nullToUndefined<T>(value: T | null): T | undefined {
   return value === null ? undefined : value;
 }
 
-function parseMenuItems(value: Json) {
-  return menuItemSchema.array().parse(value ?? []);
-}
-
 function mapCity(row: CityRow): City {
   return citySchema.parse({
     id: row.id,
@@ -130,7 +135,9 @@ function mapEstablishment(row: EstablishmentRow): Establishment {
     whatsapp: row.whatsapp,
     instagram: nullToUndefined(row.instagram),
     opening_hours: row.opening_hours,
-    menu_items: parseMenuItems(row.menu_items),
+    // Validado pelo establishmentSchema (não por um parse aninhado) para o issue
+    // path do drift sair como `menu_items.*.campo`.
+    menu_items: row.menu_items ?? [],
     price_range: row.price_range,
     ambiance: row.ambiance,
     rating_avg: row.rating_avg,
@@ -242,10 +249,11 @@ export async function listEvents(
     .order('id', { ascending: true })
     .limit(limit);
   if (error) throw error;
-  const items = ((data ?? []) as EventRow[]).map(mapEvent);
-  const last = items.at(-1);
+  const rows = (data ?? []) as EventRow[];
+  const items = mapRowsLenient(rows, mapEvent, EVENT_DRIFT);
+  const last = rows.at(-1);
   const nextCursor =
-    items.length < limit || !last ? null : encodeCursor({ value: last.starts_at, id: last.id });
+    rows.length < limit || !last ? null : encodeCursor({ value: last.starts_at, id: last.id });
   return { items, nextCursor };
 }
 
@@ -263,7 +271,7 @@ export async function listEventsByIds(
     chunks.map(async (chunk) => {
       const { data, error } = await eventsFrom(client).select(EVENT_COLUMNS).in('id', chunk);
       if (error) throw error;
-      return ((data ?? []) as EventRow[]).map(mapEvent);
+      return mapRowsLenient((data ?? []) as EventRow[], mapEvent, EVENT_DRIFT);
     }),
   );
   return results
@@ -323,10 +331,11 @@ export async function listEstablishments(
     .order('id', { ascending: true })
     .limit(limit);
   if (error) throw error;
-  const items = ((data ?? []) as EstablishmentRow[]).map(mapEstablishment);
-  const last = items.at(-1);
+  const rows = (data ?? []) as EstablishmentRow[];
+  const items = mapRowsLenient(rows, mapEstablishment, ESTABLISHMENT_DRIFT);
+  const last = rows.at(-1);
   const nextCursor =
-    items.length < limit || !last ? null : encodeCursor({ value: last.name, id: last.id });
+    rows.length < limit || !last ? null : encodeCursor({ value: last.name, id: last.id });
   return { items, nextCursor };
 }
 
@@ -361,7 +370,11 @@ export async function listEstablishmentsByIds(
         .select(ESTABLISHMENT_COLUMNS)
         .in('id', chunk);
       if (error) throw error;
-      return ((data ?? []) as EstablishmentRow[]).map(mapEstablishment);
+      return mapRowsLenient(
+        (data ?? []) as EstablishmentRow[],
+        mapEstablishment,
+        ESTABLISHMENT_DRIFT,
+      );
     }),
   );
   return results
@@ -414,10 +427,11 @@ export async function listEventsByEstablishment(
     .order('id', { ascending })
     .limit(limit);
   if (error) throw error;
-  const items = ((data ?? []) as EventRow[]).map(mapEvent);
-  const last = items.at(-1);
+  const rows = (data ?? []) as EventRow[];
+  const items = mapRowsLenient(rows, mapEvent, EVENT_DRIFT);
+  const last = rows.at(-1);
   const nextCursor =
-    items.length < limit || !last ? null : encodeCursor({ value: last.starts_at, id: last.id });
+    rows.length < limit || !last ? null : encodeCursor({ value: last.starts_at, id: last.id });
   return { items, nextCursor };
 }
 
@@ -460,7 +474,10 @@ export async function listMusicStyles(
     .from('music_styles')
     .select(MUSIC_STYLE_COLUMNS);
   if (error) throw error;
-  return (data ?? []).map(mapMusicStyle);
+  return mapRowsLenient(data ?? [], mapMusicStyle, {
+    table: 'music_styles',
+    idOf: (row) => row.id,
+  });
 }
 
 export async function listCities(
@@ -468,7 +485,7 @@ export async function listCities(
 ): Promise<City[]> {
   const { data, error } = await client.from('cities').select(CITY_COLUMNS);
   if (error) throw error;
-  return (data ?? []).map(mapCity);
+  return mapRowsLenient(data ?? [], mapCity, { table: 'cities', idOf: (row) => row.id });
 }
 
 /**
@@ -495,10 +512,14 @@ export async function listNotifications(
     .order('id', { ascending: false })
     .limit(limit);
   if (error) throw error;
-  const items = ((data ?? []) as NotificationRow[]).map(mapNotification);
-  const last = items.at(-1);
+  const rows = (data ?? []) as NotificationRow[];
+  const items = mapRowsLenient(rows, mapNotification, {
+    table: 'notifications',
+    idOf: (row) => row.id,
+  });
+  const last = rows.at(-1);
   const nextCursor =
-    items.length < limit || !last ? null : encodeCursor({ value: last.created_at, id: last.id });
+    rows.length < limit || !last ? null : encodeCursor({ value: last.created_at, id: last.id });
   return { items, nextCursor };
 }
 

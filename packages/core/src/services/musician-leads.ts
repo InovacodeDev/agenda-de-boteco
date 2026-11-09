@@ -8,6 +8,8 @@ import {
 } from '../schemas/musician-lead';
 import { getConfiguredSupabase } from '../supabase/client';
 import { handleServiceError } from '../utils/errors';
+import { mapRowsLenient } from '../utils/schema-drift';
+import { reportException } from './analytics';
 
 /** Espelha o DEFAULT 40 de `list_musician_leads` — o teto de página é o da RPC. */
 export const MUSICIAN_LEADS_PAGE_SIZE = 40;
@@ -108,13 +110,28 @@ export async function listMusicianLeads(
     if (error) {
       throw error;
     }
-    const items = musicianLeadRowSchema.array().parse(data ?? []);
+    const rawRows = (data ?? []) as readonly Record<string, unknown>[];
+    const items = mapRowsLenient(rawRows, (row) => musicianLeadRowSchema.parse(row), {
+      table: 'musician_leads',
+      idOf: (row) => (typeof row.id === 'string' ? row.id : undefined),
+    });
+    if (rawRows.length < MUSICIAN_LEADS_PAGE_SIZE) {
+      return { items, nextCursor: null };
+    }
+    // O cursor composto precisa de campos da linha (nome, região...), que numa
+    // linha inválida não são confiáveis: usa a última válida. Reler as inválidas
+    // depois dela só as descarta de novo; o cursor sempre avança.
     const last = items.at(-1);
-    const nextCursor =
-      items.length < MUSICIAN_LEADS_PAGE_SIZE || !last
-        ? null
-        : { createdAt: last.created_at, name: last.name, region: last.region, id: last.id };
-    return { items, nextCursor };
+    if (!last) {
+      reportException(new Error('musician_leads page has no valid row to build the cursor'), {
+        fingerprint: ['zod-schema-drift', 'musician_leads', 'page-unrecoverable'],
+      });
+      return { items, nextCursor: null };
+    }
+    return {
+      items,
+      nextCursor: { createdAt: last.created_at, name: last.name, region: last.region, id: last.id },
+    };
   } catch (error) {
     // Sem `args`: nome/telefone/instagram das linhas retornadas são PII.
     return handleServiceError(error, { method: 'musicianLeads.listMusicianLeads' });

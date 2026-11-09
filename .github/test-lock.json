@@ -251,6 +251,11 @@
       "lockedAt": "2026-11-07",
       "reason": "new test file"
     },
+    "packages/core/src/queries/catalog.drift.test.ts": {
+      "sha256": "e92b6e21fde027e941967e6e24f08a711c999a02b9fcee194e1ef0c054e9a3cf",
+      "lockedAt": "2026-11-09",
+      "reason": "new test file"
+    },
     "packages/core/src/schemas/catalog.ota.contract.test.ts": {
       "sha256": "80406adaf753ed112ac5fa6d20dc6e70acbeb420cc337fe73ac04ce36ea6870e",
       "lockedAt": "2026-11-07",
@@ -361,6 +366,11 @@
       "lockedAt": "2026-11-07",
       "reason": "new test file"
     },
+    "packages/core/src/services/musician-leads.drift.test.ts": {
+      "sha256": "53b28aebf90ccc5704d0ba1d866bf9be21b05ffe8b5bbc31a0423cf635c90b37",
+      "lockedAt": "2026-11-09",
+      "reason": "new test file"
+    },
     "packages/core/src/services/musician-leads.test.ts": {
       "sha256": "071561e75df14d99b0896faa1d26ba32ddf14ad63a834fc09cafc2cac1ddfad4",
       "lockedAt": "2026-11-07",
@@ -374,6 +384,11 @@
     "packages/core/src/services/owned-events.test.ts": {
       "sha256": "618358a31815a3dcbf813eaf067a9bbf2ecdd5d121d30d2af77248da8e444fd5",
       "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/services/proximity.drift.test.ts": {
+      "sha256": "4a8afe454858e23a670fb76a8074aed1881c715676cab8a2fd1ae4c3e78c49c7",
+      "lockedAt": "2026-11-09",
       "reason": "new test file"
     },
     "packages/core/src/services/proximity.pii.test.ts": {
@@ -594,6 +609,11 @@
     "packages/core/src/utils/responsiveType.test.ts": {
       "sha256": "094f5deff147eac886453a948e5be35a5bcf41e15207e967759c6df14201c7fa",
       "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/utils/schema-drift.test.ts": {
+      "sha256": "1803122404bda6010c34eda2a870beb7a77e2a4cd14c6082d06b093d845f2147",
+      "lockedAt": "2026-11-09",
       "reason": "new test file"
     },
     "packages/core/src/utils/search.test.ts": {
