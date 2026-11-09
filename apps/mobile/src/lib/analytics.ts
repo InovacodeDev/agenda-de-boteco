@@ -10,8 +10,6 @@ import PostHog from 'posthog-react-native';
  * fachada usada nos 5 apps Next (ver `apps/web/lib/analytics.ts`), trocando
  * só o SDK — aqui não há "página" HTTP, `capturePageview` mapeia para
  * `posthog.screen`, o equivalente de tela do PostHog mobile.
- *
- * `nativeCrashes` fica desligado até o plugin nativo entrar (plano 2.2).
  */
 export function initAnalytics(): AnalyticsAdapter | null {
   const key = process.env.EXPO_PUBLIC_POSTHOG_KEY;
@@ -19,6 +17,6 @@ export function initAnalytics(): AnalyticsAdapter | null {
   if (!key) return null;
 
   return createPostHogNativeAdapter(
-    new PostHog(key, buildPostHogNativeOptions({ host, nativeCrashes: false })),
+    new PostHog(key, buildPostHogNativeOptions({ host, nativeCrashes: true })),
   );
 }

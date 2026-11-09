@@ -41,6 +41,11 @@
       "lockedAt": "2026-11-09",
       "reason": "new test file"
     },
+    "apps/mobile-client/src/lib/analytics.native-crash.test.ts": {
+      "sha256": "e71af22030856fcce60bbf5433794a805d80874838ecade18d62e7bde9ccc4a7",
+      "lockedAt": "2026-11-09",
+      "reason": "new test file"
+    },
     "apps/mobile-client/src/lib/analytics.test.ts": {
       "sha256": "f7eafe33752c4c3853e93249157592dacb6a2870bee0b11363966d94ca119219",
       "lockedAt": "2026-11-07",
@@ -103,6 +108,11 @@
     },
     "apps/mobile/src/lib/analytics.errors.test.ts": {
       "sha256": "6e32c517997510d79ee071a6c9d4e9ac661820d24e88e3079874fea5b467eec5",
+      "lockedAt": "2026-11-09",
+      "reason": "new test file"
+    },
+    "apps/mobile/src/lib/analytics.native-crash.test.ts": {
+      "sha256": "e71af22030856fcce60bbf5433794a805d80874838ecade18d62e7bde9ccc4a7",
       "lockedAt": "2026-11-09",
       "reason": "new test file"
     },

@@ -17,6 +17,6 @@ export function initAnalytics(): AnalyticsAdapter | null {
   if (!key) return null;
 
   return createPostHogNativeAdapter(
-    new PostHog(key, buildPostHogNativeOptions({ host, nativeCrashes: false })),
+    new PostHog(key, buildPostHogNativeOptions({ host, nativeCrashes: true })),
   );
 }

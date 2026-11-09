@@ -17,6 +17,10 @@ const getEnvVar = (value: string | undefined, name: string): string => {
   return value || '';
 };
 
+const hasPostHogUploadCredentials = Boolean(
+  process.env.POSTHOG_CLI_API_KEY || process.env.POSTHOG_CLI_TOKEN,
+);
+
 export default ({ config }: ConfigContext): ExpoConfig => {
   const manifestUrl = getEnvVar(
     process.env.EXPO_PUBLIC_OTA_MANIFEST_URL,
@@ -105,6 +109,10 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     'expo-image',
     'expo-localization',
     'expo-updates',
+    // NOTE: o upload de símbolos aborta o build nativo se o posthog-cli falhar; sem credencial (fork, dev local) o plugin fica de fora.
+    ...(hasPostHogUploadCredentials
+      ? [['posthog-react-native/expo', { uploadNativeSymbols: true, skipOnConflict: true }] as [string, object]]
+      : []),
   ],
   experiments: {
     typedRoutes: true,
