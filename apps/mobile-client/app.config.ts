@@ -111,6 +111,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
   ],
   extra: {
     ...config.extra,
+    channel: process.env.EAS_BUILD_PROFILE ?? 'development',
     eas: {
       ...config.extra?.eas,
       projectId: requireProjectId(),

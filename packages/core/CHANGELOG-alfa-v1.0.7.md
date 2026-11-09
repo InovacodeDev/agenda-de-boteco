@@ -12,3 +12,4 @@
 - Medição de uso e falhas mais confiável nos painéis web
 - Sessão de medição acompanha corretamente login e saída da conta
 - Corrige a identificação da sessão de medição ao sair da conta rapidamente
+- Falhas passam a ser identificadas por app, versão e canal de publicação

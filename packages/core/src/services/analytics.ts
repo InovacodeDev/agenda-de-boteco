@@ -17,6 +17,28 @@ import {
   toReportableError,
 } from '../utils/error-reporting';
 
+export interface AnalyticsContext {
+  app_name: string;
+  app_version: string;
+  channel: string;
+  platform: 'web' | 'ios' | 'android';
+  ota_update_id?: string;
+}
+
+/**
+ * Capacidade separada de `AnalyticsAdapter` (não campo dele): testes travados tipam
+ * mocks como `Mocked<Required<AnalyticsAdapter>>`, e um campo novo os quebraria.
+ */
+export interface AnalyticsContextRegistrar {
+  register(context: AnalyticsContext): void;
+}
+
+function canRegister(
+  value: AnalyticsAdapter,
+): value is AnalyticsAdapter & AnalyticsContextRegistrar {
+  return 'register' in value && typeof value.register === 'function';
+}
+
 export interface AnalyticsAdapter {
   /** Opcional: adapters sem Error Tracking (e mocks de teste) simplesmente não reportam. */
   captureException?(error: Error, metadata: SafeErrorMetadata): void;
@@ -60,6 +82,16 @@ export function identifyAnalyticsUser(userId: string): void {
 
 export function resetAnalytics(): void {
   adapter?.reset();
+}
+
+export function registerAnalyticsContext(context: AnalyticsContext): void {
+  try {
+    if (adapter && canRegister(adapter)) {
+      adapter.register(context);
+    }
+  } catch {
+    // NOTE: falha do SDK não pode quebrar o bootstrap do app.
+  }
 }
 
 const reportedErrors = new WeakSet<object>();
@@ -131,7 +163,7 @@ export interface PostHogBrowserConfig {
 export function createPostHogBrowserAdapter(
   client: PostHogBrowserClient,
   config: PostHogBrowserConfig,
-): AnalyticsAdapter | null {
+): (AnalyticsAdapter & AnalyticsContextRegistrar) | null {
   if (!config.apiKey) return null;
 
   client.init(config.apiKey, {
@@ -159,8 +191,8 @@ export function createPostHogBrowserAdapter(
     captureEvent: (name, properties) => client.capture(name, properties),
     identify: (userId) => client.identify(userId),
     reset: () => client.reset(),
+    register: (context) => client.register({ ...context }),
     isFeatureEnabled: (key) => client.isFeatureEnabled(key) ?? false,
     onFeatureFlags: (callback) => client.onFeatureFlags(callback),
   };
 }
-

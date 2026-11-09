@@ -301,8 +301,18 @@
       "lockedAt": "2026-11-09",
       "reason": "new test file"
     },
+    "packages/core/src/services/analytics-native.context.test.ts": {
+      "sha256": "01214a4fb6cee3dfdaa4a765a7b5955ea1b9287eca361a6ccf90bc406ab14dbc",
+      "lockedAt": "2026-11-09",
+      "reason": "new test file"
+    },
     "packages/core/src/services/analytics-native.test.ts": {
       "sha256": "7379a84d24276e26b70fd94dc1298868d6cd8f501852ebbbf8fafd91aa2a81dd",
+      "lockedAt": "2026-11-09",
+      "reason": "new test file"
+    },
+    "packages/core/src/services/analytics.context.test.ts": {
+      "sha256": "9b8744eb01fb2e099370136f2386264dfa4682b244091000428332ccd0eb002b",
       "lockedAt": "2026-11-09",
       "reason": "new test file"
     },

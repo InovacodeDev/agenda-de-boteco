@@ -118,6 +118,8 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     typedRoutes: true,
   },
   extra: {
+    ...config.extra,
+    channel: process.env.EAS_BUILD_PROFILE ?? 'development',
     eas: {
       projectId: '14d06c33-6b50-40ef-81b6-ab4a404b3e7f',
     },

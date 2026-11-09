@@ -10,6 +10,7 @@ import {
   logErrorToTerminal,
   postHogUiHost,
   queryClient,
+  registerAnalyticsContext,
   subscribeAnalyticsIdentity,
   subscribeToCatalogChanges,
   trackPageview,
@@ -22,6 +23,8 @@ import posthog from 'posthog-js';
 import { useEffect } from 'react';
 
 import { getSupabase } from '@/lib/supabase';
+
+import { version } from '../package.json';
 
 // Bootstrap dos singletons do core — uma vez, no client, antes da árvore montar.
 let bootstrapped = false;
@@ -38,6 +41,12 @@ function bootstrap() {
       basePath: '/admin',
     }),
   );
+  registerAnalyticsContext({
+    app_name: '@agenda/admin',
+    app_version: version,
+    channel: process.env.NEXT_PUBLIC_VERCEL_ENV ?? 'development',
+    platform: 'web',
+  });
   configureAuthRedirect(() => (typeof window !== 'undefined' ? window.location.origin : ''));
   configureQueryErrorHandler((error) => {
     logErrorToTerminal(error, { method: 'queryClient' });

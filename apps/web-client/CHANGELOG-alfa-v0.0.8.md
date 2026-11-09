@@ -5,3 +5,4 @@
 - Medição de uso e falhas mais confiável, mesmo com bloqueadores de anúncio
 - Reforço de segurança do painel
 - Sessão de medição acompanha corretamente login e saída da conta
+- Falhas passam a ser identificadas por versão e ambiente

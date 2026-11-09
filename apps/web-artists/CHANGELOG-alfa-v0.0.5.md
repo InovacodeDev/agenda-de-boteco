@@ -4,3 +4,4 @@
 - Quando uma tela falha, aparece uma opção para tentar novamente em vez de página em branco
 - Medição de uso e falhas mais confiável, mesmo com bloqueadores de anúncio
 - Reforço de segurança do portal
+- Falhas passam a ser identificadas por versão e ambiente

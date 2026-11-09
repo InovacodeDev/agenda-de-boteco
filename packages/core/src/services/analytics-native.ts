@@ -6,7 +6,11 @@
  * `PostHog` ser atribuível sem cast.
  */
 import { sanitizeCaptureEvent } from '../utils/error-reporting';
-import { type AnalyticsAdapter, toPostHogExceptionProperties } from './analytics';
+import {
+  type AnalyticsAdapter,
+  type AnalyticsContextRegistrar,
+  toPostHogExceptionProperties,
+} from './analytics';
 
 export interface PostHogNativeClient {
   capture(event: string, properties?: Record<string, unknown>): void;
@@ -47,7 +51,9 @@ export function buildPostHogNativeOptions(input: { host?: string; nativeCrashes:
   };
 }
 
-export function createPostHogNativeAdapter(client: PostHogNativeClient): AnalyticsAdapter {
+export function createPostHogNativeAdapter(
+  client: PostHogNativeClient,
+): AnalyticsAdapter & AnalyticsContextRegistrar {
   return {
     captureException: (error, metadata) =>
       client.captureException(error, toPostHogExceptionProperties(metadata)),
@@ -57,6 +63,9 @@ export function createPostHogNativeAdapter(client: PostHogNativeClient): Analyti
     captureEvent: (name, properties) => client.capture(name, properties),
     identify: (userId) => client.identify(userId),
     reset: () => client.reset(),
+    register: (context) => {
+      void client.register({ ...context });
+    },
     isFeatureEnabled: (key) => client.isFeatureEnabled(key) ?? false,
     onFeatureFlags: (callback) => client.onFeatureFlags(callback),
   };
