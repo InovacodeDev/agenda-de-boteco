@@ -62,6 +62,7 @@ export * from './hooks/useStatusLight';
 export * from './lib/queryClient';
 export * from './lib/queryPersister';
 export * from './services/analytics';
+export * from './services/analytics-native';
 export * from './services/auth';
 export * from './services/cachePolicy';
 export {

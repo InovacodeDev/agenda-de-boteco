@@ -1,8 +1,9 @@
-import type { AnalyticsAdapter } from '@agenda/core';
+import {
+  type AnalyticsAdapter,
+  buildPostHogNativeOptions,
+  createPostHogNativeAdapter,
+} from '@agenda/core';
 import PostHog from 'posthog-react-native';
-
-/** `PostHogEventProperties` não é reexportado pelo pacote — deriva do próprio método. */
-type CaptureProperties = Parameters<InstanceType<typeof PostHog>['capture']>[1];
 
 /**
  * Adapter de `AnalyticsAdapter` sobre `posthog-react-native`, cópia do de
@@ -15,15 +16,7 @@ export function initAnalytics(): AnalyticsAdapter | null {
   const host = process.env.EXPO_PUBLIC_POSTHOG_HOST;
   if (!key) return null;
 
-  const posthog = new PostHog(key, { host });
-
-  return {
-    capturePageview: (path) => posthog.screen(path),
-    captureEvent: (name, properties) =>
-      posthog.capture(name, properties as CaptureProperties),
-    identify: (userId) => posthog.identify(userId),
-    reset: () => posthog.reset(),
-    isFeatureEnabled: (key) => posthog.isFeatureEnabled(key) ?? false,
-    onFeatureFlags: (callback) => posthog.onFeatureFlags(() => callback()),
-  };
+  return createPostHogNativeAdapter(
+    new PostHog(key, buildPostHogNativeOptions({ host, nativeCrashes: false })),
+  );
 }

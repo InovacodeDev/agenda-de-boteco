@@ -5,3 +5,4 @@
 - Base para monitoramento de falhas sem dados pessoais
 - Falhas passam a ser detectadas automaticamente pela equipe
 - Reforça a remoção de dados pessoais dos relatórios automáticos de falha
+- Falhas e travamentos de tela nos apps passam a ser detectados automaticamente
