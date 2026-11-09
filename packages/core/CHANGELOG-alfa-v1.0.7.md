@@ -8,3 +8,4 @@
 - Falhas e travamentos de tela nos apps passam a ser detectados automaticamente
 - Uma informação com problema no servidor não derruba mais a lista inteira de eventos ou bares
 - Favoritos salvos offline não ficam mais presos tentando sincronizar
+- Quedas da atualização em tempo real passam a ser detectadas pela equipe

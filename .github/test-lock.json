@@ -421,6 +421,11 @@
       "lockedAt": "2026-11-07",
       "reason": "new test file"
     },
+    "packages/core/src/services/realtime.degraded.test.ts": {
+      "sha256": "9895eee9cf0a7be27880c858fe42ce27cc5151630d13b4f4d536e811fd3b24f6",
+      "lockedAt": "2026-11-09",
+      "reason": "new test file"
+    },
     "packages/core/src/services/realtime.test.ts": {
       "sha256": "bfddc86535f1a852186e5553486711bd0ad16e9c64f4284fe3d05c3a74d7baa4",
       "lockedAt": "2026-11-07",
