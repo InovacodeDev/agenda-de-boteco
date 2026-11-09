@@ -1,51 +1,11 @@
-import { AuthError, type PostgrestError } from '@supabase/supabase-js';
 import { ZodError } from 'zod';
 
 import { isProduction } from './env';
+import { getErrorCode, getErrorType, isPostgrestError } from './error-classify';
 
 export interface ErrorContext {
   method: string;
   args?: Record<string, unknown>;
-}
-
-function isPostgrestError(error: unknown): error is PostgrestError {
-  return (
-    error !== null &&
-    typeof error === 'object' &&
-    'message' in error &&
-    'details' in error &&
-    'hint' in error &&
-    'code' in error
-  );
-}
-
-function isAuthError(error: unknown): error is AuthError {
-  return (
-    error instanceof AuthError ||
-    (error !== null &&
-      typeof error === 'object' &&
-      '__isAuthError' in error &&
-      (error as { __isAuthError: boolean }).__isAuthError === true)
-  );
-}
-
-function getErrorType(error: unknown): string {
-  if (error instanceof ZodError) {
-    return 'ZodValidationError';
-  }
-  if (isPostgrestError(error)) {
-    return 'PostgrestDatabaseError';
-  }
-  if (isAuthError(error)) {
-    return 'SupabaseAuthError';
-  }
-  if (error instanceof TypeError && error.message.includes('Network request failed')) {
-    return 'NetworkError';
-  }
-  if (error instanceof Error) {
-    return error.name && error.name !== 'Error' ? error.name : error.constructor.name;
-  }
-  return 'UnknownError';
 }
 
 function getErrorDetails(error: unknown): string {
@@ -56,16 +16,6 @@ function getErrorDetails(error: unknown): string {
     return error.details;
   }
   return '';
-}
-
-function getErrorCode(error: unknown): string {
-  if (isPostgrestError(error)) {
-    return error.code;
-  }
-  if (isAuthError(error)) {
-    return error.code || 'None';
-  }
-  return 'None';
 }
 
 function getErrorHint(error: unknown): string {
@@ -82,7 +32,7 @@ export function logErrorToTerminal(error: unknown, context: ErrorContext): void 
 
   const errorType = getErrorType(error);
   const details = getErrorDetails(error);
-  const code = getErrorCode(error);
+  const code = getErrorCode(error) ?? 'None';
   const hint = getErrorHint(error);
   const message = error instanceof Error ? error.message : String(error);
 
@@ -168,6 +118,14 @@ export function getFriendlyErrorMessage(error: unknown): string {
       error.message === 'Formato de arquivo não suportado. Use JPG, PNG, WEBP ou PDF.')
   ) {
     return 'Formato de arquivo não suportado. Use JPG, PNG, WEBP ou PDF.';
+  }
+
+  if (type === 'AuthUnavailableError') {
+    return 'Login indisponível no momento. Tente novamente mais tarde.';
+  }
+
+  if (type === 'SupabaseStorageError') {
+    return 'Não foi possível enviar o arquivo. Tente novamente.';
   }
 
   return 'Ocorreu um erro inesperado. Por favor, tente novamente.';
