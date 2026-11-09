@@ -7,6 +7,7 @@ import {
   configureQueryErrorHandler,
   configureSupabase,
   createPostHogBrowserAdapter,
+  logErrorToTerminal,
   queryClient,
   subscribeToCatalogChanges,
   trackPageview,
@@ -31,11 +32,12 @@ function bootstrap() {
     createPostHogBrowserAdapter(posthog, {
       apiKey: process.env.NEXT_PUBLIC_POSTHOG_KEY,
       apiHost: process.env.NEXT_PUBLIC_POSTHOG_HOST,
+      basePath: '/admin',
     }),
   );
   configureAuthRedirect(() => (typeof window !== 'undefined' ? window.location.origin : ''));
   configureQueryErrorHandler((error) => {
-    console.error('[query]', error);
+    logErrorToTerminal(error, { method: 'queryClient' });
   });
 }
 bootstrap();

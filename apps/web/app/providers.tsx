@@ -9,6 +9,7 @@ import {
   configureSupabase,
   createPostHogBrowserAdapter,
   createQueryPersister,
+  logErrorToTerminal,
   queryClient,
   setupOnlineManager,
   shouldDehydrateQuery,
@@ -22,7 +23,7 @@ import posthog from 'posthog-js';
 import { useEffect } from 'react';
 
 import { useAppSync } from '@/hooks/useAppSync';
-import { appBaseUrl } from '@/lib/basePath';
+import { appBaseUrl, BASE_PATH } from '@/lib/basePath';
 import { getSupabase } from '@/lib/supabase';
 
 // Bootstrap dos singletons do core — roda uma vez, no client, antes da árvore montar.
@@ -38,11 +39,11 @@ function bootstrap() {
     createPostHogBrowserAdapter(posthog, {
       apiKey: process.env.NEXT_PUBLIC_POSTHOG_KEY,
       apiHost: process.env.NEXT_PUBLIC_POSTHOG_HOST,
+      basePath: BASE_PATH,
     }),
   );
   configureQueryErrorHandler((error) => {
-    // Web: por ora console.error; um toast pode ser plugado depois.
-    console.error('[query]', error);
+    logErrorToTerminal(error, { method: 'queryClient' });
   });
 }
 bootstrap();

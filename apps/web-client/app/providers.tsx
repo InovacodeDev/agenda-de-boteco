@@ -33,6 +33,7 @@ function bootstrap() {
     createPostHogBrowserAdapter(posthog, {
       apiKey: process.env.NEXT_PUBLIC_POSTHOG_KEY,
       apiHost: process.env.NEXT_PUBLIC_POSTHOG_HOST,
+      basePath: '/client',
     }),
   );
   // O painel roda sob basePath /client — o retorno do OAuth/magic link precisa
