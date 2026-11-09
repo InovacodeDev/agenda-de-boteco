@@ -194,14 +194,16 @@ cd ~/git/agenda-de-boteco</pre></div>
 <ol class="steps">
   <li>Gere o par fora do repo:</li>
 </ol>
-<div class="code"><pre>mkdir -p ~/agenda-ota-keys && cd apps/mobile
-npx expo-updates codesigning:generate \
+<div class="code"><pre>rm -rf ~/agenda-ota-keys ~/agenda-ota-cert && mkdir -p ~/agenda-ota-keys ~/agenda-ota-cert
+(cd apps/mobile && npx expo-updates codesigning:generate \
   --key-output-directory ~/agenda-ota-keys \
-  --certificate-output-directory ./certs \
+  --certificate-output-directory ~/agenda-ota-cert \
   --certificate-validity-duration-years 10 \
-  --certificate-common-name "Agenda de Boteco"
-cp ./certs/certificate.pem ../mobile-client/certs/certificate.pem
-cd ../..</pre></div>
+  --certificate-common-name "Agenda de Boteco")
+cp ~/agenda-ota-cert/certificate.pem apps/mobile/certs/certificate.pem
+cp ~/agenda-ota-cert/certificate.pem apps/mobile-client/certs/certificate.pem
+rm -rf ~/agenda-ota-cert && ls ~/agenda-ota-keys</pre></div>
+<p>As pastas de saída precisam estar vazias (o gerador recusa sobrescrever). Por isso o certificado sai numa pasta temporária e depois é copiado para os dois apps.</p>
 <ol class="steps" start="2">
   <li>Guarde <code>~/agenda-ota-keys/private-key.pem</code> no gerenciador de senhas e apague a pasta no fim do passo 10.</li>
   <li>Commite os dois <code>certificate.pem</code> novos (é chave pública, pode ir para o git):</li>
