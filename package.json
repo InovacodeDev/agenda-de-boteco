@@ -12,6 +12,8 @@
     "ota:publish": "node scripts/ota/publish.mjs",
     "ota:prune": "node scripts/ota/prune.mjs",
     "ota:rollback": "node scripts/ota/rollback.mjs",
+    "posthog:setup": "node scripts/posthog/setup.mjs",
+    "test:posthog-setup": "node --test scripts/posthog/test/*.test.mjs",
     "test:verify-lock": "node scripts/spec-lock/cli.mjs verify",
     "test:lock-new": "node scripts/spec-lock/cli.mjs lock-new",
     "test:approve-spec-change": "node scripts/spec-lock/cli.mjs approve",
