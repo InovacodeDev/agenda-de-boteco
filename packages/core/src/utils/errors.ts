@@ -1,5 +1,6 @@
 import { ZodError } from 'zod';
 
+import { reportException } from '../services/analytics';
 import { isProduction } from './env';
 import { getErrorCode, getErrorType, isPostgrestError } from './error-classify';
 
@@ -133,5 +134,6 @@ export function getFriendlyErrorMessage(error: unknown): string {
 
 export function handleServiceError(error: unknown, context: ErrorContext): never {
   logErrorToTerminal(error, context);
+  reportException(error, { method: context.method });
   throw error;
 }

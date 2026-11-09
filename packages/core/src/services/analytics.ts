@@ -9,7 +9,17 @@
  * nunca e-mail, telefone, CPF ou outro dado pessoal. `identifyAnalyticsUser`
  * recebe só o uuid opaco do Supabase, nunca e-mail/telefone.
  */
+import {
+  buildSafeErrorMetadata,
+  isExpectedError,
+  type SafeErrorMetadata,
+  sanitizeCaptureEvent,
+  toReportableError,
+} from '../utils/error-reporting';
+
 export interface AnalyticsAdapter {
+  /** Opcional: adapters sem Error Tracking (e mocks de teste) simplesmente não reportam. */
+  captureException?(error: Error, metadata: SafeErrorMetadata): void;
   capturePageview(path: string): void;
   captureEvent(name: string, properties?: Record<string, unknown>): void;
   identify(userId: string): void;
@@ -52,9 +62,59 @@ export function resetAnalytics(): void {
   adapter?.reset();
 }
 
+const reportedErrors = new WeakSet<object>();
+
+/**
+ * Ponto único de reporte de exceção. O `WeakSet` evita `$exception` duplicado
+ * quando o mesmo erro passa por `handleServiceError` e depois pelo QueryCache.
+ * Nunca lança: falha de tracking não pode esconder o erro original.
+ */
+export function reportException(error: unknown, metadata?: SafeErrorMetadata): void {
+  try {
+    if (!adapter?.captureException || isExpectedError(error)) {
+      return;
+    }
+    if (typeof error === 'object' && error !== null) {
+      if (reportedErrors.has(error)) {
+        return;
+      }
+      reportedErrors.add(error);
+    }
+    adapter.captureException(toReportableError(error), {
+      ...buildSafeErrorMetadata(error),
+      ...metadata,
+    });
+  } catch {
+    // NOTE: falha do SDK (não inicializado, quota) não pode propagar para o fluxo do app.
+  }
+}
+
+export function toPostHogExceptionProperties(metadata: SafeErrorMetadata): Record<string, unknown> {
+  const properties: Record<string, unknown> = {
+    method: metadata.method,
+    error_type: metadata.errorType,
+    error_code: metadata.code,
+    error_status: metadata.status,
+    component_stack: metadata.componentStack,
+    record_id: metadata.recordId,
+    $exception_fingerprint: metadata.fingerprint,
+  };
+  return Object.fromEntries(Object.entries(properties).filter(([, value]) => value !== undefined));
+}
+
+export function buildPageviewUrl(
+  origin: string,
+  basePath: string | undefined,
+  path: string,
+): string {
+  return `${origin}${basePath ?? ''}${path}`;
+}
+
 export interface PostHogBrowserClient {
   init(apiKey: string, config?: Record<string, unknown>): void;
   capture(event: string, properties?: Record<string, unknown>): void;
+  captureException(error: unknown, properties?: Record<string, unknown>): void;
+  register(properties: Record<string, unknown>): void;
   identify(distinctId: string): void;
   reset(): void;
   isFeatureEnabled(key: string): boolean | undefined;
@@ -64,6 +124,7 @@ export interface PostHogBrowserClient {
 export interface PostHogBrowserConfig {
   apiKey?: string;
   apiHost?: string;
+  basePath?: string;
 }
 
 export function createPostHogBrowserAdapter(
@@ -76,10 +137,23 @@ export function createPostHogBrowserAdapter(
     api_host: config.apiHost,
     capture_pageview: false,
     person_profiles: 'identified_only',
+    persistence: 'localStorage',
+    capture_exceptions: {
+      capture_unhandled_errors: true,
+      capture_unhandled_rejections: true,
+      capture_console_errors: false,
+    },
+    session_recording: { maskAllInputs: true, maskTextSelector: '[data-ph-mask]' },
+    before_send: sanitizeCaptureEvent,
   });
 
   return {
-    capturePageview: (path) => client.capture('$pageview', { $current_url: path }),
+    captureException: (error, metadata) =>
+      client.captureException(error, toPostHogExceptionProperties(metadata)),
+    capturePageview: (path) =>
+      client.capture('$pageview', {
+        $current_url: buildPageviewUrl(globalThis.location?.origin ?? '', config.basePath, path),
+      }),
     captureEvent: (name, properties) => client.capture(name, properties),
     identify: (userId) => client.identify(userId),
     reset: () => client.reset(),
