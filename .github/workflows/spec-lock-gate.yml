@@ -1,0 +1,76 @@
+name: Spec-Lock Gate
+
+# Bloqueia PR que altera ou remove teste já travado em .github/test-lock.json,
+# a menos que o dono aplique a label `spec-change-approved`. Compara o lock do
+# PR com o da base: apagar a entrada junto com o teste não esconde a mudança.
+on:
+  pull_request:
+    branches: [ release, beta, alfa ]
+    types: [ opened, synchronize, reopened, labeled, unlabeled ]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: spec-lock-gate-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  gate:
+    name: Spec-Lock Gate
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # Roda a cópia do gate que está na BASE: sob pull_request o checkout é o
+      # do PR, e um PR que altera o próprio script passaria no próprio gate.
+      - name: Load gate script from base branch
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin "${GITHUB_BASE_REF}"
+          base="origin/${GITHUB_BASE_REF}"
+          dir="${RUNNER_TEMP}/spec-lock"
+          mkdir -p "$dir"
+          if git cat-file -e "${base}:scripts/spec-lock/cli.mjs" 2>/dev/null; then
+            for file in cli.mjs lib.mjs; do
+              git show "${base}:scripts/spec-lock/${file}" > "${dir}/${file}"
+            done
+            echo "SPEC_LOCK_CLI=${dir}/cli.mjs" >> "$GITHUB_ENV"
+          else
+            echo "::warning::Base sem scripts/spec-lock — usando o script do próprio PR (bootstrap)."
+            echo "SPEC_LOCK_CLI=scripts/spec-lock/cli.mjs" >> "$GITHUB_ENV"
+          fi
+
+      # A label só vale no evento `labeled` disparado por um dono listado no
+      # CODEOWNERS da base para o lock. Um push posterior (synchronize) invalida
+      # a aprovação: o dono remove e reaplica a label para aprovar o novo diff.
+      - name: Compare test lock against base
+        env:
+          ACTION: ${{ github.event.action }}
+          LABEL: ${{ github.event.label.name }}
+          SENDER: ${{ github.event.sender.login }}
+        run: |
+          set -euo pipefail
+          base="origin/${GITHUB_BASE_REF}"
+          if node "$SPEC_LOCK_CLI" gate --base "$base"; then
+            exit 0
+          fi
+          approvers="$(git show "${base}:.github/CODEOWNERS" 2>/dev/null \
+            | awk '$1 == "/.github/test-lock.json" { for (i = 2; i <= NF; i++) { sub(/^@/, "", $i); print $i } }' || true)"
+          if [ "$ACTION" = "labeled" ] && [ "$LABEL" = "spec-change-approved" ] \
+            && [ -n "$approvers" ] && printf '%s\n' "$approvers" | grep -qixF -- "$SENDER"; then
+            echo "::warning::Mudança em teste travado aprovada por @${SENDER} via label spec-change-approved."
+            exit 0
+          fi
+          echo "::error::PR altera ou remove teste travado. Aprovação: um dono do CODEOWNERS (/.github/test-lock.json) aplica a label spec-change-approved após o último push (remova e reaplique se já existir)."
+          exit 1

@@ -2,6 +2,8 @@
 @import 'tailwindcss/preflight.css' layer(base);
 @import 'tailwindcss/utilities.css';
 
+@source '../../../packages/shared-ui-mobile/src';
+
 @media android {
   :root {
     --font-mono: monospace;

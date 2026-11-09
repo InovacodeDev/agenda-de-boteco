@@ -39,6 +39,7 @@ export default function ProfileScreen() {
   const { data: establishment, isPending } = useOwnedEstablishment();
 
   const [draft, setDraft] = useState<EstablishmentDraft>(EMPTY_DRAFT);
+  const [savedDraft, setSavedDraft] = useState<EstablishmentDraft>(EMPTY_DRAFT);
   const [busy, setBusy] = useState(false);
 
   const setField: <K extends keyof EstablishmentDraft>(
@@ -51,7 +52,7 @@ export default function ProfileScreen() {
   useEffect(() => {
     if (!establishment) return;
     queueMicrotask(() => {
-      setDraft({
+      const loaded: EstablishmentDraft = {
         name: establishment.name || '',
         description: establishment.description || '',
         logoUrl: establishment.logo_url || '',
@@ -66,7 +67,9 @@ export default function ProfileScreen() {
         ambiance: establishment.ambiance || '',
         menuUrl: establishment.menu_pdf_url || '',
         attributes: establishment.attributes || [],
-      });
+      };
+      setDraft(loaded);
+      setSavedDraft(loaded);
     });
   }, [establishment]);
 
@@ -74,8 +77,25 @@ export default function ProfileScreen() {
     return uploadImage(blob, { pathPrefix: 'establishments' });
   };
 
+  /**
+   * Mesma regra do web-client: texto comparado com trim() (o submit também
+   * apara) e diferenciais como conjunto, sem importar a ordem.
+   */
+  const isDirty = (Object.keys(draft) as (keyof EstablishmentDraft)[]).some((key) => {
+    const current = draft[key];
+    const saved = savedDraft[key];
+    if (Array.isArray(current) && Array.isArray(saved)) {
+      return current.length !== saved.length || current.some((item) => !saved.includes(item));
+    }
+    return String(current).trim() !== String(saved).trim();
+  });
+
   const canSave =
-    Boolean(establishment) && draft.name.trim().length > 0 && Boolean(draft.cityId) && !busy;
+    Boolean(establishment) &&
+    isDirty &&
+    draft.name.trim().length > 0 &&
+    Boolean(draft.cityId) &&
+    !busy;
 
   const handleSubmit = async () => {
     if (!establishment || !canSave) return;
@@ -102,6 +122,7 @@ export default function ProfileScreen() {
         queryKey: catalogKeys.establishments.detail(establishment.id),
       });
 
+      setSavedDraft(draft);
       toast.show({ tone: 'success', message: 'Alterações salvas.' });
     } catch (err: unknown) {
       toast.show({ tone: 'error', message: getFriendlyErrorMessage(err) });
@@ -163,16 +184,14 @@ export default function ProfileScreen() {
                 </Card>
 
                 <Card className="flex-col gap-4 p-5">
-                  <Text className="font-heading text-foreground text-base font-bold">
-                    Operação
-                  </Text>
+                  <Text className="font-heading text-foreground text-base font-bold">Operação</Text>
 
                   <OperationFields draft={draft} set={setField} onUpload={handleUpload} />
                 </Card>
               </View>
             </View>
 
-            <View className="mt-6 flex-row items-center justify-end gap-3 border-t border-border pt-5">
+            <View className="border-border mt-6 flex-row items-center justify-end gap-3 border-t pt-5">
               <Button
                 label={busy ? 'Salvando…' : 'Salvar alterações'}
                 variant="solid"
@@ -180,7 +199,7 @@ export default function ProfileScreen() {
                 busy={busy}
                 icon={<Icon name="floppy" size={16} color="#0f0f0f" weight="bold" />}
                 onPress={handleSubmit}
-                className="flex-1 max-w-xs"
+                className="max-w-xs flex-1"
               />
             </View>
           </View>

@@ -43,7 +43,7 @@ function getErrorType(error: unknown): string {
     return 'NetworkError';
   }
   if (error instanceof Error) {
-    return error.constructor.name;
+    return error.name && error.name !== 'Error' ? error.name : error.constructor.name;
   }
   return 'UnknownError';
 }
@@ -153,6 +153,21 @@ export function getFriendlyErrorMessage(error: unknown): string {
 
   if (type === 'ZodValidationError') {
     return 'Erro interno ao processar dados. O aplicativo pode precisar ser atualizado.';
+  }
+
+  if (
+    type === 'FileTooLargeError' ||
+    (error instanceof Error && error.message === 'Arquivo muito grande. O limite é 8 MB.')
+  ) {
+    return 'Arquivo muito grande. O limite é 8 MB.';
+  }
+
+  if (
+    type === 'UnsupportedFileTypeError' ||
+    (error instanceof Error &&
+      error.message === 'Formato de arquivo não suportado. Use JPG, PNG, WEBP ou PDF.')
+  ) {
+    return 'Formato de arquivo não suportado. Use JPG, PNG, WEBP ou PDF.';
   }
 
   return 'Ocorreu um erro inesperado. Por favor, tente novamente.';

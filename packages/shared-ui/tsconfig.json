@@ -3,7 +3,7 @@
   "compilerOptions": {
     "lib": ["dom", "dom.iterable", "esnext"],
     "jsx": "preserve",
-    "types": ["react"]
+    "types": ["react", "jest", "@testing-library/jest-dom"]
   },
-  "include": ["src/**/*"]
+  "include": ["src/**/*", "jest.setup.ts"]
 }

@@ -1,5 +1,6 @@
 'use client';
 
+import { useFeatureFlag } from '@agenda/core';
 import {
   CalendarBlankIcon,
   ChartBarIcon,
@@ -18,7 +19,8 @@ const SHORTCUTS: {
   description: string;
   cta: string;
   icon: Icon;
-  disabled?: boolean;
+  /** Atalho só liberado com a flag do PostHog ligada (mesma da Sidebar). */
+  flag?: 'panel-metrics';
 }[] = [
   {
     href: '/events',
@@ -38,14 +40,15 @@ const SHORTCUTS: {
     href: '/metrics',
     title: 'Métricas',
     description: 'Acompanhe visualizações e cliques',
-    cta: 'Em breve',
+    cta: 'Ver métricas',
     icon: ChartBarIcon,
-    disabled: true,
+    flag: 'panel-metrics',
   },
 ];
 
 export default function DashboardPage() {
   const { data: establishment } = useOwnedEstablishment();
+  const metricsEnabled = useFeatureFlag('panel-metrics');
 
   return (
     <div className="mx-auto flex w-full max-w-300 flex-col gap-6">
@@ -108,6 +111,7 @@ export default function DashboardPage() {
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {SHORTCUTS.map((item) => {
           const ItemIcon = item.icon;
+          const locked = item.flag === 'panel-metrics' && !metricsEnabled;
           return (
             <div
               key={item.href}
@@ -117,12 +121,12 @@ export default function DashboardPage() {
               <h3 className="mb-1 font-semibold">{item.title}</h3>
               <p className="text-muted-foreground mb-4 flex-1 text-sm">{item.description}</p>
 
-              {item.disabled ? (
+              {locked ? (
                 <button
                   disabled
                   className="ring-offset-background focus-visible:ring-ring border-input bg-background hover:bg-accent hover:text-accent-foreground inline-flex h-9 w-full items-center justify-center gap-2 rounded-[14px] border px-3 text-sm font-medium whitespace-nowrap transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0"
                 >
-                  {item.cta}
+                  Em breve
                 </button>
               ) : (
                 <Link

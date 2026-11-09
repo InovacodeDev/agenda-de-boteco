@@ -1,3 +1,4 @@
+import { getFriendlyErrorMessage } from '@agenda/core';
 import * as ExpoImagePicker from 'expo-image-picker';
 import { useState } from 'react';
 import { ActivityIndicator, Alert, StyleSheet } from 'react-native';
@@ -19,6 +20,11 @@ export interface ImagePickerFieldProps {
    * continua sendo o que é salvo.
    */
   previewUrl?: string;
+  /**
+   * Chamado com a URL anterior depois que a nova foi enviada, para o caller
+   * apagar o arquivo antigo do storage (o pacote não chama serviço).
+   */
+  onReplaced?: (previousUrl: string) => void;
 }
 
 const MIME_BY_EXTENSION: Record<string, string> = {
@@ -47,6 +53,7 @@ export function ImagePickerField({
   aspect = [16, 9],
   className,
   previewUrl,
+  onReplaced,
 }: ImagePickerFieldProps) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -86,9 +93,12 @@ export function ImagePickerField({
       const blob = raw.type || !mimeType ? raw : new Blob([raw], { type: mimeType });
 
       const uploadedUrl = await onUpload(blob);
+      if (value && value !== uploadedUrl) {
+        onReplaced?.(value);
+      }
       onChange(uploadedUrl);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Falha no envio da imagem.');
+      setError(getFriendlyErrorMessage(err));
     } finally {
       setBusy(false);
     }
