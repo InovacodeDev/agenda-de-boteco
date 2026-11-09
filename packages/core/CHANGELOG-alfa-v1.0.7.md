@@ -9,3 +9,5 @@
 - Uma informação com problema no servidor não derruba mais a lista inteira de eventos ou bares
 - Favoritos salvos offline não ficam mais presos tentando sincronizar
 - Quedas da atualização em tempo real passam a ser detectadas pela equipe
+- Medição de uso e falhas mais confiável nos painéis web
+- Sessão de medição acompanha corretamente login e saída da conta

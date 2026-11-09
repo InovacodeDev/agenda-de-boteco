@@ -4,6 +4,7 @@ import {
   configureAnalytics,
   configureSupabase,
   createPostHogBrowserAdapter,
+  postHogUiHost,
   trackPageview,
 } from '@agenda/core';
 import { usePathname } from 'next/navigation';
@@ -25,7 +26,8 @@ function bootstrap() {
   configureAnalytics(
     createPostHogBrowserAdapter(posthog, {
       apiKey: process.env.NEXT_PUBLIC_POSTHOG_KEY,
-      apiHost: process.env.NEXT_PUBLIC_POSTHOG_HOST,
+      apiHost: '/artists/ingest',
+      uiHost: postHogUiHost(process.env.NEXT_PUBLIC_POSTHOG_HOST),
       basePath: '/artists',
     }),
   );

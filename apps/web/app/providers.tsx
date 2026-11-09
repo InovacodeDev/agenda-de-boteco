@@ -10,6 +10,7 @@ import {
   createPostHogBrowserAdapter,
   createQueryPersister,
   logErrorToTerminal,
+  postHogUiHost,
   queryClient,
   setupOnlineManager,
   shouldDehydrateQuery,
@@ -38,7 +39,8 @@ function bootstrap() {
   configureAnalytics(
     createPostHogBrowserAdapter(posthog, {
       apiKey: process.env.NEXT_PUBLIC_POSTHOG_KEY,
-      apiHost: process.env.NEXT_PUBLIC_POSTHOG_HOST,
+      apiHost: `${BASE_PATH}/ingest`,
+      uiHost: postHogUiHost(process.env.NEXT_PUBLIC_POSTHOG_HOST),
       basePath: BASE_PATH,
     }),
   );

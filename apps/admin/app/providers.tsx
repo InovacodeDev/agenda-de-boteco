@@ -8,7 +8,9 @@ import {
   configureSupabase,
   createPostHogBrowserAdapter,
   logErrorToTerminal,
+  postHogUiHost,
   queryClient,
+  subscribeAnalyticsIdentity,
   subscribeToCatalogChanges,
   trackPageview,
   useAuthStore,
@@ -31,7 +33,8 @@ function bootstrap() {
   configureAnalytics(
     createPostHogBrowserAdapter(posthog, {
       apiKey: process.env.NEXT_PUBLIC_POSTHOG_KEY,
-      apiHost: process.env.NEXT_PUBLIC_POSTHOG_HOST,
+      apiHost: '/admin/ingest',
+      uiHost: postHogUiHost(process.env.NEXT_PUBLIC_POSTHOG_HOST),
       basePath: '/admin',
     }),
   );
@@ -49,6 +52,8 @@ function AppSyncBridge() {
   useEffect(() => {
     void initialize();
   }, [initialize]);
+
+  useEffect(() => subscribeAnalyticsIdentity(useAuthStore.getState().user?.id ?? null), []);
 
   useEffect(() => {
     return subscribeToCatalogChanges((keys) => {

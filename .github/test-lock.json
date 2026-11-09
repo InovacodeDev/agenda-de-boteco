@@ -291,6 +291,11 @@
       "lockedAt": "2026-11-07",
       "reason": "new test file"
     },
+    "packages/core/src/services/analytics-identity.test.ts": {
+      "sha256": "ab821195b5ebcf72c57f1da4dad02c8201e90243736b5f6a4cd84ff24e0b81ed",
+      "lockedAt": "2026-11-09",
+      "reason": "new test file"
+    },
     "packages/core/src/services/analytics-native.test.ts": {
       "sha256": "7379a84d24276e26b70fd94dc1298868d6cd8f501852ebbbf8fafd91aa2a81dd",
       "lockedAt": "2026-11-09",
@@ -304,6 +309,11 @@
     "packages/core/src/services/analytics.test.ts": {
       "sha256": "2416a5c28b97192a73059ba89730629bbc0e810c0e830512d53f804bed31ac51",
       "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/services/analytics.ui-host.test.ts": {
+      "sha256": "c6c1a89c2bc5f957d0da554a6daddd2db59ff6009aeb8c38953a8607f480dd8b",
+      "lockedAt": "2026-11-09",
       "reason": "new test file"
     },
     "packages/core/src/services/auth.admin.test.ts": {
@@ -639,6 +649,11 @@
     "packages/core/src/utils/platform.test.ts": {
       "sha256": "77e725f070556a68f733ec39fa8d4ae682c84be16c324c2465a74ebcc188d26a",
       "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/utils/posthog-hosts.test.ts": {
+      "sha256": "781ae337ab655be11eb358a0794ca558fdea813665b95c5387f4a725c4ebaf3e",
+      "lockedAt": "2026-11-09",
       "reason": "new test file"
     },
     "packages/core/src/utils/pressGuard.test.ts": {

@@ -125,6 +125,7 @@ export interface PostHogBrowserConfig {
   apiKey?: string;
   apiHost?: string;
   basePath?: string;
+  uiHost?: string;
 }
 
 export function createPostHogBrowserAdapter(
@@ -135,6 +136,7 @@ export function createPostHogBrowserAdapter(
 
   client.init(config.apiKey, {
     api_host: config.apiHost,
+    ...(config.uiHost ? { ui_host: config.uiHost } : {}),
     capture_pageview: false,
     person_profiles: 'identified_only',
     persistence: 'localStorage',
