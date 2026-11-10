@@ -2,6 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { z } from 'zod';
 
 import { getConfiguredSupabase } from '../supabase/client';
+import { handleServiceError } from '../utils/errors';
 
 export const favoriteTargetTypeSchema = z.enum(['event', 'establishment']);
 export type FavoriteTargetType = z.infer<typeof favoriteTargetTypeSchema>;
@@ -35,12 +36,16 @@ export async function fetchServerFavorites(): Promise<FavoriteTarget[]> {
   if (client === null) {
     return [];
   }
-  const { data, error } = await rawClient(client).from(TABLE).select('target_type, target_id');
-  if (error) {
-    throw error;
+  try {
+    const { data, error } = await rawClient(client).from(TABLE).select('target_type, target_id');
+    if (error) {
+      throw error;
+    }
+    const rows = favoriteRowsSchema.parse(data ?? []);
+    return rows.map((row) => ({ type: row.target_type, id: row.target_id }));
+  } catch (error) {
+    return handleServiceError(error, { method: 'favorites.fetchServerFavorites' });
   }
-  const rows = favoriteRowsSchema.parse(data ?? []);
-  return rows.map((row) => ({ type: row.target_type, id: row.target_id }));
 }
 
 /** Adiciona (idempotente via upsert) um favorito no servidor. No-op sem client. */
@@ -52,14 +57,21 @@ export async function addServerFavorite(
   if (client === null) {
     return;
   }
-  const { error } = await rawClient(client)
-    .from(TABLE)
-    .upsert(
-      { user_id: userId, target_type: target.type, target_id: target.id },
-      { onConflict: 'user_id,target_type,target_id', ignoreDuplicates: true },
-    );
-  if (error) {
-    throw error;
+  try {
+    const { error } = await rawClient(client)
+      .from(TABLE)
+      .upsert(
+        { user_id: userId, target_type: target.type, target_id: target.id },
+        { onConflict: 'user_id,target_type,target_id', ignoreDuplicates: true },
+      );
+    if (error) {
+      throw error;
+    }
+  } catch (error) {
+    return handleServiceError(error, {
+      method: 'favorites.addServerFavorite',
+      args: { targetType: target.type },
+    });
   }
 }
 
@@ -80,18 +92,25 @@ export async function addServerFavorites(
   if (client === null) {
     return;
   }
-  const { error } = await rawClient(client)
-    .from(TABLE)
-    .upsert(
-      targets.map((target) => ({
-        user_id: userId,
-        target_type: target.type,
-        target_id: target.id,
-      })),
-      { onConflict: 'user_id,target_type,target_id', ignoreDuplicates: true },
-    );
-  if (error) {
-    throw error;
+  try {
+    const { error } = await rawClient(client)
+      .from(TABLE)
+      .upsert(
+        targets.map((target) => ({
+          user_id: userId,
+          target_type: target.type,
+          target_id: target.id,
+        })),
+        { onConflict: 'user_id,target_type,target_id', ignoreDuplicates: true },
+      );
+    if (error) {
+      throw error;
+    }
+  } catch (error) {
+    return handleServiceError(error, {
+      method: 'favorites.addServerFavorites',
+      args: { count: targets.length },
+    });
   }
 }
 
@@ -104,13 +123,20 @@ export async function removeServerFavorite(
   if (client === null) {
     return;
   }
-  const { error } = await rawClient(client)
-    .from(TABLE)
-    .delete()
-    .eq('user_id', userId)
-    .eq('target_type', target.type)
-    .eq('target_id', target.id);
-  if (error) {
-    throw error;
+  try {
+    const { error } = await rawClient(client)
+      .from(TABLE)
+      .delete()
+      .eq('user_id', userId)
+      .eq('target_type', target.type)
+      .eq('target_id', target.id);
+    if (error) {
+      throw error;
+    }
+  } catch (error) {
+    return handleServiceError(error, {
+      method: 'favorites.removeServerFavorite',
+      args: { targetType: target.type },
+    });
   }
 }

@@ -7,6 +7,7 @@ import type { QueryKey } from '@tanstack/react-query';
 import { getConfiguredSupabase } from '../supabase/client';
 import type { Database } from '../types';
 import { isProduction } from '../utils/env';
+import { trackEvent } from './analytics';
 import { catalogKeys } from './queryKeys';
 
 /**
@@ -22,6 +23,33 @@ const CATALOG_TABLES = [
   'music_styles',
   'event_attractions',
 ] as const;
+
+const CATALOG_CHANNEL = 'catalog-changes';
+
+export const REALTIME_DEGRADED_THROTTLE_MS = 300_000;
+
+const lastDegradedReportAt = new Map<string, number>();
+
+/** Só para teste: zera o throttle entre casos. */
+export function resetRealtimeDegradedThrottle(): void {
+  lastDegradedReportAt.clear();
+}
+
+/**
+ * Canal oscilando entre erro e `SUBSCRIBED` dispararia um evento por segundo;
+ * o throttle por canal mantém o alerta útil sem estourar a quota. O `error` do
+ * callback não vai no evento: pode trazer detalhe de RLS. `realtime_channel`,
+ * não `channel`, porque `channel` é super property de canal de release.
+ */
+function reportRealtimeDegraded(channelName: string, status: string): void {
+  const now = Date.now();
+  const last = lastDegradedReportAt.get(channelName);
+  if (last !== undefined && now - last < REALTIME_DEGRADED_THROTTLE_MS) {
+    return;
+  }
+  lastDegradedReportAt.set(channelName, now);
+  trackEvent('realtime_degraded', { realtime_channel: channelName, status });
+}
 
 /**
  * Resolve as query keys a invalidar quando uma tabela muda no Postgres. Função
@@ -91,7 +119,7 @@ export function subscribeToCatalogChanges(
     return () => {};
   }
 
-  const channel = client.channel('catalog-changes');
+  const channel = client.channel(CATALOG_CHANNEL);
 
   for (const table of CATALOG_TABLES) {
     channel.on(
@@ -105,6 +133,9 @@ export function subscribeToCatalogChanges(
   }
 
   channel.subscribe((status, error) => {
+    if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+      reportRealtimeDegraded(CATALOG_CHANNEL, status);
+    }
     // Sem rede ou com RLS bloqueando a subscription, `.subscribe()` falha em
     // silêncio (o usuário veria um catálogo defasado). Em dev, logamos o status
     // não-`SUBSCRIBED` para diagnosticar; a salvaguarda de correção continua

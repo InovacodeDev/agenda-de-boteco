@@ -2,6 +2,7 @@ export * from './Button';
 export * from './DatePicker';
 export * from './Field';
 export * from './PageHeader';
+export * from './RouteErrorFallback';
 export * from './Select';
 export * from './Sidebar';
 export * from './styles';

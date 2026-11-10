@@ -2,7 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { z } from 'zod';
 
 import { getConfiguredSupabase } from '../supabase/client';
-import { logErrorToTerminal } from '../utils/errors';
+import { handleServiceError, logErrorToTerminal } from '../utils/errors';
 
 export const metricKindSchema = z.enum(['view', 'click_map', 'click_contact', 'click_share']);
 export type MetricKind = z.infer<typeof metricKindSchema>;
@@ -78,22 +78,29 @@ export async function listOwnedMetrics(
   if (!Number.isInteger(sinceDays) || sinceDays < 1 || sinceDays > MAX_METRICS_SINCE_DAYS) {
     throw new Error('Período de métricas inválido');
   }
-  const { data, error } = await client.rpc('get_owned_metrics_aggregate', {
-    p_establishment_id: establishmentId,
-    p_since_days: sinceDays,
-  });
-  if (error) {
-    throw error;
+  try {
+    const { data, error } = await client.rpc('get_owned_metrics_aggregate', {
+      p_establishment_id: establishmentId,
+      p_since_days: sinceDays,
+    });
+    if (error) {
+      throw error;
+    }
+    return z
+      .array(metricAggregateRowSchema)
+      .parse(data ?? [])
+      .map((row) => ({
+        day: row.day,
+        eventId: row.event_id,
+        kind: row.kind,
+        total: Number(row.total),
+      }));
+  } catch (error) {
+    return handleServiceError(error, {
+      method: 'metrics.listOwnedMetrics',
+      args: { establishmentId, sinceDays },
+    });
   }
-  return z
-    .array(metricAggregateRowSchema)
-    .parse(data ?? [])
-    .map((row) => ({
-      day: row.day,
-      eventId: row.event_id,
-      kind: row.kind,
-      total: Number(row.total),
-    }));
 }
 
 const favoritesCountRowSchema = z.object({
@@ -115,15 +122,22 @@ export async function getOwnedFavoritesCountByEstablishment(
   if (client === null) {
     return {};
   }
-  const { data, error } = await rawClient(client).rpc('get_owned_favorites_count', {
-    p_establishment_id: establishmentId,
-  });
-  if (error) {
-    throw error;
+  try {
+    const { data, error } = await rawClient(client).rpc('get_owned_favorites_count', {
+      p_establishment_id: establishmentId,
+    });
+    if (error) {
+      throw error;
+    }
+    const rows = z.array(favoritesCountRowSchema).parse(data ?? []);
+    return rows.reduce<Record<string, number>>((acc, row) => {
+      acc[row.event_id] = Number(row.favorites_count);
+      return acc;
+    }, {});
+  } catch (error) {
+    return handleServiceError(error, {
+      method: 'metrics.getOwnedFavoritesCountByEstablishment',
+      args: { establishmentId },
+    });
   }
-  const rows = z.array(favoritesCountRowSchema).parse(data ?? []);
-  return rows.reduce<Record<string, number>>((acc, row) => {
-    acc[row.event_id] = Number(row.favorites_count);
-    return acc;
-  }, {});
 }

@@ -14,6 +14,11 @@ export * from './utils/auth';
 export * from './utils/cn';
 export * from './utils/dates';
 export * from './utils/env';
+export {
+  type SafeErrorMetadata,
+  sanitizeCaptureEvent,
+  sanitizeUrl,
+} from './utils/error-reporting';
 export * from './utils/errors';
 export * from './utils/events';
 export * from './utils/filters';
@@ -28,6 +33,7 @@ export * from './utils/moderation';
 export * from './utils/opening-hours';
 export * from './utils/pagination';
 export * from './utils/platform';
+export * from './utils/posthog-hosts';
 export * from './utils/pressGuard';
 export * from './utils/responsiveType';
 export * from './utils/slug';
@@ -57,6 +63,8 @@ export * from './hooks/useStatusLight';
 export * from './lib/queryClient';
 export * from './lib/queryPersister';
 export * from './services/analytics';
+export * from './services/analytics-identity';
+export * from './services/analytics-native';
 export * from './services/auth';
 export * from './services/cachePolicy';
 export {

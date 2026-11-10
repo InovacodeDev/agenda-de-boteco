@@ -4,6 +4,8 @@ import {
   configureAnalytics,
   configureSupabase,
   createPostHogBrowserAdapter,
+  postHogUiHost,
+  registerAnalyticsContext,
   trackPageview,
 } from '@agenda/core';
 import { usePathname } from 'next/navigation';
@@ -11,6 +13,8 @@ import posthog from 'posthog-js';
 import { useEffect } from 'react';
 
 import { getSupabase } from '@/lib/supabase';
+
+import { version } from '../package.json';
 
 // Bootstrap dos singletons do core — uma vez, antes da árvore montar.
 // Sem QueryClientProvider: o cadastro é uma escrita única, sem cache de leitura.
@@ -25,9 +29,17 @@ function bootstrap() {
   configureAnalytics(
     createPostHogBrowserAdapter(posthog, {
       apiKey: process.env.NEXT_PUBLIC_POSTHOG_KEY,
-      apiHost: process.env.NEXT_PUBLIC_POSTHOG_HOST,
+      apiHost: '/artists/ingest',
+      uiHost: postHogUiHost(process.env.NEXT_PUBLIC_POSTHOG_HOST),
+      basePath: '/artists',
     }),
   );
+  registerAnalyticsContext({
+    app_name: '@agenda/web-artists',
+    app_version: version,
+    channel: process.env.NEXT_PUBLIC_VERCEL_ENV ?? 'development',
+    platform: 'web',
+  });
 }
 bootstrap();
 

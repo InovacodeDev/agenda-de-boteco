@@ -1,9 +1,17 @@
 'use client';
 
-import { configureAnalytics, createPostHogBrowserAdapter, trackPageview } from '@agenda/core';
+import {
+  configureAnalytics,
+  createPostHogBrowserAdapter,
+  postHogUiHost,
+  registerAnalyticsContext,
+  trackPageview,
+} from '@agenda/core';
 import { usePathname } from 'next/navigation';
 import posthog from 'posthog-js';
 import { useEffect } from 'react';
+
+import { version } from '../package.json';
 
 // Bootstrap dos singletons do core — uma vez, antes da árvore montar. Landing
 // não tem auth nem cache de leitura: só analytics (sem QueryClient/Supabase).
@@ -14,9 +22,16 @@ function bootstrap() {
   configureAnalytics(
     createPostHogBrowserAdapter(posthog, {
       apiKey: process.env.NEXT_PUBLIC_POSTHOG_KEY,
-      apiHost: process.env.NEXT_PUBLIC_POSTHOG_HOST,
+      apiHost: '/ingest',
+      uiHost: postHogUiHost(process.env.NEXT_PUBLIC_POSTHOG_HOST),
     }),
   );
+  registerAnalyticsContext({
+    app_name: '@agenda/landing',
+    app_version: version,
+    channel: process.env.NEXT_PUBLIC_VERCEL_ENV ?? 'development',
+    platform: 'web',
+  });
 }
 bootstrap();
 

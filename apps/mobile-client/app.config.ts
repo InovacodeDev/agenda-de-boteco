@@ -16,16 +16,9 @@ const getEnvVar = (value: string | undefined, name: string): string => {
   return value || '';
 };
 
-function requireProjectId(): string | undefined {
-  const projectId = process.env.EAS_PROJECT_ID;
-  const profile = process.env.EAS_BUILD_PROFILE;
-  if (!projectId && profile && (STORE_PROFILES as readonly string[]).includes(profile)) {
-    throw new Error(
-      '[FALHA NO BUILD] A variável de ambiente obrigatória "EAS_PROJECT_ID" não foi definida.',
-    );
-  }
-  return projectId;
-}
+const hasPostHogUploadCredentials = Boolean(
+  process.env.POSTHOG_CLI_API_KEY || process.env.POSTHOG_CLI_TOKEN,
+);
 
 export default ({ config }: ConfigContext): ExpoConfig => {
   const manifestUrl = getEnvVar(
@@ -100,12 +93,17 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       },
     ],
     'expo-updates',
+    // NOTE: o upload de símbolos aborta o build nativo se o posthog-cli falhar; sem credencial (fork, dev local) o plugin fica de fora.
+    ...(hasPostHogUploadCredentials
+      ? [['posthog-react-native/expo', { uploadNativeSymbols: true, skipOnConflict: true }] as [string, object]]
+      : []),
   ],
   extra: {
     ...config.extra,
+    channel: process.env.EAS_BUILD_PROFILE ?? 'development',
     eas: {
       ...config.extra?.eas,
-      projectId: requireProjectId(),
+      projectId: '05db6b05-27b0-4690-9eb7-35706f4fb90b',
     },
   },
   experiments: {

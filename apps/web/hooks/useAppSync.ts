@@ -3,6 +3,7 @@
 import {
   onAuthUserChange,
   queryClient,
+  subscribeAnalyticsIdentity,
   subscribeToCatalogChanges,
   useAuthStore,
   useFavoritesStore,
@@ -27,6 +28,8 @@ export function useAppSync(): void {
   useEffect(() => {
     initializeAuth();
   }, [initializeAuth]);
+
+  useEffect(() => subscribeAnalyticsIdentity(useAuthStore.getState().user?.id ?? null), []);
 
   // Favoritos: merge ao logar + flush ao reconectar.
   useEffect(() => {

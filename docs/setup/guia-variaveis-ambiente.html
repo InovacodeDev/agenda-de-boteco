@@ -1,0 +1,522 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Guia de Variáveis de Ambiente</title>
+<style>
+  :root {
+    --bg: #ffffff; --fg: #16181d; --muted: #5b6270; --line: #e3e6ec; --soft: #f5f7fa;
+    --code-bg: #0f1218; --code-fg: #e8ebf1; --accent: #12a150; --warn-bg: #fff4e5; --warn-line: #f0a030;
+    --danger-bg: #fdecec; --danger-line: #d93a3a; --info-bg: #eaf3ff; --info-line: #3b82f6;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0d0f13; --fg: #e8ebf1; --muted: #9aa3b2; --line: #262b34; --soft: #151922;
+      --code-bg: #07090c; --warn-bg: #2a1f0e; --danger-bg: #2a1212; --info-bg: #0f1a2b;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, sans-serif; }
+  main { max-width: 920px; margin: 0 auto; padding: 32px 16px 80px; }
+  h1 { font-size: 28px; margin: 0 0 4px; }
+  h2 { font-size: 21px; margin: 44px 0 10px; padding-top: 14px; border-top: 1px solid var(--line); }
+  h3 { font-size: 16px; margin: 26px 0 8px; }
+  p, li { color: var(--fg); }
+  .sub { color: var(--muted); margin: 0 0 20px; }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; background: var(--soft); padding: 1px 5px; border-radius: 4px; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0 16px; font-size: 13.5px; }
+  th, td { text-align: left; border-bottom: 1px solid var(--line); padding: 7px 8px; vertical-align: top; }
+  th { background: var(--soft); font-weight: 600; }
+  td code { word-break: break-all; }
+  .box { border-left: 4px solid; padding: 10px 14px; border-radius: 6px; margin: 12px 0; }
+  .warn { background: var(--warn-bg); border-color: var(--warn-line); }
+  .danger { background: var(--danger-bg); border-color: var(--danger-line); }
+  .info { background: var(--info-bg); border-color: var(--info-line); }
+  .box strong:first-child { display: block; margin-bottom: 2px; }
+  .code { position: relative; margin: 8px 0 14px; }
+  .code pre { margin: 0; background: var(--code-bg); color: var(--code-fg); padding: 14px 16px; border-radius: 8px; overflow-x: auto; font: 12.5px/1.55 ui-monospace, SFMono-Regular, Menlo, monospace; white-space: pre; }
+  .code button { position: absolute; top: 8px; right: 8px; border: 0; border-radius: 6px; padding: 5px 10px; font-size: 12px; cursor: pointer; background: #2a3140; color: #fff; }
+  .code button.ok { background: var(--accent); }
+  ol.steps > li { margin-bottom: 6px; }
+  .toc { background: var(--soft); border-radius: 8px; padding: 12px 18px; }
+  .toc ol { margin: 4px 0; }
+  .tag { display: inline-block; font-size: 11px; padding: 1px 6px; border-radius: 10px; border: 1px solid var(--line); color: var(--muted); }
+  .tag.s { border-color: var(--danger-line); color: var(--danger-line); }
+  a { color: var(--info-line); }
+  @media print {
+    body { font-size: 11.5px; background: #fff; color: #000; }
+    main { max-width: none; padding: 0; }
+    .code button { display: none; }
+    .code pre { white-space: pre-wrap; word-break: break-all; background: #f3f4f6; color: #111; border: 1px solid #d1d5db; }
+    h2, h3 { break-after: avoid; }
+    .box, tr { break-inside: avoid; }
+    a { color: #000; }
+  }
+</style>
+</head>
+<body>
+<main>
+
+<h1>Guia de Variáveis de Ambiente — Agenda de Boteco</h1>
+<p class="sub">Recriar do zero todas as variáveis de ambiente e segredos: Supabase, PostHog, Cloudflare R2, OTA, Vercel, EAS e GitHub Actions. Versão de 2026-11-09 (PR #115).</p>
+
+<div class="box danger">
+  <strong>ATENÇÃO — segredos</strong>
+  Nunca cole chave, token ou senha em arquivo do repo, em <code>.env.example</code>, em issue ou em chat. Valores reais vivem só no gerenciador de senhas, nos painéis (Supabase, PostHog, Cloudflare, Vercel, EAS, GitHub) e no seu terminal durante a configuração. A <code>SUPABASE_SERVICE_ROLE_KEY</code> nunca entra em app cliente (Vercel ou EAS).
+</div>
+
+<div class="box info">
+  <strong>Sobre os botões de copiar</strong>
+  Os botões funcionam na versão HTML deste guia (<code>docs/setup/guia-variaveis-ambiente.html</code>). No PDF, selecione o texto do bloco e copie.
+</div>
+
+<div class="toc">
+  <strong>Ordem de execução</strong>
+  <ol>
+    <li>Preparar ferramentas e o terminal</li>
+    <li>Coletar valores nas origens (Supabase, PostHog, R2, Google, Expo, Apple)</li>
+    <li>Gerar o par de chaves de assinatura do OTA</li>
+    <li>Carregar os valores no terminal</li>
+    <li>Supabase — segredos das Edge Functions</li>
+    <li>GitHub Actions — secrets e variables</li>
+    <li>Vercel — 5 projetos web</li>
+    <li>EAS — 2 apps mobile</li>
+    <li>Desenvolvimento local (<code>.env.local</code>)</li>
+    <li>Verificar tudo</li>
+    <li>Provisionar o PostHog (script)</li>
+    <li>Apêndice — inventário completo</li>
+  </ol>
+</div>
+
+<!-- 1 -->
+<h2 class="first">1. Preparar ferramentas e o terminal</h2>
+<ol class="steps">
+  <li>Confirme que as CLIs estão instaladas (todas já existem nesta máquina):</li>
+</ol>
+<div class="code"><pre>gh --version && eas --version && supabase --version && vercel --version</pre></div>
+<ol class="steps" start="2">
+  <li>Faça login em cada uma:</li>
+</ol>
+<div class="code"><pre>gh auth login
+eas login
+supabase login
+vercel login</pre></div>
+<ol class="steps" start="3">
+  <li>Abra um terminal novo só para esta configuração e desligue o histórico dele, para que nenhuma chave fique salva em <code>~/.zsh_history</code>:</li>
+</ol>
+<div class="code"><pre>unset HISTFILE
+setopt interactivecomments
+cd ~/git/agenda-de-boteco</pre></div>
+<p><code>setopt interactivecomments</code> faz o zsh aceitar as linhas com <code>#</code> dos blocos deste guia. Sem isso, aparece <code>parse error</code>.</p>
+<div class="box warn"><strong>CUIDADO</strong>Use sempre este mesmo terminal até o fim do passo 10. Ao fechar, as variáveis carregadas somem.</div>
+
+<!-- 2 -->
+<h2>2. Coletar valores nas origens</h2>
+<p>Anote cada valor no gerenciador de senhas. Os nomes da coluna "Variável no terminal" são usados no passo 4.</p>
+
+<h3>2.1 Supabase (projeto de produção)</h3>
+<ol class="steps">
+  <li>Abra <code>https://supabase.com/dashboard</code> e selecione o projeto.</li>
+  <li><strong>Project Settings → General</strong>: copie o <em>Reference ID</em>.</li>
+  <li><strong>Project Settings → Data API</strong> (ou <em>API</em>): copie a <em>Project URL</em>.</li>
+  <li><strong>Project Settings → API Keys</strong>: copie a chave <em>anon / public</em> (ou a <em>publishable</em>). Copie também a <em>service_role</em> (ou <em>secret</em>).</li>
+  <li><strong>Project Settings → Database</strong>: anote a senha do banco. Se não souber, clique em <em>Reset database password</em>.</li>
+  <li><strong>Account → Access Tokens</strong> (<code>https://supabase.com/dashboard/account/tokens</code>): crie um token chamado <code>github-actions-deploy</code>.</li>
+</ol>
+<table>
+  <tr><th>Valor</th><th>Variável no terminal</th><th>Sensível?</th></tr>
+  <tr><td>Reference ID</td><td><code>SB_REF</code></td><td>não</td></tr>
+  <tr><td>Project URL (<code>https://&lt;ref&gt;.supabase.co</code>)</td><td><code>SB_URL</code></td><td>não</td></tr>
+  <tr><td>anon / publishable key</td><td><code>SB_ANON</code></td><td>não (pública por design; a proteção é a RLS)</td></tr>
+  <tr><td>service_role / secret key</td><td><code>SB_SERVICE</code></td><td><span class="tag s">SECRET</span></td></tr>
+  <tr><td>Senha do banco</td><td><code>SB_DB_PASSWORD</code></td><td><span class="tag s">SECRET</span></td></tr>
+  <tr><td>Access token pessoal</td><td><code>SB_ACCESS_TOKEN</code></td><td><span class="tag s">SECRET</span></td></tr>
+</table>
+
+<h3>2.2 PostHog (5 projetos, um por dupla de apps)</h3>
+<table>
+  <tr><th>Projeto</th><th>Apps</th><th>Project ID</th><th>Project key no terminal</th></tr>
+  <tr><td>Consumidor</td><td>web + mobile</td><td><code>591092</code></td><td><code>PH_KEY_CONSUMIDOR</code></td></tr>
+  <tr><td>Dono do bar</td><td>web-client + mobile-client</td><td><code>591110</code></td><td><code>PH_KEY_DONO</code></td></tr>
+  <tr><td>Artistas</td><td>web-artists</td><td><code>591111</code></td><td><code>PH_KEY_ARTISTAS</code></td></tr>
+  <tr><td>Administrador</td><td>admin</td><td><code>591113</code></td><td><code>PH_KEY_ADMIN</code></td></tr>
+  <tr><td>Landing</td><td>landing</td><td><code>591114</code></td><td><code>PH_KEY_LANDING</code></td></tr>
+</table>
+<ol class="steps">
+  <li>Em <code>https://us.posthog.com</code>, abra cada projeto. Em <strong>Settings → Project → General</strong>, copie a <em>Project API key</em> (começa com <code>phc_</code>). Ela é pública por design.</li>
+  <li>Confirme a região. US: <code>https://us.i.posthog.com</code> (ingestão) e <code>https://us.posthog.com</code> (API). UE: troque <code>us</code> por <code>eu</code>.</li>
+  <li>Crie a chave de <strong>upload</strong>: avatar → <strong>Settings → Personal API keys → Create</strong>. Nome <code>agenda-build-upload</code>. Escopo nos 5 projetos. Permissões de escrita de Error tracking / source maps / symbol sets e leitura de project. Variável: <code>PH_UPLOAD_KEY</code> <span class="tag s">SECRET</span>.</li>
+  <li>Crie a chave de <strong>provisionamento</strong>: nome <code>agenda-setup-script</code>, escopo nos 5 projetos. Permissões read e write em <code>insight</code>, <code>dashboard</code>, <code>alert</code>, <code>hog_function</code> e <code>project</code>. Variável: <code>PH_SETUP_KEY</code> <span class="tag s">SECRET</span>. Ela é usada só no passo 11.</li>
+</ol>
+<div class="box warn"><strong>CUIDADO</strong>A chave pessoal aparece uma única vez. Se o primeiro upload falhar com 403, edite a chave e adicione o escopo que a mensagem de erro citar.</div>
+
+<h3>2.3 Cloudflare R2 (bucket do OTA)</h3>
+<ol class="steps">
+  <li>Em <code>https://dash.cloudflare.com</code>, copie o <em>Account ID</em> (barra lateral da conta). Variável: <code>R2_ACCOUNT</code>.</li>
+  <li><strong>R2 → Create bucket</strong>: nome <code>agenda-ota</code>. Se já existir, mantenha.</li>
+  <li>No bucket: <strong>Settings → Public access</strong>. Conecte um domínio próprio (recomendado) ou habilite a URL <code>r2.dev</code>. Copie a URL pública, sem barra no fim. Variável: <code>R2_PUBLIC_URL</code>.</li>
+  <li><strong>R2 → Manage API tokens → Create API token</strong>: permissão <em>Object Read &amp; Write</em>, restrita ao bucket <code>agenda-ota</code>. Copie o <em>Access Key ID</em> (<code>R2_KEY_ID</code>) e o <em>Secret Access Key</em> (<code>R2_SECRET</code> <span class="tag s">SECRET</span>).</li>
+</ol>
+
+<h3>2.4 Google Maps (só app mobile do consumidor)</h3>
+<ol class="steps">
+  <li>Em <code>https://console.cloud.google.com</code>: <strong>APIs &amp; Services → Credentials → Create credentials → API key</strong>.</li>
+  <li>Crie uma chave para iOS (restrição: <em>iOS apps</em>, bundle do app) e uma para Android (restrição: <em>Android apps</em>, pacote + SHA-1 do certificado de upload).</li>
+  <li>Habilite <em>Maps SDK for iOS</em> e <em>Maps SDK for Android</em>.</li>
+  <li>Variáveis: <code>GMAPS_IOS</code> e <code>GMAPS_ANDROID</code>.</li>
+</ol>
+
+<h3>2.5 Expo / EAS</h3>
+<ol class="steps">
+  <li>Em <code>https://expo.dev</code>: <strong>Account settings → Access tokens → Create token</strong>, nome <code>github-actions</code>. Variável: <code>EXPO_TOKEN_VALUE</code> <span class="tag s">SECRET</span>.</li>
+  <li>Os IDs de projeto EAS já ficam fixos no código: <code>apps/mobile/app.config.ts</code> (<code>14d06c33-…</code>) e <code>apps/mobile-client/app.config.ts</code> (<code>05db6b05-…</code>). Se um projeto EAS for recriado, troque o <code>extra.eas.projectId</code> no arquivo e commite.</li>
+</ol>
+
+<h3>2.6 App Store Connect</h3>
+<ol class="steps">
+  <li>Em <code>https://appstoreconnect.apple.com</code> → <strong>Apps</strong>: abra cada app → <strong>App Information</strong> → copie o <em>Apple ID</em> numérico.</li>
+  <li>Variáveis: <code>ASC_ID_CONSUMIDOR</code> (app consumidor) e <code>ASC_ID_DONO</code> (app do dono do bar).</li>
+</ol>
+
+<h3>2.7 URLs públicas</h3>
+<table>
+  <tr><th>Variável no terminal</th><th>Valor esperado</th></tr>
+  <tr><td><code>SITE_URL</code></td><td>Domínio da landing, ex. <code>https://agendadeboteco.com</code></td></tr>
+  <tr><td><code>WEB_URL</code></td><td><code>$SITE_URL/app</code> (web pública do consumidor)</td></tr>
+  <tr><td><code>OTA_MANIFEST_URL</code></td><td><code>$SB_URL/functions/v1/ota-manifest</code></td></tr>
+</table>
+
+<!-- 3 -->
+<h2>3. Gerar o par de chaves de assinatura do OTA</h2>
+<div class="box danger">
+  <strong>ATENÇÃO — chave nova invalida os binários instalados</strong>
+  O <code>certificate.pem</code> fica embutido no binário dos apps. Com uma chave nova, os apps já instalados <strong>rejeitam</strong> os próximos updates OTA, e é preciso um build nativo novo em todos os canais. Se a chave antiga estiver no gerenciador de senhas, pule este passo e use <code>OTA_KEY_FILE</code> apontando para ela.
+</div>
+<ol class="steps">
+  <li>Gere o par fora do repo:</li>
+</ol>
+<div class="code"><pre>rm -rf ~/agenda-ota-keys ~/agenda-ota-cert && mkdir -p ~/agenda-ota-keys ~/agenda-ota-cert
+(cd apps/mobile && npx expo-updates codesigning:generate \
+  --key-output-directory ~/agenda-ota-keys \
+  --certificate-output-directory ~/agenda-ota-cert \
+  --certificate-validity-duration-years 10 \
+  --certificate-common-name "Agenda de Boteco")
+cp ~/agenda-ota-cert/certificate.pem apps/mobile/certs/certificate.pem
+cp ~/agenda-ota-cert/certificate.pem apps/mobile-client/certs/certificate.pem
+rm -rf ~/agenda-ota-cert && ls ~/agenda-ota-keys</pre></div>
+<p>As pastas de saída precisam estar vazias (o gerador recusa sobrescrever). Por isso o certificado sai numa pasta temporária e depois é copiado para os dois apps.</p>
+<ol class="steps" start="2">
+  <li>Guarde <code>~/agenda-ota-keys/private-key.pem</code> no gerenciador de senhas e apague a pasta no fim do passo 10.</li>
+  <li>Commite os dois <code>certificate.pem</code> novos (é chave pública, pode ir para o git):</li>
+</ol>
+<div class="code"><pre>git add apps/mobile/certs/certificate.pem apps/mobile-client/certs/certificate.pem
+git commit -m "Rotate OTA code signing certificate"</pre></div>
+
+<!-- 4 -->
+<h2>4. Carregar os valores no terminal</h2>
+<p>Cole o bloco abaixo, substitua cada <code>COLE_AQUI</code> pelo valor do passo 2 e pressione Enter. Os passos 5 a 8 leem estas variáveis.</p>
+<div class="code"><pre># --- Supabase ---
+export SB_REF="COLE_AQUI"
+export SB_URL="https://${SB_REF}.supabase.co"
+export SB_ANON="COLE_AQUI"
+export SB_SERVICE="COLE_AQUI"
+export SB_DB_PASSWORD="COLE_AQUI"
+export SB_ACCESS_TOKEN="COLE_AQUI"
+
+# --- PostHog ---
+export PH_INGEST_HOST="https://us.i.posthog.com"
+export PH_API_HOST="https://us.posthog.com"
+export PH_KEY_CONSUMIDOR="COLE_AQUI"
+export PH_KEY_DONO="COLE_AQUI"
+export PH_KEY_ARTISTAS="COLE_AQUI"
+export PH_KEY_ADMIN="COLE_AQUI"
+export PH_KEY_LANDING="COLE_AQUI"
+export PH_UPLOAD_KEY="COLE_AQUI"
+
+# --- Cloudflare R2 ---
+export R2_ACCOUNT="COLE_AQUI"
+export R2_KEY_ID="COLE_AQUI"
+export R2_SECRET="COLE_AQUI"
+export R2_BUCKET_NAME="agenda-ota"
+export R2_PUBLIC_URL="COLE_AQUI"
+
+# --- OTA ---
+export OTA_KEY_FILE="$HOME/agenda-ota-keys/private-key.pem"
+export OTA_MANIFEST_URL="${SB_URL}/functions/v1/ota-manifest"
+
+# --- Google Maps (app consumidor) ---
+export GMAPS_IOS="COLE_AQUI"
+export GMAPS_ANDROID="COLE_AQUI"
+
+# --- Expo e Apple ---
+export EXPO_TOKEN_VALUE="COLE_AQUI"
+export ASC_ID_CONSUMIDOR="COLE_AQUI"
+export ASC_ID_DONO="COLE_AQUI"
+
+# --- URLs públicas ---
+export SITE_URL="https://agendadeboteco.com"
+export WEB_URL="${SITE_URL}/app"</pre></div>
+<p>Confira que nada ficou vazio ou com <code>COLE_AQUI</code>. O comando abaixo só imprime os nomes, nunca os valores:</p>
+<div class="code"><pre>for v in SB_REF SB_ANON SB_SERVICE SB_DB_PASSWORD SB_ACCESS_TOKEN PH_KEY_CONSUMIDOR PH_KEY_DONO PH_KEY_ARTISTAS PH_KEY_ADMIN PH_KEY_LANDING PH_UPLOAD_KEY R2_ACCOUNT R2_KEY_ID R2_SECRET R2_PUBLIC_URL GMAPS_IOS GMAPS_ANDROID EXPO_TOKEN_VALUE ASC_ID_CONSUMIDOR ASC_ID_DONO; do
+  val="${(P)v}"; { [ -z "$val" ] || [ "$val" = "COLE_AQUI" ]; } && echo "FALTA: $v"
+done; [ -f "$OTA_KEY_FILE" ] || echo "FALTA: arquivo $OTA_KEY_FILE"; echo "checagem concluída"</pre></div>
+
+<!-- 5 -->
+<h2>5. Supabase — segredos das Edge Functions</h2>
+<p>As funções <code>ota-manifest</code> e <code>send-push</code> leem <code>SUPABASE_URL</code> e <code>SUPABASE_SERVICE_ROLE_KEY</code>, que o Supabase injeta sozinho. Cadastre só os 2 segredos do OTA:</p>
+<div class="code"><pre>supabase secrets set --project-ref "$SB_REF" \
+  OTA_PUBLIC_BASE_URL="$R2_PUBLIC_URL" \
+  OTA_PRIVATE_KEY="$(cat "$OTA_KEY_FILE")"</pre></div>
+<p>Publique as funções, se o projeto for novo:</p>
+<div class="code"><pre>supabase link --project-ref "$SB_REF"
+supabase functions deploy ota-manifest --project-ref "$SB_REF"
+supabase functions deploy send-push --project-ref "$SB_REF"</pre></div>
+
+<!-- 6 -->
+<h2>6. GitHub Actions — secrets e variables</h2>
+<p>Usados pelos workflows <code>deploy.yml</code> e <code>ota-gc.yml</code>.</p>
+<div class="code"><pre>REPO="InovacodeDev/agenda-de-boteco"
+
+# Secrets
+gh secret set EXPO_TOKEN                --repo "$REPO" --body "$EXPO_TOKEN_VALUE"
+gh secret set SUPABASE_URL              --repo "$REPO" --body "$SB_URL"
+gh secret set SUPABASE_SERVICE_ROLE_KEY --repo "$REPO" --body "$SB_SERVICE"
+gh secret set SUPABASE_ACCESS_TOKEN     --repo "$REPO" --body "$SB_ACCESS_TOKEN"
+gh secret set SUPABASE_DB_PASSWORD      --repo "$REPO" --body "$SB_DB_PASSWORD"
+gh secret set R2_ACCOUNT_ID             --repo "$REPO" --body "$R2_ACCOUNT"
+gh secret set R2_ACCESS_KEY_ID          --repo "$REPO" --body "$R2_KEY_ID"
+gh secret set R2_SECRET_ACCESS_KEY      --repo "$REPO" --body "$R2_SECRET"
+gh secret set POSTHOG_CLI_TOKEN         --repo "$REPO" --body "$PH_UPLOAD_KEY"
+
+# Variables (identificadores públicos)
+gh variable set SUPABASE_PROJECT_REF --repo "$REPO" --body "$SB_REF"
+gh variable set R2_BUCKET            --repo "$REPO" --body "$R2_BUCKET_NAME"
+gh variable set ASC_APP_ID           --repo "$REPO" --body "$ASC_ID_CONSUMIDOR"
+gh variable set ASC_APP_ID_CLIENT    --repo "$REPO" --body "$ASC_ID_DONO"</pre></div>
+<div class="box warn"><strong>CUIDADO</strong>Não crie <code>POSTHOG_CLI_PROJECT_ID</code> nem <code>EAS_PROJECT_ID</code> no GitHub. O ID do PostHog de cada app mobile vem do EAS (o OTA roda dentro de <code>eas env:exec</code>), e o ID do projeto EAS fica fixo no <code>app.config.ts</code>.</div>
+
+<!-- 7 -->
+<h2>7. Vercel — 5 projetos web</h2>
+<p>O caminho mais simples é o painel. Em cada projeto: <strong>Settings → Environment Variables</strong>. O formulário aceita colar um bloco no formato <code>.env</code> inteiro.</p>
+<ol class="steps">
+  <li>Rode o comando do projeto (ele imprime o bloco <code>.env</code> já preenchido com os valores do passo 4).</li>
+  <li>Copie a saída e cole no campo <em>Key</em> da Vercel. Os campos se dividem sozinhos.</li>
+  <li>Marque <strong>Production</strong>, <strong>Preview</strong> e <strong>Development</strong> e salve.</li>
+  <li>Depois cadastre as 2 variáveis de upload <strong>só em Production</strong>, marcadas como <em>Sensitive</em> (bloco "Só Production" de cada projeto).</li>
+  <li>Não crie <code>NEXT_PUBLIC_VERCEL_ENV</code>, <code>VERCEL_ENV</code> nem <code>VERCEL_GIT_COMMIT_SHA</code>. A Vercel preenche essas.</li>
+</ol>
+<div class="box danger"><strong>ATENÇÃO</strong>A saída dos comandos abaixo contém valores reais. Não salve em arquivo, não cole em chat. Depois de colar na Vercel, limpe a tela com <code>clear</code>.</div>
+
+<h3>7.1 <code>web</code> (Consumidor — projeto PostHog 591092)</h3>
+<div class="code"><pre>printf 'NEXT_PUBLIC_SUPABASE_URL=%s\nNEXT_PUBLIC_SUPABASE_ANON_KEY=%s\nNEXT_PUBLIC_POSTHOG_KEY=%s\nNEXT_PUBLIC_POSTHOG_HOST=%s\n' \
+  "$SB_URL" "$SB_ANON" "$PH_KEY_CONSUMIDOR" "$PH_INGEST_HOST"</pre></div>
+<p>Só Production (Sensitive):</p>
+<div class="code"><pre>printf 'POSTHOG_PERSONAL_API_KEY=%s\nPOSTHOG_PROJECT_ID=591092\n' "$PH_UPLOAD_KEY"</pre></div>
+
+<h3>7.2 <code>web-client</code> (Dono do bar — projeto PostHog 591110)</h3>
+<div class="code"><pre>printf 'NEXT_PUBLIC_SUPABASE_URL=%s\nNEXT_PUBLIC_SUPABASE_ANON_KEY=%s\nNEXT_PUBLIC_POSTHOG_KEY=%s\nNEXT_PUBLIC_POSTHOG_HOST=%s\n' \
+  "$SB_URL" "$SB_ANON" "$PH_KEY_DONO" "$PH_INGEST_HOST"</pre></div>
+<p>Só Production (Sensitive):</p>
+<div class="code"><pre>printf 'POSTHOG_PERSONAL_API_KEY=%s\nPOSTHOG_PROJECT_ID=591110\n' "$PH_UPLOAD_KEY"</pre></div>
+
+<h3>7.3 <code>web-artists</code> (Artistas — projeto PostHog 591111)</h3>
+<div class="code"><pre>printf 'NEXT_PUBLIC_SUPABASE_URL=%s\nNEXT_PUBLIC_SUPABASE_ANON_KEY=%s\nNEXT_PUBLIC_SITE_URL=%s\nNEXT_PUBLIC_POSTHOG_KEY=%s\nNEXT_PUBLIC_POSTHOG_HOST=%s\n' \
+  "$SB_URL" "$SB_ANON" "$SITE_URL" "$PH_KEY_ARTISTAS" "$PH_INGEST_HOST"</pre></div>
+<p>Só Production (Sensitive):</p>
+<div class="code"><pre>printf 'POSTHOG_PERSONAL_API_KEY=%s\nPOSTHOG_PROJECT_ID=591111\n' "$PH_UPLOAD_KEY"</pre></div>
+
+<h3>7.4 <code>admin</code> (Administrador — projeto PostHog 591113)</h3>
+<div class="code"><pre>printf 'NEXT_PUBLIC_SUPABASE_URL=%s\nNEXT_PUBLIC_SUPABASE_ANON_KEY=%s\nNEXT_PUBLIC_POSTHOG_KEY=%s\nNEXT_PUBLIC_POSTHOG_HOST=%s\n' \
+  "$SB_URL" "$SB_ANON" "$PH_KEY_ADMIN" "$PH_INGEST_HOST"</pre></div>
+<p>Só Production (Sensitive):</p>
+<div class="code"><pre>printf 'POSTHOG_PERSONAL_API_KEY=%s\nPOSTHOG_PROJECT_ID=591113\n' "$PH_UPLOAD_KEY"</pre></div>
+<div class="box warn"><strong>CUIDADO</strong>O build do admin <strong>falha</strong> na Vercel sem <code>NEXT_PUBLIC_SUPABASE_URL</code>, porque a CSP precisa dessa origem. O mesmo vale para web-client e web-artists.</div>
+
+<h3>7.5 <code>landing</code> (Landing — projeto PostHog 591114)</h3>
+<p>A landing não usa Supabase. Os rewrites de <code>/app</code>, <code>/client</code>, <code>/admin</code> e <code>/artists</code> estão no <code>apps/landing/vercel.json</code>, com as URLs <code>*.vercel.app</code> fixas no arquivo.</p>
+<div class="code"><pre>printf 'NEXT_PUBLIC_SITE_URL=%s\nNEXT_PUBLIC_WEB_URL=%s\nNEXT_PUBLIC_ADMIN_URL=%s\nNEXT_PUBLIC_WEB_CLIENT_URL=%s\nNEXT_PUBLIC_ARTISTS_URL=%s\nNEXT_PUBLIC_POSTHOG_KEY=%s\nNEXT_PUBLIC_POSTHOG_HOST=%s\n' \
+  "$SITE_URL" "$SITE_URL/app" "$SITE_URL/admin" "$SITE_URL/client" "$SITE_URL/artists" "$PH_KEY_LANDING" "$PH_INGEST_HOST"</pre></div>
+<p>Só Production (Sensitive):</p>
+<div class="code"><pre>printf 'POSTHOG_PERSONAL_API_KEY=%s\nPOSTHOG_PROJECT_ID=591114\n' "$PH_UPLOAD_KEY"</pre></div>
+
+<h3>7.6 Redeploy</h3>
+<p>Variável nova só vale no próximo deploy. Em cada projeto: <strong>Deployments → último deploy de Production → ⋯ → Redeploy</strong> (desmarque o cache de build).</p>
+
+<!-- 8 -->
+<h2>8. EAS — 2 apps mobile</h2>
+<p>Cada app tem 3 environments: <code>development</code>, <code>preview</code> (canais <code>alfa</code> e <code>beta</code>) e <code>production</code> (lojas). Visibilidade: <code>plaintext</code> para <code>EXPO_PUBLIC_*</code>, que é embutida no app; <code>sensitive</code> para chaves de mapa; <code>secret</code> para chave de upload.</p>
+<p>Primeiro, defina a função auxiliar (só existe neste terminal):</p>
+<div class="code"><pre>easenv() {
+  local vis="$1" name="$2" value="$3"; shift 3
+  for env in "$@"; do
+    eas env:create --environment "$env" --name "$name" --value "$value" \
+      --visibility "$vis" --non-interactive --force &gt;/dev/null \
+      && echo "ok  $name ($env)" || echo "ERRO $name ($env)"
+  done
+}</pre></div>
+
+<h3>8.1 <code>apps/mobile</code> (Consumidor — PostHog 591092)</h3>
+<div class="code"><pre>cd apps/mobile
+easenv plaintext EXPO_PUBLIC_SUPABASE_URL       "$SB_URL"            development preview production
+easenv plaintext EXPO_PUBLIC_SUPABASE_ANON_KEY  "$SB_ANON"           development preview production
+easenv plaintext EXPO_PUBLIC_POSTHOG_KEY        "$PH_KEY_CONSUMIDOR" development preview production
+easenv plaintext EXPO_PUBLIC_POSTHOG_HOST       "$PH_INGEST_HOST"    development preview production
+easenv plaintext EXPO_PUBLIC_SHARE_BASE_URL     "$SITE_URL"          development preview production
+easenv plaintext EXPO_PUBLIC_OTA_MANIFEST_URL   "$OTA_MANIFEST_URL"  preview production
+easenv sensitive GOOGLE_MAPS_API_KEY_IOS        "$GMAPS_IOS"         development preview production
+easenv sensitive GOOGLE_MAPS_API_KEY_ANDROID    "$GMAPS_ANDROID"     development preview production
+easenv secret    POSTHOG_CLI_API_KEY            "$PH_UPLOAD_KEY"     preview production
+easenv plaintext POSTHOG_CLI_PROJECT_ID         "591092"             preview production
+easenv plaintext POSTHOG_CLI_HOST               "$PH_API_HOST"       preview production
+cd ../..</pre></div>
+<div class="box info"><strong>Sobre o EXPO_PUBLIC_SHARE_BASE_URL</strong>Sem ele, o app gera deep links de scheme (<code>agenda-de-boteco://</code>). Com ele, gera URLs web. Os Universal/App Links ainda estão no backlog. Se ainda não quiser URL web, pule esta linha.</div>
+
+<h3>8.2 <code>apps/mobile-client</code> (Dono do bar — PostHog 591110)</h3>
+<div class="code"><pre>cd apps/mobile-client
+easenv plaintext EXPO_PUBLIC_SUPABASE_URL       "$SB_URL"           development preview production
+easenv plaintext EXPO_PUBLIC_SUPABASE_ANON_KEY  "$SB_ANON"          development preview production
+easenv plaintext EXPO_PUBLIC_POSTHOG_KEY        "$PH_KEY_DONO"      development preview production
+easenv plaintext EXPO_PUBLIC_POSTHOG_HOST       "$PH_INGEST_HOST"   development preview production
+easenv plaintext EXPO_PUBLIC_WEB_URL            "$WEB_URL"          development preview production
+easenv plaintext EXPO_PUBLIC_OTA_MANIFEST_URL   "$OTA_MANIFEST_URL" preview production
+easenv secret    POSTHOG_CLI_API_KEY            "$PH_UPLOAD_KEY"    preview production
+easenv plaintext POSTHOG_CLI_PROJECT_ID         "591110"            preview production
+easenv plaintext POSTHOG_CLI_HOST               "$PH_API_HOST"      preview production
+cd ../..</pre></div>
+<div class="box warn"><strong>CUIDADO</strong>Nos perfis de loja (<code>preview</code>, <code>alfa</code>, <code>beta</code>, <code>production</code>), o <code>app.config.ts</code> <strong>falha o build</strong> sem <code>EXPO_PUBLIC_OTA_MANIFEST_URL</code>. No app consumidor, falha também sem as duas chaves do Google Maps.</div>
+
+<h3>8.3 Credenciais de assinatura</h3>
+<p>Keystore Android, certificados iOS e chave da App Store Connect não são variáveis de ambiente: ficam nos servidores do EAS. Em projeto novo, rode uma vez em cada app e siga o assistente:</p>
+<div class="code"><pre>cd apps/mobile && eas credentials && cd ../..
+cd apps/mobile-client && eas credentials && cd ../..</pre></div>
+
+<!-- 9 -->
+<h2>9. Desenvolvimento local (<code>.env.local</code>)</h2>
+<p>Para rodar local contra o Supabase local (<code>supabase start</code>), os <code>.env.example</code> já trazem os valores padrão. Copie cada um:</p>
+<div class="code"><pre>for app in web web-client admin web-artists landing; do
+  [ -f "apps/$app/.env.local" ] || cp "apps/$app/.env.example" "apps/$app/.env.local"
+done
+for app in mobile mobile-client; do
+  [ -f "apps/$app/.env" ] || cp "apps/$app/.env.example" "apps/$app/.env"
+done</pre></div>
+<ol class="steps">
+  <li>Os comandos não sobrescrevem arquivo existente.</li>
+  <li>Abra cada arquivo no editor e preencha as chaves do PostHog <strong>do projeto de dev</strong>, se usar um. Sem key, o analytics vira no-op.</li>
+  <li>No mobile em aparelho físico, defina <code>EXPO_PUBLIC_DEV_HOST_IP</code> com o IP da sua máquina na rede local.</li>
+  <li>Nunca commite <code>.env</code> nem <code>.env.local</code>. O <code>.gitignore</code> já bloqueia.</li>
+</ol>
+
+<!-- 10 -->
+<h2>10. Verificar tudo</h2>
+<p>Os comandos listam só nomes, sem valores.</p>
+<div class="code"><pre>gh secret list   --repo InovacodeDev/agenda-de-boteco
+gh variable list --repo InovacodeDev/agenda-de-boteco
+supabase secrets list --project-ref "$SB_REF"
+(cd apps/mobile        &amp;&amp; eas env:list --environment preview &amp;&amp; eas env:list --environment production)
+(cd apps/mobile-client &amp;&amp; eas env:list --environment preview &amp;&amp; eas env:list --environment production)</pre></div>
+<p>Teste do manifesto OTA. Espera HTTP <code>204</code> (nenhum update publicado) ou <code>200</code>. <code>500</code> com <code>misconfigured</code> indica falta de segredo do passo 5.</p>
+<div class="code"><pre>curl -s -w "\nHTTP %{http_code}\n" \
+  -H "expo-protocol-version: 1" -H "expo-platform: android" \
+  -H "expo-runtime-version: teste" -H "expo-channel-name: alfa" \
+  -H "x-app-slug: agenda-de-boteco" "$OTA_MANIFEST_URL"</pre></div>
+<p>Teste do config mobile com o plugin de símbolos:</p>
+<div class="code"><pre>(cd apps/mobile-client &amp;&amp; eas env:exec preview -- npx expo config --type public | grep -A3 posthog-react-native)</pre></div>
+<p>Ao terminar, limpe o terminal e apague a cópia local da chave do OTA (ela já está no gerenciador de senhas):</p>
+<div class="code"><pre>rm -rf ~/agenda-ota-keys
+unset SB_SERVICE SB_DB_PASSWORD SB_ACCESS_TOKEN PH_UPLOAD_KEY R2_SECRET EXPO_TOKEN_VALUE GMAPS_IOS GMAPS_ANDROID
+clear</pre></div>
+
+<!-- 11 -->
+<h2>11. Provisionar o PostHog (script)</h2>
+<p>O script cria, em cada projeto: 9 insights, o dashboard <code>[Agenda] Saúde de erros</code>, 5 alertas, os destinos de Error Tracking (opcionais) e o Session Replay. Ele é idempotente. Rode primeiro em dry-run.</p>
+<div class="code"><pre>export POSTHOG_PERSONAL_API_KEY="COLE_A_PH_SETUP_KEY"
+export POSTHOG_HOST="https://us.posthog.com"
+# opcional: export POSTHOG_ALERT_WEBHOOK_URL="https://hooks.slack.com/..."
+# opcional: export POSTHOG_ALERT_USER_EMAILS="voce@inovacode.dev"
+
+for id in 591092 591110 591111 591113 591114; do POSTHOG_PROJECT_ID=$id pnpm posthog:setup; done</pre></div>
+<p>Se o plano estiver certo, aplique:</p>
+<div class="code"><pre>for id in 591092 591110 591111 591113 591114; do POSTHOG_PROJECT_ID=$id pnpm posthog:setup --apply; done
+unset POSTHOG_PERSONAL_API_KEY POSTHOG_ALERT_WEBHOOK_URL POSTHOG_ALERT_USER_EMAILS</pre></div>
+
+<!-- 12 -->
+<h2>12. Apêndice — inventário completo</h2>
+<h3>12.1 Por destino</h3>
+<table>
+  <tr><th>Variável</th><th>Onde</th><th>Quem usa</th><th>Tipo</th></tr>
+  <tr><td><code>NEXT_PUBLIC_SUPABASE_URL</code></td><td>Vercel: web, web-client, admin, web-artists</td><td>client Supabase + CSP</td><td>pública</td></tr>
+  <tr><td><code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code></td><td>Vercel: web, web-client, admin, web-artists</td><td>client Supabase</td><td>pública</td></tr>
+  <tr><td><code>NEXT_PUBLIC_POSTHOG_KEY</code></td><td>Vercel: os 5</td><td>posthog-js</td><td>pública (por projeto)</td></tr>
+  <tr><td><code>NEXT_PUBLIC_POSTHOG_HOST</code></td><td>Vercel: os 5</td><td>rewrite <code>/ingest</code> + <code>ui_host</code></td><td>pública</td></tr>
+  <tr><td><code>NEXT_PUBLIC_SITE_URL</code></td><td>Vercel: landing, web-artists</td><td>metadata/links</td><td>pública</td></tr>
+  <tr><td><code>NEXT_PUBLIC_WEB_URL</code>, <code>_ADMIN_URL</code>, <code>_WEB_CLIENT_URL</code>, <code>_ARTISTS_URL</code></td><td>Vercel: landing</td><td>links da landing</td><td>pública</td></tr>
+  <tr><td><code>POSTHOG_PERSONAL_API_KEY</code></td><td>Vercel: os 5, só Production</td><td><code>@posthog/nextjs-config</code></td><td><span class="tag s">SECRET</span></td></tr>
+  <tr><td><code>POSTHOG_PROJECT_ID</code></td><td>Vercel: os 5, só Production</td><td><code>@posthog/nextjs-config</code></td><td>build</td></tr>
+  <tr><td><code>EXPO_PUBLIC_SUPABASE_URL</code> / <code>_ANON_KEY</code></td><td>EAS: os 2</td><td>client Supabase</td><td>pública</td></tr>
+  <tr><td><code>EXPO_PUBLIC_POSTHOG_KEY</code> / <code>_HOST</code></td><td>EAS: os 2</td><td>posthog-react-native</td><td>pública (por projeto)</td></tr>
+  <tr><td><code>EXPO_PUBLIC_OTA_MANIFEST_URL</code></td><td>EAS: os 2 (preview, production)</td><td><code>expo-updates</code></td><td>pública, obrigatória em loja</td></tr>
+  <tr><td><code>EXPO_PUBLIC_SHARE_BASE_URL</code></td><td>EAS: mobile</td><td>links de compartilhar</td><td>pública, opcional</td></tr>
+  <tr><td><code>EXPO_PUBLIC_WEB_URL</code></td><td>EAS: mobile-client</td><td>abrir página do evento</td><td>pública</td></tr>
+  <tr><td><code>GOOGLE_MAPS_API_KEY_IOS</code> / <code>_ANDROID</code></td><td>EAS: mobile</td><td><code>react-native-maps</code></td><td>sensitive, obrigatória em loja</td></tr>
+  <tr><td><code>POSTHOG_CLI_API_KEY</code></td><td>EAS: os 2 (preview, production)</td><td>upload de símbolos + OTA</td><td><span class="tag s">SECRET</span></td></tr>
+  <tr><td><code>POSTHOG_CLI_PROJECT_ID</code></td><td>EAS: os 2 (591092 / 591110)</td><td>upload de símbolos + OTA</td><td>build</td></tr>
+  <tr><td><code>POSTHOG_CLI_HOST</code></td><td>EAS: os 2</td><td>upload de símbolos</td><td>build, opcional (padrão US)</td></tr>
+  <tr><td><code>OTA_PUBLIC_BASE_URL</code></td><td>Supabase secrets</td><td>Edge Function <code>ota-manifest</code></td><td>pública</td></tr>
+  <tr><td><code>OTA_PRIVATE_KEY</code></td><td>Supabase secrets</td><td>assinatura do manifesto</td><td><span class="tag s">SECRET</span></td></tr>
+  <tr><td><code>EXPO_TOKEN</code></td><td>GitHub secret</td><td><code>deploy.yml</code> (EAS)</td><td><span class="tag s">SECRET</span></td></tr>
+  <tr><td><code>SUPABASE_URL</code> / <code>SUPABASE_SERVICE_ROLE_KEY</code></td><td>GitHub secret</td><td>publish/prune do OTA</td><td><span class="tag s">SECRET</span></td></tr>
+  <tr><td><code>SUPABASE_ACCESS_TOKEN</code> / <code>SUPABASE_DB_PASSWORD</code></td><td>GitHub secret</td><td><code>supabase db push</code></td><td><span class="tag s">SECRET</span></td></tr>
+  <tr><td><code>R2_ACCOUNT_ID</code> / <code>R2_ACCESS_KEY_ID</code> / <code>R2_SECRET_ACCESS_KEY</code></td><td>GitHub secret</td><td>upload/GC do OTA</td><td><span class="tag s">SECRET</span></td></tr>
+  <tr><td><code>POSTHOG_CLI_TOKEN</code></td><td>GitHub secret</td><td>alias da chave de upload no OTA</td><td><span class="tag s">SECRET</span></td></tr>
+  <tr><td><code>SUPABASE_PROJECT_REF</code></td><td>GitHub variable</td><td><code>supabase link</code></td><td>pública</td></tr>
+  <tr><td><code>R2_BUCKET</code></td><td>GitHub variable</td><td>OTA (padrão <code>agenda-ota</code>)</td><td>pública</td></tr>
+  <tr><td><code>ASC_APP_ID</code> / <code>ASC_APP_ID_CLIENT</code></td><td>GitHub variable</td><td>submit iOS</td><td>pública</td></tr>
+</table>
+
+<h3>12.2 Automáticas — não criar</h3>
+<table>
+  <tr><th>Variável</th><th>Quem preenche</th></tr>
+  <tr><td><code>VERCEL</code>, <code>VERCEL_ENV</code>, <code>NEXT_PUBLIC_VERCEL_ENV</code>, <code>VERCEL_URL</code>, <code>VERCEL_GIT_COMMIT_SHA</code></td><td>Vercel</td></tr>
+  <tr><td><code>EAS_BUILD_PROFILE</code></td><td>EAS Build</td></tr>
+  <tr><td><code>SUPABASE_URL</code>, <code>SUPABASE_SERVICE_ROLE_KEY</code> (dentro das Edge Functions)</td><td>Supabase</td></tr>
+  <tr><td><code>GITHUB_SHA</code>, <code>GITHUB_OUTPUT</code>, <code>RUNNER_TEMP</code>, <code>CI</code></td><td>GitHub Actions</td></tr>
+  <tr><td><code>NODE_ENV</code></td><td>Next/Expo</td></tr>
+</table>
+
+<h3>12.3 Fora de variáveis de ambiente, mas necessário num projeto do zero</h3>
+<ul>
+  <li><strong>Supabase Auth</strong> (painel → Authentication): provedores Google e Apple (client ID e secret), URLs de redirect (<code>/client/login</code>, <code>/app/...</code>, schemes <code>agenda-de-boteco://</code> e <code>agenda-boteco-client://</code>), SMTP e templates de e-mail (<code>supabase/emails/</code>).</li>
+  <li><strong>Supabase banco</strong>: <code>supabase db push</code> aplica as migrações (já roda no <code>deploy.yml</code> em <code>release</code>).</li>
+  <li><strong>Cloudflare R2</strong>: lifecycle do bucket com <code>node scripts/ota/setup-r2-lifecycle.mjs</code> (usa as mesmas <code>R2_*</code>).</li>
+  <li><strong>EAS</strong>: credenciais de assinatura (passo 8.3) e conta de serviço do Google Play para submit.</li>
+  <li><strong>Vercel</strong>: domínio da landing e os nomes <code>agenda-de-boteco-{web,admin,client,artists}.vercel.app</code> usados nos rewrites do <code>apps/landing/vercel.json</code>.</li>
+</ul>
+
+</main>
+<script>
+  document.querySelectorAll('.code').forEach((block) => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.textContent = 'Copiar';
+    button.addEventListener('click', async () => {
+      const text = block.querySelector('pre').innerText;
+      try {
+        await navigator.clipboard.writeText(text);
+      } catch {
+        const area = document.createElement('textarea');
+        area.value = text;
+        document.body.appendChild(area);
+        area.select();
+        document.execCommand('copy');
+        area.remove();
+      }
+      button.textContent = 'Copiado';
+      button.classList.add('ok');
+      setTimeout(() => { button.textContent = 'Copiar'; button.classList.remove('ok'); }, 1500);
+    });
+    block.appendChild(button);
+  });
+</script>
+</body>
+</html>

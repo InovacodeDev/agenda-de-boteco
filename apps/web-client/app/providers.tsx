@@ -8,7 +8,10 @@ import {
   configureSupabase,
   createPostHogBrowserAdapter,
   logErrorToTerminal,
+  postHogUiHost,
   queryClient,
+  registerAnalyticsContext,
+  subscribeAnalyticsIdentity,
   subscribeToCatalogChanges,
   trackPageview,
   useAuthStore,
@@ -22,6 +25,8 @@ import { useEffect } from 'react';
 
 import { getSupabase } from '@/lib/supabase';
 
+import { version } from '../package.json';
+
 // Bootstrap dos singletons do core — uma vez, no client, antes da árvore montar.
 let bootstrapped = false;
 function bootstrap() {
@@ -32,9 +37,17 @@ function bootstrap() {
   configureAnalytics(
     createPostHogBrowserAdapter(posthog, {
       apiKey: process.env.NEXT_PUBLIC_POSTHOG_KEY,
-      apiHost: process.env.NEXT_PUBLIC_POSTHOG_HOST,
+      apiHost: '/client/ingest',
+      uiHost: postHogUiHost(process.env.NEXT_PUBLIC_POSTHOG_HOST),
+      basePath: '/client',
     }),
   );
+  registerAnalyticsContext({
+    app_name: '@agenda/web-client',
+    app_version: version,
+    channel: process.env.NEXT_PUBLIC_VERCEL_ENV ?? 'development',
+    platform: 'web',
+  });
   // O painel roda sob basePath /client — o retorno do OAuth/magic link precisa
   // cair em /client/login, não na raiz do domínio (que é o site público).
   configureAuthRedirect(() =>
@@ -53,6 +66,8 @@ function AppSyncBridge() {
   useEffect(() => {
     void initialize();
   }, [initialize]);
+
+  useEffect(() => subscribeAnalyticsIdentity(useAuthStore.getState().user?.id ?? null), []);
 
   useEffect(() => {
     return subscribeToCatalogChanges((keys) => {

@@ -9,7 +9,10 @@ import {
   configureSupabase,
   createPostHogBrowserAdapter,
   createQueryPersister,
+  logErrorToTerminal,
+  postHogUiHost,
   queryClient,
+  registerAnalyticsContext,
   setupOnlineManager,
   shouldDehydrateQuery,
   trackPageview,
@@ -22,8 +25,10 @@ import posthog from 'posthog-js';
 import { useEffect } from 'react';
 
 import { useAppSync } from '@/hooks/useAppSync';
-import { appBaseUrl } from '@/lib/basePath';
+import { appBaseUrl, BASE_PATH } from '@/lib/basePath';
 import { getSupabase } from '@/lib/supabase';
+
+import { version } from '../package.json';
 
 // Bootstrap dos singletons do core — roda uma vez, no client, antes da árvore montar.
 // Como providers.tsx é client component e o módulo avalia no browser, é seguro tocar window.
@@ -37,12 +42,19 @@ function bootstrap() {
   configureAnalytics(
     createPostHogBrowserAdapter(posthog, {
       apiKey: process.env.NEXT_PUBLIC_POSTHOG_KEY,
-      apiHost: process.env.NEXT_PUBLIC_POSTHOG_HOST,
+      apiHost: `${BASE_PATH}/ingest`,
+      uiHost: postHogUiHost(process.env.NEXT_PUBLIC_POSTHOG_HOST),
+      basePath: BASE_PATH,
     }),
   );
+  registerAnalyticsContext({
+    app_name: '@agenda/web',
+    app_version: version,
+    channel: process.env.NEXT_PUBLIC_VERCEL_ENV ?? 'development',
+    platform: 'web',
+  });
   configureQueryErrorHandler((error) => {
-    // Web: por ora console.error; um toast pode ser plugado depois.
-    console.error('[query]', error);
+    logErrorToTerminal(error, { method: 'queryClient' });
   });
 }
 bootstrap();

@@ -137,7 +137,7 @@ async function main() {
         },
       );
 
-      if (process.env.POSTHOG_CLI_TOKEN) {
+      if (process.env.POSTHOG_CLI_API_KEY || process.env.POSTHOG_CLI_TOKEN) {
         execFileSync(
           'npx',
           ['@posthog/cli', 'hermes', 'upload', '--directory', outputRelDir],
@@ -148,7 +148,7 @@ async function main() {
         );
       } else {
         process.stdout.write(
-          `Skipping PostHog source map upload for ${appSlug}/${platform}: POSTHOG_CLI_TOKEN not set.\n`,
+          `Skipping PostHog source map upload for ${appSlug}/${platform}: POSTHOG_CLI_API_KEY/POSTHOG_CLI_TOKEN not set.\n`,
         );
       }
 

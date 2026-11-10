@@ -142,7 +142,7 @@ export async function handleDeepLink(url: string): Promise<boolean> {
       }
       return true;
     } catch (error) {
-      logErrorToTerminal(error, { method: 'auth.handleDeepLink', args: { url } });
+      logErrorToTerminal(error, { method: 'auth.handleDeepLink' });
       return false;
     }
   }

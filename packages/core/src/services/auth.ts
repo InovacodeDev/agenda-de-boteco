@@ -86,7 +86,7 @@ export async function signInWithEmailOtp(email: string): Promise<void> {
       throw error;
     }
   } catch (error) {
-    return handleServiceError(error, { method: 'auth.signInWithEmailOtp', args: { email } });
+    return handleServiceError(error, { method: 'auth.signInWithEmailOtp' });
   }
 }
 
@@ -102,7 +102,7 @@ export async function verifyEmailOtp(email: string, token: string): Promise<void
       throw error;
     }
   } catch (error) {
-    return handleServiceError(error, { method: 'auth.verifyEmailOtp', args: { email, token } });
+    return handleServiceError(error, { method: 'auth.verifyEmailOtp' });
   }
 }
 
@@ -114,8 +114,7 @@ export async function signInWithPassword(email: string, password: string): Promi
       throw error;
     }
   } catch (error) {
-    // ponytail: args sem a senha de propósito — o contexto de erro vai para o log
-    return handleServiceError(error, { method: 'auth.signInWithPassword', args: { email } });
+    return handleServiceError(error, { method: 'auth.signInWithPassword' });
   }
 }
 
@@ -131,7 +130,7 @@ export async function signUpWithPassword(email: string, password: string): Promi
       throw error;
     }
   } catch (error) {
-    return handleServiceError(error, { method: 'auth.signUpWithPassword', args: { email } });
+    return handleServiceError(error, { method: 'auth.signUpWithPassword' });
   }
 }
 
@@ -145,7 +144,7 @@ export async function sendPasswordReset(email: string): Promise<void> {
       throw error;
     }
   } catch (error) {
-    return handleServiceError(error, { method: 'auth.sendPasswordReset', args: { email } });
+    return handleServiceError(error, { method: 'auth.sendPasswordReset' });
   }
 }
 

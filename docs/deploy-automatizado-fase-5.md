@@ -36,7 +36,7 @@ O job `deploy` só roda se o job `verify` (lint + typecheck + test na raiz) pass
 
 ```bash
 pnpm dlx eas-cli@latest login
-pnpm dlx eas-cli@latest init        # cria o projeto; anote o projectId retornado (vira a var EAS_PROJECT_ID)
+pnpm dlx eas-cli@latest init        # cria o projeto; anote o projectId retornado (fixe em extra.eas.projectId no app.config.ts)
 pnpm dlx eas-cli@latest credentials # interativo — configure TUDO abaixo:
 ```
 
@@ -73,10 +73,10 @@ eas env:create --environment production --name EXPO_PUBLIC_SHARE_BASE_URL  --val
 **Settings → Secrets and variables → Actions:**
 
 - [ ] **Secret** `EXPO_TOKEN` — Access Token gerado em expo.dev → Account Settings → Access Tokens. *(único segredo necessário)*
-- [ ] **Variable** `EAS_PROJECT_ID` — o `projectId` do passo 1 (não é segredo; é o `extra.eas.projectId` que o build lê via `process.env`).
+- [ ] `projectId` do passo 1 fixado em `extra.eas.projectId` no `app.config.ts` do app (não é segredo e não é variável de CI; o `eas-cli` local também precisa dele).
 - [ ] **Variable** `ASC_APP_ID` — o Apple ID do app do passo 3 (resolve o `$ASC_APP_ID` do `eas.json`; só usado no submit iOS).
 
-> `EAS_PROJECT_ID` e `ASC_APP_ID` são **Variables** (não Secrets) — são identificadores públicos, não credenciais.
+> `ASC_APP_ID` é **Variable** (não Secret) — é identificador público, não credencial.
 
 ### 5. Validar uma vez antes de confiar no automático
 
@@ -91,7 +91,7 @@ O `eas build --non-interactive` falha se faltar **qualquer** prompt habitual. Tu
 
 | Pré-requisito | Onde | Sem ele |
 | :--- | :--- | :--- |
-| `extra.eas.projectId` resolvível | `EAS_PROJECT_ID` (GitHub var) → `app.config.ts` | build não linka o projeto |
+| `extra.eas.projectId` resolvível | fixo no `app.config.ts` | build não linka o projeto |
 | `usesNonExemptEncryption: false` | `app.config.ts` (já configurado) | iOS trava em "Missing Compliance", não chega ao TestFlight |
 | Cert + Provisioning iOS | EAS Servers (`eas credentials`) | build iOS pede login interativo |
 | Keystore Android | EAS Servers (`eas credentials`) | build Android pede prompt |

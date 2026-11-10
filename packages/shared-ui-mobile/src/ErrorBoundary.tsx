@@ -1,4 +1,4 @@
-import { logErrorToTerminal } from '@agenda/core';
+import { logErrorToTerminal, reportException } from '@agenda/core';
 import { Component, type ErrorInfo, type ReactNode } from 'react';
 
 import { Button } from './Button';
@@ -20,8 +20,12 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     return { hasError: true };
   }
 
-  componentDidCatch(error: Error, _info: ErrorInfo): void {
-    logErrorToTerminal(error, { method: 'ErrorBoundary.componentDidCatch' });
+  componentDidCatch(error: Error, info: ErrorInfo): void {
+    logErrorToTerminal(error, { method: 'ui.errorBoundary' });
+    reportException(error, {
+      method: 'ui.errorBoundary',
+      componentStack: info.componentStack ?? undefined,
+    });
   }
 
   private reset = (): void => {

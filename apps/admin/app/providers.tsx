@@ -7,7 +7,11 @@ import {
   configureQueryErrorHandler,
   configureSupabase,
   createPostHogBrowserAdapter,
+  logErrorToTerminal,
+  postHogUiHost,
   queryClient,
+  registerAnalyticsContext,
+  subscribeAnalyticsIdentity,
   subscribeToCatalogChanges,
   trackPageview,
   useAuthStore,
@@ -20,6 +24,8 @@ import { useEffect } from 'react';
 
 import { getSupabase } from '@/lib/supabase';
 
+import { version } from '../package.json';
+
 // Bootstrap dos singletons do core — uma vez, no client, antes da árvore montar.
 let bootstrapped = false;
 function bootstrap() {
@@ -30,12 +36,20 @@ function bootstrap() {
   configureAnalytics(
     createPostHogBrowserAdapter(posthog, {
       apiKey: process.env.NEXT_PUBLIC_POSTHOG_KEY,
-      apiHost: process.env.NEXT_PUBLIC_POSTHOG_HOST,
+      apiHost: '/admin/ingest',
+      uiHost: postHogUiHost(process.env.NEXT_PUBLIC_POSTHOG_HOST),
+      basePath: '/admin',
     }),
   );
+  registerAnalyticsContext({
+    app_name: '@agenda/admin',
+    app_version: version,
+    channel: process.env.NEXT_PUBLIC_VERCEL_ENV ?? 'development',
+    platform: 'web',
+  });
   configureAuthRedirect(() => (typeof window !== 'undefined' ? window.location.origin : ''));
   configureQueryErrorHandler((error) => {
-    console.error('[query]', error);
+    logErrorToTerminal(error, { method: 'queryClient' });
   });
 }
 bootstrap();
@@ -47,6 +61,8 @@ function AppSyncBridge() {
   useEffect(() => {
     void initialize();
   }, [initialize]);
+
+  useEffect(() => subscribeAnalyticsIdentity(useAuthStore.getState().user?.id ?? null), []);
 
   useEffect(() => {
     return subscribeToCatalogChanges((keys) => {

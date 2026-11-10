@@ -14,10 +14,11 @@ import { z } from 'zod';
 
 import { ESTABLISHMENTS } from '../data';
 import type { EstablishmentAttribute } from '../schemas';
-import { establishmentSchema, menuItemSchema } from '../schemas';
+import { establishmentSchema } from '../schemas';
 import { getConfiguredSupabase } from '../supabase/client';
 import { handleServiceError } from '../utils/errors';
 import { haversineDistanceKm } from '../utils/geo';
+import { mapRowsLenient } from '../utils/schema-drift';
 
 export const nearbyEstablishmentSchema = establishmentSchema.extend({
   distance_km: z.number().nonnegative(),
@@ -46,7 +47,7 @@ function assertValidCoordinates(lat: number, lng: number): void {
     lng >= -180 &&
     lng <= 180;
   if (!valid) {
-    throw new Error(`Coordenada inválida: lat=${lat}, lng=${lng}`);
+    throw new Error('Coordenada inválida');
   }
 }
 
@@ -101,7 +102,7 @@ function mapRow(row: NearbyRow): unknown {
     whatsapp: row.whatsapp,
     instagram: nullToUndefined(row.instagram),
     opening_hours: row.opening_hours,
-    menu_items: menuItemSchema.array().parse(row.menu_items ?? []),
+    menu_items: row.menu_items ?? [],
     price_range: row.price_range,
     ambiance: row.ambiance,
     rating_avg: row.rating_avg,
@@ -154,11 +155,14 @@ export async function listNearbyEstablishments(
     if (error) throw error;
 
     const rows = (data ?? []) as NearbyRow[];
-    return nearbyListSchema.parse(rows.map(mapRow));
+    return mapRowsLenient(rows, (row) => nearbyEstablishmentSchema.parse(mapRow(row)), {
+      table: 'nearby_establishments',
+      idOf: (row) => row.external_id ?? row.id,
+    });
   } catch (error) {
     return handleServiceError(error, {
       method: 'proximity.listNearbyEstablishments',
-      args: params as unknown as Record<string, unknown>,
+      args: { radiusKm: params.radiusKm, limit: params.limit },
     });
   }
 }

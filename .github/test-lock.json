@@ -36,6 +36,16 @@
       "lockedAt": "2026-11-07",
       "reason": "new test file"
     },
+    "apps/mobile-client/src/lib/analytics.errors.test.ts": {
+      "sha256": "d0d7fe4cc05401383e174370d8effd6f49b5aa72a502a658c3b32b1a37ffc7f6",
+      "lockedAt": "2026-11-09",
+      "reason": "Enable native crash autocapture (PostHog 2.2 Task 4)"
+    },
+    "apps/mobile-client/src/lib/analytics.native-crash.test.ts": {
+      "sha256": "e71af22030856fcce60bbf5433794a805d80874838ecade18d62e7bde9ccc4a7",
+      "lockedAt": "2026-11-09",
+      "reason": "new test file"
+    },
     "apps/mobile-client/src/lib/analytics.test.ts": {
       "sha256": "f7eafe33752c4c3853e93249157592dacb6a2870bee0b11363966d94ca119219",
       "lockedAt": "2026-11-07",
@@ -94,6 +104,16 @@
     "apps/mobile/src/hooks/useResponsive.test.ts": {
       "sha256": "774cc4468da7e4e6224d5a9e6cd38956c067bec74e2e6aa1cc1b9797d5504f32",
       "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "apps/mobile/src/lib/analytics.errors.test.ts": {
+      "sha256": "994271de1634432ab1e301aadd5ca08ea85c0552d4750d904fb0af29ef78af5d",
+      "lockedAt": "2026-11-09",
+      "reason": "Enable native crash autocapture (PostHog 2.2 Task 4)"
+    },
+    "apps/mobile/src/lib/analytics.native-crash.test.ts": {
+      "sha256": "e71af22030856fcce60bbf5433794a805d80874838ecade18d62e7bde9ccc4a7",
+      "lockedAt": "2026-11-09",
       "reason": "new test file"
     },
     "apps/mobile/src/lib/analytics.test.ts": {
@@ -221,6 +241,11 @@
       "lockedAt": "2026-11-07",
       "reason": "new test file"
     },
+    "packages/core/src/lib/queryClient.report.test.ts": {
+      "sha256": "39845d771ee6e440c6dfe10bee1f6a25a67cb3a298d3c103b6f09823ed2689e8",
+      "lockedAt": "2026-11-09",
+      "reason": "new test file"
+    },
     "packages/core/src/lib/queryClient.test.ts": {
       "sha256": "4b3b72a0e580ad9517caf5b12880dab2defbc06a67802b3f104bd1f42460dafd",
       "lockedAt": "2026-11-07",
@@ -234,6 +259,11 @@
     "packages/core/src/queries/catalog.byIds.test.ts": {
       "sha256": "1945bbbeb7e806453ca18c53c56932bf7f654902804458c65e374d419b69b6e8",
       "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/queries/catalog.drift.test.ts": {
+      "sha256": "e92b6e21fde027e941967e6e24f08a711c999a02b9fcee194e1ef0c054e9a3cf",
+      "lockedAt": "2026-11-09",
       "reason": "new test file"
     },
     "packages/core/src/schemas/catalog.ota.contract.test.ts": {
@@ -261,9 +291,44 @@
       "lockedAt": "2026-11-07",
       "reason": "new test file"
     },
+    "packages/core/src/services/analytics-identity.race.test.ts": {
+      "sha256": "f4af8d942b9bedfd72355351384007f6796ddff82f3bb4e068468f0191987c10",
+      "lockedAt": "2026-11-09",
+      "reason": "new test file"
+    },
+    "packages/core/src/services/analytics-identity.test.ts": {
+      "sha256": "ab821195b5ebcf72c57f1da4dad02c8201e90243736b5f6a4cd84ff24e0b81ed",
+      "lockedAt": "2026-11-09",
+      "reason": "new test file"
+    },
+    "packages/core/src/services/analytics-native.context.test.ts": {
+      "sha256": "01214a4fb6cee3dfdaa4a765a7b5955ea1b9287eca361a6ccf90bc406ab14dbc",
+      "lockedAt": "2026-11-09",
+      "reason": "new test file"
+    },
+    "packages/core/src/services/analytics-native.test.ts": {
+      "sha256": "7379a84d24276e26b70fd94dc1298868d6cd8f501852ebbbf8fafd91aa2a81dd",
+      "lockedAt": "2026-11-09",
+      "reason": "new test file"
+    },
+    "packages/core/src/services/analytics.context.test.ts": {
+      "sha256": "9b8744eb01fb2e099370136f2386264dfa4682b244091000428332ccd0eb002b",
+      "lockedAt": "2026-11-09",
+      "reason": "new test file"
+    },
+    "packages/core/src/services/analytics.report.test.ts": {
+      "sha256": "b8a004588f99a503b1be22cd7a2f10edf577afd3be54f5a7b0dd7e4245037730",
+      "lockedAt": "2026-11-09",
+      "reason": "new test file"
+    },
     "packages/core/src/services/analytics.test.ts": {
-      "sha256": "2416a5c28b97192a73059ba89730629bbc0e810c0e830512d53f804bed31ac51",
-      "lockedAt": "2026-11-07",
+      "sha256": "b7296182d80da42dba2421787731a0e0c92ea0bb038d7563e458be9c32b4caf3",
+      "lockedAt": "2026-11-09",
+      "reason": "PostHog browser init gains exception capture, masking and before_send (PostHog 2.1 Task 4)"
+    },
+    "packages/core/src/services/analytics.ui-host.test.ts": {
+      "sha256": "c6c1a89c2bc5f957d0da554a6daddd2db59ff6009aeb8c38953a8607f480dd8b",
+      "lockedAt": "2026-11-09",
       "reason": "new test file"
     },
     "packages/core/src/services/auth.admin.test.ts": {
@@ -271,10 +336,15 @@
       "lockedAt": "2026-11-07",
       "reason": "new test file"
     },
-    "packages/core/src/services/auth.test.ts": {
-      "sha256": "425d26d815138c8822c83446a35737703ee2f10dde2e02f280d7b82e1e381479",
-      "lockedAt": "2026-11-07",
+    "packages/core/src/services/auth.pii.test.ts": {
+      "sha256": "9242dc84b6acff4ec39046884a646e8b627e3778d41ee724d63e151bf444f734",
+      "lockedAt": "2026-11-09",
       "reason": "new test file"
+    },
+    "packages/core/src/services/auth.test.ts": {
+      "sha256": "59b8178b833727feeaba79cb1106a57b8d8ddc1b12ebce19d9eb70d01aa5edb8",
+      "lockedAt": "2026-11-09",
+      "reason": "Remove email PII from handleServiceError args (PostHog 2.1 Task 1)"
     },
     "packages/core/src/services/cachePolicy.test.ts": {
       "sha256": "96421d57551f1aa5be0da5d0b4cd46ed131ef9bb53552a59efad771de73e0fe8",
@@ -316,9 +386,19 @@
       "lockedAt": "2026-11-07",
       "reason": "new test file"
     },
+    "packages/core/src/services/favorites.errors.test.ts": {
+      "sha256": "5014d246142861d9f637f359f63bc75373bb9e0e777daddc1e9627287f43d26e",
+      "lockedAt": "2026-11-09",
+      "reason": "new test file"
+    },
     "packages/core/src/services/favorites.test.ts": {
       "sha256": "aaf9601bb1fc5dde458ad6683c9e6cde0fe76d7ee1199a610ba470e7b72a657f",
       "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/services/metrics.errors.test.ts": {
+      "sha256": "76aebed6b208631e59da5dce53f528db1d7b1e3c177f818f2003022ff4364bba",
+      "lockedAt": "2026-11-09",
       "reason": "new test file"
     },
     "packages/core/src/services/metrics.test.ts": {
@@ -329,6 +409,11 @@
     "packages/core/src/services/moderation.test.ts": {
       "sha256": "5d23d70f25236db3ec37c5ea8ca58c29561d536fbe9e56692b1c0fb5c3e8ede9",
       "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/services/musician-leads.drift.test.ts": {
+      "sha256": "53b28aebf90ccc5704d0ba1d866bf9be21b05ffe8b5bbc31a0423cf635c90b37",
+      "lockedAt": "2026-11-09",
       "reason": "new test file"
     },
     "packages/core/src/services/musician-leads.test.ts": {
@@ -346,6 +431,16 @@
       "lockedAt": "2026-11-07",
       "reason": "new test file"
     },
+    "packages/core/src/services/proximity.drift.test.ts": {
+      "sha256": "4a8afe454858e23a670fb76a8074aed1881c715676cab8a2fd1ae4c3e78c49c7",
+      "lockedAt": "2026-11-09",
+      "reason": "new test file"
+    },
+    "packages/core/src/services/proximity.pii.test.ts": {
+      "sha256": "86dd1561ac0d9437da7dd71381c967467bf8dff0b4211d762910379a683590db",
+      "lockedAt": "2026-11-09",
+      "reason": "new test file"
+    },
     "packages/core/src/services/proximity.test.ts": {
       "sha256": "c6b8eef03cfd036ffb66722f48ae5c2a229e4c09ce3ecea09441263863036b63",
       "lockedAt": "2026-11-07",
@@ -361,6 +456,11 @@
       "lockedAt": "2026-11-07",
       "reason": "new test file"
     },
+    "packages/core/src/services/realtime.degraded.test.ts": {
+      "sha256": "9895eee9cf0a7be27880c858fe42ce27cc5151630d13b4f4d536e811fd3b24f6",
+      "lockedAt": "2026-11-09",
+      "reason": "new test file"
+    },
     "packages/core/src/services/realtime.test.ts": {
       "sha256": "bfddc86535f1a852186e5553486711bd0ad16e9c64f4284fe3d05c3a74d7baa4",
       "lockedAt": "2026-11-07",
@@ -369,6 +469,11 @@
     "packages/core/src/services/storage.contract.test.ts": {
       "sha256": "b3e3da5ac77e5ad8a9bd2513f2078401cdba742e21bcfcb6578eff05983fa857",
       "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/services/storage.errors.test.ts": {
+      "sha256": "eb1c0440c36b258ca1d4e981a1412481a1a9d1ec167feadcc83474af25a60301",
+      "lockedAt": "2026-11-09",
       "reason": "new test file"
     },
     "packages/core/src/services/storage.test.ts": {
@@ -394,6 +499,11 @@
     "packages/core/src/stores/useFavoritesStore.ota.contract.test.ts": {
       "sha256": "8dc43f97cd2cb149d2a1ed2ce9c27fccc1e998de49d4296c9321c93a5a6db265",
       "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/stores/useFavoritesStore.queue.test.ts": {
+      "sha256": "002a113fc8186c90d31506da5763b0924050ae22e8a24ea4342759d5e97bc12e",
+      "lockedAt": "2026-11-09",
       "reason": "new test file"
     },
     "packages/core/src/stores/useFavoritesStore.test.ts": {
@@ -446,9 +556,39 @@
       "lockedAt": "2026-11-07",
       "reason": "new test file"
     },
+    "packages/core/src/utils/error-classify.permanent.test.ts": {
+      "sha256": "8a009d1079b019551b77370ee223c6e0805a1af0ac2fe3e8790f51af2b3e5b01",
+      "lockedAt": "2026-11-09",
+      "reason": "new test file"
+    },
+    "packages/core/src/utils/error-classify.test.ts": {
+      "sha256": "7dfe67439c7e8e2e3b3c93023772e829aa60c01fb8adcddc4360b5d7eb06eecb",
+      "lockedAt": "2026-11-09",
+      "reason": "new test file"
+    },
+    "packages/core/src/utils/error-reporting.autocapture.test.ts": {
+      "sha256": "4834d919aeff2b18bee825bf10d2571f81297ce5a59d41a1ceb5fe3cc35dd3ab",
+      "lockedAt": "2026-11-09",
+      "reason": "new test file"
+    },
+    "packages/core/src/utils/error-reporting.test.ts": {
+      "sha256": "6f63baecdaf86533f348e46fe50c139c4a321db4bf2fe8742c8dfec5a8035aed",
+      "lockedAt": "2026-11-09",
+      "reason": "new test file"
+    },
+    "packages/core/src/utils/errors.classify.test.ts": {
+      "sha256": "9d9ddf08c4e0e377726e1c415e90689bbfa10aa86d2ae32bb0ab84933b4a499e",
+      "lockedAt": "2026-11-09",
+      "reason": "new test file"
+    },
     "packages/core/src/utils/errors.contract.test.ts": {
       "sha256": "fc01f5004e5da190a99d7f04e7856497ce7222256cccc455b3f90e791af53b85",
       "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/utils/errors.report.test.ts": {
+      "sha256": "757c46266b4788a8ba26046ad277b65d3ed0ab04fec9a5dd9c21e757bf0c4075",
+      "lockedAt": "2026-11-09",
       "reason": "new test file"
     },
     "packages/core/src/utils/errors.test.ts": {
@@ -526,6 +666,11 @@
       "lockedAt": "2026-11-07",
       "reason": "new test file"
     },
+    "packages/core/src/utils/posthog-hosts.test.ts": {
+      "sha256": "781ae337ab655be11eb358a0794ca558fdea813665b95c5387f4a725c4ebaf3e",
+      "lockedAt": "2026-11-09",
+      "reason": "new test file"
+    },
     "packages/core/src/utils/pressGuard.test.ts": {
       "sha256": "23b77d1d1ddcd577559dcb1568f98d78e64065c4ac4ac2166652a000c1c5cc46",
       "lockedAt": "2026-11-07",
@@ -534,6 +679,11 @@
     "packages/core/src/utils/responsiveType.test.ts": {
       "sha256": "094f5deff147eac886453a948e5be35a5bcf41e15207e967759c6df14201c7fa",
       "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/utils/schema-drift.test.ts": {
+      "sha256": "1803122404bda6010c34eda2a870beb7a77e2a4cd14c6082d06b093d845f2147",
+      "lockedAt": "2026-11-09",
       "reason": "new test file"
     },
     "packages/core/src/utils/search.test.ts": {
@@ -561,6 +711,11 @@
       "lockedAt": "2026-11-07",
       "reason": "new test file"
     },
+    "packages/shared-ui-mobile/src/ErrorBoundary.test.tsx": {
+      "sha256": "c505965c92f72b702dfc545e8dc0ba4c47557362d9bbab41ac94632ed34ee187",
+      "lockedAt": "2026-11-09",
+      "reason": "new test file"
+    },
     "packages/shared-ui-mobile/src/Field.test.tsx": {
       "sha256": "b8b57cfd1ca3109c1ec6325827c6d350e92dbbdbff87f8065336f13340cbd07d",
       "lockedAt": "2026-11-07",
@@ -584,6 +739,11 @@
     "packages/shared-ui/src/Field.test.tsx": {
       "sha256": "9e0ad000eabe757d90410cb3e7f057b5ee653615bd9ec9f79881a35e20d507b3",
       "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/shared-ui/src/RouteErrorFallback.test.tsx": {
+      "sha256": "d991e72b070fa0db8cbadab74b5d9f0311de86ec957fc99baf71b5a270cd1fd0",
+      "lockedAt": "2026-11-09",
       "reason": "new test file"
     },
     "packages/shared-ui/src/Select.test.tsx": {

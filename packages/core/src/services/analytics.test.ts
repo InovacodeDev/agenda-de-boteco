@@ -1,3 +1,4 @@
+import { sanitizeCaptureEvent } from '../utils/error-reporting';
 import {
   type AnalyticsAdapter,
   configureAnalytics,
@@ -111,6 +112,8 @@ function makeBrowserClient(): jest.Mocked<PostHogBrowserClient> {
     reset: jest.fn(),
     isFeatureEnabled: jest.fn().mockReturnValue(true),
     onFeatureFlags: jest.fn().mockReturnValue(() => {}),
+    captureException: jest.fn(),
+    register: jest.fn(),
   };
 }
 
@@ -134,6 +137,14 @@ describe('createPostHogBrowserAdapter', () => {
       api_host: 'https://app.posthog.com',
       capture_pageview: false,
       person_profiles: 'identified_only',
+      persistence: 'localStorage',
+      capture_exceptions: {
+        capture_unhandled_errors: true,
+        capture_unhandled_rejections: true,
+        capture_console_errors: false,
+      },
+      session_recording: { maskAllInputs: true, maskTextSelector: '[data-ph-mask]' },
+      before_send: sanitizeCaptureEvent,
     });
   });
 
@@ -193,4 +204,3 @@ describe('createPostHogBrowserAdapter', () => {
     expect(client.onFeatureFlags).toHaveBeenCalledWith(cb);
   });
 });
-
