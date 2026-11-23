@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 
-const LAST_UPDATED = '3 de setembro de 2026';
+const LAST_UPDATED = '23 de novembro de 2026';
 const CONTACT_EMAIL = 'contato@inovacode.dev';
 
 export const metadata: Metadata = {
@@ -89,6 +89,12 @@ export default function PrivacyPolicyPage() {
           quais ações são realizadas, associados a um identificador aleatório da sua conta — nunca
           ao seu e-mail, telefone ou documento. Servem para entender o que funciona e o que precisa
           melhorar. Detalhes no item 5.
+        </Bullet>
+        <Bullet>
+          <span className="text-foreground">Registro de falhas.</span> Quando o painel apresenta um
+          erro, registramos o tipo do erro, a tela em que ocorreu e o tipo de navegador, ligados ao
+          mesmo identificador aleatório, sem e-mail, telefone ou outros dados pessoais. Servem para
+          corrigir problemas.
         </Bullet>
         <Paragraph>
           Não coletamos telefone, foto, dados financeiros, dados de saúde, identificadores de

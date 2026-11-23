@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 
-const LAST_UPDATED = '13 de outubro de 2026';
+const LAST_UPDATED = '23 de novembro de 2026';
 const CONTACT_EMAIL = 'contato@inovacode.dev';
 
 export const metadata: Metadata = {
@@ -98,7 +98,9 @@ export default function ArtistPrivacyPolicyPage() {
         <Bullet>
           <span className="text-foreground">PostHog</span> — recebe dados de uso da página (quais
           telas foram abertas) e o registro de que um cadastro foi enviado, sem nome, telefone ou
-          Instagram.
+          Instagram. Também registra erros e falhas da página (tipo do erro, tela e tipo de
+          navegador), ligados ao mesmo código aleatório, sem e-mail, telefone ou outros dados
+          pessoais.
         </Bullet>
       </Section>
 

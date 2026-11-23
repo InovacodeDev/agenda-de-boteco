@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import { useResponsive } from '@/hooks/useResponsive';
 import { scrollContentClassName } from '@/lib/screenLayout';
 
-const LAST_UPDATED = '13 de outubro de 2026';
+const LAST_UPDATED = '23 de novembro de 2026';
 const CONTACT_EMAIL = 'contato@inovacode.dev';
 
 function SectionTitle({ children }: { children: string }) {
@@ -104,11 +104,32 @@ export default function PrivacyScreen() {
           </Bullet>
           <Bullet>
             PostHog — recebe dados de uso do painel (quais telas foram abertas), identificados por
-            um código aleatório, nunca pelo seu e-mail.
+            um código aleatório, nunca pelo seu e-mail. Também registra erros e falhas do app (tipo
+            do erro, tela, versão do app e tipo de aparelho), ligados ao mesmo código, sem e-mail,
+            telefone ou outros dados pessoais.
+          </Bullet>
+          <Bullet>
+            Google e Apple (login social) — apenas se você escolher entrar com essas contas.
+            Recebemos o e-mail e um identificador da conta para criar o seu acesso. Nunca recebemos
+            a sua senha.
           </Bullet>
           <Bullet>
             ViaCEP — recebe o CEP que você digita no cadastro do estabelecimento, para sugerir rua,
             bairro e cidade. Não guardamos o CEP.
+          </Bullet>
+
+          <SectionTitle>Notificações e atualizações do app</SectionTitle>
+          <Bullet>
+            Notificações push. Se você ativar, guardamos o token de notificação do aparelho e a
+            plataforma (iOS ou Android), ligados à sua conta, apenas para enviar os alertas do
+            painel. Também guardamos suas preferências de notificação. Ao desativar as
+            notificações nas preferências ou ao sair da conta, o token do aparelho é apagado.
+          </Bullet>
+          <Bullet>
+            Atualizações do app. Ao abrir, o app consulta nosso servidor de atualizações enviando a
+            versão do app, a plataforma e o canal de atualização, e baixa a atualização quando
+            houver. Os registros de acesso do servidor podem conter seu endereço IP e o horário da
+            consulta.
           </Bullet>
 
           <SectionTitle>6. Seus direitos</SectionTitle>

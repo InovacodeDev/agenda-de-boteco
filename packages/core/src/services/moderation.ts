@@ -55,7 +55,7 @@ function buildQueueId(entityId: string, field: string): string {
 /**
  * Lista os termos cadastrados em moderation_terms. Sem Supabase configurado
  * devolve [] em vez de lançar: a triagem é acessória e nunca deve ser o motivo
- * de um cadastro falhar.
+ * de um cadastro falhar. Sem paginação por design: lista curta curada pelo admin.
  */
 export async function listModerationTerms(): Promise<string[]> {
   const client = getConfiguredSupabase();
