@@ -16,3 +16,6 @@
 - Tela de nova senha volta ao login quando não há tela anterior
 - Perfil mostra aviso quando nenhum estabelecimento está vinculado à conta
 - Política de privacidade informa que o cardápio pode ser PDF ou foto
+- App passa a se chamar "Agenda de Boteco Painel" na tela do aparelho
+- iOS explica por que o app pede acesso às fotos
+- Ícone monocromático no Android e preparo para notificações no Android

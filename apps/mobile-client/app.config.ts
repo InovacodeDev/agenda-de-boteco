@@ -28,7 +28,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
 
   return {
     ...config,
-    name: 'Agenda de Boteco - Estabelecimento',
+    name: 'Agenda de Boteco Painel',
     slug: 'agenda-de-boteco-client',
     version,
     runtimeVersion: {
@@ -67,9 +67,12 @@ export default ({ config }: ConfigContext): ExpoConfig => {
   android: {
     adaptiveIcon: {
       foregroundImage: './assets/android-icon-foreground.png',
+      monochromeImage: './assets/android-icon-monochrome.png',
       backgroundColor: '#0F0F0F',
     },
     package: 'com.agenda.boteco.client',
+    // NOTE: FCM v1 exige o google-services.json; ele é segredo de arquivo do EAS, nunca versionado.
+    googleServicesFile: process.env.GOOGLE_SERVICES_JSON || undefined,
   },
   plugins: [
     'expo-router',
@@ -84,6 +87,15 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       },
     ],
     'expo-image',
+    [
+      'expo-image-picker',
+      {
+        photosPermission:
+          'Permita o acesso às fotos para enviar a capa, a logo e o cardápio do seu estabelecimento.',
+        cameraPermission: false,
+        microphonePermission: false,
+      },
+    ],
     'expo-localization',
     [
       'expo-notifications',

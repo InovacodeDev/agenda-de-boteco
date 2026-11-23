@@ -166,6 +166,11 @@ additional_redirect_urls = [
   # dele — a origin nua não está (e não deve estar) na allow-list.
   "http://localhost:8088/app",
   "http://localhost:8088/app/**",
+  "http://localhost:8090/client",
+  "http://localhost:8090/client/**",
+  # Painel nativo: deep link do build e do Expo Go em desenvolvimento.
+  "agenda-boteco-client://**",
+  "exp://**",
 ]
 # How long tokens are valid for, in seconds. Defaults to 3600 (1 hour), maximum 604,800 (1 week).
 jwt_expiry = 3600
