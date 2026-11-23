@@ -467,6 +467,7 @@ export async function listEventAttractions(
   });
 }
 
+/** Sem paginação por design: catálogo pequeno, curado pelo admin e limitado por natureza. */
 export async function listMusicStyles(
   client: SupabaseClient<Database>,
 ): Promise<MusicStyle[]> {
@@ -480,6 +481,10 @@ export async function listMusicStyles(
   });
 }
 
+/**
+ * Sem paginação por design: cresce só com cidades onde há bar cadastrado
+ * (admin ou `create_city_from_panel`), conjunto pequeno por natureza.
+ */
 export async function listCities(
   client: SupabaseClient<Database>,
 ): Promise<City[]> {

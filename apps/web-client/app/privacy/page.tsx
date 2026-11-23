@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 
-const LAST_UPDATED = '13 de outubro de 2026';
+const LAST_UPDATED = '23 de novembro de 2026';
 const CONTACT_EMAIL = 'contato@inovacode.dev';
 
 export const metadata: Metadata = {
@@ -115,6 +115,13 @@ export default function ClientPrivacyPolicyPage() {
         <Bullet>
           <span className="text-foreground">PostHog</span> — recebe dados de uso do painel (quais
           telas foram abertas), identificados por um código aleatório, nunca pelo seu e-mail.
+          Também registra erros e falhas do painel (tipo do erro, tela e tipo de navegador), ligados
+          ao mesmo código, sem e-mail, telefone ou outros dados pessoais.
+        </Bullet>
+        <Bullet>
+          <span className="text-foreground">Google (login social)</span> — apenas se você escolher
+          entrar com a conta Google. Recebemos o e-mail e um identificador da conta para criar o seu
+          acesso. Nunca recebemos a sua senha do Google.
         </Bullet>
         <Bullet>
           <span className="text-foreground">ViaCEP</span> — recebe o CEP que você digita no

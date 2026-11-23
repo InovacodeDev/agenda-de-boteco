@@ -18,7 +18,7 @@ import { ScrollView, Text, View } from '@/tw';
  * Google Maps e PostHog. Atualize os três juntos sempre que a coleta mudar.
  */
 
-const LAST_UPDATED = '13 de outubro de 2026';
+const LAST_UPDATED = '23 de novembro de 2026';
 const CONTACT_EMAIL = 'contato@inovacode.dev';
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
@@ -112,6 +112,18 @@ export default function PrivacyPolicyScreen() {
             quais ações são realizadas, associados a um identificador aleatório da sua conta — nunca
             ao seu e-mail, telefone ou documento. Servem para entender o que funciona e o que
             precisa melhorar. Detalhes no item 4.
+          </Bullet>
+          <Bullet>
+            <Text className="text-foreground">Registro de falhas.</Text> Quando o app apresenta um
+            erro ou fecha de forma inesperada, registramos o tipo do erro, a tela em que ocorreu, a
+            versão do app e o tipo de aparelho, ligados ao mesmo identificador aleatório, sem
+            e-mail, telefone ou outros dados pessoais. Servem para corrigir problemas.
+          </Bullet>
+          <Bullet>
+            <Text className="text-foreground">Atualizações do app.</Text> Ao abrir, o app consulta
+            nosso servidor de atualizações enviando a versão do app, a plataforma e o canal de
+            atualização, e baixa a atualização quando houver. Os registros de acesso do servidor
+            podem conter seu endereço IP e o horário da consulta.
           </Bullet>
           <Paragraph>
             Não coletamos telefone, foto, dados financeiros, dados de saúde, identificadores de
