@@ -145,6 +145,19 @@ export default function ProfileScreen() {
     );
   }
 
+  if (!establishment) {
+    return (
+      <Screen noTopInset noBottomInset>
+        <ScreenHeader title="Perfil do estabelecimento" />
+        <View className="flex-1 items-center justify-center p-8">
+          <Text className="font-body text-muted-foreground text-center text-sm">
+            Não encontramos um estabelecimento vinculado à sua conta.
+          </Text>
+        </View>
+      </Screen>
+    );
+  }
+
   return (
     <Screen noTopInset noBottomInset>
       <ScreenHeader

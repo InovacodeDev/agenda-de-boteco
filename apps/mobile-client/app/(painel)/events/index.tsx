@@ -66,7 +66,8 @@ export default function EventsListScreen() {
   const { isTablet } = useResponsive();
   const insets = useSafeAreaInsets();
   const [pendingSeries, setPendingSeries] = useState<Event | null>(null);
-  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Event | null>(null);
+  const webBaseUrl = process.env.EXPO_PUBLIC_WEB_URL;
 
   const eventsQuery = useOwnedEvents();
   const allEvents = flattenPages(eventsQuery.data);
@@ -80,15 +81,15 @@ export default function EventsListScreen() {
     if (event.recurrence_group_id) {
       setPendingSeries(event);
     } else {
-      setDeleteId(event.id);
+      setDeleteTarget(event);
     }
   };
 
   const handleConfirmSingleDelete = async () => {
-    if (!deleteId) return;
+    if (!deleteTarget) return;
     try {
-      await deleteEvent.mutateAsync(deleteId);
-      setDeleteId(null);
+      await deleteEvent.mutateAsync(deleteTarget.id);
+      setDeleteTarget(null);
     } catch (err: unknown) {
       toast.show({ tone: 'error', message: getFriendlyErrorMessage(err) });
     }
@@ -114,10 +115,13 @@ export default function EventsListScreen() {
     }
   };
 
-  const handleOpenPublicPage = (event: Event) => {
-    const baseUrl = process.env.EXPO_PUBLIC_WEB_URL;
-    if (!baseUrl) return;
-    WebBrowser.openBrowserAsync(buildPanelEventPreviewUrl(event.external_id, baseUrl));
+  const handleOpenPublicPage = async (event: Event) => {
+    if (!webBaseUrl) return;
+    try {
+      await WebBrowser.openBrowserAsync(buildPanelEventPreviewUrl(event.external_id, webBaseUrl));
+    } catch (err: unknown) {
+      toast.show({ tone: 'error', message: getFriendlyErrorMessage(err) });
+    }
   };
 
   return (
@@ -201,7 +205,8 @@ export default function EventsListScreen() {
                         />
                         <Button
                           variant="ghost"
-                          disabled={isDraft}
+                          accessibilityLabel={`Ver página pública de ${item.name}`}
+                          disabled={isDraft || !webBaseUrl}
                           icon={
                             <Icon
                               name="eye"
@@ -209,11 +214,12 @@ export default function EventsListScreen() {
                               color={isDraft ? '#737373' : '#fafafa'}
                             />
                           }
-                          onPress={() => handleOpenPublicPage(item)}
+                          onPress={() => void handleOpenPublicPage(item)}
                           className="h-11 min-h-0 w-11 p-0"
                         />
                         <Button
                           variant="ghost"
+                          accessibilityLabel={`Excluir ${item.name}`}
                           icon={<Icon name="trash-can" size={16} color="#f53d7a" />}
                           onPress={() => handleDeletePress(item)}
                           className="h-11 min-h-0 w-11 p-0"
@@ -242,14 +248,14 @@ export default function EventsListScreen() {
       )}
 
       <ConfirmDialog
-        visible={Boolean(deleteId)}
+        visible={Boolean(deleteTarget)}
         title="Excluir evento?"
-        message="Essa ação não pode ser desfeita."
+        message={`"${deleteTarget?.name ?? ''}" será excluído. Essa ação não pode ser desfeita.`}
         confirmLabel="Excluir"
         destructive
         busy={isDeleting}
         onConfirm={() => void handleConfirmSingleDelete()}
-        onCancel={() => setDeleteId(null)}
+        onCancel={() => setDeleteTarget(null)}
       />
 
       <Modal

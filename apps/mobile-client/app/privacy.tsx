@@ -71,7 +71,7 @@ export default function PrivacyScreen() {
             WhatsApp e Instagram — para o cliente entrar em contato e acompanhar o estabelecimento.
           </Bullet>
           <Bullet>
-            Logo, fotos e cardápio em PDF — exibidos na página do bar e nos cards do aplicativo.
+            Logo, fotos e cardápio em PDF ou foto — exibidos na página do bar e nos cards do aplicativo.
           </Bullet>
           <Bullet>
             Localização do estabelecimento — usada para mostrar o bar no mapa e ordenar resultados

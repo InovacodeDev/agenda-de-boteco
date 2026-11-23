@@ -57,7 +57,11 @@ export function PanelTopbar() {
       <ConfirmDialog
         visible={confirmOpen}
         title="Sair da conta"
-        message="Você precisará entrar novamente para acessar o painel."
+        message={
+          email
+            ? `Conectado como ${email}. Você precisará entrar novamente para acessar o painel.`
+            : 'Você precisará entrar novamente para acessar o painel.'
+        }
         confirmLabel="Sair"
         destructive
         onCancel={() => setConfirmOpen(false)}

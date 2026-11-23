@@ -86,7 +86,7 @@ export function NotificationsSection() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [pushBusy, setPushBusy] = useState(false);
 
-  const { data: settings = DEFAULT_NOTIFICATION_PREFERENCES } = useQuery({
+  const { data: settings = DEFAULT_NOTIFICATION_PREFERENCES, isPending: isLoadingSettings } = useQuery({
     queryKey,
     queryFn: getNotificationPreferences,
     enabled: Boolean(userId),
@@ -156,7 +156,9 @@ export function NotificationsSection() {
         />
       }
       checked={settings[row.key]}
-      disabled={!userId || (row.key === 'channelPush' && pushBusy)}
+      disabled={
+        !userId || isLoadingSettings || mutation.isPending || (row.key === 'channelPush' && pushBusy)
+      }
       onCheckedChange={(value) => void updateSetting(row.key, value)}
       className={className}
     />

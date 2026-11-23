@@ -736,6 +736,11 @@
       "lockedAt": "2026-11-07",
       "reason": "new test file"
     },
+    "packages/shared-ui-mobile/src/Sparkline.test.tsx": {
+      "sha256": "5cb62dd52183eb53821f1fc4331b4b4f2f55cfa527531784a46dae6cb934f9e3",
+      "lockedAt": "2026-11-23",
+      "reason": "new test file"
+    },
     "packages/shared-ui/src/Button.test.tsx": {
       "sha256": "5263c26394fffb625337bced03b0181152b62dfd6f0983e05995296b0a20b841",
       "lockedAt": "2026-11-07",

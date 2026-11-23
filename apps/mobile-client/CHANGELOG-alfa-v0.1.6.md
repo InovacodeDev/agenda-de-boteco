@@ -5,3 +5,14 @@
 - Campo de cardápio abre no modo certo ao editar o bar
 - Falha ao excluir evento mostra um único aviso de erro
 - Tela de exclusão de conta exige login e desativa as notificações do aparelho antes de excluir
+- Gráfico de evolução mostra só as visualizações e avisa quando não há dados no período
+- Preferências de notificação ficam bloqueadas enquanto salvam
+- Botão de página pública fica indisponível quando o link não está configurado e avisa se a página não abrir
+- Confirmação de exclusão mostra o nome do evento
+- Menu da conta mostra o e-mail conectado
+- Lista de avaliações mostra indicador ao carregar mais itens
+- Formulário de evento avisa quando falta a data, aceita só números na lotação e corrige o resumo da recorrência
+- Leitores de tela descrevem os botões de ícone e os horários de funcionamento
+- Tela de nova senha volta ao login quando não há tela anterior
+- Perfil mostra aviso quando nenhum estabelecimento está vinculado à conta
+- Política de privacidade informa que o cardápio pode ser PDF ou foto

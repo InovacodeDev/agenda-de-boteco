@@ -504,7 +504,7 @@ function MenuField({ value, onChange }: { value: string; onChange: (url: string)
           <View className="flex-row flex-wrap gap-2">
             <Pressable
               accessibilityRole="button"
-              onPress={() => void WebBrowser.openBrowserAsync(value)}
+              onPress={() => void WebBrowser.openBrowserAsync(resolveDevAssetUrl(value))}
               className="min-h-10 justify-center rounded-full border border-primary px-4 py-2"
             >
               <Text className="font-body-medium text-primary text-sm">Abrir</Text>

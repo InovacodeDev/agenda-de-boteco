@@ -3,6 +3,7 @@ import {
   getFriendlyErrorMessage,
   getOwnedEstablishmentId,
   isCurrentUserEstablishmentOwner,
+  OTP_HOURLY_LIMIT_MESSAGE,
   sendPasswordReset,
   signInWithEmailOtp,
   signInWithPassword,
@@ -433,8 +434,7 @@ export default function LoginScreen() {
                       />
                       {resend.hasReachedHourlyLimit ? (
                         <Text className="font-body text-muted-foreground text-center text-[12px] leading-[18px]">
-                          Você já solicitou 2 códigos nesta hora. Aguarde antes de tentar novamente
-                          para não ser bloqueado temporariamente.
+                          {OTP_HOURLY_LIMIT_MESSAGE}
                         </Text>
                       ) : null}
                       <TextLink
