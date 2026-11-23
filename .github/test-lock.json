@@ -246,6 +246,11 @@
       "lockedAt": "2026-11-07",
       "reason": "new test file"
     },
+    "packages/core/src/lib/queryClient.meta.test.ts": {
+      "sha256": "4961481a14e2a3683c1aa0ddde02c35768ae83d8837f04d1afee36419ee50e7a",
+      "lockedAt": "2026-11-23",
+      "reason": "new test file"
+    },
     "packages/core/src/lib/queryClient.report.test.ts": {
       "sha256": "39845d771ee6e440c6dfe10bee1f6a25a67cb3a298d3c103b6f09823ed2689e8",
       "lockedAt": "2026-11-09",

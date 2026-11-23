@@ -3,8 +3,9 @@ import { MutationCache, QueryCache, QueryClient } from '@tanstack/react-query';
 import { reportException } from '../services/analytics';
 
 /**
- * `handledLocally` indica mutação com `onError` próprio: a tela já mostra o
- * erro, e o handler global deve se calar para não duplicar o aviso.
+ * `handledLocally` indica mutação cuja tela já mostra o erro (`onError`
+ * próprio ou `meta: { handledLocally: true }` para quem usa `mutateAsync` em
+ * try/catch); o handler global deve se calar para não duplicar o aviso.
  */
 export interface QueryErrorContext {
   source: 'query' | 'mutation';
@@ -47,7 +48,9 @@ export const queryClient = new QueryClient({
       reportException(error, { method: 'mutationCache' });
       errorHandler(error, {
         source: 'mutation',
-        handledLocally: typeof mutation.options.onError === 'function',
+        handledLocally:
+          typeof mutation.options.onError === 'function' ||
+          mutation.meta?.handledLocally === true,
       });
     },
   }),

@@ -17,6 +17,9 @@ export function useOwnedEvents() {
   });
 }
 
+/** As telas capturam o erro do `mutateAsync` e o exibem; o handler global não deve repetir. */
+const HANDLED_LOCALLY = { handledLocally: true } as const;
+
 function useInvalidateEvents() {
   const queryClient = useQueryClient();
   return () => queryClient.invalidateQueries({ queryKey: catalogKeys.events.root });
@@ -28,6 +31,7 @@ export function useDeleteOwnedEvent() {
   return useMutation({
     mutationFn: (eventId: string) => deleteOwnedEvent(eventId),
     onSuccess: invalidate,
+    meta: HANDLED_LOCALLY,
   });
 }
 
@@ -37,5 +41,6 @@ export function useDeleteOwnedEventGroup() {
   return useMutation({
     mutationFn: (recurrenceGroupId: string) => deleteOwnedEventGroup(recurrenceGroupId),
     onSuccess: invalidate,
+    meta: HANDLED_LOCALLY,
   });
 }
