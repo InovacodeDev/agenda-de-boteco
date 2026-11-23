@@ -4,14 +4,11 @@ import '@/lib/bootstrap';
 
 import {
   CACHE_BUSTER,
-  getCurrentUserExternalId,
-  identifyAnalyticsUser,
-  onAuthUserChange,
   queryClient,
-  resetAnalytics,
   setupFocusManager,
   setupOnlineManager,
   shouldDehydrateQuery,
+  subscribeAnalyticsIdentity,
   trackPageview,
   useAuthStore,
 } from '@agenda/core';
@@ -84,24 +81,7 @@ export default function RootLayout() {
     initializeAuth();
   }, [initializeAuth]);
 
-  useEffect(() => {
-    let lastUserId: string | null = useAuthStore.getState().user?.id ?? null;
-    return onAuthUserChange((user) => {
-      const nextUserId = user?.id ?? null;
-      if (nextUserId !== null && nextUserId !== lastUserId) {
-        // Mesmo distinct_id do web-client (external_id, nunca auth.uid()): o
-        // dono vira uma só pessoa no PostHog e recebe as mesmas flags nos dois painéis.
-        void getCurrentUserExternalId()
-          .then((externalId) => {
-            if (externalId) identifyAnalyticsUser(externalId);
-          })
-          .catch(() => {});
-      } else if (nextUserId === null && lastUserId !== null) {
-        resetAnalytics();
-      }
-      lastUserId = nextUserId;
-    });
-  }, []);
+  useEffect(() => subscribeAnalyticsIdentity(useAuthStore.getState().user?.id ?? null), []);
 
   useEffect(() => {
     const teardownOnline = setupOnlineManager((listener) =>
