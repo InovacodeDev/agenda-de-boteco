@@ -3,6 +3,7 @@
 import {
   catalogKeys,
   getFriendlyErrorMessage,
+  maskPhoneBR,
   updateOwnedEstablishment,
 } from '@agenda/core';
 import { FloppyDiskIcon } from '@phosphor-icons/react';
@@ -50,7 +51,7 @@ export default function PerfilPage() {
         cityId: establishment.city_id,
         address: establishment.address,
         neighborhood: establishment.neighborhood,
-        whatsapp: establishment.whatsapp,
+        whatsapp: maskPhoneBR(establishment.whatsapp),
         instagram: establishment.instagram ?? '',
         openingHours: establishment.opening_hours,
         priceRange: establishment.price_range ?? '',

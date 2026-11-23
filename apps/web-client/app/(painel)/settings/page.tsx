@@ -2,7 +2,7 @@
 
 import { useFeatureFlag } from '@agenda/core';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { AccountSection } from '@/components/settings/AccountSection';
 import { DangerZoneSection } from '@/components/settings/DangerZoneSection';
@@ -13,15 +13,25 @@ export default function SettingsPage() {
   const enabled = useFeatureFlag('panel-settings');
   const [globalNotice, setGlobalNotice] = useState<string | null>(null);
 
+  const noticeTimer = useRef<number | null>(null);
+
   useEffect(() => {
     if (!enabled) router.replace('/');
   }, [enabled, router]);
+
+  useEffect(
+    () => () => {
+      if (noticeTimer.current !== null) window.clearTimeout(noticeTimer.current);
+    },
+    [],
+  );
 
   if (!enabled) return null;
 
   const showNotice = (message: string) => {
     setGlobalNotice(message);
-    setTimeout(() => {
+    if (noticeTimer.current !== null) window.clearTimeout(noticeTimer.current);
+    noticeTimer.current = window.setTimeout(() => {
       setGlobalNotice(null);
     }, 4000);
   };

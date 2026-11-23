@@ -90,7 +90,15 @@ export default function DashboardPage() {
         </section>
       ) : (
         <section className="text-primary-foreground shadow-neon rounded-2xl bg-(image:--gradient-primary) p-8">
-          <SparkleIcon size={32} weight="regular" aria-hidden />
+          {establishment?.logo_url ? (
+            <img
+              src={establishment.logo_url}
+              alt=""
+              className="h-20 w-20 rounded-2xl bg-white object-cover ring-2 ring-white/90"
+            />
+          ) : (
+            <SparkleIcon size={32} weight="regular" aria-hidden />
+          )}
           <h2 className="font-heading mt-4 text-3xl leading-9 font-bold">
             Bem-vindo{establishment?.name ? `, ${establishment.name}` : ''}!
           </h2>

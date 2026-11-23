@@ -17,6 +17,10 @@ import { useOwnedEstablishmentId } from '@/hooks/use-owned-establishment';
 
 const STAR_LEVELS = [5, 4, 3, 2, 1] as const;
 
+/**
+ * As queries de avaliações vivem em ReviewsContent, montado só com a flag
+ * ligada — sem flag, nada vai ao banco antes do redirect.
+ */
 export default function AvaliacoesPage() {
   const router = useRouter();
   const enabled = useFeatureFlag('panel-reviews');
@@ -25,6 +29,12 @@ export default function AvaliacoesPage() {
     if (!enabled) router.replace('/');
   }, [enabled, router]);
 
+  if (!enabled) return null;
+
+  return <ReviewsContent />;
+}
+
+function ReviewsContent() {
   const { data: establishmentId, isPending: isEstIdPending } =
     useOwnedEstablishmentId();
   const ratingsQuery = useOwnerEstablishmentRatings(establishmentId ?? '');
@@ -39,8 +49,6 @@ export default function AvaliacoesPage() {
   const isPending = isEstIdPending || ratingsQuery.isPending || summaryQuery.isPending;
 
   const summary = summaryQuery.data ?? { avg: 0, count: 0, distribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 } };
-
-  if (!enabled) return null;
 
   return (
     <div className="mx-auto flex w-full max-w-300 flex-col gap-6">

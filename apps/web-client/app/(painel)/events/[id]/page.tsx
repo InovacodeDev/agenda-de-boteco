@@ -14,9 +14,9 @@ import { EventForm } from '@/components/EventForm';
 export default function EditarEventoPage() {
   const params = useParams<{ id: string }>();
   const id = params.id;
-  const { data: event, isLoading } = useEventQuery(id);
+  const { data: event, isPending } = useEventQuery(id);
 
-  if (isLoading) {
+  if (isPending) {
     return <p className="text-muted-foreground text-sm">Carregando…</p>;
   }
 

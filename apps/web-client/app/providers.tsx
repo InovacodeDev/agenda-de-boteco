@@ -23,6 +23,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import posthog from 'posthog-js';
 import { useEffect } from 'react';
 
+import { OfflineBanner } from '@/components/OfflineBanner';
 import { PASSWORD_RECOVERY_KEY } from '@/lib/recovery';
 import { getSupabase } from '@/lib/supabase';
 
@@ -119,6 +120,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       <AppSyncBridge />
       <PostHogPageview />
       <ToastProvider>{children}</ToastProvider>
+      <OfflineBanner />
     </QueryClientProvider>
   );
 }
