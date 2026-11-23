@@ -8,6 +8,7 @@ import {
   useAuthStore,
 } from '@agenda/core';
 import {
+  AppleLogoIcon,
   CheckCircleIcon,
   DeviceMobileIcon,
   KeyIcon,
@@ -26,7 +27,7 @@ interface AccountSectionProps {
 export function AccountSection({ onSuccessNotice }: AccountSectionProps) {
   const user = useAuthStore((state) => state.user);
 
-  const [provider, setProvider] = useState<'google' | 'email'>('email');
+  const [provider, setProvider] = useState<'google' | 'apple' | 'email'>('email');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [busyPassword, setBusyPassword] = useState(false);
@@ -41,7 +42,7 @@ export function AccountSection({ onSuccessNotice }: AccountSectionProps) {
     void getUserAuthProvider().then((detected) => {
       if (!active) return;
       queueMicrotask(() => {
-        setProvider(detected === 'google' ? 'google' : 'email');
+        setProvider(detected === 'google' || detected === 'apple' ? detected : 'email');
       });
     });
 
@@ -126,6 +127,11 @@ export function AccountSection({ onSuccessNotice }: AccountSectionProps) {
                 <GoogleIcon className="h-3.5 w-3.5" />
                 Conectado com Google
               </span>
+            ) : provider === 'apple' ? (
+              <span className="border-border bg-surface-elevated text-foreground inline-flex items-center gap-2 rounded-lg border px-3 py-1 text-xs font-medium">
+                <AppleLogoIcon size={14} weight="fill" />
+                Conectado com Apple
+              </span>
             ) : (
               <span className="border-border bg-surface-elevated text-muted-foreground inline-flex items-center gap-1.5 rounded-lg border px-3 py-1 text-xs font-medium">
                 <KeyIcon size={14} weight="bold" />
@@ -135,12 +141,13 @@ export function AccountSection({ onSuccessNotice }: AccountSectionProps) {
           </div>
         </div>
 
-        {provider === 'google' ? (
+        {provider !== 'email' ? (
           <div className="border-border/60 bg-surface/50 flex items-start gap-3 rounded-xl border p-4 text-sm">
             <ShieldCheckIcon size={20} weight="bold" className="text-primary mt-0.5 shrink-0" />
             <p className="text-muted-foreground text-xs leading-relaxed">
-              Sua conta utiliza a autenticação do Google. A segurança e recuperação de senha são
-              gerenciadas diretamente na sua conta Google.
+              Sua conta utiliza a autenticação {provider === 'apple' ? 'da Apple' : 'do Google'}. A
+              segurança e recuperação de senha são gerenciadas diretamente na sua conta{' '}
+              {provider === 'apple' ? 'Apple' : 'Google'}.
             </p>
           </div>
         ) : (

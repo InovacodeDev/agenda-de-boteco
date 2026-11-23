@@ -398,7 +398,9 @@ const MENU_MODES: { id: MenuMode; label: string }[] = [
 function MenuField({ value, onChange }: { value: string; onChange: (url: string) => void }) {
   const isUploaded = pathFromPublicUrl(value) !== null;
   const isPdf = isUploaded && value.toLowerCase().endsWith('.pdf');
-  const [mode, setMode] = useState<MenuMode>(isUploaded ? 'file' : 'link');
+  const [picked, setPicked] = useState<MenuMode | null>(null);
+  // Derivado: o draft hidrata de forma assíncrona, depois do primeiro render.
+  const mode: MenuMode = picked ?? (isUploaded ? 'file' : 'link');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -454,7 +456,7 @@ function MenuField({ value, onChange }: { value: string; onChange: (url: string)
                 key={item.id}
                 accessibilityRole="button"
                 accessibilityState={{ selected }}
-                onPress={() => setMode(item.id)}
+                onPress={() => setPicked(item.id)}
                 className={cn(
                   'min-h-10 justify-center rounded-full border px-4 py-2',
                   selected ? 'border-primary' : 'border-border',

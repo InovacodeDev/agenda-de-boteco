@@ -11,6 +11,11 @@
       "lockedAt": "2026-11-07",
       "reason": "new test file"
     },
+    "apps/mobile-client/src/components/settings/AccountSection.test.tsx": {
+      "sha256": "88424a71a7ed1f67f95d97fc39a7d2d73e525bc4efdc54ffa30487e22dfb9b15",
+      "lockedAt": "2026-11-23",
+      "reason": "new test file"
+    },
     "apps/mobile-client/src/components/settings/NotificationsSection.test.tsx": {
       "sha256": "6db5069e37c4a4907e65a823a2ae6468028216d52eaafb813ffe3b6e52adce5c",
       "lockedAt": "2026-11-07",

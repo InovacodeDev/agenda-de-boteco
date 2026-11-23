@@ -17,7 +17,7 @@ interface AccountSectionProps {
 export function AccountSection({ onSuccessNotice }: AccountSectionProps) {
   const user = useAuthStore((state) => state.user);
 
-  const [provider, setProvider] = useState<'google' | 'email'>('email');
+  const [provider, setProvider] = useState<'google' | 'apple' | 'email'>('email');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [busyPassword, setBusyPassword] = useState(false);
@@ -32,7 +32,7 @@ export function AccountSection({ onSuccessNotice }: AccountSectionProps) {
     void getUserAuthProvider().then((detected) => {
       if (!active) return;
       queueMicrotask(() => {
-        setProvider(detected === 'google' ? 'google' : 'email');
+        setProvider(detected === 'google' || detected === 'apple' ? detected : 'email');
       });
     });
     return () => {
@@ -111,6 +111,11 @@ export function AccountSection({ onSuccessNotice }: AccountSectionProps) {
                 <Icon name="google" size={14} color={FOREGROUND} variant="brands" />
                 <Text className="font-body-medium text-foreground text-xs">Conectado com Google</Text>
               </View>
+            ) : provider === 'apple' ? (
+              <View className="flex-row items-center gap-2 rounded-lg border border-border bg-surface-elevated px-3 py-1">
+                <Icon name="apple" size={14} color={FOREGROUND} weight="fill" />
+                <Text className="font-body-medium text-foreground text-xs">Conectado com Apple</Text>
+              </View>
             ) : (
               <View className="flex-row items-center gap-1.5 rounded-lg border border-border bg-surface-elevated px-3 py-1">
                 <Icon name="envelope" size={14} color="#a6a6a6" weight="bold" />
@@ -120,12 +125,13 @@ export function AccountSection({ onSuccessNotice }: AccountSectionProps) {
           </View>
         </View>
 
-        {provider === 'google' ? (
+        {provider !== 'email' ? (
           <View className="flex-row items-start gap-3 rounded-xl border border-border/60 bg-surface/50 p-4">
             <Icon name="shield-check" size={20} color={PRIMARY} weight="bold" />
             <Text className="font-body text-muted-foreground flex-1 text-xs leading-[18px]">
-              Sua conta utiliza a autenticação do Google. A segurança e recuperação de senha são
-              gerenciadas diretamente na sua conta Google.
+              Sua conta utiliza a autenticação {provider === 'apple' ? 'da Apple' : 'do Google'}. A
+              segurança e recuperação de senha são gerenciadas diretamente na sua conta{' '}
+              {provider === 'apple' ? 'Apple' : 'Google'}.
             </Text>
           </View>
         ) : (

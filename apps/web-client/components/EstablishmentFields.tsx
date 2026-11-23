@@ -428,9 +428,16 @@ const MENU_MODES: { id: MenuMode; label: string }[] = [
  */
 function MenuField({ value, onChange }: { value: string; onChange: (url: string) => void }) {
   const isUploaded = pathFromPublicUrl(value) !== null;
-  const [mode, setMode] = useState<MenuMode>(isUploaded ? 'file' : 'link');
+  const [picked, setPicked] = useState<MenuMode | null>(null);
+  // Derivado: o draft hidrata de forma assíncrona, depois do primeiro render.
+  const mode: MenuMode = picked ?? (isUploaded ? 'file' : 'link');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const handleRemove = () => {
+    void deleteImage(value).catch(() => undefined);
+    onChange('');
+  };
 
   const handleFile = async (file: File | undefined) => {
     if (!file) return;
@@ -466,7 +473,7 @@ function MenuField({ value, onChange }: { value: string; onChange: (url: string)
             key={item.id}
             type="button"
             aria-pressed={mode === item.id}
-            onClick={() => setMode(item.id)}
+            onClick={() => setPicked(item.id)}
             className={`${CHIP_CLASS} ${
               mode === item.id
                 ? 'border-primary text-primary font-medium'
@@ -547,6 +554,17 @@ function MenuField({ value, onChange }: { value: string; onChange: (url: string)
           ) : null}
         </label>
       )}
+
+      {mode === 'file' && isUploaded ? (
+        <button
+          type="button"
+          disabled={busy}
+          onClick={handleRemove}
+          className="text-destructive self-start text-[13px] font-medium hover:underline disabled:opacity-50"
+        >
+          Remover
+        </button>
+      ) : null}
 
       {error ? <p className="text-destructive text-[13px]">{error}</p> : null}
     </div>
