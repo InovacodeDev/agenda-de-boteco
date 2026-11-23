@@ -415,10 +415,9 @@ function MenuField({ value, onChange }: { value: string; onChange: (url: string)
     onChange(url);
   };
 
-  const handleRemove = () => {
-    dropPrevious();
-    onChange('');
-  };
+  // Só limpa o draft: apagar o arquivo antes de salvar deixaria o bar salvo
+  // apontando para um cardápio inexistente se o dono sair sem salvar.
+  const handleRemove = () => onChange('');
 
   const pickPdf = async () => {
     setError(null);

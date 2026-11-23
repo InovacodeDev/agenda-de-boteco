@@ -434,10 +434,9 @@ function MenuField({ value, onChange }: { value: string; onChange: (url: string)
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleRemove = () => {
-    void deleteImage(value).catch(() => undefined);
-    onChange('');
-  };
+  // Só limpa o draft: apagar o arquivo antes de salvar deixaria o bar salvo
+  // apontando para um cardápio inexistente se o dono sair sem salvar.
+  const handleRemove = () => onChange('');
 
   const handleFile = async (file: File | undefined) => {
     if (!file) return;

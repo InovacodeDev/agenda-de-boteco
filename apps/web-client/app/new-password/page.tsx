@@ -1,8 +1,7 @@
 'use client';
 
-import { getFriendlyErrorMessage, updatePassword, useAuthStore } from '@agenda/core';
+import { getFriendlyErrorMessage, signOut, updatePassword, useAuthStore } from '@agenda/core';
 import { Button, INPUT_CLASS } from '@agenda/shared-ui';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
@@ -114,12 +113,17 @@ export default function NovaSenhaPage() {
           {busy ? 'Salvando…' : 'Salvar senha'}
         </Button>
 
-        <Link
-          href="/login"
+        {/* Sai da sessão de recovery: com ela ativa, /login devolveria o usuário para cá. */}
+        <button
+          type="button"
+          onClick={() => {
+            window.sessionStorage.removeItem(PASSWORD_RECOVERY_KEY);
+            void signOut().finally(() => router.replace('/login'));
+          }}
           className="text-center text-[13px] font-medium text-muted-foreground underline-offset-2 hover:underline"
         >
           Voltar para o login
-        </Link>
+        </button>
       </form>
     </main>
   );
