@@ -25,6 +25,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import { GoogleIcon } from '@/components/GoogleIcon';
+import { PASSWORD_RECOVERY_KEY } from '@/lib/recovery';
 import logo from '@/public/logo.png';
 
 type Tab = 'signIn' | 'signUp';
@@ -91,6 +92,10 @@ export default function LoginPage() {
    */
   useEffect(() => {
     if (status !== 'signedIn' || claiming) return;
+    if (window.sessionStorage.getItem(PASSWORD_RECOVERY_KEY)) {
+      router.replace('/new-password');
+      return;
+    }
     let active = true;
 
     void (async () => {
@@ -202,7 +207,9 @@ export default function LoginPage() {
 
   const handleSubmit = () => {
     if (!canSubmit) return;
+    window.sessionStorage.removeItem(PASSWORD_RECOVERY_KEY);
     if (tab === 'signIn') {
+      window.sessionStorage.removeItem(OAUTH_SIGNUP_KEY);
       void run(() => signInWithPassword(email.trim(), password));
       return;
     }
@@ -226,6 +233,7 @@ export default function LoginPage() {
 
   const switchTab = (next: Tab) => {
     setTab(next);
+    window.sessionStorage.removeItem(OAUTH_SIGNUP_KEY);
     toast.dismissAll();
     setSignUpStep('email');
     setCode('');
@@ -414,10 +422,18 @@ export default function LoginPage() {
               // Pela aba "Criar conta", o Google também é cadastro. O OAuth
               // recarrega a página, então a intenção vai para sessionStorage —
               // é o único caminho em que ela não cabe no state em memória.
+              window.sessionStorage.removeItem(PASSWORD_RECOVERY_KEY);
               if (tab === 'signUp') {
                 window.sessionStorage.setItem(OAUTH_SIGNUP_KEY, '1');
               }
-              void run(() => signInWithOAuth('google'));
+              void run(async () => {
+                try {
+                  await signInWithOAuth('google');
+                } catch (error: unknown) {
+                  window.sessionStorage.removeItem(OAUTH_SIGNUP_KEY);
+                  throw error;
+                }
+              });
             })}
             className="flex h-12 w-full items-center justify-center gap-2.5 rounded-xl border border-border bg-surface text-[14px] font-medium text-foreground transition-colors hover:bg-surface-elevated disabled:opacity-50"
           >

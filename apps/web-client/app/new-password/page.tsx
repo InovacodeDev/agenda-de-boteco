@@ -2,8 +2,13 @@
 
 import { getFriendlyErrorMessage, updatePassword, useAuthStore } from '@agenda/core';
 import { Button, INPUT_CLASS } from '@agenda/shared-ui';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+
+import { PASSWORD_RECOVERY_KEY } from '@/lib/recovery';
+
+const REDIRECT_DELAY_MS = 1500;
 
 /**
  * Destino do link de recuperação. O Supabase entrega a sessão de recovery pela
@@ -15,18 +20,35 @@ export default function NovaSenhaPage() {
   const status = useAuthStore((state) => state.status);
 
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [busy, setBusy] = useState(false);
+  const [done, setDone] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const canSubmit = password.length >= 6 && !busy && status === 'signedIn';
+  const canSubmit = password.length > 0 && confirmPassword.length > 0 && !busy && !done && status === 'signedIn';
+
+  useEffect(() => {
+    if (!done) return;
+    const timer = window.setTimeout(() => router.replace('/'), REDIRECT_DELAY_MS);
+    return () => window.clearTimeout(timer);
+  }, [done, router]);
 
   const handleSubmit = async () => {
     if (!canSubmit) return;
+    if (password.length < 6) {
+      setErrorMessage('A senha deve ter no mínimo 6 caracteres.');
+      return;
+    }
+    if (password !== confirmPassword) {
+      setErrorMessage('A confirmação não coincide com a nova senha.');
+      return;
+    }
     setErrorMessage(null);
     setBusy(true);
     try {
       await updatePassword(password);
-      router.replace('/');
+      window.sessionStorage.removeItem(PASSWORD_RECOVERY_KEY);
+      setDone(true);
     } catch (error: unknown) {
       setErrorMessage(getFriendlyErrorMessage(error));
     } finally {
@@ -56,7 +78,17 @@ export default function NovaSenhaPage() {
           </p>
         ) : null}
 
-        {errorMessage ? <p className="text-[13px] text-destructive">{errorMessage}</p> : null}
+        {done ? (
+          <p role="status" className="text-[13px] font-medium text-primary">
+            Sua senha foi redefinida. Redirecionando para o painel…
+          </p>
+        ) : null}
+
+        {errorMessage ? (
+          <p role="alert" className="text-[13px] text-destructive">
+            {errorMessage}
+          </p>
+        ) : null}
 
         <input
           value={password}
@@ -68,9 +100,26 @@ export default function NovaSenhaPage() {
           className={INPUT_CLASS}
         />
 
+        <input
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
+          placeholder="Confirmar nova senha"
+          type="password"
+          autoComplete="new-password"
+          aria-label="Confirmar nova senha"
+          className={INPUT_CLASS}
+        />
+
         <Button type="submit" disabled={!canSubmit} className="w-full">
           {busy ? 'Salvando…' : 'Salvar senha'}
         </Button>
+
+        <Link
+          href="/login"
+          className="text-center text-[13px] font-medium text-muted-foreground underline-offset-2 hover:underline"
+        >
+          Voltar para o login
+        </Link>
       </form>
     </main>
   );

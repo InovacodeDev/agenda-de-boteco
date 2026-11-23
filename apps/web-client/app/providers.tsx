@@ -19,10 +19,11 @@ import {
 } from '@agenda/core';
 import { ToastProvider } from '@agenda/shared-ui';
 import { QueryClientProvider } from '@tanstack/react-query';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import posthog from 'posthog-js';
 import { useEffect } from 'react';
 
+import { PASSWORD_RECOVERY_KEY } from '@/lib/recovery';
 import { getSupabase } from '@/lib/supabase';
 
 import { version } from '../package.json';
@@ -59,9 +60,30 @@ function bootstrap() {
 }
 bootstrap();
 
+/**
+ * O link de recuperação aterrissa em /login (redirectTo único do core) já com
+ * sessão; sem esta marca a tela de login trata o usuário como logado e o manda
+ * para o painel. O hash é lido no import, antes de o Supabase limpá-lo.
+ */
+if (typeof window !== 'undefined' && window.location.hash.includes('type=recovery')) {
+  window.sessionStorage.setItem(PASSWORD_RECOVERY_KEY, '1');
+}
+
 /** Liga auth e realtime do catálogo ao cache. */
 function AppSyncBridge() {
   const initialize = useAuthStore((state) => state.initialize);
+  const router = useRouter();
+
+  useEffect(() => {
+    const client = getSupabase();
+    if (!client) return;
+    const { data } = client.auth.onAuthStateChange((event) => {
+      if (event !== 'PASSWORD_RECOVERY') return;
+      window.sessionStorage.setItem(PASSWORD_RECOVERY_KEY, '1');
+      router.replace('/new-password');
+    });
+    return () => data.subscription.unsubscribe();
+  }, [router]);
 
   useEffect(() => {
     void initialize();
