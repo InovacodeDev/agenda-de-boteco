@@ -2,6 +2,7 @@ import {
   getFriendlyErrorMessage,
   logErrorToTerminal,
   requestAccountDeletion,
+  unregisterAllPushTokens,
   useAuthStore,
 } from '@agenda/core';
 import {
@@ -17,7 +18,6 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 
 import { useResponsive } from '@/hooks/useResponsive';
-import { disablePush } from '@/lib/push';
 import { scrollContentClassName } from '@/lib/screenLayout';
 
 export default function DeleteAccountScreen() {
@@ -33,9 +33,9 @@ export default function DeleteAccountScreen() {
     setBusy(true);
     try {
       try {
-        await disablePush();
+        await unregisterAllPushTokens();
       } catch (pushError: unknown) {
-        logErrorToTerminal(pushError, { method: 'deleteAccount.disablePush' });
+        logErrorToTerminal(pushError, { method: 'deleteAccount.unregisterAllPushTokens' });
       }
       await requestAccountDeletion();
       setModalOpen(false);

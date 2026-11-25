@@ -99,6 +99,29 @@ export async function unregisterPushToken(token: string): Promise<void> {
   }
 }
 
+/**
+ * Remove todos os tokens da conta logada, para quando o token do aparelho não
+ * é legível (permissão revogada) e a conta vai embora. Apaga por user_id da
+ * sessão, coberto pela policy own_delete_push_tokens (auth.uid() = user_id);
+ * derrubaria também os outros aparelhos, então não serve para logout.
+ */
+export async function unregisterAllPushTokens(): Promise<void> {
+  try {
+    const client = requireClient();
+    const { data } = await client.auth.getSession();
+    const userId = data.session?.user?.id;
+    if (!userId) {
+      return;
+    }
+    const { error } = await client.from('push_tokens').delete().eq('user_id', userId);
+    if (error) {
+      throw error;
+    }
+  } catch (error) {
+    return handleServiceError(error, { method: 'push.unregisterAllPushTokens' });
+  }
+}
+
 /** Sem client, sessão ou linha salva devolve os defaults — mesmos da tela antes de persistir. */
 export async function getNotificationPreferences(): Promise<NotificationPreferences> {
   const client = getConfiguredSupabase();
