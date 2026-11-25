@@ -3,6 +3,7 @@
 import {
   catalogKeys,
   currencyToMask,
+  deleteStaleUploads,
   type Event,
   type EventStatus,
   formatEventDate,
@@ -210,6 +211,10 @@ export function EventForm({ event }: { event?: Event }) {
         await saveRecurringOwnedEvents(establishmentId, input, recurrence);
       } else {
         await saveOwnedEvent(establishmentId, input);
+      }
+      // Ocorrências de uma série compartilham o banner: apagar o antigo quebraria as irmãs.
+      if (event && !event.recurrence_group_id) {
+        deleteStaleUploads([event.banner_url], [draft.bannerUrl]);
       }
       // Prefixo 'events' cobre owned, detail e byEstablishment de uma vez.
       await queryClient.invalidateQueries({ queryKey: catalogKeys.events.root });
