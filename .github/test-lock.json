@@ -11,6 +11,11 @@
       "lockedAt": "2026-11-07",
       "reason": "new test file"
     },
+    "apps/mobile-client/src/components/settings/AccountSection.test.tsx": {
+      "sha256": "88424a71a7ed1f67f95d97fc39a7d2d73e525bc4efdc54ffa30487e22dfb9b15",
+      "lockedAt": "2026-11-23",
+      "reason": "new test file"
+    },
     "apps/mobile-client/src/components/settings/NotificationsSection.test.tsx": {
       "sha256": "6db5069e37c4a4907e65a823a2ae6468028216d52eaafb813ffe3b6e52adce5c",
       "lockedAt": "2026-11-07",
@@ -239,6 +244,11 @@
     "packages/core/src/hooks/useResendCooldown.test.ts": {
       "sha256": "c447c1fb353349bdcd150631bc060f3de2504ae25e25668ddeb0eee6587c6e45",
       "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/core/src/lib/queryClient.meta.test.ts": {
+      "sha256": "4961481a14e2a3683c1aa0ddde02c35768ae83d8837f04d1afee36419ee50e7a",
+      "lockedAt": "2026-11-23",
       "reason": "new test file"
     },
     "packages/core/src/lib/queryClient.report.test.ts": {
@@ -724,6 +734,11 @@
     "packages/shared-ui-mobile/src/ImagePickerField.test.tsx": {
       "sha256": "8719ff08db8351e752ce506012de51d6b178257f7cf7d550f6fcae4cad4cf8db",
       "lockedAt": "2026-11-07",
+      "reason": "new test file"
+    },
+    "packages/shared-ui-mobile/src/Sparkline.test.tsx": {
+      "sha256": "5cb62dd52183eb53821f1fc4331b4b4f2f55cfa527531784a46dae6cb934f9e3",
+      "lockedAt": "2026-11-23",
       "reason": "new test file"
     },
     "packages/shared-ui/src/Button.test.tsx": {

@@ -192,6 +192,11 @@ export default function ReviewsScreen() {
                   ))}
                 </View>
               )}
+              {ratingsQuery.isFetchingNextPage ? (
+                <View className="items-center py-4">
+                  <ActivityIndicator size="small" color="#1dd75e" />
+                </View>
+              ) : null}
             </View>
           </>
         )}

@@ -1,6 +1,7 @@
 'use client';
 
 import { signOut, useAuthStore } from '@agenda/core';
+import Link from 'next/link';
 import { useState } from 'react';
 
 import { MobileNavDrawer } from '@/components/MobileNavDrawer';
@@ -76,6 +77,14 @@ export function Topbar() {
             >
               Sair
             </button>
+            <Link
+              href="/delete-account"
+              role="menuitem"
+              onClick={() => setOpen(false)}
+              className="text-destructive hover:bg-surface-elevated block w-full rounded-lg px-3 py-2 text-left text-[14px] transition-colors"
+            >
+              Excluir conta
+            </Link>
           </div>
         ) : null}
       </div>

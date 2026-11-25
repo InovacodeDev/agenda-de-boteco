@@ -24,6 +24,8 @@ const labelByVariant: Record<ButtonVariant, string> = {
 
 export interface ButtonProps {
   label?: string;
+  /** Obrigatório na prática para botão só com ícone; sem `label` o leitor de tela não tem o que anunciar. */
+  accessibilityLabel?: string;
   onPress?: () => void;
   variant?: ButtonVariant;
   fullWidth?: boolean;
@@ -37,6 +39,7 @@ export interface ButtonProps {
 
 export function Button({
   label,
+  accessibilityLabel,
   onPress,
   variant = 'solid',
   fullWidth = false,
@@ -52,7 +55,7 @@ export function Button({
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={label}
+      accessibilityLabel={accessibilityLabel ?? label}
       accessibilityState={{ disabled: isInactive }}
       disabled={isInactive}
       onPress={onPress}

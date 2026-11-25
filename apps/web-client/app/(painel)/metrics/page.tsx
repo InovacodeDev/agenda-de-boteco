@@ -23,16 +23,27 @@ const PERIOD_OPTIONS = [
   { value: '90', label: 'Últimos 90 dias' },
 ];
 
+/**
+ * Os hooks de métricas do core não aceitam `enabled`; por isso as queries vivem
+ * em MetricsContent, montado só com a flag ligada — sem flag, nada vai ao banco.
+ */
 export default function MetricasPage() {
   const router = useRouter();
   const enabled = useFeatureFlag('panel-metrics');
-  const [sinceDays, setSinceDays] = useState('30');
-  const [activeEvent, setActiveEvent] = useState<Event | null>(null);
 
   // Feature ainda não liberada: acesso direto por URL volta ao dashboard.
   useEffect(() => {
     if (!enabled) router.replace('/');
   }, [enabled, router]);
+
+  if (!enabled) return null;
+
+  return <MetricsContent />;
+}
+
+function MetricsContent() {
+  const [sinceDays, setSinceDays] = useState('30');
+  const [activeEvent, setActiveEvent] = useState<Event | null>(null);
 
   // rows (listOwnedMetrics) e favoritesByEvent (getOwnedFavoritesCountByEstablishment)
   // agregam no banco por establishment_id — totais e byDay já são completos,
@@ -63,8 +74,6 @@ export default function MetricasPage() {
   const activeSummary = activeEvent
     ? (byEvent.find((summary) => summary.eventId === activeEvent.id) ?? null)
     : null;
-
-  if (!enabled) return null;
 
   return (
     <div className="mx-auto flex w-full max-w-300 flex-col gap-6">

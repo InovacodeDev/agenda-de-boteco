@@ -1,0 +1,22 @@
+# Changelog 0.1.6 (alfa)
+
+- Métricas de uso reconhecem sua conta ao reabrir o app já logado e deixam de associar dados após você sair
+- Contas conectadas com Apple aparecem corretamente em Configurações, sem o formulário de troca de senha
+- Campo de cardápio abre no modo certo ao editar o bar
+- Remover o cardápio só tem efeito depois de salvar o perfil
+- Falha ao excluir evento mostra um único aviso de erro
+- Tela de exclusão de conta exige login e desativa as notificações do aparelho antes de excluir
+- Gráfico de evolução mostra só as visualizações e avisa quando não há dados no período
+- Preferências de notificação ficam bloqueadas enquanto salvam
+- Botão de página pública fica indisponível quando o link não está configurado e avisa se a página não abrir
+- Confirmação de exclusão mostra o nome do evento
+- Menu da conta mostra o e-mail conectado
+- Lista de avaliações mostra indicador ao carregar mais itens
+- Formulário de evento avisa quando falta a data, aceita só números na lotação e corrige o resumo da recorrência
+- Leitores de tela descrevem os botões de ícone e os horários de funcionamento
+- Tela de nova senha volta ao login quando não há tela anterior
+- Perfil mostra aviso quando nenhum estabelecimento está vinculado à conta
+- Política de privacidade informa que o cardápio pode ser PDF ou foto
+- App passa a se chamar "Agenda de Boteco Painel" na tela do aparelho
+- iOS explica por que o app pede acesso às fotos
+- Ícone monocromático no Android e preparo para notificações no Android

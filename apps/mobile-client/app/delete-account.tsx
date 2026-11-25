@@ -1,4 +1,9 @@
-import { getFriendlyErrorMessage, requestAccountDeletion } from '@agenda/core';
+import {
+  getFriendlyErrorMessage,
+  logErrorToTerminal,
+  requestAccountDeletion,
+  useAuthStore,
+} from '@agenda/core';
 import {
   Button,
   ConfirmDialog,
@@ -12,10 +17,12 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 
 import { useResponsive } from '@/hooks/useResponsive';
+import { disablePush } from '@/lib/push';
 import { scrollContentClassName } from '@/lib/screenLayout';
 
 export default function DeleteAccountScreen() {
   const router = useRouter();
+  const status = useAuthStore((state) => state.status);
   const { isTablet } = useResponsive();
   const [modalOpen, setModalOpen] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -25,6 +32,11 @@ export default function DeleteAccountScreen() {
     setErrorMessage(null);
     setBusy(true);
     try {
+      try {
+        await disablePush();
+      } catch (pushError: unknown) {
+        logErrorToTerminal(pushError, { method: 'deleteAccount.disablePush' });
+      }
       await requestAccountDeletion();
       setModalOpen(false);
       router.replace('/login');
@@ -33,6 +45,22 @@ export default function DeleteAccountScreen() {
       setBusy(false);
     }
   };
+
+  if (status !== 'signedIn') {
+    return (
+      <Screen>
+        <ScreenHeader title="Excluir Conta" onBack={() => router.back()} />
+        {status === 'loading' ? null : (
+          <View className="mx-auto w-full max-w-lg flex-col gap-4 p-6">
+            <Text className="font-body text-muted-foreground text-sm leading-[22px]">
+              Entre na sua conta para solicitar a exclusão.
+            </Text>
+            <Button label="Entrar" onPress={() => router.replace('/login')} />
+          </View>
+        )}
+      </Screen>
+    );
+  }
 
   return (
     <Screen>

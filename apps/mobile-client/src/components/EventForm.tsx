@@ -242,6 +242,11 @@ export function EventForm({ event }: EventFormProps) {
                 <View className="min-w-0 flex-1">
                   <Field label="Data" required>
                     <DatePickerField value={date} onValueChange={setDate} />
+                    {hasDate ? null : (
+                      <Text className="font-body text-muted-foreground mt-1 text-xs">
+                        Informe a data para salvar o evento.
+                      </Text>
+                    )}
                   </Field>
                 </View>
                 <View className="w-32">
@@ -296,7 +301,7 @@ export function EventForm({ event }: EventFormProps) {
                     <TextInput
                       keyboardType="number-pad"
                       value={capacity}
-                      onChangeText={setCapacity}
+                      onChangeText={(v) => setCapacity(v.replace(/\D/g, ''))}
                       placeholder="Ex: 200"
                     />
                   </Field>
@@ -363,7 +368,7 @@ export function EventForm({ event }: EventFormProps) {
                           <Text className="font-body-bold text-foreground">
                             {recurrence.count} eventos
                           </Text>
-                          {lastOccurrence ? `, o último em ${lastOccurrence}.` : '.'}
+                          {lastOccurrence ? `, o último em ${lastOccurrence}` : '.'}
                         </Text>
                       </View>
                     </View>

@@ -52,7 +52,7 @@ export default function NewPasswordScreen() {
 
   return (
     <Screen>
-      <ScreenHeader title="Redefinir Senha" onBack={() => router.back()} />
+      <ScreenHeader title="Redefinir Senha" onBack={() => (router.canGoBack() ? router.back() : router.replace('/login'))} />
       <KeyboardAwareBody>
         <ScrollView
           contentContainerClassName={scrollContentClassName(isTablet)}

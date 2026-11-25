@@ -92,6 +92,7 @@ export function OpeningHoursGrid({
                     <View key={shiftIndex} className="flex-row items-center gap-2">
                       <View className="flex-1">
                         <TimePickerField
+                          accessibilityLabel={`Horário de abertura de ${dayLabel}`}
                           value={shift.open}
                           onValueChange={(open) => setShift(day, shiftIndex, { open })}
                         />
@@ -99,6 +100,7 @@ export function OpeningHoursGrid({
                       <Text className="font-body text-muted-foreground text-sm">às</Text>
                       <View className="flex-1">
                         <TimePickerField
+                          accessibilityLabel={`Horário de fechamento de ${dayLabel}`}
                           value={shift.close}
                           onValueChange={(close) => setShift(day, shiftIndex, { close })}
                         />
@@ -124,6 +126,7 @@ export function OpeningHoursGrid({
                   {shifts.length < MAX_SHIFTS_PER_DAY ? (
                     <Pressable
                       accessibilityRole="button"
+                      accessibilityLabel={`Adicionar intervalo em ${dayLabel}`}
                       onPress={() => setDay(day, withComplementaryShift(shifts))}
                       className="self-start py-1.5"
                     >
@@ -136,6 +139,7 @@ export function OpeningHoursGrid({
                   {day === firstOpenDay ? (
                     <Pressable
                       accessibilityRole="button"
+                      accessibilityLabel={`Usar o horário de ${dayLabel} nos 7 dias`}
                       onPress={() => copyToAllDays(day)}
                       className="self-start py-1.5"
                     >

@@ -398,7 +398,9 @@ const MENU_MODES: { id: MenuMode; label: string }[] = [
 function MenuField({ value, onChange }: { value: string; onChange: (url: string) => void }) {
   const isUploaded = pathFromPublicUrl(value) !== null;
   const isPdf = isUploaded && value.toLowerCase().endsWith('.pdf');
-  const [mode, setMode] = useState<MenuMode>(isUploaded ? 'file' : 'link');
+  const [picked, setPicked] = useState<MenuMode | null>(null);
+  // Derivado: o draft hidrata de forma assíncrona, depois do primeiro render.
+  const mode: MenuMode = picked ?? (isUploaded ? 'file' : 'link');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -413,10 +415,9 @@ function MenuField({ value, onChange }: { value: string; onChange: (url: string)
     onChange(url);
   };
 
-  const handleRemove = () => {
-    dropPrevious();
-    onChange('');
-  };
+  // Só limpa o draft: apagar o arquivo antes de salvar deixaria o bar salvo
+  // apontando para um cardápio inexistente se o dono sair sem salvar.
+  const handleRemove = () => onChange('');
 
   const pickPdf = async () => {
     setError(null);
@@ -454,7 +455,7 @@ function MenuField({ value, onChange }: { value: string; onChange: (url: string)
                 key={item.id}
                 accessibilityRole="button"
                 accessibilityState={{ selected }}
-                onPress={() => setMode(item.id)}
+                onPress={() => setPicked(item.id)}
                 className={cn(
                   'min-h-10 justify-center rounded-full border px-4 py-2',
                   selected ? 'border-primary' : 'border-border',
@@ -502,7 +503,7 @@ function MenuField({ value, onChange }: { value: string; onChange: (url: string)
           <View className="flex-row flex-wrap gap-2">
             <Pressable
               accessibilityRole="button"
-              onPress={() => void WebBrowser.openBrowserAsync(value)}
+              onPress={() => void WebBrowser.openBrowserAsync(resolveDevAssetUrl(value))}
               className="min-h-10 justify-center rounded-full border border-primary px-4 py-2"
             >
               <Text className="font-body-medium text-primary text-sm">Abrir</Text>

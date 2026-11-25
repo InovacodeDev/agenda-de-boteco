@@ -15,6 +15,7 @@ export interface TimePickerFieldProps {
   placeholder?: string;
   disabled?: boolean;
   className?: string;
+  accessibilityLabel?: string;
 }
 
 export function TimePickerField({
@@ -23,6 +24,7 @@ export function TimePickerField({
   placeholder = '00:00',
   disabled = false,
   className,
+  accessibilityLabel,
 }: TimePickerFieldProps) {
   const [showPicker, setShowPicker] = useState(false);
 
@@ -49,6 +51,8 @@ export function TimePickerField({
   return (
     <>
       <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={accessibilityLabel}
         disabled={disabled}
         onPress={() => setShowPicker(true)}
         className={cn(
