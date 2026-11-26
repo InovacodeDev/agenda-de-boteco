@@ -139,3 +139,34 @@ export async function deleteImage(publicUrl: string): Promise<void> {
     return handleServiceError(error, { method: 'storage.deleteImage' });
   }
 }
+
+/**
+ * URLs do bucket que estavam gravadas e deixaram de ser usadas. Só entram as
+ * nossas (`pathFromPublicUrl`) — link externo colado à mão nunca é tocado. A
+ * remoção acontece depois do save: apagar na troca do campo deixaria a linha
+ * gravada apontando para um arquivo inexistente se o dono saísse sem salvar.
+ */
+export function staleUploadedUrls(
+  before: readonly (string | null | undefined)[],
+  after: readonly (string | null | undefined)[],
+): string[] {
+  const kept = new Set(after.map((url) => url?.trim()).filter(Boolean));
+  const stale = new Set<string>();
+  for (const raw of before) {
+    const url = raw?.trim();
+    if (url && !kept.has(url) && pathFromPublicUrl(url) !== null) {
+      stale.add(url);
+    }
+  }
+  return [...stale];
+}
+
+/** Fire-and-forget: falha de limpeza só custa armazenamento, nunca bloqueia o save. */
+export function deleteStaleUploads(
+  before: readonly (string | null | undefined)[],
+  after: readonly (string | null | undefined)[],
+): void {
+  for (const url of staleUploadedUrls(before, after)) {
+    void deleteImage(url).catch(() => undefined);
+  }
+}

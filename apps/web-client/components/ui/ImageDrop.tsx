@@ -1,6 +1,6 @@
 'use client';
 
-import { deleteImage, getFriendlyErrorMessage, MAX_IMAGE_BYTES, uploadImage } from '@agenda/core';
+import { getFriendlyErrorMessage, MAX_IMAGE_BYTES, uploadImage } from '@agenda/core';
 import { UploadSimpleIcon } from '@phosphor-icons/react';
 import { useState } from 'react';
 
@@ -39,9 +39,6 @@ export function ImageDrop({
     setBusy(true);
     try {
       const url = await uploadImage(file, { pathPrefix });
-      if (value) {
-        void deleteImage(value).catch(() => {});
-      }
       onChange(url);
     } catch (e: unknown) {
       setError(getFriendlyErrorMessage(e));

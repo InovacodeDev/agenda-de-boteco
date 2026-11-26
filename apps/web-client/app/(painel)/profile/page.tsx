@@ -2,6 +2,7 @@
 
 import {
   catalogKeys,
+  deleteStaleUploads,
   getFriendlyErrorMessage,
   maskPhoneBR,
   updateOwnedEstablishment,
@@ -109,6 +110,10 @@ export default function PerfilPage() {
         menuUrl: draft.menuUrl.trim(),
         attributes: draft.attributes,
       });
+      deleteStaleUploads(
+        [savedDraft.logoUrl, savedDraft.coverUrl, savedDraft.menuUrl],
+        [draft.logoUrl, draft.coverUrl, draft.menuUrl],
+      );
       // O que está na tela passa a ser o gravado, desabilitando o botão sem
       // esperar o refetch da invalidação abaixo.
       setSavedDraft(draft);

@@ -3,7 +3,6 @@
 import {
   catalogKeys,
   createCityFromPanel,
-  deleteImage,
   type EstablishmentAttribute,
   getFriendlyErrorMessage,
   listCities,
@@ -452,9 +451,6 @@ function MenuField({ value, onChange }: { value: string; onChange: (url: string)
     setBusy(true);
     try {
       const url = await uploadImage(file, { pathPrefix: MENU_PATH_PREFIX });
-      if (isUploaded) {
-        void deleteImage(value).catch(() => {});
-      }
       onChange(url);
     } catch (e: unknown) {
       setError(getFriendlyErrorMessage(e));

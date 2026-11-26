@@ -461,6 +461,11 @@
       "lockedAt": "2026-11-07",
       "reason": "new test file"
     },
+    "packages/core/src/services/push.unregister-all.test.ts": {
+      "sha256": "9a20c6eaf95c767ae71d5ad233291969e203d9750017d466e8d9f95161211323",
+      "lockedAt": "2026-11-25",
+      "reason": "new test file"
+    },
     "packages/core/src/services/queryKeys.test.ts": {
       "sha256": "7023c916a0a561ccda12ca6a1213e1e9b0df7be793541b9b0bbf8f5b183ce2d4",
       "lockedAt": "2026-11-07",
@@ -484,6 +489,11 @@
     "packages/core/src/services/storage.errors.test.ts": {
       "sha256": "eb1c0440c36b258ca1d4e981a1412481a1a9d1ec167feadcc83474af25a60301",
       "lockedAt": "2026-11-09",
+      "reason": "new test file"
+    },
+    "packages/core/src/services/storage.stale.test.ts": {
+      "sha256": "d9af0289fda7112af5488cf6a71aaeadd5e78a954a0b5b4a6360cf54ff6f5914",
+      "lockedAt": "2026-11-25",
       "reason": "new test file"
     },
     "packages/core/src/services/storage.test.ts": {

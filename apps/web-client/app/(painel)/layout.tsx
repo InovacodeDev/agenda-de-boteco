@@ -10,13 +10,15 @@ import { useEffect, useState } from 'react';
 
 import { Sidebar } from '@/components/Sidebar';
 import { Topbar } from '@/components/Topbar';
+import { PASSWORD_RECOVERY_KEY } from '@/lib/recovery';
 
 type OwnerCheck = 'checking' | 'linked' | 'unlinked';
 
 /**
  * Guard do painel: sem sessão vai para /login; com sessão mas sem a flag de dono
  * volta para /login (conta do app público não acessa o painel); com a flag mas
- * sem bar vinculado vai para o onboarding. O isolamento real é o RLS — este
+ * sem bar vinculado vai para o onboarding. Sessão vinda do link de recuperação
+ * vai para /new-password antes de qualquer tela. O isolamento real é o RLS — este
  * check é só navegação.
  */
 export default function PainelLayout({ children }: { children: React.ReactNode }) {
@@ -28,6 +30,10 @@ export default function PainelLayout({ children }: { children: React.ReactNode }
     if (status === 'loading') return;
     if (status === 'signedOut' || status === 'unavailable') {
       router.replace('/login');
+      return;
+    }
+    if (window.sessionStorage.getItem(PASSWORD_RECOVERY_KEY)) {
+      router.replace('/new-password');
       return;
     }
     let active = true;

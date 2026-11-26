@@ -1,5 +1,6 @@
 import {
   catalogKeys,
+  deleteStaleUploads,
   getFriendlyErrorMessage,
   maskPhoneBR,
   updateOwnedEstablishment,
@@ -122,6 +123,10 @@ export default function ProfileScreen() {
         queryKey: catalogKeys.establishments.detail(establishment.id),
       });
 
+      deleteStaleUploads(
+        [savedDraft.logoUrl, savedDraft.coverUrl, savedDraft.menuUrl],
+        [draft.logoUrl, draft.coverUrl, draft.menuUrl],
+      );
       setSavedDraft(draft);
       toast.show({ tone: 'success', message: 'Alterações salvas.' });
     } catch (err: unknown) {

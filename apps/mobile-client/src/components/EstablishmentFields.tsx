@@ -1,7 +1,6 @@
 import {
   catalogKeys,
   createCityFromPanel,
-  deleteImage,
   type EstablishmentAttribute,
   getFriendlyErrorMessage,
   listCities,
@@ -119,11 +118,6 @@ export interface FieldGroupProps {
   onError?: (message: string) => void;
 }
 
-/** O arquivo antigo só sai do storage depois que o novo subiu; falha aqui não bloqueia o form. */
-function dropReplacedImage(previousUrl: string) {
-  void deleteImage(previousUrl).catch(() => undefined);
-}
-
 /** Logo, capa, nome e descrição. */
 export function IdentityFields({ draft, set, onUpload }: FieldGroupProps) {
   return (
@@ -134,7 +128,6 @@ export function IdentityFields({ draft, set, onUpload }: FieldGroupProps) {
         previewUrl={draft.logoUrl ? resolveDevAssetUrl(draft.logoUrl) : undefined}
         onChange={(url) => set('logoUrl', url)}
         onUpload={onUpload}
-        onReplaced={dropReplacedImage}
         aspect={[1, 1]}
       />
 
@@ -144,7 +137,6 @@ export function IdentityFields({ draft, set, onUpload }: FieldGroupProps) {
         previewUrl={draft.coverUrl ? resolveDevAssetUrl(draft.coverUrl) : undefined}
         onChange={(url) => set('coverUrl', url)}
         onUpload={onUpload}
-        onReplaced={dropReplacedImage}
         aspect={[16, 9]}
       />
 
@@ -393,7 +385,7 @@ const MENU_MODES: { id: MenuMode; label: string }[] = [
 
 /**
  * Cardápio por link externo ou por arquivo no bucket; ambos gravam uma URL em
- * `menu_pdf_url`. Arquivo novo (PDF ou foto) substitui e apaga o anterior.
+ * `menu_pdf_url`. Arquivo novo (PDF ou foto) substitui o anterior; o antigo só sai do storage depois do save.
  */
 function MenuField({ value, onChange }: { value: string; onChange: (url: string) => void }) {
   const isUploaded = pathFromPublicUrl(value) !== null;
@@ -404,16 +396,7 @@ function MenuField({ value, onChange }: { value: string; onChange: (url: string)
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const dropPrevious = () => {
-    if (isUploaded) {
-      void deleteImage(value).catch(() => undefined);
-    }
-  };
-
-  const handleUploaded = (url: string) => {
-    dropPrevious();
-    onChange(url);
-  };
+  const handleUploaded = (url: string) => onChange(url);
 
   // Só limpa o draft: apagar o arquivo antes de salvar deixaria o bar salvo
   // apontando para um cardápio inexistente se o dono sair sem salvar.

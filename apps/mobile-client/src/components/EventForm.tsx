@@ -1,7 +1,7 @@
 import {
   catalogKeys,
   currencyToMask,
-  deleteImage,
+  deleteStaleUploads,
   type Event,
   type EventStatus,
   formatEventDate,
@@ -194,6 +194,11 @@ export function EventForm({ event }: EventFormProps) {
         await saveOwnedEvent(establishmentId, input);
       }
 
+      // Ocorrências de uma série compartilham o banner: apagar o antigo quebraria as irmãs.
+      if (event && !event.recurrence_group_id) {
+        deleteStaleUploads([event.banner_url], [bannerUrl]);
+      }
+
       await queryClient.invalidateQueries({ queryKey: catalogKeys.events.root });
       trackEvent('event_saved', { isEdit: Boolean(event?.id) });
       router.replace('/(painel)/events');
@@ -226,7 +231,6 @@ export function EventForm({ event }: EventFormProps) {
                 previewUrl={bannerUrl ? resolveDevAssetUrl(bannerUrl) : undefined}
                 onChange={setBannerUrl}
                 onUpload={handleUpload}
-                onReplaced={(previous) => void deleteImage(previous).catch(() => undefined)}
                 aspect={[16, 9]}
               />
 
